@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import type { Equipment } from '../data/machine';
 import { buildMachineModel } from './MachineModel';
 import { compactDevice } from '../data/display';
+import { bodyDesign } from '../data/bodies';
 
 function disposeModel(model:THREE.Group){
   const materials=new Set<THREE.Material>();
@@ -35,7 +36,7 @@ export class MachinePreviewRenderer {
   }
   setEquipment(equipment:Equipment){
     if(this.model){this.scene.remove(this.model);disposeModel(this.model);}
-    this.model=buildMachineModel(0xe85438,equipment);this.model.rotation.y=this.yaw;
+    this.model=buildMachineModel(Number.parseInt(bodyDesign(equipment.body).color.slice(1),16),equipment);this.model.rotation.y=this.yaw;
     this.scene.add(this.model);this.render();
   }
   rotate(amount:number){this.yaw+=amount;if(this.model)this.model.rotation.y=this.yaw;this.render();}

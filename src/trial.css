@@ -33,7 +33,7 @@
 .race-viewport { position: relative; min-height: 0; overflow: hidden; background: #43812d; }
 .race-rotate-hint{display:none}
 .retro-race .trial-canvas { position: absolute; inset: 0; }
-.trial-canvas canvas { display: block; image-rendering: pixelated; }
+.trial-canvas canvas { display: block; image-rendering: auto; }
 .race-scanlines { position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(transparent 0px, transparent 3px, #05113c0b 3px, #05113c0b 4px); }
 .trial-canvas[data-render-style='smooth']~.race-scanlines{display:none}
 .race-lane { position: absolute; left: 22px; top: 15px; color: #fff7cc; font-size: 17px; letter-spacing: 2px; }

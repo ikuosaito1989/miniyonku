@@ -29,9 +29,9 @@ export class TrialRenderer {
   private startShotBlend = 1;
   private finishPresentation = createFinishPresentation();
 
-  constructor(private host: HTMLElement, private equipment: Equipment, private report: (state: RaceState) => void, private reportFinish:(state:FinishPresentation)=>void, private condition:MachineCondition=freshCondition) {
-    this.state=createRaceState(equipment,0x5eed,condition);
-    this.renderer=new THREE.WebGLRenderer({antialias:compactDevice(),alpha:false});
+  constructor(private host: HTMLElement, private equipment: Equipment, private report: (state: RaceState) => void, private reportFinish:(state:FinishPresentation)=>void, private condition:MachineCondition=freshCondition, private seed=0x5eed) {
+    this.state=createRaceState(equipment,seed,condition);
+    this.renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});
     this.renderer.setPixelRatio(1);
     this.renderer.setClearColor(0x315b2a);
     this.renderer.outputColorSpace=THREE.SRGBColorSpace;
@@ -59,7 +59,7 @@ export class TrialRenderer {
   }
   setCamera(mode:TrialCamera){this.cameraMode=mode;}
   restart(){
-    this.state=createRaceState(this.equipment,0x5eed,this.condition);this.accumulator=0;this.lastTime=0;this.lastReport=-1;this.cameraMode='broadcast';this.startShotBlend=1;
+    this.state=createRaceState(this.equipment,this.seed,this.condition);this.accumulator=0;this.lastTime=0;this.lastReport=-1;this.cameraMode='broadcast';this.startShotBlend=1;
     this.finishPresentation=createFinishPresentation();this.reportFinish(this.finishPresentation);
     this.report({...this.state});
   }
@@ -68,8 +68,8 @@ export class TrialRenderer {
     this.aspect=width/height;
     const compact=compactDevice();
     const resolution=raceRenderSize(compact,width,height,window.devicePixelRatio);
-    this.host.dataset.renderStyle=compact?'smooth':'retro';
-    this.renderer.domElement.style.imageRendering=compact?'auto':'pixelated';
+    this.host.dataset.renderStyle='smooth';
+    this.renderer.domElement.style.imageRendering='auto';
     this.renderer.setSize(resolution.width,resolution.height,false);
   }
   private grassTexture(){
@@ -150,7 +150,7 @@ export class TrialRenderer {
     const viewHeight=overview?Math.max(8,12/this.aspect):goalShot?Math.max(raceCamera.finish.height,raceCamera.finish.minWidth/this.aspect):THREE.MathUtils.lerp(runningHeight,startHeight,blend);
     this.camera.left=-viewHeight*this.aspect/2;this.camera.right=viewHeight*this.aspect/2;
     this.camera.top=viewHeight/2;this.camera.bottom=-viewHeight/2;this.camera.updateProjectionMatrix();
-    const start=sampleLanePath(0,player.lane);
+    const start=sampleLanePath(0,(circuit.lanes-1)/2);
     const target=overview?new THREE.Vector3(0,0,0):goalShot?new THREE.Vector3(start.x-start.tangentX*raceCamera.finish.lookBehind,0,start.z-start.tangentZ*raceCamera.finish.lookBehind):new THREE.Vector3(p.x+p.tangentX*raceCamera.running.lookAhead,p.y,p.z+p.tangentZ*raceCamera.running.lookAhead)
       .lerp(new THREE.Vector3(start.x-start.tangentX*raceCamera.start.lookBehind,0,start.z-start.tangentZ*raceCamera.start.lookBehind),blend);
     const offset=new THREE.Vector3(...(goalShot?raceCamera.finish.offset:raceCamera.running.offset));

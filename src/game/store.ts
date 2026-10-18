@@ -3,34 +3,54 @@ import { purchase, type Wallet } from './purchase';
 import { createStarterInventory, starterEquipment, type Equipment, type EquipmentSlot } from '../data/machine';
 import { equipPart } from './equipment';
 import { racePrize } from './reward';
-import type { RaceState } from './race';
-import { batteryCharge, batteryCapacity, createStarterUnits, type UnitInventory } from './condition';
-interface GameState extends Wallet {
+import { rankRacers, type RaceState } from './race';
+import { INITIAL_MONEY } from '../data/economy';
+import { nextRaceSeed } from './raceSeed';
+import { batteryCharge, batteryCapacity, batteryConsumption, createStarterUnits, type UnitInventory } from './condition';
+import { breakInPractice } from '../data/proficiency';
+import { hintBooks, nextShopRace } from '../data/shopHints';
+export interface GameState extends Wallet {
+  hintBookIndex:number; readHintBook:()=>void;
+  unlockedRaces:string[]; qualificationNotice:boolean;
+  raceSeed:number;
   equipment: Equipment;
+  proficiencyPoints:number;
+  openProficiency:()=>void;
   units:UnitInventory; selectedUnits:Record<'motor'|'battery',string>; unitSerial:number; usageSeconds:number;
   selectUnit:(slot:'motor'|'battery',id:string)=>void; breakIn:()=>void;
   raceAttempt: number; settledAttempt: number; lastPrize: number;
   settleRace: (attempt: number, race: RaceState) => void;
-  overlay: 'dialogue' | 'shop' | 'race' | 'setting' | null; speaker: string; dialogue: string; shopAfter: boolean; notice: string; nearby: string;
+  overlay: 'dialogue' | 'shop' | 'race' | 'setting' | 'proficiency' | null; speaker: string; dialogue: string; shopAfter: boolean; notice: string; nearby: string;
   openSetting: () => void; equip: (id: string,slot?:EquipmentSlot) => void;
   startTrial: () => void;
   talk: (speaker: string, text: string, shopAfter?: boolean) => void; advance: () => void; close: () => void; buy: (id: string) => void;
 }
 export const useGame = create<GameState>((set) => ({
-  money: 3000, inventory: createStarterInventory(), equipment: {...starterEquipment}, overlay: null, speaker: '', dialogue: '', shopAfter: false, notice: '', nearby: '',
+  hintBookIndex:0,unlockedRaces:[],qualificationNotice:false,
+  readHintBook:()=>set(s=>{
+    const index=s.hintBookIndex%hintBooks.length,book=hintBooks[index];
+    return {overlay:'dialogue',speaker:`セッティング本棚 ${index+1} / ${hintBooks.length}・${book.title}`,dialogue:`${book.text}（閉じてもう一度調べると次の本）`,shopAfter:false,hintBookIndex:(index+1)%hintBooks.length};
+  }),
+  raceSeed:0x5eed,
+  money: INITIAL_MONEY, inventory: createStarterInventory(), equipment: {...starterEquipment}, overlay: null, speaker: '', dialogue: '', shopAfter: false, notice: '', nearby: '',
   raceAttempt: 0, settledAttempt: -1, lastPrize: 0,
+  proficiencyPoints:0,
+  openProficiency:()=>set({overlay:'proficiency',shopAfter:false,notice:''}),
   units:createStarterUnits(),selectedUnits:{motor:'starter-motor',battery:'starter-battery'},unitSerial:0,usageSeconds:0,
   selectUnit:(slot,id)=>set(s=>s.overlay==='race'||!s.units[s.equipment[slot]]?.some(u=>u.id===id)?s:{selectedUnits:{...s.selectedUnits,[slot]:id}}),
   breakIn:()=>set(s=>{
     if(s.overlay!=='setting')return s;
     const battery=s.units[s.equipment.battery]?.find(u=>u.id===s.selectedUnits.battery);
     if(!battery||batteryCharge(s.equipment.battery,battery.seconds)<=0)return {notice:'電池が空です。別の電池に交換してください。'};
-    const duration=Math.min(30,Math.max(0,batteryCapacity(s.equipment.battery)-battery.seconds));
+    const rechargeable=batteryConsumption(s.equipment.battery)===0;
+    const duration=rechargeable?30:Math.min(30,Math.max(0,batteryCapacity(s.equipment.battery)-battery.seconds));
     const units={...s.units};
     for(const slot of ['motor','battery'] as const)units[s.equipment[slot]]=units[s.equipment[slot]].map(u=>u.id===s.selectedUnits[slot]?{...u,seconds:u.seconds+duration}:u);
-    return {units,notice:`${duration.toFixed(0)}秒の慣らし運転を行いました。電池も消耗します。`};
+    const motor=s.units[s.equipment.motor]?.find(u=>u.id===s.selectedUnits.motor);
+    const practice=breakInPractice(motor?.seconds??0,duration);
+    return {units,proficiencyPoints:s.proficiencyPoints+practice,notice:`${duration.toFixed(0)}秒の慣らし運転を行いました。${rechargeable?'充電電池の残量は減りません。':'電池も消耗します。'}${practice>0?' 整備の熟練度が上がりました。':''}`};
   }),
-  startTrial: () => set(s=>({overlay:'race',shopAfter:false,notice:'',raceAttempt:s.raceAttempt+1,lastPrize:0,usageSeconds:0})),
+  startTrial: () => set(s=>({overlay:'race',shopAfter:false,notice:'',raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,qualificationNotice:false})),
   settleRace: (attempt,race) => set(s=>{
     if(attempt!==s.raceAttempt)return s;
     const player=race.racers.find(r=>r.id==='player');
@@ -41,8 +61,10 @@ export const useGame = create<GameState>((set) => ({
     }
     const reward=race.phase==='finished'&&s.settledAttempt!==attempt;
     const prize=reward?racePrize(race):0;
+    const firstWin=reward&&player?.driving.status==='finished'&&rankRacers(race)[0]?.id==='player'&&!s.unlockedRaces.includes(nextShopRace.id);
     if(!delta&&!reward)return s;
-    return {units,usageSeconds:Math.max(s.usageSeconds,seconds),money:s.money+prize,...(reward?{lastPrize:prize,settledAttempt:attempt}:{})};
+    const practice=reward&&player?(player.driving.status==='finished'?5+(rankRacers(race)[0]?.id==='player'?5:0):seconds>0?1:0):0;
+    return {units,usageSeconds:Math.max(s.usageSeconds,seconds),money:s.money+prize,proficiencyPoints:s.proficiencyPoints+practice,...(firstWin?{unlockedRaces:[...s.unlockedRaces,nextShopRace.id],qualificationNotice:true}:{}),...(reward?{lastPrize:prize,settledAttempt:attempt}:{})};
   }),
   openSetting: () => set({overlay:'setting',shopAfter:false,notice:''}),
   equip: (id,slot) => set(s => {

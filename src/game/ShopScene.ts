@@ -2,10 +2,14 @@ import Phaser from 'phaser';
 import { fixtures, room, roomView } from '../data/shop';
 import { useGame } from './store';
 import { createPeopleTextures, drawShopFixture, drawShopRoom, type Facing, type PersonKind } from './ShopArt';
-import { shopPeople, story } from '../data/story';
+import { shopPeople, shopVisitors, story } from '../data/story';
+import { nextShopRace } from '../data/shopHints';
+import { equippedCondition } from './condition';
+import { shopAdvice } from './shopAdvice';
 import { touchInput } from './touchInput';
 import { compactDevice } from '../data/display';
 import { findWalkingPath, type Point } from './navigation';
+import { proficiencyStandings } from '../data/proficiency';
 
 export class ShopScene extends Phaser.Scene {
   private player!: Phaser.GameObjects.Container;
@@ -18,6 +22,8 @@ export class ShopScene extends Phaser.Scene {
   private route:Point[]=[];
   private destination!:Phaser.GameObjects.Graphics;
   private inputVersion=0;
+  private boardLines:Phaser.GameObjects.Text[]=[];
+  private boardPoints=-1;
   constructor(){ super('shop'); }
   create(){
     this.fitCamera();
@@ -29,8 +35,14 @@ export class ShopScene extends Phaser.Scene {
       drawShopFixture(this,fixture);
       this.solids.push(new Phaser.Geom.Rectangle(fixture.x,fixture.y,fixture.w,fixture.h));
     }
+    const board=fixtures.find(f=>f.kind==='board')!;
+    this.boardLines=Array.from({length:5},(_,i)=>this.add.text(board.x+5,board.y+23+i*15,'',{fontFamily:'"Noto Sans JP",monospace',fontSize:'5px',color:'#e6dfbc',resolution:2}).setDepth(board.y+board.h+2));
     this.person(shopPeople.owner.x,shopPeople.owner.y,'owner');
     this.person(shopPeople.rival.x,shopPeople.rival.y,'rival');
+    for(const visitor of shopVisitors){
+      this.person(visitor.x,visitor.y,visitor.kind);
+      this.solids.push(new Phaser.Geom.Rectangle(visitor.x-12,visitor.y-9,24,21));
+    }
     this.solids.push(new Phaser.Geom.Rectangle(shopPeople.rival.x-12,shopPeople.rival.y-9,24,21));
     this.player=this.person(room.spawn.x,room.spawn.y,'player');
     this.destination=this.add.graphics().setDepth(9999).setVisible(false);
@@ -65,7 +77,7 @@ export class ShopScene extends Phaser.Scene {
     if(compactDevice()){
       const camera=this.cameras.main;
       camera.setZoom(Math.max(width/560,height/roomView.height));camera.setBounds(roomView.x,roomView.y,roomView.width,roomView.height);
-      if(this.player)camera.startFollow(this.player,true,.15,.15);
+      if(this.player)camera.startFollow(this.player,false,.15,.15);
       return;
     }
     this.cameras.main.stopFollow();this.cameras.main.removeBounds();
@@ -80,6 +92,8 @@ export class ShopScene extends Phaser.Scene {
   }
   update(_time:number,delta:number){
     if(!this.player)return;
+    const points=useGame.getState().proficiencyPoints;
+    if(this.boardPoints!==points){this.boardPoints=points;proficiencyStandings(points).forEach((p,i)=>this.boardLines[i]?.setText(`${i+1} ${p.name.split(' ').at(-1)}\n    ${p.points}pt`).setColor(p.id==='player'?'#ffe18c':'#e6dfbc'));}
     const touchAction=touchInput.consume();
     const action=this.interactionPending||touchAction;
     this.interactionPending=false;
@@ -109,12 +123,16 @@ export class ShopScene extends Phaser.Scene {
     this.playerSprite.setTexture(`person-player-${this.facing}-${moving?Math.floor(this.walkTime/130)%4:0}`);
     this.player.setDepth(this.player.y);
     const targets=[...fixtures.map(f=>({...f,speaker:f.label,shopAfter:f.kind==='counter'})),{x:shopPeople.rival.x-12,y:shopPeople.rival.y-19,w:24,h:32,label:`ライバル ${story.rival}`,speaker:story.rival,shopAfter:false,text:'ぼくは早瀬凪。この町でミニレーサーを走らせているんだ。湊くん、速いモーターだけじゃなく、ギアやタイヤの組み合わせも大事だよ。'}];
-    const nearest=targets.map(t=>({t,d:Math.hypot(this.player.x-Phaser.Math.Clamp(this.player.x,t.x,t.x+t.w),this.player.y-Phaser.Math.Clamp(this.player.y,t.y,t.y+t.h))})).sort((a,b)=>a.d-b.d)[0];
+    const state=useGame.getState(),condition=equippedCondition(state.equipment,state.units,state.selectedUnits);
+    const visitors=shopVisitors.map(v=>({x:v.x-12,y:v.y-19,w:24,h:32,label:v.name,speaker:v.name,shopAfter:false,text:shopAdvice(v.kind,{money:state.money,inventory:state.inventory,equipment:state.equipment,motorSeconds:condition.motorSeconds,qualified:state.unlockedRaces.includes(nextShopRace.id)})}));
+    const nearest=[...targets,...visitors].map(t=>({t,d:Math.hypot(this.player.x-Phaser.Math.Clamp(this.player.x,t.x,t.x+t.w),this.player.y-Phaser.Math.Clamp(this.player.y,t.y,t.y+t.h))})).sort((a,b)=>a.d-b.d)[0];
     const target=nearest?.d<62?nearest.t:null;
     const nearby=target?.label??'';
     if(useGame.getState().nearby!==nearby)useGame.setState({nearby});
     if(action&&target){
       if('kind' in target&&target.kind==='track')useGame.getState().startTrial();
+      else if('kind' in target&&target.kind==='board')useGame.getState().openProficiency();
+      else if('kind' in target&&target.kind==='bookshelf')useGame.getState().readHintBook();
       else if('kind' in target&&target.kind==='bench')useGame.getState().openSetting();
       else useGame.getState().talk(target.speaker,target.text,target.shopAfter);
     }

@@ -1,0 +1,56 @@
+import type { StoreApi } from 'zustand';
+import { useGame, type GameState } from './store';
+import { decodeSave, snapshotGame, type SavedGame } from './saveData';
+import type { SaveStorage } from './saveStorage';
+
+export type SaveStatus={phase:'loading'|'saving'|'saved'|'error'|'temporary';savedAt:number|null;message:string};
+export async function loadSavedGame(storage:SaveStorage,store:StoreApi<GameState>=useGame){
+  const raw=await storage.read();
+  if(raw===undefined)return null;
+  const data=decodeSave(raw);
+  // レース途中・会話中でも復元先は必ず模型店。賞金などは保存済み値だけを使う。
+  store.setState({...store.getInitialState(),...data.game});
+  return data.savedAt;
+}
+export function startAutoSave(storage:SaveStorage,status:(status:SaveStatus)=>void,store:StoreApi<GameState>=useGame){
+  let lastSignature=JSON.stringify(snapshotGame(store.getState()));
+  let pending:SavedGame|null=null,running:Promise<void>|null=null;
+  let timer:ReturnType<typeof setTimeout>|null=null,stopped=false;
+  let lastSaved:number|null=null;
+  function drain():Promise<void>{
+    if(running)return running;
+    running=(async()=>{
+      while(pending){
+        const game=pending;pending=null;
+        status({phase:'saving',savedAt:lastSaved,message:'保存中…'});
+        try{
+          const data=decodeSave({version:1,savedAt:Date.now(),game});
+          await storage.write(data);lastSaved=data.savedAt;
+          status({phase:'saved',savedAt:lastSaved,message:'自動セーブ済み'});
+        }catch(error){
+          pending??=game;
+          status({phase:'error',savedAt:lastSaved,message:`保存できませんでした。${error instanceof Error?error.message:'空き容量やブラウザ設定を確認してください。'}`});
+          throw error;
+        }
+      }
+    })().finally(()=>{running=null;});
+    return running;
+  }
+  function flush(){
+    if(stopped)return Promise.resolve();
+    if(timer){clearTimeout(timer);timer=null;}
+    pending=snapshotGame(store.getState());
+    return drain();
+  }
+  const unsubscribe=store.subscribe((state,previous)=>{
+    const signature=JSON.stringify(snapshotGame(state));
+    const leavingRace=previous.overlay==='race'&&state.overlay!=='race';
+    if(signature===lastSignature&&!leavingRace)return;
+    lastSignature=signature;
+    if(state.overlay==='race'&&state.settledAttempt!==state.raceAttempt){
+      // 毎フレーム書かず、走行中の消耗だけは1秒ごとにチェックポイント保存。
+      if(!timer)timer=setTimeout(()=>{timer=null;void flush().catch(()=>{});},1000);
+    }else void flush().catch(()=>{});
+  });
+  return {flush,stop(){stopped=true;unsubscribe();if(timer)clearTimeout(timer);}};
+}

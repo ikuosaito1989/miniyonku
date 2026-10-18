@@ -18,9 +18,12 @@ export const COUNTDOWN_TICKS=Math.round(3/FIXED_STEP);
 export function createRaceState(equipment:Equipment,seed=0x5eed,condition:MachineCondition=freshCondition):RaceState {
   let randomState=seed>>>0||1;
   const random=()=>{randomState^=randomState<<13;randomState^=randomState>>>17;randomState^=randomState<<5;return (randomState>>>0)/4294967296;};
+  const lanes=[0,1,2,3,4];
+  for(let i=lanes.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[lanes[i],lanes[j]]=[lanes[j],lanes[i]];}
   const entrants:Entrant[]=[{id:'player',name:story.player,lane:2,color:0xe85438,equipment:{...equipment}},...rivals.map(r=>({...r,equipment:{...r.equipment}}))];
-  return {phase:'ready',countdownTicks:COUNTDOWN_TICKS,time:0,seed,playerStartOffset:null,falseStartPenalty:0,racers:entrants.map(entrant=>{
-    const performance=machinePerformance(entrant.equipment,entrant.id==='player'?condition:freshCondition);
+  return {phase:'ready',countdownTicks:COUNTDOWN_TICKS,time:0,seed,playerStartOffset:null,falseStartPenalty:0,racers:entrants.map((entry,index)=>{
+    const entrant={...entry,lane:lanes[index]};
+    const performance=machinePerformance(entrant.equipment,entrant.id==='player'?condition:{...freshCondition,motorSeconds:entrant.motorSeconds??0});
     // CPUの個体差もシードから決定する。毎フレームの乱数は使わない。
     const variation=entrant.id==='player'?1:0.97+random()*0.06;
     return {...entrant,performance:{...performance,freeSpeed:performance.freeSpeed*variation,stallForce:performance.stallForce*variation},driving:createDrivingState()};

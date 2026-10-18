@@ -1,5 +1,7 @@
 // 独立したコースデータ。単位はm。描画と走行計算の両方で参照する。
+import { pavedSurface } from './surfaces';
 export const circuit = {
+  surface:pavedSurface,
   name: 'リーフループ', laps: 5, laneWidth: 0.22, lanes: 5,
   radiusX: 4.5, radiusZ: 2.6, asymmetry: 0.45, samples: 720,
 };

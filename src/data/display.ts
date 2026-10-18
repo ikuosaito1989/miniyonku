@@ -1,8 +1,10 @@
 export function compactDevice(){return typeof window!=='undefined'&&(matchMedia('(pointer: coarse)').matches||innerWidth<=720);}
-// スマホは画面サイズに合わせて描画し、GPU負荷を長辺1280px・DPR2までに制限する。
+export const shopRenderOptions={pixelArt:false,roundPixels:false,antialias:true,antialiasGL:true} as const;
+// 実ピクセルに合わせつつDPR・長辺・総ピクセル数でGPU負荷を制限する。
+export const raceRenderLimits={desktop:{edge:2560,pixels:2560*1440},mobile:{edge:1920,pixels:1920*1080},dpr:2} as const;
 export function raceRenderSize(compact:boolean,width:number,height:number,dpr=1){
-  const w=Math.max(1,width),h=Math.max(1,height);
-  if(!compact)return {width:Math.max(1,Math.round(288*w/h)),height:288};
-  const scale=Math.min(Math.max(1,dpr),2,1280/Math.max(w,h));
+  const dimension=(value:number)=>Number.isFinite(value)?Math.max(1,value):1;
+  const w=dimension(width),h=dimension(height),limits=compact?raceRenderLimits.mobile:raceRenderLimits.desktop;
+  const scale=Math.min(dimension(dpr),raceRenderLimits.dpr,limits.edge/Math.max(w,h),Math.sqrt(limits.pixels/(w*h)));
   return {width:Math.max(1,Math.round(w*scale)),height:Math.max(1,Math.round(h*scale))};
 }

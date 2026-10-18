@@ -1,19 +1,18 @@
 import type { Part } from './parts';
+import { bodies } from './bodies';
 
 export interface PartAppearance { color:string; accent:string; detail:number; mark:string }
 export const partAppearances:Record<string,PartAppearance>={
-  'body-entry':{color:'#7bc7ad',accent:'#f3f5df',detail:1,mark:'LEAF-L'},
+  ...Object.fromEntries(bodies.map(body=>[body.id,{color:body.color,accent:'#edf3de',detail:body.grade,mark:body.className}])),
   'battery-entry':{color:'#9bcde4',accent:'#4b7e91',detail:1,mark:'PLUS'},
   'shaft-entry':{color:'#c8d3dc',accent:'#66889c',detail:0,mark:'LIGHT'},
   'terminal-entry':{color:'#c5dfe3',accent:'#7098a1',detail:0,mark:'CONTACT'},
   'motor-apex':{color:'#c8b3dc',accent:'#9877d9',detail:5,mark:'APEX'},
-  'body-stream':{color:'#ef795a',accent:'#fff1ce',detail:1,mark:'STREAM'},
-  'body-arrow':{color:'#6cbde5',accent:'#d5f5ff',detail:2,mark:'ARROW'},
-  'body-manta':{color:'#a99cdb',accent:'#eee7ff',detail:3,mark:'MANTA'},
   'chassis-basic':{color:'#45586a',accent:'#95a8b3',detail:1,mark:'K1'},
   'chassis-light':{color:'#839ca7',accent:'#d8e6eb',detail:2,mark:'K1-L'},
   'chassis-low':{color:'#585273',accent:'#b3a5d3',detail:3,mark:'K2'},
   'battery-basic':{color:'#abbcc8',accent:'#46617b',detail:1,mark:'BASIC'},
+  'battery-recharge':{color:'#8bd5b5',accent:'#306d63',detail:1,mark:'REUSE'},
   'battery-power':{color:'#edb858',accent:'#a0473d',detail:2,mark:'POWER'},
   'battery-endurance':{color:'#7ad3b5',accent:'#2a6d70',detail:3,mark:'LONG'},
   'wheel-basic':{color:'#d7dbd2',accent:'#567891',detail:5,mark:'5 SPOKE'},

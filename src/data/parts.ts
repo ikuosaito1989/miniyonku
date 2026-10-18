@@ -1,21 +1,20 @@
 import { partLevels } from './progression';
+import { bodies } from './bodies';
 export type Category = 'body' | 'chassis' | 'battery' | 'accessory' | 'wheel' | 'motor' | 'gear' | 'tire' | 'roller' | 'shaft' | 'terminal';
 export const categories: Record<Category, string> = { body:'ボディ', chassis:'シャーシ', motor: 'モーター', gear: 'ギア', battery:'電池', tire: 'タイヤ', wheel:'ホイール', roller: 'ローラー', shaft: 'シャフト', terminal: 'ターミナル', accessory:'その他' };
 export interface Part { id: string; level:number; category: Category; name: string; price: number; description: string; specs: Record<string, number>; performance: string }
 type PartDefinition=Omit<Part,'level'>;
 const definitions: PartDefinition[] = [
-  {id:'body-entry',category:'body',name:'リーフストリーム・ライト',price:550,description:'入門カウルを少し軽量化したステップアップ仕様。',specs:{weight:12,drag:0.98,stability:1},performance:'12 g / 空気抵抗 ×0.98 / 安定性 ×1.00'},
+  ...bodies.map((body):PartDefinition=>({id:body.id,category:'body',name:body.name,price:body.price,description:`${body.className}：${body.description}`,specs:{weight:body.weight,drag:body.drag,stability:body.cornering,roughGrip:body.roughGrip,roughResistance:body.roughResistance},performance:`${body.weight} g / 空気抵抗 ×${body.drag.toFixed(2)} / 旋回 ×${body.cornering.toFixed(2)} / 悪路接地 ×${body.roughGrip.toFixed(2)} / 悪路抵抗 ×${body.roughResistance.toFixed(2)}`})),
   {id:'battery-entry',category:'battery',name:'プラスセル',price:250,description:'初めての強化に適したバランス型電池2本。',specs:{weight:42,power:1.04,endurance:110},performance:'2本 42 g / 出力 ×1.04 / 持続係数110秒'},
   {id:'shaft-entry',category:'shaft',name:'ライトスチールシャフト',price:250,description:'標準シャフトより少し軽い入門用。',specs:{weight:5},performance:'重量 5 g'},
   {id:'terminal-entry',category:'terminal',name:'高接触ターミナル',price:300,description:'接触を改善した入門用端子。',specs:{weight:2,efficiency:0.91},performance:'伝達効率 91% / 2 g'},
   {id:'motor-apex',category:'motor',name:'アペックス・プロト',price:8000,description:'将来の上位店向け、最高段階の試作モーター。',specs:{rpm:28000,torque:1.8,weight:19},performance:'28,000 rpm / トルク 1.8 mN·m / 19 g'},
-  {id:'body-stream',category:'body',name:'リーフストリーム',price:400,description:'細いノーズを持つ入門用カウル。',specs:{weight:13,drag:1,stability:1},performance:'13 g / 空気抵抗 ×1.00 / 安定性 ×1.00'},
-  {id:'body-arrow',category:'body',name:'アークアロー',price:950,description:'スリムな高速仕様。軽いがコーナーでは慎重に。',specs:{weight:10,drag:0.88,stability:0.97},performance:'10 g / 空気抵抗 ×0.88 / 安定性 ×0.97'},
-  {id:'body-manta',category:'body',name:'ミストマンタ',price:900,description:'幅広いカウルが姿勢を支える。',specs:{weight:16,drag:1.08,stability:1.07},performance:'16 g / 空気抵抗 ×1.08 / 安定性 ×1.07'},
   {id:'chassis-basic',category:'chassis',name:'K1 ベーシック',price:450,description:'扱いやすい標準シャーシ。',specs:{weight:20,efficiency:1,stability:1},performance:'20 g / 駆動効率 ×1.00 / 安定性 ×1.00'},
   {id:'chassis-light',category:'chassis',name:'K1 ライト',price:1000,description:'肉抜きで軽量化。加速重視の設計。',specs:{weight:16,efficiency:1.02,stability:0.97},performance:'16 g / 駆動効率 ×1.02 / 安定性 ×0.97'},
   {id:'chassis-low',category:'chassis',name:'K2 ローセンター',price:1100,description:'低重心でコーナーの安定性を高める。',specs:{weight:23,efficiency:0.98,stability:1.08},performance:'23 g / 駆動効率 ×0.98 / 安定性 ×1.08'},
   {id:'battery-basic',category:'battery',name:'ベーシックセル',price:150,description:'出力は控えめだが軽い入門用電池2本。',specs:{weight:40,power:1,endurance:90},performance:'2本 40 g / 出力 ×1.00 / 持続係数90秒'},
+  {id:'battery-recharge',category:'battery',name:'リチャージセル',price:0,description:'最初から持っている救済用の充電電池2本。残量は減らず、交換・充電の費用も不要。通常電池より出力が少し弱い。非売品。',specs:{weight:40,power:.95,endurance:90,consumption:0},performance:'2本 40 g / 出力 ×0.95 / 残量100%固定・充電不要 / 非売品'},
   {id:'battery-power',category:'battery',name:'スパークセル',price:450,description:'高出力の短距離向け電池2本。後半の電圧低下に注意。',specs:{weight:45,power:1.12,endurance:55},performance:'2本 45 g / 出力 ×1.12 / 持続係数55秒'},
   {id:'battery-endurance',category:'battery',name:'ロングランセル',price:650,description:'出力低下の緩やかな長距離向け電池2本。',specs:{weight:43,power:1.02,endurance:180},performance:'2本 43 g / 出力 ×1.02 / 持続係数180秒'},
   {id:'wheel-basic',category:'wheel',name:'スタンダード5スポーク',price:250,description:'タイヤとは別に交換するホイール4本セット。',specs:{weight:6,diameter:17,cornerDrag:1},performance:'4本 6 g / リム径17 mm / コーナー抵抗 ×1.00'},

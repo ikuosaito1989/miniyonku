@@ -17,7 +17,7 @@ test('5レーンにプレイヤーとCPU4台を重複なく配置し、操作前
   const race=createRaceState(starterEquipment);
   assert.equal(circuit.lanes,5);assert.equal(race.racers.length,5);
   assert.equal(new Set(race.racers.map(r=>r.lane)).size,5);
-  assert.equal(race.racers.find(r=>r.id==='player')?.lane,2);
+  assert.ok(race.racers.every(r=>r.lane>=0&&r.lane<5));
   assert.equal(stepRace(race),race);
 });
 test('3→2→1を各1秒表示し、3秒が経つまで全車の時計・距離・速度を止める',()=>{
@@ -48,6 +48,16 @@ test('同じ装備・シードのレース結果は再現可能。再レース�
   assert.notDeepEqual(run(12345).racers.map(r=>r.driving),run(54321).racers.map(r=>r.driving));
   const reset=createRaceState(starterEquipment);assert.equal(reset.phase,'ready');assert.equal(reset.time,0);
   for(const r of reset.racers){assert.equal(r.driving.status,'ready');assert.equal(r.driving.distance,0);}
+});
+test('シードで開始レーンを抽選し、5レーン全てが選ばれる。同じシードなら配置も同じ',()=>{
+  const visited=new Set<number>();
+  for(let seed=1;seed<=100;seed++){
+    const race=createRaceState(starterEquipment,seed*0x9e3779b1);
+    visited.add(race.racers[0].lane);
+    assert.equal(new Set(race.racers.map(r=>r.lane)).size,5);
+    assert.deepEqual(race,createRaceState(starterEquipment,seed*0x9e3779b1));
+  }
+  assert.equal(visited.size,5);
 });
 test('同じ装備でも外側レーンは内側より長い距離を走る',()=>{
   const performance=machinePerformance(starterEquipment);

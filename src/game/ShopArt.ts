@@ -4,7 +4,7 @@ import { circuit } from '../data/circuit';
 import { story } from '../data/story';
 
 export type Facing='down'|'up'|'left'|'right';
-export type PersonKind='player'|'owner'|'rival';
+export type PersonKind='player'|'owner'|'rival'|'guide'|'mechanic';
 const ink=0x393549;
 function rect(g:Phaser.GameObjects.Graphics,x:number,y:number,w:number,h:number,color:number){g.fillStyle(color).fillRect(Math.round(x),Math.round(y),w,h);}
 function label(scene:Phaser.Scene,x:number,y:number,text:string,size=10,color='#f5ead0',depth=0){return scene.add.text(x,y,text,{fontFamily:'"Noto Sans JP", monospace',fontSize:`${size}px`,color,resolution:2}).setDepth(depth);}
@@ -55,7 +55,20 @@ function kitBox(g:Phaser.GameObjects.Graphics,x:number,y:number,w:number,h:numbe
 
 export function drawShopFixture(scene:Phaser.Scene,f:Fixture){
   const g=scene.add.graphics().setDepth(f.y+f.h);const {x,y,w,h}=f;
+  if(f.kind==='bookshelf'){
+    rect(g,x,y,w,h,0x594c49);rect(g,x+4,y+4,w-8,h-8,0x887054);
+    for(let row=0;row<2;row++)for(let i=0;i<12;i++){
+      const bx=x+8+i*14,by=y+6+row*19;
+      rect(g,bx,by,10,16,[0x8f4d52,0x4d7885,0xb69c5a,0x6d8666][i%4]);rect(g,bx+2,by+3,6,2,0xe8d7b2);
+    }
+    rect(g,x+3,y+23,w-6,3,0xc4a47b);label(scene,x+8,y-13,'セッティングの本・全6冊',8,'#4c4d4e',f.y+f.h+1);return;
+  }
   rect(g,x+5,y+h-2,w+3,9,0x8c806a);rect(g,x+9,y+h+7,w-4,3,0xa29379);
+  if(f.kind==='board'){
+    rect(g,x,y,w,h,0x70553c);rect(g,x+2,y+2,w-4,h-4,0xd4b568);rect(g,x+4,y+4,w-8,h-8,0x252e45);
+    label(scene,x+5,y+6,'熟練度表',6,'#fff1a7',f.y+f.h+1);
+    rect(g,x+6,y+h-9,w-12,1,0xd4b568);return;
+  }
   if(f.kind==='plant'){
     rect(g,x+10,y+27,25,17,0x935a4b);rect(g,x+8,y+25,29,5,0xc08162);rect(g,x+13,y+30,3,11,0xc38b67);rect(g,x+12,y+23,20,3,0x4c493f);
     for(let i=0;i<9;i++){const px=x+5+(i*11)%29,py=y+3+(i*7)%22;rect(g,px,py,9,5,0x456958);rect(g,px+2,py-2,5,8,0x5f8b60);rect(g,px+2,py,3,2,0x89a46c);}return;
@@ -100,14 +113,14 @@ export function drawShopFixture(scene:Phaser.Scene,f:Fixture){
 }
 
 export function createPeopleTextures(scene:Phaser.Scene){
-  for(const kind of ['player','owner','rival'] as PersonKind[])for(const direction of ['down','up','left','right'] as Facing[])for(let frame=0;frame<4;frame++){
+  for(const kind of ['player','owner','rival','guide','mechanic'] as PersonKind[])for(const direction of ['down','up','left','right'] as Facing[])for(let frame=0;frame<4;frame++){
     const key=`person-${kind}-${direction}-${frame}`;
     if(scene.textures.exists(key))continue;
     const texture=scene.textures.createCanvas(key,24,32)!;const ctx=texture.context;
     const p=(x:number,y:number,w:number,h:number,color:string)=>{ctx.fillStyle=color;ctx.fillRect(x,y,w,h);};
     const skin='#edc5a2',shade='#c39076',hair=kind==='owner'?'#55545d':'#343443';
-    const shirt=kind==='player'?'#477f9e':kind==='owner'?'#777c69':'#ab6757';
-    const light=kind==='player'?'#6aa7b8':kind==='owner'?'#a4a68a':'#cf9680';
+    const shirt=kind==='guide'?'#91659a':kind==='mechanic'?'#456e71':kind==='player'?'#477f9e':kind==='owner'?'#777c69':'#ab6757';
+    const light=kind==='guide'?'#c39bc8':kind==='mechanic'?'#79aba2':kind==='player'?'#6aa7b8':kind==='owner'?'#a4a68a':'#cf9680';
     const leg=frame===1?1:frame===3?-1:0;
     // 1ドット輪郭、髪の段差、頬・袖・靴まで描く24×32の原画。
     p(5,28,15,3,'#2e3543');p(6,24,5,5+leg,'#42495e');p(14,24,5,5-leg,'#42495e');p(6,29+leg,6,2,'#272e3d');p(14,29-leg,6,2,'#272e3d');
@@ -126,6 +139,8 @@ export function createPeopleTextures(scene:Phaser.Scene){
       if(direction==='down'){p(9,18,7,3,'#e5e0c4');p(9,18,2,3,'#e6ad64');}
     }
     if(kind==='owner'){p(8,18,10,7,'#9d8362');p(9,19,8,1,'#c8ae7b');if(direction==='down'){p(7,10,5,3,'#5b5c62');p(14,10,5,3,'#5b5c62');p(12,11,2,1,'#5b5c62');p(8,11,3,1,'#b8c9c5');p(15,11,3,1,'#b8c9c5');}}
-    texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+    if(kind==='guide'){p(17,5,4,12,'#63444c');p(17,7,3,2,'#e7ad86');}
+    if(kind==='mechanic'){p(8,18,9,7,'#bec5af');p(10,19,2,5,'#507976');}
+    texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
   }
 }

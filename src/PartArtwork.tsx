@@ -1,6 +1,7 @@
 import { useId } from 'react';
 import type { Part } from './data/parts';
 import { partAppearance } from './data/partAppearance';
+import { BodyArtwork } from './BodyArtwork';
 import './part-artwork.css';
 
 // 外部画像ではなく独自のベクター原画。カテゴリ内もIDごとに形状・素材を描き分ける。
@@ -12,7 +13,7 @@ export function PartArtwork({part}:{part:Part}){
     <defs><linearGradient id={`${id}-metal`} x1="0" y1="0" x2=".6" y2="1"><stop stopColor="#f1f6f7"/><stop offset=".34" stopColor={a.color}/><stop offset=".55" stopColor="#f6fbfd"/><stop offset="1" stopColor="#657b92"/></linearGradient><linearGradient id={`${id}-rubber`} x2="0" y2="1"><stop stopColor={a.color}/><stop offset="1" stopColor="#111827"/></linearGradient></defs>
     <ellipse cx="82" cy="84" rx="54" ry="7" fill="#020b1a" opacity=".25"/>
     <g stroke="#22374b" strokeWidth="1.5" strokeLinejoin="round">
-    {c==='body'&&<g transform={a.detail===2?'translate(16 0) scale(.8 1)':a.detail===3?'translate(-7 0) scale(1.1 1)':undefined}><path d="M25 62Q25 42 53 36L79 21Q90 17 111 28L129 40Q137 50 112 58L80 76Q67 83 53 72Z" fill={a.color}/><path d="M61 54Q69 35 87 30Q105 30 101 41L80 57Z" fill="#173a55"/><path d="M32 60L63 68 83 61M84 24l42 15" stroke={a.accent} strokeWidth="4"/><path d="M71 64l-5 9-16-7" fill={a.accent}/></g>}
+    {c==='body'&&<BodyArtwork id={part.id} color={a.color}/>}
     {c==='chassis'&&<g><path d="M25 62L78 21 136 43 83 82ZM25 62v6l58 21 53-40v-6" fill={a.color}/><path d="M42 58L80 30 119 45 82 73Z" fill="#112840"/>{[0,1].map(i=><path key={i} d={`M${55+i*20} ${54+i*6}l26-19 11 4-26 20Z`} fill={a.accent}/>)}{a.detail===2&&[0,1,2].map(i=><ellipse key={i} cx={47+i*17} cy={64+i*6} rx="5" ry="2" fill="#0a1c31"/>)}<path d="M22 54L42 65M112 30l26 11" stroke={a.accent} strokeWidth="4"/></g>}
     {c==='battery'&&<g transform="rotate(-18 80 50)">{[0,30].map(y=><g key={y}><path d={`M33 ${24+y}h91v21H33Z`} fill={a.color}/><ellipse cx="33" cy={34.5+y} rx="6" ry="10.5" fill={a.accent}/><ellipse cx="124" cy={34.5+y} rx="6" ry="10.5" fill={metal}/><path d={`M125 ${31+y}h8v7h-8`} fill={metal}/><text x="75" y={39+y} textAnchor="middle" fontFamily="monospace" fontSize="9" fill="#173049" stroke="none">{a.mark} +</text></g>)}</g>}
     {c==='wheel'&&<g><ellipse cx="89" cy="54" rx="33" ry="27" fill={a.accent}/><ellipse cx="73" cy="47" rx="33" ry="27" fill={a.color}/><ellipse cx="73" cy="47" rx="26" ry="21" fill="#1c3550"/>{Array.from({length:a.detail},(_,i)=><path key={i} transform={`rotate(${360*i/a.detail} 73 47)`} d="M69 41L64 26 77 26 77 41Z" fill={a.color}/>)}<ellipse cx="73" cy="47" rx="9" ry="7" fill={metal}/><ellipse cx="73" cy="47" rx="3" ry="3" fill="#10243c"/>{a.detail===3&&<ellipse cx="73" cy="47" rx="14" ry="11" fill="none" stroke={a.accent} strokeWidth="3"/>}</g>}
