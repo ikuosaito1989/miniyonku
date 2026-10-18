@@ -84,6 +84,7 @@ kbd { font-family: inherit; font-size: 10px; padding: 2px 5px; border: 1px solid
 .parts article { display: flex; gap: 16px; align-items: center; padding: 19px 0; border-bottom: 1px solid #e0e2d4; }
 .part-icon { background: #e5e7db; border-radius: 7px; width: 65px; height: 65px; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #9b7e47; font-size: 30px; line-height: 1; }
 .part-icon small { font-size: 8px; letter-spacing: 2px; color: #7f8c73; margin-top: 7px; }
+.tabs { flex-wrap:wrap; }
 .part-info { flex: 1; min-width: 0; }
 .part-info h3 { font-size: 14px; margin: 0 0 6px; }
 .part-info p { font-size: 11px; color: #7d8974; margin: 0 0 7px; }

@@ -1,0 +1,4 @@
+.part-artwork{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 2px 1px #06122340)}
+.part-icon:has(.part-artwork){width:94px;height:76px;background:linear-gradient(145deg,#233f59,#14253c);border:2px ridge #a7bdcb;border-radius:2px;padding:3px}
+.setting-options .part-cards .part-artwork{width:100%;height:90px}
+@media(max-width:600px){.part-icon:has(.part-artwork){display:flex;width:62px;height:60px}}

@@ -93,6 +93,7 @@ export class ShopScene extends Phaser.Scene {
     if(useGame.getState().nearby!==nearby)useGame.setState({nearby});
     if(action&&target){
       if('kind' in target&&target.kind==='track')useGame.getState().startTrial();
+      else if('kind' in target&&target.kind==='bench')useGame.getState().openSetting();
       else useGame.getState().talk(target.speaker,target.text,target.shopAfter);
     }
   }

@@ -1,6 +1,7 @@
 import type { Equipment } from '../data/machine';
 import { rivals, type Entrant } from '../data/rivals';
 import { createDrivingState, FIXED_STEP, machinePerformance, startDriving, stepDriving, type DrivingState, type Performance } from './driving';
+import { freshCondition, type MachineCondition } from './condition';
 
 export interface Racer extends Entrant { driving: DrivingState; performance: Performance; }
 export interface RaceState {
@@ -13,15 +14,15 @@ export interface RaceState {
   racers: Racer[];
 }
 export const COUNTDOWN_TICKS=Math.round(3/FIXED_STEP);
-export function createRaceState(equipment:Equipment,seed=0x5eed):RaceState {
+export function createRaceState(equipment:Equipment,seed=0x5eed,condition:MachineCondition=freshCondition):RaceState {
   let randomState=seed>>>0||1;
   const random=()=>{randomState^=randomState<<13;randomState^=randomState>>>17;randomState^=randomState<<5;return (randomState>>>0)/4294967296;};
   const entrants:Entrant[]=[{id:'player',name:'あなた',lane:2,color:0xe85438,equipment:{...equipment}},...rivals.map(r=>({...r,equipment:{...r.equipment}}))];
   return {phase:'ready',countdownTicks:COUNTDOWN_TICKS,time:0,seed,playerStartOffset:null,falseStartPenalty:0,racers:entrants.map(entrant=>{
-    const performance=machinePerformance(entrant.equipment);
+    const performance=machinePerformance(entrant.equipment,entrant.id==='player'?condition:freshCondition);
     // CPUの個体差もシードから決定する。毎フレームの乱数は使わない。
-    const condition=entrant.id==='player'?1:0.97+random()*0.06;
-    return {...entrant,performance:{...performance,freeSpeed:performance.freeSpeed*condition,stallForce:performance.stallForce*condition},driving:createDrivingState()};
+    const variation=entrant.id==='player'?1:0.97+random()*0.06;
+    return {...entrant,performance:{...performance,freeSpeed:performance.freeSpeed*variation,stallForce:performance.stallForce*variation},driving:createDrivingState()};
   })};
 }
 export function startRace(state:RaceState):RaceState {
