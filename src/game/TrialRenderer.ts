@@ -1,4 +1,7 @@
 import * as THREE from 'three';
+import { buildMachineModel } from './MachineModel';
+import { freshCondition, type MachineCondition } from './condition';
+import { compactDevice, raceRenderSize } from '../data/display';
 import { circuit, circuitLength, laneOffset, sampleCircuit, sampleLanePath, startDistance } from '../data/circuit';
 import type { Equipment } from '../data/machine';
 import { FIXED_STEP } from './driving';
@@ -26,9 +29,9 @@ export class TrialRenderer {
   private startShotBlend = 1;
   private finishPresentation = createFinishPresentation();
 
-  constructor(private host: HTMLElement, private equipment: Equipment, private report: (state: RaceState) => void, private reportFinish:(state:FinishPresentation)=>void) {
-    this.state=createRaceState(equipment);
-    this.renderer=new THREE.WebGLRenderer({antialias:false,alpha:false});
+  constructor(private host: HTMLElement, private equipment: Equipment, private report: (state: RaceState) => void, private reportFinish:(state:FinishPresentation)=>void, private condition:MachineCondition=freshCondition, private seed=0x5eed) {
+    this.state=createRaceState(equipment,seed,condition);
+    this.renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});
     this.renderer.setPixelRatio(1);
     this.renderer.setClearColor(0x315b2a);
     this.renderer.outputColorSpace=THREE.SRGBColorSpace;
@@ -41,7 +44,7 @@ export class TrialRenderer {
     const ground=new THREE.Mesh(new THREE.PlaneGeometry(100,100),new THREE.MeshLambertMaterial({map:grass}));
     ground.rotation.x=-Math.PI/2;ground.position.y=-0.025;this.scene.add(ground);
     this.buildTrack();this.buildStart();
-    for(const racer of this.state.racers){const car=this.buildCar(racer.color);this.cars.set(racer.id,car);this.scene.add(car);}
+    for(const racer of this.state.racers){const car=buildMachineModel(racer.color,racer.equipment);this.cars.set(racer.id,car);this.scene.add(car);}
     this.playerMarker.rotation.z=Math.PI;this.scene.add(this.playerMarker);
     this.observer=new ResizeObserver(()=>this.resize());this.observer.observe(host);this.resize();
     this.report({...this.state});this.reportFinish(this.finishPresentation);this.frame=requestAnimationFrame(this.animate);
@@ -56,15 +59,18 @@ export class TrialRenderer {
   }
   setCamera(mode:TrialCamera){this.cameraMode=mode;}
   restart(){
-    this.state=createRaceState(this.equipment);this.accumulator=0;this.lastTime=0;this.lastReport=-1;this.cameraMode='broadcast';this.startShotBlend=1;
+    this.state=createRaceState(this.equipment,this.seed,this.condition);this.accumulator=0;this.lastTime=0;this.lastReport=-1;this.cameraMode='broadcast';this.startShotBlend=1;
     this.finishPresentation=createFinishPresentation();this.reportFinish(this.finishPresentation);
     this.report({...this.state});
   }
   private resize(){
     const width=Math.max(1,this.host.clientWidth),height=Math.max(1,this.host.clientHeight);
     this.aspect=width/height;
-    // 288走査線の映像を最近傍で拡大し、3Dでもドットの輪郭を残す。
-    this.renderer.setSize(Math.round(288*this.aspect),288,false);
+    const compact=compactDevice();
+    const resolution=raceRenderSize(compact,width,height,window.devicePixelRatio);
+    this.host.dataset.renderStyle='smooth';
+    this.renderer.domElement.style.imageRendering='auto';
+    this.renderer.setSize(resolution.width,resolution.height,false);
   }
   private grassTexture(){
     const canvas=document.createElement('canvas');canvas.width=64;canvas.height=64;
@@ -133,27 +139,6 @@ export class TrialRenderer {
     block(0.025,0.15,0.025,-0.11,0.25,0,0xefc09a);block(0.12,0.08,0.008,-0.17,0.35,0,0xf8df79);
     group.add(attendant);this.scene.add(group);
   }
-  private buildCar(color:number){
-    const car=new THREE.Group();
-    const body=new THREE.MeshLambertMaterial({color,flatShading:true});
-    const dark=new THREE.MeshLambertMaterial({color:0x172338});
-    const cream=new THREE.MeshLambertMaterial({color:0xf5edcb});
-    const glass=new THREE.MeshLambertMaterial({color:0x48c6c4});
-    const box=(w:number,h:number,d:number,x:number,y:number,z:number,material:THREE.Material)=>{
-      const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material);mesh.position.set(x,y,z);car.add(mesh);
-    };
-    box(0.14,0.035,0.29,0,0.055,0,body);box(0.09,0.035,0.11,0,0.085,-0.01,glass);
-    box(0.027,0.012,0.28,0,0.078,0,cream);box(0.18,0.025,0.035,0,0.09,-0.12,body);
-    box(0.22,0.012,0.025,0,0.04,0.13,dark);box(0.22,0.012,0.025,0,0.04,-0.13,dark);
-    box(0.1,0.008,0.04,0,0.079,0.1,cream);
-    for(const x of [-0.085,0.085])for(const z of [-0.085,0.085]){
-      const wheel=new THREE.Mesh(new THREE.CylinderGeometry(0.035,0.035,0.035,8),dark);wheel.rotation.z=Math.PI/2;wheel.position.set(x,0.035,z);car.add(wheel);
-    }
-    for(const x of [-0.105,0.105])for(const z of [-0.13,0.13]){
-      const roller=new THREE.Mesh(new THREE.CylinderGeometry(0.017,0.017,0.012,8),cream);roller.position.set(x,0.05,z);car.add(roller);
-    }
-    car.scale.setScalar(0.85);return car;
-  }
   private updateCamera(){
     const player=this.state.racers.find(r=>r.id==='player')!;
     const p=sampleLanePath(player.driving.distance,player.lane);
@@ -165,7 +150,7 @@ export class TrialRenderer {
     const viewHeight=overview?Math.max(8,12/this.aspect):goalShot?Math.max(raceCamera.finish.height,raceCamera.finish.minWidth/this.aspect):THREE.MathUtils.lerp(runningHeight,startHeight,blend);
     this.camera.left=-viewHeight*this.aspect/2;this.camera.right=viewHeight*this.aspect/2;
     this.camera.top=viewHeight/2;this.camera.bottom=-viewHeight/2;this.camera.updateProjectionMatrix();
-    const start=sampleLanePath(0,player.lane);
+    const start=sampleLanePath(0,(circuit.lanes-1)/2);
     const target=overview?new THREE.Vector3(0,0,0):goalShot?new THREE.Vector3(start.x-start.tangentX*raceCamera.finish.lookBehind,0,start.z-start.tangentZ*raceCamera.finish.lookBehind):new THREE.Vector3(p.x+p.tangentX*raceCamera.running.lookAhead,p.y,p.z+p.tangentZ*raceCamera.running.lookAhead)
       .lerp(new THREE.Vector3(start.x-start.tangentX*raceCamera.start.lookBehind,0,start.z-start.tangentZ*raceCamera.start.lookBehind),blend);
     const offset=new THREE.Vector3(...(goalShot?raceCamera.finish.offset:raceCamera.running.offset));
@@ -193,6 +178,7 @@ export class TrialRenderer {
     this.frame=requestAnimationFrame(this.animate);
   };
   dispose(){
+    this.report({...this.state});
     cancelAnimationFrame(this.frame);this.observer.disconnect();
     this.scene.traverse(object=>{if(object instanceof THREE.Mesh){object.geometry.dispose();for(const material of Array.isArray(object.material)?object.material:[object.material])material.dispose();}});
     for(const texture of this.textures)texture.dispose();

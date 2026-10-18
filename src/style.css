@@ -13,7 +13,11 @@ button { font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparen
 button:focus-visible { outline: 3px solid #d39a38; outline-offset: 3px; }
 .stage { position: relative; width: 100%; height: 100%; isolation: isolate; }
 .world { position: absolute; inset: 0; }
-.world canvas { display: block; image-rendering: pixelated; }
+.world canvas { display: block; image-rendering: auto; }
+.save-startup{display:grid;place-items:center;padding:24px;background:#172b31;color:#f3ead6;text-align:center}.save-startup section{max-width:640px}.save-startup button{margin:8px;padding:12px 18px;border:1px solid #9eb8ae;background:#315d56;color:#fff;border-radius:6px}.save-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:12px;margin-top:12px}.save-controls p{margin:0}.save-controls button{min-height:44px;padding:8px 14px}.save-warning{position:absolute;z-index:60;top:max(8px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);width:max-content;max-width:92%;padding:10px 14px;border:1px solid #e8bd73;background:#372e1feb;color:#fff0ca;font-size:12px;box-shadow:0 3px 12px #0006}.save-warning button{margin-left:10px;min-height:40px;padding:6px 10px}
+.touch-controls{display:none}
+.proficiency-ranks{margin-top:14px}.proficiency-ranks summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-size:12px;color:#ffe499}.proficiency-ranks summary::before{content:'＋ ';margin-right:6px}.proficiency-ranks[open] summary::before{content:'− '}
+.proficiency-scrim{z-index:21;background:#101a36a8}.proficiency-board{width:min(100%,540px);max-height:100%;overflow:auto;background:#131e39;color:#ede6c7;border:5px ridge #c7aa65;padding:20px;font-family:monospace;box-shadow:5px 7px #10172d88}.proficiency-board header{display:flex;align-items:center;justify-content:space-between;gap:12px}.proficiency-board h2{margin:5px 0;color:#ffe499;font-size:23px;letter-spacing:4px}.proficiency-board header button{min-height:44px;border:2px solid #c7aa65;background:#263750;color:#fff0c4;padding:8px 12px}.proficiency-board small{font-size:10px;line-height:1.8;color:#b7c7d8}.proficiency-self{margin:14px 0;padding:12px;background:#233b54;border:1px solid #8f987e}.proficiency-self>span{font-size:12px}.proficiency-self strong{float:right;color:#ffe499;font-size:17px}.proficiency-self p{font-size:12px;line-height:1.8;margin:8px 0}.proficiency-meter{height:8px;background:#101c30}.proficiency-meter i{display:block;height:100%;background:#edcd78}.proficiency-board table{width:100%;border-collapse:collapse;font-size:13px}.proficiency-board th{text-align:left;color:#b5c7d4;font-size:10px;padding:6px}.proficiency-board td{padding:7px 6px;border-top:1px solid #3e5064}.proficiency-board th:last-child,.proficiency-board td:last-child{text-align:right}.proficiency-current{background:#4b4a41;color:#ffe499}.proficiency-guide{font-size:11px;line-height:1.9;color:#d1d9cf;margin:12px 0 6px}
 .hud {
   position: absolute;
   inset: max(20px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) auto max(24px, env(safe-area-inset-left));
@@ -84,6 +88,8 @@ kbd { font-family: inherit; font-size: 10px; padding: 2px 5px; border: 1px solid
 .parts article { display: flex; gap: 16px; align-items: center; padding: 19px 0; border-bottom: 1px solid #e0e2d4; }
 .part-icon { background: #e5e7db; border-radius: 7px; width: 65px; height: 65px; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #9b7e47; font-size: 30px; line-height: 1; }
 .part-icon small { font-size: 8px; letter-spacing: 2px; color: #7f8c73; margin-top: 7px; }
+.tabs { flex-wrap:wrap; }
+.stock-level{font-size:12px;color:#526f62;margin:4px 0 12px}.part-level{font-size:11px;color:#467565;background:#e3ead7;padding:2px 5px;border-radius:3px;white-space:nowrap}
 .part-info { flex: 1; min-width: 0; }
 .part-info h3 { font-size: 14px; margin: 0 0 6px; }
 .part-info p { font-size: 11px; color: #7d8974; margin: 0 0 7px; }

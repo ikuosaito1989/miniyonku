@@ -5,6 +5,9 @@ import { countdownNumber, createRaceState, officialTime, rankRacers } from './ga
 import { circuit, circuitLength, sampleLanePath } from './data/circuit';
 import './trial.css';
 import { createFinishPresentation } from './game/finishPresentation';
+import { equippedCondition, batteryLabel, motorFactor } from './game/condition';
+import { RaceRanking } from './RaceRanking';
+import { nextShopRace } from './data/shopHints';
 
 function clock(seconds:number){
   const centiseconds=Math.floor(seconds*100);
@@ -30,15 +33,24 @@ export default function TrialView(){
   const renderer=useRef<TrialRenderer|null>(null);
   const equipment=useGame(s=>s.equipment);
   const close=useGame(s=>s.close);
-  const [state,setState]=useState(()=>createRaceState(equipment));
+  const prize=useGame(s=>s.lastPrize);
+  const money=useGame(s=>s.money);
+  const qualificationNotice=useGame(s=>s.qualificationNotice);
+  const [state,setState]=useState(()=>createRaceState(equipment,useGame.getState().raceSeed));
   const [finish,setFinish]=useState(createFinishPresentation);
   const [attempt,setAttempt]=useState(0);
   const [overview,setOverview]=useState(false);
   const [error,setError]=useState('');
 
   useEffect(()=>{
-    setState(createRaceState(equipment));setFinish(createFinishPresentation());setError('');setOverview(false);
-    try{renderer.current=new TrialRenderer(host.current!,equipment,setState,setFinish);}
+    const stored=useGame.getState();
+    const condition=equippedCondition(equipment,stored.units,stored.selectedUnits);
+    setState(createRaceState(equipment,stored.raceSeed,condition));setFinish(createFinishPresentation());setError('');setOverview(false);
+    const raceAttempt=useGame.getState().raceAttempt;
+    try{renderer.current=new TrialRenderer(host.current!,equipment,race=>{
+      useGame.getState().settleRace(raceAttempt,race);
+      setState(race);
+    },setFinish,condition,stored.raceSeed);}
     catch{setError('3D表示を開始できませんでした。WebGL対応ブラウザで再試行してください。');}
     return()=>{renderer.current?.dispose();renderer.current=null;};
   },[equipment,attempt]);
@@ -74,11 +86,11 @@ export default function TrialView(){
   const winner=standings.find(r=>r.driving.status==='finished');
   const recentGoal=lastArrival&&lastArrival.age<1.8;
   const retry=()=>{
-    if(renderer.current){renderer.current.restart();setOverview(false);}
-    else setAttempt(n=>n+1);
+    useGame.getState().startTrial();
+    setAttempt(n=>n+1);
   };
   const message=error||(showTally?'全マシンの走行が終了！ フライング加算も含めて、公式記録を集計しています。':
-    showResults?(driving.status==='out'?'今回はコースアウト。次は完走を目指そう！':`最終結果！ あなたは ${position}位。公式記録は ${clock(playerTime)}${penaltyText?`（${penaltyText}込み）`:''}。`):
+    showResults?(driving.status==='out'?(driving.stopReason==='battery'?'今回は電池切れ。電池を交換しよう！':'今回はコースアウト。次は完走を目指そう！'):`最終結果！ あなたは ${position}位。公式記録は ${clock(playerTime)}${penaltyText?`（${penaltyText}込み）`:''}。`):
     ready?'まずは３カウント開始。GOが出たら、もう一度ボタンを押して自分のマシンを発進させよう！':
     counting?(state.falseStartPenalty>0?`${penaltyText}。GOより早く発進した分を記録に加えるよ。`:`${countdownNumber(state)}…… GOまで待とう。今押すとフライングだよ！`):
     waitingForGo?'GO！ きみの操作で発進！ CPUはもう走り出しているよ。':
@@ -86,7 +98,7 @@ export default function TrialView(){
     finished?'全車のゴールを確認！ まもなく最終結果を発表します。':
     finish.stage==='approach'?'いよいよ最終ストレート！ 先頭のマシンがゴールへ飛び込んでくる！':
     driving.status==='finished'?`ゴール！ 記録は ${clock(playerTime)}。ほかのマシンのゴールを待とう。`:
-    driving.status==='out'?'コースアウト！ マシンを回収したよ。ほかのマシンは走行中。':
+    driving.status==='out'?(driving.stopReason==='battery'?'電池切れで停止！ 別の電池に交換しよう。':'コースアウト！ マシンを回収したよ。ほかのマシンは走行中。'):
     state.time<2?'スタート！ GOからの反応時間も記録に含まれるよ。':playerPath.changing?`レーンチェンジ！ ${playerPath.from+1}コースから ${playerPath.to+1}コースへ。５周で全レーンを走るよ。`:`あなたは現在 ${position}位！ 赤いマシンの上の黄色い印が目印だよ。`);
 
   return <section className="trial retro-race" aria-label="5台の3Dレース" data-phase={state.phase} data-finish-stage={finish.stage}>
@@ -94,28 +106,31 @@ export default function TrialView(){
       <button onClick={()=>{renderer.current?.setCamera(overview?'broadcast':'overview');setOverview(!overview);}} aria-pressed={overview}>{overview?'マシンを見る':'コース全体'}</button>
       <button onClick={close}>模型店へ <small>Esc</small></button>
     </nav></header>
+    <RaceRanking race={state}/>
     <div className="race-viewport">
+      <p className="race-rotate-hint">スマホを横向きにすると、コースを広く見渡せます</p>
       <div className="trial-canvas" ref={host}/>
-      <div className="race-scanlines"/>
+      <div className="race-scanlines"/><div className="race-condition">電池 {batteryLabel(player.equipment.battery,player.performance.batterySeconds+driving.time)} ／ モーター {(motorFactor(player.performance.motorSeconds+driving.time)*100).toFixed(1)}%</div>
       {!error&&!showTally&&!showResults&&<><div className="race-lane">{playerPath.changing?`${playerPath.from+1} → ${playerPath.to+1}`:playerPath.lane+1}コース <span>あなた・{playerPath.changing?'レーンチェンジ中':'入門マシン'}</span></div>
         {ready&&<div className="race-start-mark" aria-hidden="true">START<span>▼</span></div>}
         {counting&&<div className="race-countdown" aria-label={`スタートまで ${countdownNumber(state)}`} key={countdownNumber(state)}>{countdownNumber(state)}</div>}
         {state.phase==='running'&&(state.time<1||waitingForGo)&&<div className="race-go" aria-hidden="true">GO!</div>}
         {penaltyText&&<div className="race-penalty" role="note">{penaltyText}</div>}
         {recentGoal&&<div className="race-goal-in">GOAL IN! <span>{lastFinisher?.name}</span></div>}
-        <ol className="race-standings" aria-label={finished?'最終順位':'現在の順位'}>{standings.map((r,i)=><li key={r.id} className={r.id==='player'?'is-player':''}><span>{ready||counting?'—':i+1}</span><i style={{backgroundColor:`#${r.color.toString(16).padStart(6,'0')}`}}/><b>{r.name}</b><small>{r.driving.status==='finished'?clock(officialTime(state,r)):r.driving.status==='out'?'OUT':`${sampleLanePath(r.driving.distance,r.lane).lane+1}コース`}</small></li>)}</ol>
         <div className="race-timing" aria-label="走行状況">{firstFinisher?<><span>TIME <b>{clock(playerTime)}</b></span><span>{finished?'WINNER':'先着TIME'} <b>{clock(officialTime(state,finished?winner!:firstFinisher))}</b></span></>:<><span>POS <b>{ready||counting?'—':position} / 5</b></span><span>LAP <b>{Math.min(circuit.laps,Math.floor(driving.distance/circuitLength)+1)} / {circuit.laps}</b></span><span>TIME <b>{clock(playerTime)}</b></span><span className="race-speed"><b>{(driving.speed*3.6).toFixed(1)}</b> km/h</span></>}</div>
       </>}
       {showTally&&<section className="race-tally" aria-label="記録集計中"><span>TINY DRIVE</span><h3>レース記録を集計中…</h3><p>公式タイムで最終順位を確定します</p></section>}
       {showResults&&<section className="race-results" aria-label="レース最終結果"><p className="result-eyebrow">KOMOREBI MODEL SHOP</p><h3>{circuit.name} <span>レース結果</span></h3>
         {winner&&<p className="result-winner">WINNER <strong>{winner.name}</strong> <b>{clock(officialTime(state,winner))}</b></p>}
-        <table><thead><tr><th>順位</th><th>マシン</th><th>スタート</th><th>公式タイム</th></tr></thead><tbody>{standings.map((r,i)=><tr key={r.id} className={r.id==='player'?'result-player':''}><td>{r.driving.status==='out'?'—':i+1}</td><td><i style={{backgroundColor:`#${r.color.toString(16).padStart(6,'0')}`}}/>{r.name}</td><td>{r.lane+1}コース</td><td>{r.driving.status==='out'?'COURSE OUT':clock(officialTime(state,r))}</td></tr>)}</tbody></table>
+        <table><thead><tr><th>順位</th><th>マシン</th><th>スタート</th><th>公式タイム</th></tr></thead><tbody>{standings.map((r,i)=><tr key={r.id} className={r.id==='player'?'result-player':''}><td>{r.driving.status==='out'?'—':i+1}</td><td><i style={{backgroundColor:`#${r.color.toString(16).padStart(6,'0')}`}}/>{r.name}</td><td>{r.lane+1}コース</td><td>{r.driving.status==='out'?(r.driving.stopReason==='battery'?'BATTERY EMPTY':'COURSE OUT'):clock(officialTime(state,r))}</td></tr>)}</tbody></table>
         <p className="result-note">{penaltyText?`${penaltyText}を公式タイムに反映済み`:'公式タイムにはGO後の反応時間を含みます'}</p>
+        <p className="result-note" role="status">{prize>0?`${winner?.id==='player'?'優勝賞金':'完走賞'} +${prize}円！`:'今回の賞金はありません。'} 所持金 {money.toLocaleString('ja-JP')}円</p>
+        {qualificationNotice&&<p className="result-note" role="status">初優勝！ {nextShopRace.shopName}のレース参加資格を獲得！ 街・次の店への移動は準備中です。</p>}
       </section>}
     </div>
     <footer className="race-message">
       <div className="race-speaker"><StarterPortrait/><span>コース係</span></div>
-      <div className="race-commentary"><p className="race-phase">{error?'表示エラー':showResults?'最終結果':showTally?'記録集計中':ready?'スタート待機':counting?'スタートまで':waitingForGo?'GO・発進操作待ち':finish.stage==='finish'?'ゴールイン':finish.stage==='approach'?'最終ストレート':'レース中'}</p><p role="status" aria-live="polite">{message}</p><small>{ready?'Z / Enter / Space で３カウント開始':waitingForLaunch?'Z / Enter / Space で発進。GO前の発進は残り秒数を加算。':finished?'練習レース・参加費／賞金なし':penaltyText||'走行は自動です。Esc で模型店に戻れます。'}</small></div>
+      <div className="race-commentary"><p className="race-phase">{error?'表示エラー':showResults?'最終結果':showTally?'記録集計中':ready?'スタート待機':counting?'スタートまで':waitingForGo?'GO・発進操作待ち':finish.stage==='finish'?'ゴールイン':finish.stage==='approach'?'最終ストレート':'レース中'}</p><p role="status" aria-live="polite">{message}</p><small>{ready?'Z / Enter / Space で３カウント開始':waitingForLaunch?'Z / Enter / Space で発進。GO前の発進は残り秒数を加算。':finished?`参加費なし・優勝300円／2〜5位も完走賞${prize>0?'（受取済み）':''}`:penaltyText||'走行は自動です。Esc で模型店に戻れます。'}</small></div>
       <div className="race-commands">
         {ready&&!error?<button className="race-start-button" onClick={start}>▶ カウント開始</button>:null}
         {waitingForLaunch&&!error&&<button className="race-start-button" onClick={start}>{counting?'▶ 発進（早出）':'▶ GO！ 発進'}</button>}
