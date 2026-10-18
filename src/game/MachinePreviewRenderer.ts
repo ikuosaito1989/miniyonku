@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import type { Equipment } from '../data/machine';
 import { buildMachineModel } from './MachineModel';
+import { compactDevice } from '../data/display';
 
 function disposeModel(model:THREE.Group){
   const materials=new Set<THREE.Material>();
@@ -19,7 +20,7 @@ export class MachinePreviewRenderer {
   private pointer:{id:number;x:number}|null=null;
   constructor(private host:HTMLElement){
     this.renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});
-    this.renderer.setClearColor(0x020507);this.renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+    this.renderer.setClearColor(0x020507);this.renderer.setPixelRatio(compactDevice()?1:Math.min(devicePixelRatio,2));
     this.renderer.outputColorSpace=THREE.SRGBColorSpace;
     const canvas=this.renderer.domElement;
     canvas.setAttribute('role','img');canvas.setAttribute('aria-label','装着中のマシンの3Dプレビュー');

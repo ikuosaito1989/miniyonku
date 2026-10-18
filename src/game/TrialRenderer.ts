@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { buildMachineModel } from './MachineModel';
 import { freshCondition, type MachineCondition } from './condition';
+import { compactDevice, raceRenderSize } from '../data/display';
 import { circuit, circuitLength, laneOffset, sampleCircuit, sampleLanePath, startDistance } from '../data/circuit';
 import type { Equipment } from '../data/machine';
 import { FIXED_STEP } from './driving';
@@ -30,7 +31,7 @@ export class TrialRenderer {
 
   constructor(private host: HTMLElement, private equipment: Equipment, private report: (state: RaceState) => void, private reportFinish:(state:FinishPresentation)=>void, private condition:MachineCondition=freshCondition) {
     this.state=createRaceState(equipment,0x5eed,condition);
-    this.renderer=new THREE.WebGLRenderer({antialias:false,alpha:false});
+    this.renderer=new THREE.WebGLRenderer({antialias:compactDevice(),alpha:false});
     this.renderer.setPixelRatio(1);
     this.renderer.setClearColor(0x315b2a);
     this.renderer.outputColorSpace=THREE.SRGBColorSpace;
@@ -65,8 +66,11 @@ export class TrialRenderer {
   private resize(){
     const width=Math.max(1,this.host.clientWidth),height=Math.max(1,this.host.clientHeight);
     this.aspect=width/height;
-    // 288走査線の映像を最近傍で拡大し、3Dでもドットの輪郭を残す。
-    this.renderer.setSize(Math.round(288*this.aspect),288,false);
+    const compact=compactDevice();
+    const resolution=raceRenderSize(compact,width,height,window.devicePixelRatio);
+    this.host.dataset.renderStyle=compact?'smooth':'retro';
+    this.renderer.domElement.style.imageRendering=compact?'auto':'pixelated';
+    this.renderer.setSize(resolution.width,resolution.height,false);
   }
   private grassTexture(){
     const canvas=document.createElement('canvas');canvas.width=64;canvas.height=64;

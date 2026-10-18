@@ -14,6 +14,7 @@ button:focus-visible { outline: 3px solid #d39a38; outline-offset: 3px; }
 .stage { position: relative; width: 100%; height: 100%; isolation: isolate; }
 .world { position: absolute; inset: 0; }
 .world canvas { display: block; image-rendering: pixelated; }
+.touch-controls{display:none}
 .hud {
   position: absolute;
   inset: max(20px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) auto max(24px, env(safe-area-inset-left));
@@ -85,6 +86,7 @@ kbd { font-family: inherit; font-size: 10px; padding: 2px 5px; border: 1px solid
 .part-icon { background: #e5e7db; border-radius: 7px; width: 65px; height: 65px; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #9b7e47; font-size: 30px; line-height: 1; }
 .part-icon small { font-size: 8px; letter-spacing: 2px; color: #7f8c73; margin-top: 7px; }
 .tabs { flex-wrap:wrap; }
+.stock-level{font-size:12px;color:#526f62;margin:4px 0 12px}.part-level{font-size:11px;color:#467565;background:#e3ead7;padding:2px 5px;border-radius:3px;white-space:nowrap}
 .part-info { flex: 1; min-width: 0; }
 .part-info h3 { font-size: 14px; margin: 0 0 6px; }
 .part-info p { font-size: 11px; color: #7d8974; margin: 0 0 7px; }

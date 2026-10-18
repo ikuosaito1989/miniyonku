@@ -6,7 +6,7 @@
   inset: 0;
   z-index: 3;
   display: grid;
-  grid-template-rows: 44px minmax(0, 1fr) clamp(150px, 23vh, 205px);
+  grid-template-rows: 44px 100px minmax(0, 1fr) clamp(150px, 23vh, 205px);
   color: var(--race-ink);
   background: var(--race-navy);
   font-family: 'MS Gothic', 'Hiragino Kaku Gothic ProN', monospace;
@@ -31,9 +31,11 @@
 .retro-race button:hover { color: #ffe57b; }
 .retro-race button:focus-visible { outline: 2px solid #ffe57b; outline-offset: 3px; }
 .race-viewport { position: relative; min-height: 0; overflow: hidden; background: #43812d; }
+.race-rotate-hint{display:none}
 .retro-race .trial-canvas { position: absolute; inset: 0; }
 .trial-canvas canvas { display: block; image-rendering: pixelated; }
 .race-scanlines { position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(transparent 0px, transparent 3px, #05113c0b 3px, #05113c0b 4px); }
+.trial-canvas[data-render-style='smooth']~.race-scanlines{display:none}
 .race-lane { position: absolute; left: 22px; top: 15px; color: #fff7cc; font-size: 17px; letter-spacing: 2px; }
 .race-lane span { display: block; font-size: 10px; color: #c4e0c4; margin-top: 5px; }
 .race-start-mark { position: absolute; left: 15%; top: 18%; color: #ffe96d; font-size: clamp(24px, 4vw, 48px); font-family: monospace; letter-spacing: 6px; text-shadow: 3px 3px #30351b, -2px -2px #7e803a; pointer-events: none; }
@@ -56,13 +58,6 @@
 .race-running span { display: inline-block; margin-left: 10px; color: #8ac29b; }
 .race-countdown { position: absolute; left: 50%; top: 28%; transform: translateX(-50%); color: #fff0a0; font: bold clamp(70px,13vw,150px) monospace; text-shadow: 5px 5px #121c45, -2px -2px #a57e34; pointer-events: none; }
 .race-penalty { position: absolute; left: 22px; top: 75px; color: #fff0b3; background: #802739eb; border: 2px solid #ffb48a; padding: 8px 12px; font-size: 13px; }
-.race-standings { position: absolute; top: 12px; right: 16px; margin: 0; padding: 8px 10px; min-width: 180px; list-style: none; background: #0b1744d9; border: 2px solid #889bc6; font-size: 12px; }
-.race-standings li { display: flex; align-items: center; gap: 7px; padding: 4px 0; }
-.race-standings li > span { width: 12px; color: #bac8e6; }
-.race-standings i { display: inline-block; width: 10px; height: 7px; border: 1px solid #ffffff88; }
-.race-standings b { font-size: 12px; min-width: 42px; }
-.race-standings small { margin-left: auto; color: #bac8e6; font-size: 10px; font-variant-numeric: tabular-nums; }
-.race-standings .is-player, .race-standings .is-player small { color: #ffe57b; }
 .race-goal-in { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); color: #ffeb91; font: bold clamp(20px,3vw,34px) monospace; text-shadow: 3px 3px #151c4c; white-space: nowrap; }
 .race-goal-in span { font-size: 15px; margin-left: 12px; }
 .race-tally, .race-results { position: absolute; inset: 0; color: #ecedff; background-color: #112b75; background-image: linear-gradient(45deg,#20458c66 25%,transparent 25%,transparent 75%,#20458c66 75%),linear-gradient(45deg,#20458c66 25%,transparent 25%,transparent 75%,#20458c66 75%); background-size: 72px 72px; background-position: 0 0,36px 36px; }
@@ -87,7 +82,7 @@
 .retro-race[data-finish-stage='tally'] .race-header nav button:first-child, .retro-race[data-finish-stage='results'] .race-header nav button:first-child { visibility: hidden; }
 .trial-loading { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; background: #101448; color: #eef2ff; }
 @media (max-width: 720px) {
-  .retro-race { grid-template-rows: 40px minmax(0,1fr) 190px; }
+  .retro-race { grid-template-rows: 40px 84px minmax(0,1fr) 190px; }
   .race-header { padding: 0 10px; }
   .race-header h2 { font-size: 14px; }
   .race-header h2 span, .race-header small { display: none; }
@@ -105,13 +100,10 @@
   .race-timing { gap: 12px; font-size: 10px; letter-spacing: 0; }
   .race-timing b { font-size: 17px; margin-left: 3px; }
   .race-speed { display: none; }
-  .race-standings { min-width: 142px; right: 8px; top: 8px; padding: 4px 7px; }
-  .race-standings li { gap: 5px; padding: 3px 0; }
-  .race-standings b { font-size: 10px; min-width: 35px; }
   .race-lane { font-size: 13px; }
 }
 @media (max-height: 480px) {
-  .retro-race { grid-template-rows: 34px minmax(0,1fr) 112px; }
+  .retro-race { grid-template-rows: 34px 64px minmax(0,1fr) 112px; }
   .race-message { grid-template-columns: 45px minmax(0,1fr) 150px; gap: 15px; padding: 8px 14px; }
   .race-speaker { grid-row: auto; }
   .starter-portrait { width: 35px; height: 44px; margin-bottom: 3px; }
@@ -123,3 +115,8 @@
   .retro-race .race-start-button { font-size: 15px; }
 }
 .race-condition{position:absolute;bottom:85px;left:12px;z-index:3;background:#081337d9;color:#f6e6a8;padding:5px 9px;font:12px monospace;pointer-events:none}
+.race-ranking-strip{display:flex;align-items:stretch;padding:0 clamp(8px,3vw,40px);background:linear-gradient(180deg,#080c32,#060b2c);border-bottom:3px solid #8797bf;min-height:0}
+.ranking-edge{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;width:44px;flex-shrink:0;font-size:10px;color:#c6d0e8}.ranking-edge>span{font-size:22px;color:#f1d174}.ranking-racers{position:relative;flex:1;margin:0 10px;padding:0;list-style:none;min-width:0}.ranking-racers li{position:absolute;top:0;bottom:0;width:20%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:left .3s ease;color:#c8d4ed}.ranking-place{height:16px;font-size:11px;position:relative}.ranking-place i{font-style:normal;color:#ffe778;position:absolute;right:calc(100% + 5px)}.ranking-portrait{height:58px;width:48px;image-rendering:pixelated;filter:drop-shadow(1px 2px 0 #0008)}.ranking-name{font-size:10px;white-space:nowrap}.ranking-player .ranking-place,.ranking-player .ranking-name{color:#ffe778}.ranking-out .ranking-portrait{opacity:.4;filter:grayscale(1)}.ranking-out .ranking-place{color:#d29ca1}
+@media(max-width:720px){.race-ranking-strip{padding:0 5px}.ranking-edge{width:24px;font-size:8px}.ranking-edge>span{font-size:16px}.ranking-racers{margin:0 2px}.ranking-portrait{height:45px;width:37px}.ranking-name{font-size:8px}.ranking-place{font-size:10px;height:14px}}
+@media(max-height:480px){.ranking-portrait{height:34px;width:28px}.ranking-place{font-size:9px;height:11px}.ranking-name{font-size:8px}.ranking-racers li{gap:0}.ranking-edge{font-size:8px}}
+@media(prefers-reduced-motion:reduce){.ranking-racers li{transition:none}}

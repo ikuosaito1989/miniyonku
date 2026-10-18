@@ -6,6 +6,7 @@ import { circuit, circuitLength, sampleLanePath } from './data/circuit';
 import './trial.css';
 import { createFinishPresentation } from './game/finishPresentation';
 import { equippedCondition, batteryCharge, motorFactor } from './game/condition';
+import { RaceRanking } from './RaceRanking';
 
 function clock(seconds:number){
   const centiseconds=Math.floor(seconds*100);
@@ -103,7 +104,9 @@ export default function TrialView(){
       <button onClick={()=>{renderer.current?.setCamera(overview?'broadcast':'overview');setOverview(!overview);}} aria-pressed={overview}>{overview?'マシンを見る':'コース全体'}</button>
       <button onClick={close}>模型店へ <small>Esc</small></button>
     </nav></header>
+    <RaceRanking race={state}/>
     <div className="race-viewport">
+      <p className="race-rotate-hint">スマホを横向きにすると、コースを広く見渡せます</p>
       <div className="trial-canvas" ref={host}/>
       <div className="race-scanlines"/><div className="race-condition">電池 {(batteryCharge(player.equipment.battery,player.performance.batterySeconds+driving.time)*100).toFixed(1)}% ／ モーター {(motorFactor(player.performance.motorSeconds+driving.time)*100).toFixed(1)}%</div>
       {!error&&!showTally&&!showResults&&<><div className="race-lane">{playerPath.changing?`${playerPath.from+1} → ${playerPath.to+1}`:playerPath.lane+1}コース <span>あなた・{playerPath.changing?'レーンチェンジ中':'入門マシン'}</span></div>
@@ -112,7 +115,6 @@ export default function TrialView(){
         {state.phase==='running'&&(state.time<1||waitingForGo)&&<div className="race-go" aria-hidden="true">GO!</div>}
         {penaltyText&&<div className="race-penalty" role="note">{penaltyText}</div>}
         {recentGoal&&<div className="race-goal-in">GOAL IN! <span>{lastFinisher?.name}</span></div>}
-        <ol className="race-standings" aria-label={finished?'最終順位':'現在の順位'}>{standings.map((r,i)=><li key={r.id} className={r.id==='player'?'is-player':''}><span>{ready||counting?'—':i+1}</span><i style={{backgroundColor:`#${r.color.toString(16).padStart(6,'0')}`}}/><b>{r.name}</b><small>{r.driving.status==='finished'?clock(officialTime(state,r)):r.driving.status==='out'?(r.driving.stopReason==='battery'?'電池切れ':'OUT'):`${sampleLanePath(r.driving.distance,r.lane).lane+1}コース`}</small></li>)}</ol>
         <div className="race-timing" aria-label="走行状況">{firstFinisher?<><span>TIME <b>{clock(playerTime)}</b></span><span>{finished?'WINNER':'先着TIME'} <b>{clock(officialTime(state,finished?winner!:firstFinisher))}</b></span></>:<><span>POS <b>{ready||counting?'—':position} / 5</b></span><span>LAP <b>{Math.min(circuit.laps,Math.floor(driving.distance/circuitLength)+1)} / {circuit.laps}</b></span><span>TIME <b>{clock(playerTime)}</b></span><span className="race-speed"><b>{(driving.speed*3.6).toFixed(1)}</b> km/h</span></>}</div>
       </>}
       {showTally&&<section className="race-tally" aria-label="記録集計中"><span>TINY DRIVE</span><h3>レース記録を集計中…</h3><p>公式タイムで最終順位を確定します</p></section>}

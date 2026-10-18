@@ -2,6 +2,11 @@ import type { Part } from './parts';
 
 export interface PartAppearance { color:string; accent:string; detail:number; mark:string }
 export const partAppearances:Record<string,PartAppearance>={
+  'body-entry':{color:'#7bc7ad',accent:'#f3f5df',detail:1,mark:'LEAF-L'},
+  'battery-entry':{color:'#9bcde4',accent:'#4b7e91',detail:1,mark:'PLUS'},
+  'shaft-entry':{color:'#c8d3dc',accent:'#66889c',detail:0,mark:'LIGHT'},
+  'terminal-entry':{color:'#c5dfe3',accent:'#7098a1',detail:0,mark:'CONTACT'},
+  'motor-apex':{color:'#c8b3dc',accent:'#9877d9',detail:5,mark:'APEX'},
   'body-stream':{color:'#ef795a',accent:'#fff1ce',detail:1,mark:'STREAM'},
   'body-arrow':{color:'#6cbde5',accent:'#d5f5ff',detail:2,mark:'ARROW'},
   'body-manta':{color:'#a99cdb',accent:'#eee7ff',detail:3,mark:'MANTA'},
