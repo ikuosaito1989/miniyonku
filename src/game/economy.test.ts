@@ -15,9 +15,12 @@ function finish(equipment:Equipment,lane:number,motorSeconds=0,variation=1,batte
   for(let i=0;i<14400&&state.status==='running';i++)state=stepDriving(state,p,0,lane);
   return state.status==='finished'?state.time:Infinity;
 }
-test('初期1000円で購入可能な全装備は、慣らし済み・新品電池でも最も遅い個体の凪に届かない',()=>{
-  assert.equal(INITIAL_MONEY,1000);
+test('新規開始は2000円。既存セーブの財布とは独立した初期値を使う',()=>{
+  assert.equal(INITIAL_MONEY,2000);
   assert.equal(useGame.getInitialState().money,INITIAL_MONEY);
+});
+test('従来の1000円予算では慣らし済みでも凪に届かず、買い足しで優勝可能',()=>{
+  const budget=1000;
   const leader=rivals.find(r=>r.id==='nagi')!;
   const benchmark=finish(leader.equipment,leader.lane,leader.motorSeconds,.97);
   assert.ok(Number.isFinite(benchmark));
@@ -28,13 +31,13 @@ test('初期1000円で購入可能な全装備は、慣らし済み・新品電�
     const slot=slots[index];
     for(const part of parts.filter(p=>p.category===equipmentSlots[slot].category&&(p.id===starterEquipment[slot]||p.id==='battery-recharge'||isStocked(p)))){
       const price=part.id===starterEquipment[slot]||part.id==='battery-recharge'?0:part.price;
-      if(cost+price<=INITIAL_MONEY)visit(index+1,{...equipment,[slot]:part.id},cost+price);
+      if(cost+price<=budget)visit(index+1,{...equipment,[slot]:part.id},cost+price);
     }
   }
   visit(0,{...starterEquipment},0);
   assert.ok(checked>20);
   assert.ok(best>benchmark,`${checked}通り: 最速${best.toFixed(2)}秒、凪${benchmark.toFixed(2)}秒`);
-  console.info(`入門バランス: ${checked}通り / 1000円最速 ${best.toFixed(2)}秒 / 凪(最低個体差) ${benchmark.toFixed(2)}秒`);
+  console.info(`入門バランス: ${checked}通り / ${budget}円最速 ${best.toFixed(2)}秒 / 凪(最低個体差) ${benchmark.toFixed(2)}秒`);
   // 買い足して軽量化すれば、最も速い凪にも勝てる。
   const fastestRival=finish(leader.equipment,leader.lane,leader.motorSeconds,1.03);
   assert.ok(Number.isFinite(fastestRival));

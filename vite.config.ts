@@ -1,3 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-export default defineConfig({ plugins: [react()], build: { rollupOptions: { output: { manualChunks: { phaser: ['phaser'] } } } } });
+export default defineConfig({
+  plugins: [react()],
+  server: { fs: { deny: ['.env','.env.*','*.{crt,pem}','**/.git/**','**/private/audio/**'] } },
+  build: { rollupOptions: { output: { manualChunks: { phaser: ['phaser'] } } } },
+});

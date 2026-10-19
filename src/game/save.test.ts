@@ -5,6 +5,7 @@ import { decodeSave, snapshotGame, type SaveData } from './saveData';
 import { loadSavedGame, startAutoSave, type SaveStatus } from './autoSave';
 import type { SaveStorage } from './saveStorage';
 import { nextShopRace } from '../data/shopHints';
+import { INITIAL_MONEY } from '../data/economy';
 
 const initial=()=>structuredClone(snapshotGame(useGame.getInitialState()));
 const saved=():SaveData=>({version:1,savedAt:1234,game:initial()});
@@ -62,8 +63,8 @@ test('保存を直列化し、連続変更でも古い保存が新しい状態�
   const session=startAutoSave(storage,()=>{});
   try{
     const pending=session.flush();useGame.setState({money:900});useGame.setState({money:800});
-    assert.deepEqual(writes,[1000]);releases[0]();await tick();
-    assert.deepEqual(writes,[1000,800]);releases[1]();await pending;
+    assert.deepEqual(writes,[INITIAL_MONEY]);releases[0]();await tick();
+    assert.deepEqual(writes,[INITIAL_MONEY,800]);releases[1]();await pending;
   }finally{session.stop();useGame.setState(original);}
 });
 test('保存失敗を通知し、再試行で現在の状態を保存できる',async()=>{
