@@ -3,8 +3,18 @@ import { musicTracks } from './data/music';
 import { useGame } from './game/store';
 import { MusicPlayer } from './game/MusicPlayer';
 import { useAudioSettings } from './game/audioSettings';
+import { PurchaseAudio } from './game/PurchaseAudio';
 
 export function GameAudio(){
+  useEffect(()=>{
+    const purchaseAudio=new PurchaseAudio();
+    const unsubscribe=useGame.subscribe((state,previous)=>{
+      if(state.purchaseCount===previous.purchaseCount)return;
+      const {enabled,volume}=useAudioSettings.getState();
+      if(enabled)purchaseAudio.play(volume);
+    });
+    return()=>{unsubscribe();purchaseAudio.dispose();};
+  },[]);
   const player=useRef<MusicPlayer|null>(null);
   const race=useGame(s=>s.overlay==='race');
   const enabled=useAudioSettings(s=>s.enabled),volume=useAudioSettings(s=>s.volume);

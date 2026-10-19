@@ -13,6 +13,7 @@ import { hintBooks, nextShopRace } from '../data/shopHints';
 export interface GameState extends Wallet {
   cheatUsed:boolean;cheatReturnToSettings:boolean;
   openCheat:(fromSettings?:boolean)=>void;applyCheat:(amount:'max'|1000)=>void;
+  purchaseCount:number;
   hintBookIndex:number; readHintBook:()=>void;
   unlockedRaces:string[]; qualificationNotice:boolean;
   legendEventSeen:boolean;legendEventPending:boolean;legendDebriefPending:boolean;legendChallengeActive:boolean;dialogueStage:'none'|'legend-intro'|'legend-invite'|'legend-debrief';startLegendChallenge:()=>void;
@@ -33,6 +34,7 @@ export interface GameState extends Wallet {
 }
 export const useGame = create<GameState>((set) => ({
   hintBookIndex:0,unlockedRaces:[],qualificationNotice:false,legendEventSeen:false,legendEventPending:false,legendDebriefPending:false,legendChallengeActive:false,dialogueStage:'none',cheatUsed:false,cheatReturnToSettings:false,
+  purchaseCount:0,
   readHintBook:()=>set(s=>{
     const index=s.hintBookIndex%hintBooks.length,book=hintBooks[index];
     return {overlay:'dialogue',speaker:`セッティング本棚 ${index+1} / ${hintBooks.length}・${book.title}`,dialogue:`${book.text}（閉じてもう一度調べると次の本）`,shopAfter:false,hintBookIndex:(index+1)%hintBooks.length};
@@ -99,6 +101,6 @@ export const useGame = create<GameState>((set) => ({
     const result=purchase(s,id);
     if(!result.success)return {notice:result.message};
     const consumable=id.startsWith('motor-')||id.startsWith('battery-');
-    return {...result.wallet,notice:result.message,...(consumable?{unitSerial:s.unitSerial+1,units:{...s.units,[id]:[...(s.units[id]??[]),{id:`unit-${s.unitSerial+1}`,seconds:0}]}}:{})};
+    return {...result.wallet,purchaseCount:s.purchaseCount+1,notice:result.message,...(consumable?{unitSerial:s.unitSerial+1,units:{...s.units,[id]:[...(s.units[id]??[]),{id:`unit-${s.unitSerial+1}`,seconds:0}]}}:{})};
   }),
 }));
