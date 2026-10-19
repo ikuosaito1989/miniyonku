@@ -5,8 +5,9 @@
   position: absolute;
   inset: 0;
   z-index: 3;
+  touch-action: manipulation;
   display: grid;
-  grid-template-rows: 44px 100px minmax(0, 1fr) clamp(150px, 23vh, 205px);
+  grid-template-rows: 44px 100px minmax(0, 1fr) clamp(110px, 16vh, 140px);
   color: var(--race-ink);
   background: var(--race-navy);
   font-family: 'MS Gothic', 'Hiragino Kaku Gothic ProN', monospace;
@@ -31,7 +32,6 @@
 .retro-race button:hover { color: #ffe57b; }
 .retro-race button:focus-visible { outline: 2px solid #ffe57b; outline-offset: 3px; }
 .race-viewport { position: relative; min-height: 0; overflow: hidden; background: #43812d; }
-.race-rotate-hint{display:none}
 .retro-race .trial-canvas { position: absolute; inset: 0; }
 .trial-canvas canvas { display: block; image-rendering: auto; }
 .race-scanlines { position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(transparent 0px, transparent 3px, #05113c0b 3px, #05113c0b 4px); }
@@ -43,12 +43,13 @@
 .race-go, .race-finish { position: absolute; top: 16%; left: 50%; transform: translateX(-50%); color: #ffe571; font-size: clamp(25px, 5vw, 54px); font-family: monospace; letter-spacing: 4px; text-shadow: 3px 3px #212b4b; white-space: nowrap; }
 .race-timing { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; align-items: baseline; gap: clamp(20px, 6vw, 95px); padding: 8px 16px; background: #081334b3; color: #b5c6ec; font: bold clamp(12px, 1.7vw, 18px) monospace; letter-spacing: 2px; }
 .race-timing b { color: #fff0ac; font-size: clamp(17px, 2.4vw, 29px); font-variant-numeric: tabular-nums; margin-left: 8px; }
-.race-message { display: grid; grid-template-columns: 92px minmax(0,1fr) 175px; align-items: center; gap: 22px; margin: 5px; padding: 14px 24px 16px 16px; border: 3px solid var(--race-edge); outline: 2px solid #3a4d85; box-shadow: inset 0 0 0 2px #3d497c; background: linear-gradient(135deg,#16194f,#090d35); }
+.race-message { display: grid; grid-template-columns: 64px minmax(0,1fr) 175px; align-items: center; gap: 14px; margin: 5px; padding: 8px 16px; border: 3px solid var(--race-edge); outline: 2px solid #3a4d85; box-shadow: inset 0 0 0 2px #3d497c; background: linear-gradient(135deg,#16194f,#090d35); }
 .race-speaker { align-self: center; text-align: center; }
-.starter-portrait { display: block; width: 65px; height: 81px; margin: 0 auto 8px; image-rendering: pixelated; }
+.retro-race .race-speaker .starter-portrait { height:auto; aspect-ratio:1; }
+.starter-portrait { display: block; width: 58px; height: 58px; margin: 0 auto 4px; image-rendering: pixelated; object-fit: cover; border: 1px solid #769c96; box-shadow: 0 2px 4px #0006; }
 .race-speaker span { font-size: 11px; color: #b7c7f2; letter-spacing: 2px; }
 .race-commentary { align-self: center; }
-.race-commentary p { margin: 0; line-height: 1.9; font-size: clamp(13px,1.6vw,19px); letter-spacing: 1px; }
+.race-commentary p { margin: 0; line-height: 1.6; font-size: clamp(12px,1.4vw,16px); letter-spacing: 1px; }
 .race-commentary .race-phase { font-size: 11px; letter-spacing: 3px; color: #f6dd83; margin-bottom: 6px; }
 .race-commentary small { display: block; margin-top: 8px; font-size: 11px; color: #a7b6e2; font-weight: 400; line-height: 1.5; }
 .race-commands { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
@@ -79,10 +80,10 @@
 .race-results td i { display: inline-block; width: 15px; height: 9px; border: 1px solid #d8e6f3; margin-right: 12px; }
 .race-results .result-player { color: #ffe68b; background: #3d407c; }
 .result-note { font-size: 10px; line-height: 1.6; color: #c3d5f1; text-align: right; margin: 8px 0 0; }
-.retro-race[data-finish-stage='tally'] .race-header nav button:first-child, .retro-race[data-finish-stage='results'] .race-header nav button:first-child { visibility: hidden; }
+.retro-race[data-finish-stage='tally'] .race-camera-button, .retro-race[data-finish-stage='results'] .race-camera-button { visibility: hidden; }
 .trial-loading { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; background: #101448; color: #eef2ff; }
 @media (max-width: 720px) {
-  .retro-race { grid-template-rows: 40px 84px minmax(0,1fr) 190px; }
+  .retro-race { grid-template-rows: 40px 84px minmax(0,1fr) 130px; }
   .race-header { padding: 0 10px; }
   .race-header h2 { font-size: 14px; }
   .race-header h2 span, .race-header small { display: none; }
@@ -103,7 +104,7 @@
   .race-lane { font-size: 13px; }
 }
 @media (max-height: 480px) {
-  .retro-race { grid-template-rows: 34px 64px minmax(0,1fr) 112px; }
+  .retro-race { grid-template-rows: 34px 64px minmax(0,1fr) 90px; }
   .race-message { grid-template-columns: 45px minmax(0,1fr) 150px; gap: 15px; padding: 8px 14px; }
   .race-speaker { grid-row: auto; }
   .starter-portrait { width: 35px; height: 44px; margin-bottom: 3px; }
@@ -115,8 +116,19 @@
   .retro-race .race-start-button { font-size: 15px; }
 }
 .race-condition{position:absolute;bottom:85px;left:12px;z-index:3;background:#081337d9;color:#f6e6a8;padding:5px 9px;font:12px monospace;pointer-events:none}
-.race-ranking-strip{display:flex;align-items:stretch;padding:0 clamp(8px,3vw,40px);background:linear-gradient(180deg,#080c32,#060b2c);border-bottom:3px solid #8797bf;min-height:0}
+.race-ranking-strip{display:flex;align-items:stretch;padding:0 clamp(8px,3vw,40px);background:radial-gradient(ellipse at 50% 0,#42687766,transparent 75%),linear-gradient(180deg,#233c50,#101d36);border-top:1px solid #8eaab7;border-bottom:3px solid #91acb7;box-shadow:inset 0 -5px #07152688,inset 0 2px #d3e4df22;min-height:0}
 .ranking-edge{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;width:44px;flex-shrink:0;font-size:10px;color:#c6d0e8}.ranking-edge>span{font-size:22px;color:#f1d174}.ranking-racers{position:relative;flex:1;margin:0 10px;padding:0;list-style:none;min-width:0}.ranking-racers li{position:absolute;top:0;bottom:0;width:20%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:left .3s ease;color:#c8d4ed}.ranking-place{height:16px;font-size:11px;position:relative}.ranking-place i{font-style:normal;color:#ffe778;position:absolute;right:calc(100% + 5px)}.ranking-portrait{height:58px;width:48px;image-rendering:pixelated;filter:drop-shadow(1px 2px 0 #0008)}.ranking-name{font-size:10px;white-space:nowrap}.ranking-player .ranking-place,.ranking-player .ranking-name{color:#ffe778}.ranking-out .ranking-portrait{opacity:.4;filter:grayscale(1)}.ranking-out .ranking-place{color:#d29ca1}
 @media(max-width:720px){.race-ranking-strip{padding:0 5px}.ranking-edge{width:24px;font-size:8px}.ranking-edge>span{font-size:16px}.ranking-racers{margin:0 2px}.ranking-portrait{height:45px;width:37px}.ranking-name{font-size:8px}.ranking-place{font-size:10px;height:14px}}
 @media(max-height:480px){.ranking-portrait{height:34px;width:28px}.ranking-place{font-size:9px;height:11px}.ranking-name{font-size:8px}.ranking-racers li{gap:0}.ranking-edge{font-size:8px}}
 @media(prefers-reduced-motion:reduce){.ranking-racers li{transition:none}}
+
+/* 案内枠を約2/3へ。文字量に応じて広げ、ボタンの44pxタップ領域は維持する。 */
+@media(max-width:600px) and (orientation:portrait){
+  .retro-race.retro-race{grid-template-rows:48px 82px minmax(180px,1fr) minmax(128px,auto)}
+  .retro-race .race-message{gap:4px 8px;padding:6px 10px;grid-template-rows:auto 44px}
+  .retro-race .race-commentary small{display:none}
+  .retro-race .race-commentary p{line-height:1.5}
+  .retro-race .race-commands{gap:4px}
+  .retro-race .race-lane{top:12px}
+}
+@media(max-height:480px){.race-commentary small{display:none}.race-message{gap:8px}.starter-portrait{width:28px;height:35px}}

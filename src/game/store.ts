@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { parts } from '../data/parts';
 import { purchase, type Wallet } from './purchase';
 import { createStarterInventory, starterEquipment, type Equipment, type EquipmentSlot } from '../data/machine';
 import { equipPart } from './equipment';
@@ -16,11 +17,12 @@ export interface GameState extends Wallet {
   equipment: Equipment;
   proficiencyPoints:number;
   openProficiency:()=>void;
+  openLegends:()=>void;
   units:UnitInventory; selectedUnits:Record<'motor'|'battery',string>; unitSerial:number; usageSeconds:number;
   selectUnit:(slot:'motor'|'battery',id:string)=>void; breakIn:()=>void;
   raceAttempt: number; settledAttempt: number; lastPrize: number;
   settleRace: (attempt: number, race: RaceState) => void;
-  overlay: 'dialogue' | 'shop' | 'race' | 'setting' | 'proficiency' | null; speaker: string; dialogue: string; shopAfter: boolean; notice: string; nearby: string;
+  overlay: 'dialogue' | 'shop' | 'race' | 'setting' | 'proficiency' | 'legends' | null; speaker: string; dialogue: string; shopAfter: boolean; notice: string; nearby: string;
   openSetting: () => void; equip: (id: string,slot?:EquipmentSlot) => void;
   startTrial: () => void;
   talk: (speaker: string, text: string, shopAfter?: boolean) => void; advance: () => void; close: () => void; buy: (id: string) => void;
@@ -36,10 +38,12 @@ export const useGame = create<GameState>((set) => ({
   raceAttempt: 0, settledAttempt: -1, lastPrize: 0,
   proficiencyPoints:0,
   openProficiency:()=>set({overlay:'proficiency',shopAfter:false,notice:''}),
+  openLegends:()=>set({overlay:'legends',shopAfter:false,notice:''}),
   units:createStarterUnits(),selectedUnits:{motor:'starter-motor',battery:'starter-battery'},unitSerial:0,usageSeconds:0,
   selectUnit:(slot,id)=>set(s=>s.overlay==='race'||!s.units[s.equipment[slot]]?.some(u=>u.id===id)?s:{selectedUnits:{...s.selectedUnits,[slot]:id}}),
   breakIn:()=>set(s=>{
     if(s.overlay!=='setting')return s;
+    if(parts.find(p=>p.id===s.equipment.motor)?.specs.wear===0)return {notice:'リユースモーターは消耗せず性能一定です。慣らしは不要です。'};
     const battery=s.units[s.equipment.battery]?.find(u=>u.id===s.selectedUnits.battery);
     if(!battery||batteryCharge(s.equipment.battery,battery.seconds)<=0)return {notice:'電池が空です。別の電池に交換してください。'};
     const rechargeable=batteryConsumption(s.equipment.battery)===0;

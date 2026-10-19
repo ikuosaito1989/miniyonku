@@ -8,6 +8,9 @@ import { createFinishPresentation } from './game/finishPresentation';
 import { equippedCondition, batteryLabel, motorFactor } from './game/condition';
 import { RaceRanking } from './RaceRanking';
 import { nextShopRace } from './data/shopHints';
+import { AudioControls } from './GameAudio';
+import { useAudioSettings } from './game/audioSettings';
+import starterPortrait from './assets/portraits/starter-pop.webp';
 
 function clock(seconds:number){
   const centiseconds=Math.floor(seconds*100);
@@ -15,17 +18,7 @@ function clock(seconds:number){
 }
 
 function StarterPortrait(){
-  return <svg className="starter-portrait" viewBox="0 0 32 40" aria-hidden="true" shapeRendering="crispEdges">
-    <path fill="#17224b" d="M0 0h32v40H0z"/>
-    <path fill="#31588b" d="M5 7h22v8H5zM8 3h17v8H8z"/>
-    <path fill="#f6d16a" d="M13 5h5v5h-5z"/>
-    <path fill="#754937" d="M7 14h19v10H7z"/>
-    <path fill="#f4c49b" d="M8 15h16v12H8zM5 18h3v6H5zM24 18h3v6h-3z"/>
-    <path fill="#283546" d="M10 18h3v3h-3zM20 18h3v3h-3z"/>
-    <path fill="#a87058" d="M13 24h7v2h-7z"/>
-    <path fill="#e7aa4d" d="M6 29h21v11H6zM2 33h5v7H2zM27 33h4v7h-4z"/>
-    <path fill="#f1e3bb" d="M13 29h7v5h-7z"/>
-  </svg>;
+  return <img className="starter-portrait" src={starterPortrait} alt="" decoding="async" aria-hidden="true"/>;
 }
 
 export default function TrialView(){
@@ -41,6 +34,7 @@ export default function TrialView(){
   const [attempt,setAttempt]=useState(0);
   const [overview,setOverview]=useState(false);
   const [error,setError]=useState('');
+  const sound=useAudioSettings(s=>s.enabled),volume=useAudioSettings(s=>s.volume);
 
   useEffect(()=>{
     const stored=useGame.getState();
@@ -54,10 +48,12 @@ export default function TrialView(){
     catch{setError('3D表示を開始できませんでした。WebGL対応ブラウザで再試行してください。');}
     return()=>{renderer.current?.dispose();renderer.current=null;};
   },[equipment,attempt]);
+  useEffect(()=>{renderer.current?.setSound(sound,volume);},[sound,volume,equipment,attempt]);
 
   const start=useCallback(()=>renderer.current?.start(),[]);
   useEffect(()=>{
     const handleKey=(event:KeyboardEvent)=>{
+      if(event.target instanceof Element&&event.target.closest('[data-audio-controls]'))return;
       if(event.repeat&&['KeyZ','Enter','Space'].includes(event.code)){event.preventDefault();return;}
       if(state.phase==='finished'||(state.phase!=='ready'&&state.playerStartOffset!==null)||error)return;
       if(event.target instanceof HTMLButtonElement&&event.code!=='KeyZ')return;
@@ -91,9 +87,9 @@ export default function TrialView(){
   };
   const message=error||(showTally?'全マシンの走行が終了！ フライング加算も含めて、公式記録を集計しています。':
     showResults?(driving.status==='out'?(driving.stopReason==='battery'?'今回は電池切れ。電池を交換しよう！':'今回はコースアウト。次は完走を目指そう！'):`最終結果！ あなたは ${position}位。公式記録は ${clock(playerTime)}${penaltyText?`（${penaltyText}込み）`:''}。`):
-    ready?'まずは３カウント開始。GOが出たら、もう一度ボタンを押して自分のマシンを発進させよう！':
+    ready?'画面をタップでカウント開始 → GOで再タップして発進！':
     counting?(state.falseStartPenalty>0?`${penaltyText}。GOより早く発進した分を記録に加えるよ。`:`${countdownNumber(state)}…… GOまで待とう。今押すとフライングだよ！`):
-    waitingForGo?'GO！ きみの操作で発進！ CPUはもう走り出しているよ。':
+    waitingForGo?'GO！ 画面のどこでもタップして発進！':
     recentGoal?`${lastFinisher?.name}、ゴールイン！ 公式タイム ${clock(officialTime(state,lastFinisher!))}。${state.falseStartPenalty>0?'最終順位は加算後のタイムで決まります。':''}`:
     finished?'全車のゴールを確認！ まもなく最終結果を発表します。':
     finish.stage==='approach'?'いよいよ最終ストレート！ 先頭のマシンがゴールへ飛び込んでくる！':
@@ -101,16 +97,20 @@ export default function TrialView(){
     driving.status==='out'?(driving.stopReason==='battery'?'電池切れで停止！ 別の電池に交換しよう。':'コースアウト！ マシンを回収したよ。ほかのマシンは走行中。'):
     state.time<2?'スタート！ GOからの反応時間も記録に含まれるよ。':playerPath.changing?`レーンチェンジ！ ${playerPath.from+1}コースから ${playerPath.to+1}コースへ。５周で全レーンを走るよ。`:`あなたは現在 ${position}位！ 赤いマシンの上の黄色い印が目印だよ。`);
 
-  return <section className="trial retro-race" aria-label="5台の3Dレース" data-phase={state.phase} data-finish-stage={finish.stage}>
+  return <section className="trial retro-race" aria-label="5台の3Dレース" data-phase={state.phase} data-finish-stage={finish.stage} onClick={event=>{
+    // 操作ボタン自身の処理と二重発火させない。カメラ・音・退出も発進しない。
+    if(event.target instanceof Element&&event.target.closest('button,a,input,select,textarea,[data-audio-controls]'))return;
+    if(!error&&(ready||waitingForLaunch))start();
+  }}>
     <header className="race-header"><h2>{circuit.name}<span>{circuit.lanes}レーン・{circuit.laps}周レース</span></h2><nav aria-label="レース操作">
-      <button onClick={()=>{renderer.current?.setCamera(overview?'broadcast':'overview');setOverview(!overview);}} aria-pressed={overview}>{overview?'マシンを見る':'コース全体'}</button>
+      <AudioControls/>
+      <button className="race-camera-button" onClick={()=>{renderer.current?.setCamera(overview?'broadcast':'overview');setOverview(!overview);}} aria-pressed={overview}>{overview?'マシンを見る':'コース全体'}</button>
       <button onClick={close}>模型店へ <small>Esc</small></button>
     </nav></header>
     <RaceRanking race={state}/>
     <div className="race-viewport">
-      <p className="race-rotate-hint">スマホを横向きにすると、コースを広く見渡せます</p>
       <div className="trial-canvas" ref={host}/>
-      <div className="race-scanlines"/><div className="race-condition">電池 {batteryLabel(player.equipment.battery,player.performance.batterySeconds+driving.time)} ／ モーター {(motorFactor(player.performance.motorSeconds+driving.time)*100).toFixed(1)}%</div>
+      <div className="race-scanlines"/><div className="race-condition">電池 {batteryLabel(player.equipment.battery,player.performance.batterySeconds+driving.time)} ／ モーター {(motorFactor(player.performance.motorSeconds+driving.time,player.equipment.motor)*100).toFixed(1)}%</div>
       {!error&&!showTally&&!showResults&&<><div className="race-lane">{playerPath.changing?`${playerPath.from+1} → ${playerPath.to+1}`:playerPath.lane+1}コース <span>あなた・{playerPath.changing?'レーンチェンジ中':'入門マシン'}</span></div>
         {ready&&<div className="race-start-mark" aria-hidden="true">START<span>▼</span></div>}
         {counting&&<div className="race-countdown" aria-label={`スタートまで ${countdownNumber(state)}`} key={countdownNumber(state)}>{countdownNumber(state)}</div>}

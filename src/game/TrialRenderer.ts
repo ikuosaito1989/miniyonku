@@ -8,6 +8,7 @@ import { FIXED_STEP } from './driving';
 import { createRaceState, launchPlayer, startRace, stepRace, type RaceState } from './race';
 import { raceCamera } from '../data/raceCamera';
 import { createFinishPresentation, finishCoastDistance, shouldUseFinishCamera, stepFinishPresentation, type FinishPresentation } from './finishPresentation';
+import { RaceAudio } from './RaceAudio';
 
 export type TrialCamera = 'broadcast' | 'overview';
 
@@ -28,6 +29,7 @@ export class TrialRenderer {
   private aspect = 1;
   private startShotBlend = 1;
   private finishPresentation = createFinishPresentation();
+  private audio:RaceAudio;
 
   constructor(private host: HTMLElement, private equipment: Equipment, private report: (state: RaceState) => void, private reportFinish:(state:FinishPresentation)=>void, private condition:MachineCondition=freshCondition, private seed=0x5eed) {
     this.state=createRaceState(equipment,seed,condition);
@@ -47,17 +49,21 @@ export class TrialRenderer {
     for(const racer of this.state.racers){const car=buildMachineModel(racer.color,racer.equipment);this.cars.set(racer.id,car);this.scene.add(car);}
     this.playerMarker.rotation.z=Math.PI;this.scene.add(this.playerMarker);
     this.observer=new ResizeObserver(()=>this.resize());this.observer.observe(host);this.resize();
+    this.audio=new RaceAudio();
     this.report({...this.state});this.reportFinish(this.finishPresentation);this.frame=requestAnimationFrame(this.animate);
   }
 
   start(){
+    this.audio.unlock();
     const previous=this.state;
     this.state=previous.phase==='ready'?startRace(previous):launchPlayer(previous);
     if(this.state===previous)return;
     if(previous.phase==='ready'){this.accumulator=0;this.lastTime=0;}
+    this.audio.update(this.state);
     this.report({...this.state});
   }
   setCamera(mode:TrialCamera){this.cameraMode=mode;}
+  setSound(enabled:boolean,volume=0.35){this.audio.setVolume(volume);this.audio.setEnabled(enabled);}
   restart(){
     this.state=createRaceState(this.equipment,this.seed,this.condition);this.accumulator=0;this.lastTime=0;this.lastReport=-1;this.cameraMode='broadcast';this.startShotBlend=1;
     this.finishPresentation=createFinishPresentation();this.reportFinish(this.finishPresentation);
@@ -173,11 +179,13 @@ export class TrialRenderer {
       car.rotation.order='YXZ';car.rotation.set(-p.pitch,Math.atan2(p.tangentX,p.tangentZ),racer.driving.status==='out'?0.9:0);
       if(racer.id==='player')this.playerMarker.position.copy(car.position).add(new THREE.Vector3(0,0.24,0));
     }
+    this.audio.update(this.state);
     this.updateCamera();this.renderer.render(this.scene,this.camera);
     if(now-this.lastReport>100){this.report({...this.state});this.reportFinish(this.finishPresentation);this.lastReport=now;}
     this.frame=requestAnimationFrame(this.animate);
   };
   dispose(){
+    this.audio.dispose();
     this.report({...this.state});
     cancelAnimationFrame(this.frame);this.observer.disconnect();
     this.scene.traverse(object=>{if(object instanceof THREE.Mesh){object.geometry.dispose();for(const material of Array.isArray(object.material)?object.material:[object.material])material.dispose();}});

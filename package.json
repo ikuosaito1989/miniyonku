@@ -5,11 +5,16 @@
   "type": "module",
   "packageManager": "pnpm@10.18.3",
   "scripts": {
+    "audio:pack": "tsx scripts/pack-music.ts",
     "dev": "vite",
     "typecheck": "tsc --noEmit",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "test": "tsx --test src/game/*.test.ts"
+    "test": "tsx --test src/game/*.test.ts",
+    "preview:worker": "pnpm build && wrangler dev --port 8787",
+    "deploy:check": "pnpm build && wrangler deploy --dry-run",
+    "deploy:preview": "pnpm build && wrangler preview --name preview",
+    "cf:types": "wrangler types --include-runtime false"
   },
   "dependencies": {
     "phaser": "^3.90.0",
@@ -26,6 +31,7 @@
     "@vitejs/plugin-react": "^5.0.4",
     "tsx": "^4.20.6",
     "typescript": "~5.9.3",
-    "vite": "^7.1.9"
+    "vite": "^7.1.9",
+    "wrangler": "^4.151.1"
   }
 }

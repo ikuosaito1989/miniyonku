@@ -32,8 +32,15 @@ export function buildMachineModel(color:number,equipment:Equipment){
     const mesh=new THREE.Mesh(geometry,material);mesh.position.set(x,y,z);car.add(mesh);return mesh;
   };
   // 実車風のボンネット・キャビン・トランクを持つオリジナルの模型ボディ。
-  const w=design.width,boxy=['kei','suv','wagon'].includes(design.shape);
-  const body=shell([[-.128,.035,.012],[-.116,w*.85,.016],[-.08,w,.02],[0,w,.021],[.08,w*.97,.018],[.117,w*.83,.014],[.132,.026,.009]],color,boxy);
+  const w=design.width,style=design.silhouette,boxy=style==='wedge'||style==='muscle'||['kei','suv','wagon'].includes(design.shape);
+  const sections=style==='wedge'
+    ?[[-.128,w*.8,.016],[-.105,w,.022],[-.06,w,.024],[0,w*.88,.018],[.075,w*.94,.012],[.12,w*.82,.006],[.132,w*.65,.003]]
+    :style==='flow'
+    ?[[-.128,w*.65,.012],[-.10,w,.021],[-.06,w*.94,.02],[0,w*.8,.017],[.08,w,.022],[.12,w*.72,.009],[.132,.028,.006]]
+    :style==='muscle'
+    ?[[-.128,w*.77,.015],[-.10,w*.97,.021],[-.07,w,.022],[0,w*.9,.021],[.08,w,.023],[.12,w*.87,.018],[.132,w*.74,.013]]
+    :[[-.128,.035,.012],[-.116,w*.85,.016],[-.08,w,.02],[0,w,.021],[.08,w*.97,.018],[.117,w*.83,.014],[.132,.026,.009]];
+  const body=shell(sections,color,boxy);
   body.name='body-shell';car.add(body);
   const rear=design.cabinRear,front=design.cabinFront,height=design.cabinHeight;
   const canopy=shell([[rear-.014,.002,.001],[rear,w*.68,height*.72],[rear+.02,w*.7,height],[front-.015,w*.65,height],[front+.022,w*.7,.002],[front+.028,.002,.001]],0x193b52,boxy);
@@ -45,8 +52,20 @@ export function buildMachineModel(color:number,equipment:Equipment){
     const pillar=add(new THREE.CapsuleGeometry(.0025,height*.7,3,8),frame,side*w*.69,.073+height*.45,(rear+front)/2);
     pillar.rotation.z=side*.16;
     add(new THREE.CapsuleGeometry(.0015,.1,3,8),accent,side*w,.056,-.006).rotation.x=Math.PI/2;
-    add(new THREE.SphereGeometry(1,16,8),accent,side*w*.55,.061,.123).scale.set(.016,.005,.003);
-    const tail=add(new THREE.SphereGeometry(1,16,8),new THREE.MeshPhongMaterial({color:0xe4554c}),side*w*.63,.061,-.12);tail.scale.set(.014,.004,.003);
+    const lamp=add(new THREE.SphereGeometry(1,16,8),accent,side*w*.55,style==='wedge'?.057:.061,.123);
+    lamp.scale.set(style==='muscle'?.018:.016,style==='wedge'?.002:.005,.003);
+    lamp.rotation.z=style==='flow'?side*.3:style==='wedge'?side*.14:0;
+    const red=new THREE.MeshPhongMaterial({color:0xe4554c});
+    if(style==='muscle'){
+      for(const offset of [0,.016]){const tail=add(new THREE.CylinderGeometry(.006,.006,.003,20),red,side*(.029+offset),.063,-.126);tail.rotation.x=Math.PI/2;tail.name='round-tail';}
+      add(new THREE.BoxGeometry(.009,.005,.06),frame,side*w,.039,-.008);
+    }else{
+      const tail=add(new THREE.SphereGeometry(1,16,8),red,side*w*.63,.061,-.12);tail.scale.set(.014,.004,.003);
+    }
+    if(style==='wedge'||style==='flow'){
+      const intake=add(new THREE.BoxGeometry(.004,style==='wedge'?.018:.012,.036),frame,side*w*.94,.057,-.035);intake.rotation.x=style==='wedge'?.25:-.2;intake.name='side-intake';
+      const sill=add(new THREE.BoxGeometry(.008,.005,.15),frame,side*w*.95,.035,0);sill.name='sport-sill';
+    }
     if(design.shape==='suv'){
       const rail=add(new THREE.CapsuleGeometry(.0025,.085,3,8),metal,side*w*.52,.078+height,-.025);rail.rotation.x=Math.PI/2;
       add(new THREE.BoxGeometry(.008,.012,.12),frame,side*w*.97,.036,0);

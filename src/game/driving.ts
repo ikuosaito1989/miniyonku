@@ -24,7 +24,7 @@ export function machinePerformance(equipment: Equipment, condition:MachineCondit
     mass, drag: (0.012 * body.drag + friction * 0.025), cornerDrag:wheel.cornerDrag,
     batteryEndurance:battery.endurance,
     batteryConsumption:battery.consumption??1,
-    motorSeconds:condition.motorSeconds,batterySeconds:condition.batterySeconds,
+    motorSeconds:condition.motorSeconds,batterySeconds:condition.batterySeconds,motorWearRate:motor.wear??1,
     lateralLimit: (9.81 * (1.2 + tire.grip) + rollerWeight * 0.2)*body.stability*chassis.stability*accessory.stability,
     roughGrip:body.roughGrip,
     roughResistance:body.roughResistance,
@@ -52,7 +52,7 @@ export function stepDriving(state: DrivingState, performance: Performance, laneO
   const remaining=remainingCharge(performance.batterySeconds+state.time,performance.batteryEndurance*4,performance.batteryConsumption);
   if(remaining<=0)return {...state,speed:0,status:'out',stopReason:'battery'};
   const charge=.55+.45*Math.sqrt(remaining);
-  const motor=motorFactor(performance.motorSeconds+state.time);
+  const motor=performance.motorWearRate===0?1:motorFactor(performance.motorSeconds+state.time);
   const road=surfacePerformance(performance,surface);
   const force=performance.stallForce*charge*motor*Math.max(0,1-state.speed/(performance.freeSpeed*charge*motor))*road.traction;
   const resistance=performance.mass*9.81*0.025+performance.drag*state.speed**2+road.resistance;

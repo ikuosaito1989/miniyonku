@@ -14,7 +14,7 @@ export const starterEquipment: Equipment = {
   body:'body-stream',chassis:'chassis-basic',battery:'battery-basic',wheel:'wheel-basic',accessory:'accessory-none',
 };
 export function createStarterInventory(): Record<string, number> {
-  const inventory:Record<string,number>={'battery-recharge':1};
+  const inventory:Record<string,number>={'battery-recharge':1,'motor-rescue':1};
   for(const id of Object.values(starterEquipment))inventory[id]=(inventory[id]??0)+1;
   return inventory;
 }
