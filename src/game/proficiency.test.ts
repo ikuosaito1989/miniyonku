@@ -18,7 +18,9 @@ test('有効な慣らしだけ経験を得て、ピーク後の無駄な慣ら�
 });
 test('熟練度順位は経験の増加に追従し、同点でも順序が再現可能',()=>{
   assert.equal(proficiencyStandings(0).at(-1)?.id,'player');
-  assert.equal(proficiencyStandings(100)[0].id,'player');
+  assert.equal(proficiencyStandings(100).findIndex(p=>p.id==='player')+1,9);
+  assert.ok(proficiencyStandings(749).findIndex(p=>p.id==='player')+1>5);
+  assert.equal(proficiencyStandings(750).findIndex(p=>p.id==='player')+1,5);
   assert.deepEqual(proficiencyStandings(20),proficiencyStandings(20));
 });
 test('完走・優勝の熟練度は試行につき一回だけ。待機や途中報告では増えない',()=>{

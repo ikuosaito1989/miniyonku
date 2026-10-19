@@ -17,11 +17,12 @@ export interface GameState extends Wallet {
   equipment: Equipment;
   proficiencyPoints:number;
   openProficiency:()=>void;
+  openLegends:()=>void;
   units:UnitInventory; selectedUnits:Record<'motor'|'battery',string>; unitSerial:number; usageSeconds:number;
   selectUnit:(slot:'motor'|'battery',id:string)=>void; breakIn:()=>void;
   raceAttempt: number; settledAttempt: number; lastPrize: number;
   settleRace: (attempt: number, race: RaceState) => void;
-  overlay: 'dialogue' | 'shop' | 'race' | 'setting' | 'proficiency' | null; speaker: string; dialogue: string; shopAfter: boolean; notice: string; nearby: string;
+  overlay: 'dialogue' | 'shop' | 'race' | 'setting' | 'proficiency' | 'legends' | null; speaker: string; dialogue: string; shopAfter: boolean; notice: string; nearby: string;
   openSetting: () => void; equip: (id: string,slot?:EquipmentSlot) => void;
   startTrial: () => void;
   talk: (speaker: string, text: string, shopAfter?: boolean) => void; advance: () => void; close: () => void; buy: (id: string) => void;
@@ -37,6 +38,7 @@ export const useGame = create<GameState>((set) => ({
   raceAttempt: 0, settledAttempt: -1, lastPrize: 0,
   proficiencyPoints:0,
   openProficiency:()=>set({overlay:'proficiency',shopAfter:false,notice:''}),
+  openLegends:()=>set({overlay:'legends',shopAfter:false,notice:''}),
   units:createStarterUnits(),selectedUnits:{motor:'starter-motor',battery:'starter-battery'},unitSerial:0,usageSeconds:0,
   selectUnit:(slot,id)=>set(s=>s.overlay==='race'||!s.units[s.equipment[slot]]?.some(u=>u.id===id)?s:{selectedUnits:{...s.selectedUnits,[slot]:id}}),
   breakIn:()=>set(s=>{

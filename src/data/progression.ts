@@ -17,5 +17,5 @@ export const partLevels:Record<string,number>={
 export interface ShopStock { name:string; maxPartLevel:number }
 export const starterShop:ShopStock={name:'こもれび模型店',maxPartLevel:2};
 export function isStocked(part:{id:string;level:number},shop:ShopStock=starterShop){
-  return part.id!=='accessory-none'&&part.id!=='battery-recharge'&&part.id!=='motor-rescue'&&part.level>=1&&part.level<=Math.min(MAX_PART_LEVEL,shop.maxPartLevel);
+  return !part.id.startsWith('body-legend-')&&part.id!=='accessory-none'&&part.id!=='battery-recharge'&&part.id!=='motor-rescue'&&part.level>=1&&part.level<=Math.min(MAX_PART_LEVEL,shop.maxPartLevel);
 }

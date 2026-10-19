@@ -10,6 +10,7 @@ import { ProficiencyBoard } from './ProficiencyBoard';
 import { SaveControls, SaveWarning } from './SaveControls';
 import { AudioControls, GameAudio } from './GameAudio';
 import { DialogueView } from './DialogueView';
+import { LegendGallery } from './LegendGallery';
 const yen=(n:number)=>n.toLocaleString('ja-JP');
 const TrialView=lazy(()=>import('./TrialView'));
 export function App(){
@@ -42,6 +43,7 @@ export function App(){
         <TouchControls/>
         {game.overlay==='dialogue'&&<DialogueView/>}
         {game.overlay==='proficiency'&&<ProficiencyBoard/>}
+        {game.overlay==='legends'&&<LegendGallery/>}
         {game.overlay==='setting'&&<SettingView/>}
         {game.overlay==='race'&&<Suspense fallback={<div className="trial-loading">試走コースを準備中…</div>}><TrialView/></Suspense>}
         {game.overlay==='shop'&&<div className="scrim"><div className="modal shop" role="dialog" aria-modal="true" aria-labelledby="modal-title" ref={modal} tabIndex={-1}>

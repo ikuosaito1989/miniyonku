@@ -176,6 +176,7 @@ export class ShopScene extends Phaser.Scene {
       this.gesture.reset();
       if(target.kind==='track')useGame.getState().startTrial();
       else if(target.kind==='board')useGame.getState().openProficiency();
+      else if(target.kind==='legends')useGame.getState().openLegends();
       else if(target.kind==='bookshelf')useGame.getState().readHintBook();
       else if(target.kind==='bench')useGame.getState().openSetting();
       else useGame.getState().talk(target.speaker,target.text,target.shopAfter);

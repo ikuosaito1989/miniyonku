@@ -24,6 +24,10 @@ export function drawIllustratedFixture(scene:Phaser.Scene,fixture:Fixture){
   if(!texture.has(key))texture.add(key,0,Math.round(frame.x*sx),Math.round(frame.y*sy),Math.round(frame.width*sx),Math.round(frame.height*sy));
   scene.add.image(frame.x,frame.y,shopIllustrationKey,key).setOrigin(0).setDisplaySize(frame.width,frame.height).setDepth(frame.depth);
   if(fixture.kind==='board')text(scene,fixture.x+5,fixture.y+6,'熟練度表',6,'#fff1a7',frame.depth+1);
+  if(fixture.kind==='legends'){
+    scene.add.rectangle(fixture.x+fixture.w/2,fixture.y+fixture.h-5,176,11,0x183640,.95).setDepth(frame.depth+1);
+    text(scene,fixture.x+fixture.w/2-81,fixture.y+fixture.h-11,'レジェンドマシン展示・調べる',9,'#ffebaa',frame.depth+2);
+  }
   if(fixture.kind==='bookshelf')text(scene,fixture.x+8,fixture.y-13,'セッティングの本・全6冊',8,'#3d666c',frame.depth+1);
   if(fixture.kind==='shelf'){
     scene.add.rectangle(fixture.x+fixture.w/2,fixture.y+fixture.h-10,fixture.w-14,8,0xeee8d5).setDepth(frame.depth+1);

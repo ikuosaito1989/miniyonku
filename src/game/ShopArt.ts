@@ -69,6 +69,11 @@ function kitBox(g:Phaser.GameObjects.Graphics,x:number,y:number,w:number,h:numbe
 export function drawShopFixture(scene:Phaser.Scene,f:Fixture){
   if(drawIllustratedFixture(scene,f))return;
   const g=scene.add.graphics().setDepth(f.y+f.h);const {x,y,w,h}=f;
+  if(f.kind==='legends'){
+    rect(g,x,y,w,h,0x253f55);rect(g,x+3,y+3,w-6,h-6,0x162b3e);
+    for(let i=0;i<4;i++)kitBox(g,x+12+i*70,y+12,58,56,i);
+    label(scene,x+50,y+h-15,'レジェンドマシン展示・調べる',10,'#ffe5a0',y+h+1);return;
+  }
   if(f.kind==='counter'){
     const key='shop-counter-detailed';
     if(!scene.textures.exists(key)){

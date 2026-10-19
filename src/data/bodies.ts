@@ -4,6 +4,7 @@ export interface BodyDesign {
   weight:number; drag:number; cornering:number; roughGrip:number; roughResistance:number;
   width:number; cabinHeight:number; cabinFront:number; cabinRear:number;
   color:string; description:string;
+  silhouette?:'flow'|'wedge'|'muscle';
 }
 // 排気量は実車風のボディ区分。模型の駆動源は交換式の電動モーター。
 // 旧ボディIDは所持品・装備との互換性のため維持する。
@@ -19,5 +20,8 @@ export const bodies:BodyDesign[]=[
   {id:'body-gt',name:'アカツキ GT3000',grade:8,price:3600,shape:'gt',className:'3.0L GT',weight:18,drag:.74,cornering:1.12,roughGrip:.62,roughResistance:1.42,width:.066,cabinHeight:.02,cabinFront:.012,cabinRear:-.048,color:'#b7a1d3',description:'長いノーズと流線型テール。高速巡航向きだが発進時の重量が響く。'},
   {id:'body-rally',name:'ワカバ RX',grade:9,price:4600,shape:'hatch',className:'ラリーハッチ',weight:16,drag:.98,cornering:1.11,roughGrip:1.45,roughResistance:.48,width:.065,cabinHeight:.03,cabinFront:.035,cabinRear:-.073,color:'#e7d8b2',description:'張り出したフェンダーの競技ハッチ。SUVほどの悪路特化ではなく旋回との両立型。'},
   {id:'body-proto',name:'アカツキ LM',grade:10,price:6500,shape:'prototype',className:'プロトタイプ',weight:11,drag:.66,cornering:1.2,roughGrip:.4,roughResistance:1.9,width:.068,cabinHeight:.014,cabinFront:.017,cabinRear:-.052,color:'#81d6ca',description:'低いキャビンと大きなウイングを持つ舗装競技専用。悪路には最も不向き。'},
+  {id:'body-legend-flow',name:'ゼファー・ロッソ',grade:10,price:0,shape:'coupe',silhouette:'flow',className:'展示専用ミッドシップ',weight:11,drag:.66,cornering:1.2,roughGrip:.4,roughResistance:1.9,width:.068,cabinHeight:.017,cabinFront:.018,cabinRear:-.045,color:'#e34438',description:'曲面フェンダーと低い流線ノーズの独自スーパースポーツ。'},
+  {id:'body-legend-wedge',name:'バースト・ヴェローチェ',grade:10,price:0,shape:'coupe',silhouette:'wedge',className:'展示専用ウェッジ',weight:18,drag:.74,cornering:1.12,roughGrip:.62,roughResistance:1.42,width:.069,cabinHeight:.014,cabinFront:.025,cabinRear:-.055,color:'#efb82f',description:'低い楔形ノーズ、広いリア、大型サイドインテークを備える独自モデル。'},
+  {id:'body-legend-muscle',name:'ランブラー・ツインR',grade:10,price:0,shape:'gt',silhouette:'muscle',className:'展示専用国産GT風',weight:16,drag:.98,cornering:1.11,roughGrip:1.45,roughResistance:.48,width:.068,cabinHeight:.029,cabinFront:.028,cabinRear:-.036,color:'#b9c7d4',description:'角張ったノーズと張り出すフェンダー、4灯の丸いテールを持つ独自GT。'},
 ];
 export function bodyDesign(id:string):BodyDesign{return bodies.find(b=>b.id===id)??bodies[0];}
