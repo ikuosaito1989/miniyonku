@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { loadSavedGame, startAutoSave, type SaveStatus } from './autoSave';
 import { indexedDbStorage } from './saveStorage';
+import { useGame } from './store';
 
 export const useSaveStatus=create<SaveStatus>(()=>({phase:'loading',savedAt:null,message:'セーブを読み込み中…'}));
 let session:ReturnType<typeof startAutoSave>|null=null;
@@ -13,6 +14,21 @@ export async function initializeSave(){
 }
 export function playWithoutSave(){useSaveStatus.setState({phase:'temporary',savedAt:null,message:'セーブなしでプレイ中です。再読み込みで進行が失われます。'});}
 export async function saveNow(){await session?.flush();}
+export async function resetSave(){
+  session?.stop();session=null;
+  try{
+    await indexedDbStorage.remove!();
+    useGame.setState(useGame.getInitialState());
+    useSaveStatus.setState({phase:'saved',savedAt:null,message:'初期化しました。新しいセーブを作成しています…'});
+    session=startAutoSave(indexedDbStorage,state=>useSaveStatus.setState(state));
+    await session.flush();
+    useSaveStatus.setState(state=>({...state,message:'初期状態をセーブしました'}));
+  }catch(error){
+    if(!session)session=startAutoSave(indexedDbStorage,state=>useSaveStatus.setState(state));
+    useSaveStatus.setState({phase:'error',savedAt:null,message:`初期化できませんでした。${error instanceof Error?error.message:''}`});
+    throw error;
+  }
+}
 if(typeof window!=='undefined'){
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')void saveNow().catch(()=>{});});
   window.addEventListener('pagehide',()=>{void saveNow().catch(()=>{});});

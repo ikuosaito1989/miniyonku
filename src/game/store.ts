@@ -22,8 +22,9 @@ export interface GameState extends Wallet {
   selectUnit:(slot:'motor'|'battery',id:string)=>void; breakIn:()=>void;
   raceAttempt: number; settledAttempt: number; lastPrize: number;
   settleRace: (attempt: number, race: RaceState) => void;
-  overlay: 'dialogue' | 'shop' | 'race' | 'setting' | 'proficiency' | 'legends' | null; speaker: string; dialogue: string; shopAfter: boolean; notice: string; nearby: string;
+  overlay: 'dialogue' | 'shop' | 'race' | 'setting' | 'settings' | 'proficiency' | 'legends' | null; speaker: string; dialogue: string; shopAfter: boolean; notice: string; nearby: string;
   openSetting: () => void; equip: (id: string,slot?:EquipmentSlot) => void;
+  openSettings:()=>void;
   startTrial: () => void;
   talk: (speaker: string, text: string, shopAfter?: boolean) => void; advance: () => void; close: () => void; buy: (id: string) => void;
 }
@@ -71,6 +72,7 @@ export const useGame = create<GameState>((set) => ({
     return {units,usageSeconds:Math.max(s.usageSeconds,seconds),money:s.money+prize,proficiencyPoints:s.proficiencyPoints+practice,...(firstWin?{unlockedRaces:[...s.unlockedRaces,nextShopRace.id],qualificationNotice:true}:{}),...(reward?{lastPrize:prize,settledAttempt:attempt}:{})};
   }),
   openSetting: () => set({overlay:'setting',shopAfter:false,notice:''}),
+  openSettings:()=>set({overlay:'settings',shopAfter:false,notice:''}),
   equip: (id,slot) => set(s => {
     if(s.overlay==='race')return s;
     const equipment=equipPart(s.equipment,s.inventory,id,slot),selectedUnits={...s.selectedUnits};
