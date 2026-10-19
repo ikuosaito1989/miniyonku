@@ -31,8 +31,8 @@ export class TrialRenderer {
   private finishPresentation = createFinishPresentation();
   private audio:RaceAudio;
 
-  constructor(private host: HTMLElement, private equipment: Equipment, private report: (state: RaceState) => void, private reportFinish:(state:FinishPresentation)=>void, private condition:MachineCondition=freshCondition, private seed=0x5eed) {
-    this.state=createRaceState(equipment,seed,condition);
+  constructor(private host: HTMLElement, private equipment: Equipment, private report: (state: RaceState) => void, private reportFinish:(state:FinishPresentation)=>void, private condition:MachineCondition=freshCondition, private seed=0x5eed,private legendChallenge=false) {
+    this.state=createRaceState(equipment,seed,condition,legendChallenge);
     this.renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});
     this.renderer.setPixelRatio(1);
     this.renderer.setClearColor(0x315b2a);
@@ -65,7 +65,7 @@ export class TrialRenderer {
   setCamera(mode:TrialCamera){this.cameraMode=mode;}
   setSound(enabled:boolean,volume=0.35){this.audio.setVolume(volume);this.audio.setEnabled(enabled);}
   restart(){
-    this.state=createRaceState(this.equipment,this.seed,this.condition);this.accumulator=0;this.lastTime=0;this.lastReport=-1;this.cameraMode='broadcast';this.startShotBlend=1;
+    this.state=createRaceState(this.equipment,this.seed,this.condition,this.legendChallenge);this.accumulator=0;this.lastTime=0;this.lastReport=-1;this.cameraMode='broadcast';this.startShotBlend=1;
     this.finishPresentation=createFinishPresentation();this.reportFinish(this.finishPresentation);
     this.report({...this.state});
   }

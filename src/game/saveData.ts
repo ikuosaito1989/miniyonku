@@ -4,10 +4,10 @@ import { hintBooks, nextShopRace } from '../data/shopHints';
 import type { GameState } from './store';
 import type { UnitInventory } from './condition';
 
-export type SavedGame=Pick<GameState,'money'|'inventory'|'equipment'|'units'|'selectedUnits'|'unitSerial'|'proficiencyPoints'|'unlockedRaces'|'hintBookIndex'>;
+export type SavedGame=Pick<GameState,'money'|'inventory'|'equipment'|'units'|'selectedUnits'|'unitSerial'|'proficiencyPoints'|'unlockedRaces'|'hintBookIndex'|'legendEventSeen'|'cheatUsed'>;
 export interface SaveData { version:1; savedAt:number; game:SavedGame }
 export function snapshotGame(state:SavedGame):SavedGame{
-  return structuredClone({money:state.money,inventory:state.inventory,equipment:state.equipment,units:state.units,selectedUnits:state.selectedUnits,unitSerial:state.unitSerial,proficiencyPoints:state.proficiencyPoints,unlockedRaces:state.unlockedRaces,hintBookIndex:state.hintBookIndex});
+  return structuredClone({money:state.money,inventory:state.inventory,equipment:state.equipment,units:state.units,selectedUnits:state.selectedUnits,unitSerial:state.unitSerial,proficiencyPoints:state.proficiencyPoints,unlockedRaces:state.unlockedRaces,hintBookIndex:state.hintBookIndex,legendEventSeen:state.legendEventSeen,cheatUsed:state.cheatUsed});
 }
 function object(value:unknown):Record<string,unknown>{
   if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('セーブデータの形式が不正です。');
@@ -33,7 +33,9 @@ export function decodeSave(value:unknown):SaveData{
   for(const slot of Object.keys(equipmentSlots) as EquipmentSlot[]){
     const id=equipment[slot],part=typeof id==='string'?byId.get(id):undefined;
     if(!part||part.category!==equipmentSlots[slot].category)throw new Error('装備の種類が不正です。');
-    counts[part.id]=(counts[part.id]??0)+1;
+    // Roller inventory counts complete sets; one set equips every position.
+    if(part.category==='roller')counts[part.id]=1;
+    else counts[part.id]=(counts[part.id]??0)+1;
     if(counts[part.id]>(inventory[part.id]??0))throw new Error('未所持のパーツを装備しています。');
   }
   const units:UnitInventory={},ids=new Set<string>();let maxSerial=0;
@@ -64,5 +66,7 @@ export function decodeSave(value:unknown):SaveData{
     let id='starter-rescue-motor';while(ids.has(id))id+='-free';
     inventory['motor-rescue']=1;units['motor-rescue']=[{id,seconds:0}];
   }
-  return {version:1,savedAt,game:{money:number(game.money,true),inventory,equipment:{...equipment} as Equipment,units,selectedUnits,unitSerial,proficiencyPoints:number(game.proficiencyPoints),unlockedRaces:[...game.unlockedRaces] as string[],hintBookIndex}};
+  if(game.legendEventSeen!==undefined&&typeof game.legendEventSeen!=='boolean')throw new Error('イベント記録が不正です。');
+  if(game.cheatUsed!==undefined&&typeof game.cheatUsed!=='boolean')throw new Error('裏技記録が不正です。');
+  return {version:1,savedAt,game:{money:number(game.money,true),inventory,equipment:{...equipment} as Equipment,units,selectedUnits,unitSerial,proficiencyPoints:number(game.proficiencyPoints),unlockedRaces:[...game.unlockedRaces] as string[],hintBookIndex,legendEventSeen:game.legendEventSeen===true,cheatUsed:game.cheatUsed===true}};
 }

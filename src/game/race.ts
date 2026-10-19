@@ -3,6 +3,7 @@ import { rivals, type Entrant } from '../data/rivals';
 import { createDrivingState, FIXED_STEP, machinePerformance, startDriving, stepDriving, type DrivingState, type Performance } from './driving';
 import { freshCondition, type MachineCondition } from './condition';
 import { story } from '../data/story';
+import { legends } from '../data/legends';
 
 export interface Racer extends Entrant { driving: DrivingState; performance: Performance; }
 export interface RaceState {
@@ -14,19 +15,25 @@ export interface RaceState {
   falseStartPenalty: number;
   racers: Racer[];
 }
+// 45秒切りを入門レースの優勝目安にするため、CPUは基礎性能の90%で走る。
+export const RIVAL_DIFFICULTY=0.9;
 export const COUNTDOWN_TICKS=Math.round(3/FIXED_STEP);
-export function createRaceState(equipment:Equipment,seed=0x5eed,condition:MachineCondition=freshCondition):RaceState {
+export function createRaceState(equipment:Equipment,seed=0x5eed,condition:MachineCondition=freshCondition,legendChallenge=false):RaceState {
   let randomState=seed>>>0||1;
   const random=()=>{randomState^=randomState<<13;randomState^=randomState>>>17;randomState^=randomState<<5;return (randomState>>>0)/4294967296;};
   const lanes=[0,1,2,3,4];
   for(let i=lanes.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[lanes[i],lanes[j]]=[lanes[j],lanes[i]];}
-  const entrants:Entrant[]=[{id:'player',name:story.player,lane:2,color:0xe85438,equipment:{...equipment}},...rivals.map(r=>({...r,equipment:{...r.equipment}}))];
+  const entrants:Entrant[]=legendChallenge
+    ?[{id:'player',name:story.player,lane:2,color:0xd94232,equipment:{...equipment}},...legends.slice(0,2).map((legend,index)=>({id:legend.id,name:legend.name,lane:index,color:index?0xe5b839:0x477de0,motorSeconds:90,equipment:{...legend.equipment}})),...rivals.slice(0,2).map(r=>({...r,equipment:{...r.equipment}}))]
+    :[{id:'player',name:story.player,lane:2,color:0xd94232,equipment:{...equipment}},...rivals.map(r=>({...r,equipment:{...r.equipment}}))];
   return {phase:'ready',countdownTicks:COUNTDOWN_TICKS,time:0,seed,playerStartOffset:null,falseStartPenalty:0,racers:entrants.map((entry,index)=>{
     const entrant={...entry,lane:lanes[index]};
     const performance=machinePerformance(entrant.equipment,entrant.id==='player'?condition:{...freshCondition,motorSeconds:entrant.motorSeconds??0});
     // CPUの個体差もシードから決定する。毎フレームの乱数は使わない。
     const variation=entrant.id==='player'?1:0.97+random()*0.06;
-    return {...entrant,performance:{...performance,freeSpeed:performance.freeSpeed*variation,stallForce:performance.stallForce*variation},driving:createDrivingState()};
+    const legendary=legendChallenge&&entrant.id.startsWith('legend-');
+    const racePace=legendary?2.25:entrant.id==='player'?1:RIVAL_DIFFICULTY;
+    return {...entrant,performance:{...performance,freeSpeed:performance.freeSpeed*variation*racePace,stallForce:performance.stallForce*variation*(legendary?1.8:entrant.id==='player'?1:RIVAL_DIFFICULTY),lateralLimit:performance.lateralLimit*(legendary?25:1)},driving:createDrivingState()};
   })};
 }
 export function startRace(state:RaceState):RaceState {
