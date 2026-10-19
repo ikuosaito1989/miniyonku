@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { parts } from '../data/parts';
 import { purchase, type Wallet } from './purchase';
 import { createStarterInventory, starterEquipment, type Equipment, type EquipmentSlot } from '../data/machine';
 import { equipPart } from './equipment';
@@ -40,6 +41,7 @@ export const useGame = create<GameState>((set) => ({
   selectUnit:(slot,id)=>set(s=>s.overlay==='race'||!s.units[s.equipment[slot]]?.some(u=>u.id===id)?s:{selectedUnits:{...s.selectedUnits,[slot]:id}}),
   breakIn:()=>set(s=>{
     if(s.overlay!=='setting')return s;
+    if(parts.find(p=>p.id===s.equipment.motor)?.specs.wear===0)return {notice:'リユースモーターは消耗せず性能一定です。慣らしは不要です。'};
     const battery=s.units[s.equipment.battery]?.find(u=>u.id===s.selectedUnits.battery);
     if(!battery||batteryCharge(s.equipment.battery,battery.seconds)<=0)return {notice:'電池が空です。別の電池に交換してください。'};
     const rechargeable=batteryConsumption(s.equipment.battery)===0;

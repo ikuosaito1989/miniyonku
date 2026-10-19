@@ -12,6 +12,8 @@ import { touchInput } from './touchInput';
 import { compactDevice } from '../data/display';
 import { findWalkingPath, type Point } from './navigation';
 import { proficiencyStandings } from '../data/proficiency';
+import shopIllustration from '../assets/shop/interior-v1.webp';
+import { shopIllustrationKey } from '../data/shopIllustration';
 
 interface ShopTarget {x:number;y:number;w:number;h:number;label:string;speaker:string;shopAfter:boolean;text:string;kind?:Fixture['kind']}
 export class ShopScene extends Phaser.Scene {
@@ -30,6 +32,7 @@ export class ShopScene extends Phaser.Scene {
   private boardLines:Phaser.GameObjects.Text[]=[];
   private boardPoints=-1;
   constructor(){ super('shop'); }
+  preload(){this.load.image(shopIllustrationKey,shopIllustration);}
   create(){
     this.fitCamera();
     this.scale.on(Phaser.Scale.Events.RESIZE,this.fitCamera,this);

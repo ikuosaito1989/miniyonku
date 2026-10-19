@@ -5,6 +5,7 @@ export const categories: Record<Category, string> = { body:'ボディ', chassis:
 export interface Part { id: string; level:number; category: Category; name: string; price: number; description: string; specs: Record<string, number>; performance: string }
 type PartDefinition=Omit<Part,'level'>;
 const definitions: PartDefinition[] = [
+  {id:'motor-rescue',category:'motor',name:'リユースモーター',price:0,description:'初期所持の救済用。消耗せず、慣らし不要で性能一定。標準より低出力。非売品。',specs:{rpm:11000,torque:.95,weight:18,wear:0},performance:'11,000 rpm / 0.95 mN·m / 18 g / 消耗なし・慣らし不要 / 非売品'},
   ...bodies.map((body):PartDefinition=>({id:body.id,category:'body',name:body.name,price:body.price,description:`${body.className}：${body.description}`,specs:{weight:body.weight,drag:body.drag,stability:body.cornering,roughGrip:body.roughGrip,roughResistance:body.roughResistance},performance:`${body.weight} g / 空気抵抗 ×${body.drag.toFixed(2)} / 旋回 ×${body.cornering.toFixed(2)} / 悪路接地 ×${body.roughGrip.toFixed(2)} / 悪路抵抗 ×${body.roughResistance.toFixed(2)}`})),
   {id:'battery-entry',category:'battery',name:'プラスセル',price:250,description:'初めての強化に適したバランス型電池2本。',specs:{weight:42,power:1.04,endurance:110},performance:'2本 42 g / 出力 ×1.04 / 持続係数110秒'},
   {id:'shaft-entry',category:'shaft',name:'ライトスチールシャフト',price:250,description:'標準シャフトより少し軽い入門用。',specs:{weight:5},performance:'重量 5 g'},

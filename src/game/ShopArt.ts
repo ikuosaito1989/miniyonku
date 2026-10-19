@@ -6,6 +6,7 @@ import { shopPalette as palette, tileSpeckles } from '../data/shopStyle';
 import { personDrawing, personSpriteSize, type Facing, type PersonKind } from './PeopleArt';
 import { counterDrawing, counterSpriteSize } from './CounterArt';
 import { paintPixels } from './pixelDrawing';
+import { drawIllustratedFixture, drawIllustratedRoom } from './ShopIllustrationArt';
 
 export type { Facing, PersonKind } from './PeopleArt';
 const ink=palette.outline;
@@ -13,6 +14,7 @@ function rect(g:Phaser.GameObjects.Graphics,x:number,y:number,w:number,h:number,
 function label(scene:Phaser.Scene,x:number,y:number,text:string,size=10,color='#f5ead0',depth=0){return scene.add.text(x,y,text,{fontFamily:'"Noto Sans JP", monospace',fontSize:`${size}px`,color,resolution:2}).setDepth(depth);}
 
 export function drawShopRoom(scene:Phaser.Scene){
+  if(drawIllustratedRoom(scene))return;
   const g=scene.add.graphics();
   rect(g,0,0,960,640,0x303e56);rect(g,40,35,880,85,palette.wall);
   for(let y=36;y<108;y+=4)for(let x=42;x<918;x+=5){
@@ -65,6 +67,7 @@ function kitBox(g:Phaser.GameObjects.Graphics,x:number,y:number,w:number,h:numbe
 }
 
 export function drawShopFixture(scene:Phaser.Scene,f:Fixture){
+  if(drawIllustratedFixture(scene,f))return;
   const g=scene.add.graphics().setDepth(f.y+f.h);const {x,y,w,h}=f;
   if(f.kind==='counter'){
     const key='shop-counter-detailed';

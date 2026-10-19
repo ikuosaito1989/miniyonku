@@ -1,21 +1,18 @@
 import { rankRacers, type RaceState } from './game/race';
+import { personDrawing, type PersonKind } from './game/PeopleArt';
 
 function RacerPortrait({id,color}:{id:string;color:number}){
+  const kind:PersonKind=id==='player'?'player':id==='nagi'?'rival':id==='momo'?'guide':'mechanic';
   const jacket=`#${color.toString(16).padStart(6,'0')}`;
-  const hair=id==='ren'?'#65514a':id==='momo'?'#574148':'#323947';
-  return <svg className="ranking-portrait" viewBox="0 0 28 34" aria-hidden="true" shapeRendering="crispEdges">
-    <path fill="#050925" d="M5 30h19v3H5z"/>
-    <path fill="#343e5a" d="M8 23h5v7H8zM17 23h5v7h-5z"/>
-    <path fill="#dce5db" d="M7 29h7v2H7zM17 29h7v2h-7z"/>
-    <path fill="#202a40" d="M7 15h16v11H7z"/><path fill={jacket} d="M8 16h14v9H8zM5 17h4v6H5z"/>
-    <path fill="#f1ebcc" d="M11 17h3v6h-3zM9 23h12v2H9z"/>
-    <path fill="#d8a280" d="M5 23h4v3H5zM22 19h3v6h-3z"/>
-    <path fill={hair} d="M9 3h11v2H9zM7 5h16v9H7zM9 13h12v3H9z"/>
-    <path fill="#efc7a0" d="M14 7h8v8h-8zM20 10h5v3h-5zM13 14h7v3h-7z"/>
-    <path fill="#d69e80" d="M17 14h5v2h-5z"/><path fill="#f9dfb4" d="M15 8h6v2h-6z"/>
-    <path fill="#263047" d="M20 10h2v3h-2z"/><path fill="#fff2d0" d="M20 10h1v1h-1z"/>
-    <path fill={hair} d="M8 6h13v3H8zM8 8h6v7H8zM14 7h3v3h-3z"/>
-    {id==='player'?<><path fill="#e2bd68" d="M8 3h13v4H8zM17 6h9v2h-9z"/><path fill="#f9dc8d" d="M10 2h9v1h-9z"/></>:id==='nagi'?<path fill="#849eaf" d="M10 3h8v2h-8zM16 5h5v1h-5z"/>:id==='momo'?<><path fill={hair} d="M4 8h5v10H4zM3 13h4v8H3z"/><path fill="#f5d890" d="M4 9h4v2H4z"/></>:id==='sou'?<><path fill="#e0e9df" d="M8 3h13v4H8zM18 6h8v2h-8z"/><path fill="#78a88d" d="M10 3h4v3h-4z"/></>:<><path fill="#6380b1" d="M8 3h13v4H8z"/><path fill="#dfe6e5" d="M10 2h10v2H10zM18 5h6v2h-6z"/></>}
+  return <svg className="ranking-portrait" viewBox="0 0 60 82" aria-hidden="true">
+    <ellipse cx="30" cy="79" rx="18" ry="2" fill="#050b17" opacity=".35"/>
+    {personDrawing(kind,'right',0).map((shape,i)=>{
+      const fill=kind==='mechanic'&&shape.color==='#317d91'?jacket:shape.color;
+      return shape.kind==='rect'
+        ?<rect key={i} x={shape.x} y={shape.y} width={shape.w} height={shape.h} fill={fill} opacity={shape.alpha}/>
+        :<polygon key={i} points={shape.points.map(p=>p.join(',')).join(' ')} fill={fill} opacity={shape.alpha}/>;
+    })}
+    {(id==='sou'||id==='ren')&&<path d="M18 10 21 4H36L40 12H47V15H20Z" fill={id==='sou'?'#e6efe1':'#e2bc6c'} stroke="#596c79" strokeWidth="1"/>}
   </svg>;
 }
 

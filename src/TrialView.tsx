@@ -10,6 +10,7 @@ import { RaceRanking } from './RaceRanking';
 import { nextShopRace } from './data/shopHints';
 import { AudioControls } from './GameAudio';
 import { useAudioSettings } from './game/audioSettings';
+import starterPortrait from './assets/portraits/starter-pop.webp';
 
 function clock(seconds:number){
   const centiseconds=Math.floor(seconds*100);
@@ -17,17 +18,7 @@ function clock(seconds:number){
 }
 
 function StarterPortrait(){
-  return <svg className="starter-portrait" viewBox="0 0 32 40" aria-hidden="true" shapeRendering="crispEdges">
-    <path fill="#17224b" d="M0 0h32v40H0z"/>
-    <path fill="#31588b" d="M5 7h22v8H5zM8 3h17v8H8z"/>
-    <path fill="#f6d16a" d="M13 5h5v5h-5z"/>
-    <path fill="#754937" d="M7 14h19v10H7z"/>
-    <path fill="#f4c49b" d="M8 15h16v12H8zM5 18h3v6H5zM24 18h3v6h-3z"/>
-    <path fill="#283546" d="M10 18h3v3h-3zM20 18h3v3h-3z"/>
-    <path fill="#a87058" d="M13 24h7v2h-7z"/>
-    <path fill="#e7aa4d" d="M6 29h21v11H6zM2 33h5v7H2zM27 33h4v7h-4z"/>
-    <path fill="#f1e3bb" d="M13 29h7v5h-7z"/>
-  </svg>;
+  return <img className="starter-portrait" src={starterPortrait} alt="" decoding="async" aria-hidden="true"/>;
 }
 
 export default function TrialView(){
@@ -119,7 +110,7 @@ export default function TrialView(){
     <RaceRanking race={state}/>
     <div className="race-viewport">
       <div className="trial-canvas" ref={host}/>
-      <div className="race-scanlines"/><div className="race-condition">電池 {batteryLabel(player.equipment.battery,player.performance.batterySeconds+driving.time)} ／ モーター {(motorFactor(player.performance.motorSeconds+driving.time)*100).toFixed(1)}%</div>
+      <div className="race-scanlines"/><div className="race-condition">電池 {batteryLabel(player.equipment.battery,player.performance.batterySeconds+driving.time)} ／ モーター {(motorFactor(player.performance.motorSeconds+driving.time,player.equipment.motor)*100).toFixed(1)}%</div>
       {!error&&!showTally&&!showResults&&<><div className="race-lane">{playerPath.changing?`${playerPath.from+1} → ${playerPath.to+1}`:playerPath.lane+1}コース <span>あなた・{playerPath.changing?'レーンチェンジ中':'入門マシン'}</span></div>
         {ready&&<div className="race-start-mark" aria-hidden="true">START<span>▼</span></div>}
         {counting&&<div className="race-countdown" aria-label={`スタートまで ${countdownNumber(state)}`} key={countdownNumber(state)}>{countdownNumber(state)}</div>}

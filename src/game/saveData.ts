@@ -27,7 +27,7 @@ export function decodeSave(value:unknown):SaveData{
     inventory[id]=number(count,true);
     if(inventory[id]>100000)throw new Error('所持数が上限を超えています。');
   }
-  for(const [id,count]of Object.entries(createStarterInventory()))if((inventory[id]??0)<count)throw new Error('初期パーツが不足しています。');
+  for(const [id,count]of Object.entries(createStarterInventory()))if(!(id==='motor-rescue'&&inventory[id]===undefined)&&(inventory[id]??0)<count)throw new Error('初期パーツが不足しています。');
   const equipment=object(game.equipment),counts:Record<string,number>={};
   if(Object.keys(equipment).length!==Object.keys(equipmentSlots).length)throw new Error('装備枠が不正です。');
   for(const slot of Object.keys(equipmentSlots) as EquipmentSlot[]){
@@ -59,5 +59,10 @@ export function decodeSave(value:unknown):SaveData{
   if(!Array.isArray(game.unlockedRaces)||game.unlockedRaces.some(id=>id!==nextShopRace.id)||new Set(game.unlockedRaces).size!==game.unlockedRaces.length)throw new Error('参加資格が不正です。');
   const hintBookIndex=number(game.hintBookIndex,true);
   if(hintBookIndex>=hintBooks.length)throw new Error('本棚のページが不正です。');
+  // 追加以前のセーブにも無料予備を付与。財布や装備・既存個体には触れない。
+  if(inventory['motor-rescue']===undefined){
+    let id='starter-rescue-motor';while(ids.has(id))id+='-free';
+    inventory['motor-rescue']=1;units['motor-rescue']=[{id,seconds:0}];
+  }
   return {version:1,savedAt,game:{money:number(game.money,true),inventory,equipment:{...equipment} as Equipment,units,selectedUnits,unitSerial,proficiencyPoints:number(game.proficiencyPoints),unlockedRaces:[...game.unlockedRaces] as string[],hintBookIndex}};
 }
