@@ -2,6 +2,7 @@ import type { StoreApi } from 'zustand';
 import { useGame, type GameState } from './store';
 import { decodeSave, snapshotGame, type SavedGame } from './saveData';
 import type { SaveStorage } from './saveStorage';
+import { nextShopRace } from '../data/shopHints';
 
 export type SaveStatus={phase:'loading'|'saving'|'saved'|'error'|'temporary';savedAt:number|null;message:string};
 export async function loadSavedGame(storage:SaveStorage,store:StoreApi<GameState>=useGame){
@@ -9,7 +10,7 @@ export async function loadSavedGame(storage:SaveStorage,store:StoreApi<GameState
   if(raw===undefined)return null;
   const data=decodeSave(raw);
   // レース途中・会話中でも復元先は必ず模型店。賞金などは保存済み値だけを使う。
-  store.setState({...store.getInitialState(),...data.game});
+  store.setState({...store.getInitialState(),...data.game,legendEventPending:data.game.unlockedRaces.includes(nextShopRace.id)&&!data.game.legendEventSeen});
   return data.savedAt;
 }
 export function startAutoSave(storage:SaveStorage,status:(status:SaveStatus)=>void,store:StoreApi<GameState>=useGame){

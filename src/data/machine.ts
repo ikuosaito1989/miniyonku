@@ -15,6 +15,6 @@ export const starterEquipment: Equipment = {
 };
 export function createStarterInventory(): Record<string, number> {
   const inventory:Record<string,number>={'battery-recharge':1,'motor-rescue':1};
-  for(const id of Object.values(starterEquipment))inventory[id]=(inventory[id]??0)+1;
+  for(const id of new Set(Object.values(starterEquipment)))inventory[id]=(inventory[id]??0)+1;
   return inventory;
 }

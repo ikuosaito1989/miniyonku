@@ -11,8 +11,11 @@ import { batteryCharge, batteryCapacity, batteryConsumption, createStarterUnits,
 import { breakInPractice } from '../data/proficiency';
 import { hintBooks, nextShopRace } from '../data/shopHints';
 export interface GameState extends Wallet {
+  cheatUsed:boolean;cheatReturnToSettings:boolean;
+  openCheat:(fromSettings?:boolean)=>void;applyCheat:(amount:'max'|1000)=>void;
   hintBookIndex:number; readHintBook:()=>void;
   unlockedRaces:string[]; qualificationNotice:boolean;
+  legendEventSeen:boolean;legendEventPending:boolean;legendDebriefPending:boolean;legendChallengeActive:boolean;dialogueStage:'none'|'legend-intro'|'legend-invite'|'legend-debrief';startLegendChallenge:()=>void;
   raceSeed:number;
   equipment: Equipment;
   proficiencyPoints:number;
@@ -22,13 +25,14 @@ export interface GameState extends Wallet {
   selectUnit:(slot:'motor'|'battery',id:string)=>void; breakIn:()=>void;
   raceAttempt: number; settledAttempt: number; lastPrize: number;
   settleRace: (attempt: number, race: RaceState) => void;
-  overlay: 'dialogue' | 'shop' | 'race' | 'setting' | 'proficiency' | 'legends' | null; speaker: string; dialogue: string; shopAfter: boolean; notice: string; nearby: string;
+  overlay: 'dialogue' | 'shop' | 'race' | 'setting' | 'settings' | 'proficiency' | 'legends' | 'cheat' | null; speaker: string; dialogue: string; shopAfter: boolean; notice: string; nearby: string;
   openSetting: () => void; equip: (id: string,slot?:EquipmentSlot) => void;
+  openSettings:()=>void;
   startTrial: () => void;
   talk: (speaker: string, text: string, shopAfter?: boolean) => void; advance: () => void; close: () => void; buy: (id: string) => void;
 }
 export const useGame = create<GameState>((set) => ({
-  hintBookIndex:0,unlockedRaces:[],qualificationNotice:false,
+  hintBookIndex:0,unlockedRaces:[],qualificationNotice:false,legendEventSeen:false,legendEventPending:false,legendDebriefPending:false,legendChallengeActive:false,dialogueStage:'none',cheatUsed:false,cheatReturnToSettings:false,
   readHintBook:()=>set(s=>{
     const index=s.hintBookIndex%hintBooks.length,book=hintBooks[index];
     return {overlay:'dialogue',speaker:`セッティング本棚 ${index+1} / ${hintBooks.length}・${book.title}`,dialogue:`${book.text}（閉じてもう一度調べると次の本）`,shopAfter:false,hintBookIndex:(index+1)%hintBooks.length};
@@ -54,7 +58,7 @@ export const useGame = create<GameState>((set) => ({
     const practice=breakInPractice(motor?.seconds??0,duration);
     return {units,proficiencyPoints:s.proficiencyPoints+practice,notice:`${duration.toFixed(0)}秒の慣らし運転を行いました。${rechargeable?'充電電池の残量は減りません。':'電池も消耗します。'}${practice>0?' 整備の熟練度が上がりました。':''}`};
   }),
-  startTrial: () => set(s=>({overlay:'race',shopAfter:false,notice:'',raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,qualificationNotice:false})),
+  startTrial: () => set(s=>({overlay:'race',shopAfter:false,notice:'',legendChallengeActive:false,raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,qualificationNotice:false})),
   settleRace: (attempt,race) => set(s=>{
     if(attempt!==s.raceAttempt)return s;
     const player=race.racers.find(r=>r.id==='player');
@@ -64,22 +68,33 @@ export const useGame = create<GameState>((set) => ({
       const id=player.equipment[slot];units[id]=(units[id]??[]).map(u=>u.id===s.selectedUnits[slot]?{...u,seconds:u.seconds+delta}:u);
     }
     const reward=race.phase==='finished'&&s.settledAttempt!==attempt;
-    const prize=reward?racePrize(race):0;
+    const prize=reward&&!s.legendChallengeActive?racePrize(race):0;
     const firstWin=reward&&player?.driving.status==='finished'&&rankRacers(race)[0]?.id==='player'&&!s.unlockedRaces.includes(nextShopRace.id);
+    const winnerBody='body-champion';
+    const inventory=firstWin&&!(s.inventory[winnerBody]>0)?{...s.inventory,[winnerBody]:1}:s.inventory;
     if(!delta&&!reward)return s;
     const practice=reward&&player?(player.driving.status==='finished'?5+(rankRacers(race)[0]?.id==='player'?5:0):seconds>0?1:0):0;
-    return {units,usageSeconds:Math.max(s.usageSeconds,seconds),money:s.money+prize,proficiencyPoints:s.proficiencyPoints+practice,...(firstWin?{unlockedRaces:[...s.unlockedRaces,nextShopRace.id],qualificationNotice:true}:{}),...(reward?{lastPrize:prize,settledAttempt:attempt}:{})};
+    return {units,inventory,usageSeconds:Math.max(s.usageSeconds,seconds),money:s.money+prize,proficiencyPoints:s.proficiencyPoints+practice,...(firstWin?{unlockedRaces:[...s.unlockedRaces,nextShopRace.id],qualificationNotice:true,...(!s.legendEventSeen?{legendEventPending:true}:{})}:{}),...(s.legendChallengeActive&&reward?{legendDebriefPending:true}:{}),...(reward?{lastPrize:prize,settledAttempt:attempt}:{})};
   }),
   openSetting: () => set({overlay:'setting',shopAfter:false,notice:''}),
+  openSettings:()=>set({overlay:'settings',shopAfter:false,notice:''}),
+  openCheat:(fromSettings=false)=>set({overlay:'cheat',shopAfter:false,notice:'',cheatReturnToSettings:fromSettings}),
+  applyCheat:(amount)=>set(s=>({money:amount==='max'?9_999_999:s.money+1000,cheatUsed:true,overlay:s.cheatReturnToSettings?'settings':null,cheatReturnToSettings:false,notice:''})),
   equip: (id,slot) => set(s => {
     if(s.overlay==='race')return s;
     const equipment=equipPart(s.equipment,s.inventory,id,slot),selectedUnits={...s.selectedUnits};
     for(const key of ['motor','battery'] as const)if(equipment[key]!==s.equipment[key])selectedUnits[key]=s.units[equipment[key]]?.[0]?.id??'';
     return {equipment,selectedUnits};
   }),
-  talk: (speaker, dialogue, shopAfter = false) => set({ overlay:'dialogue',speaker,dialogue,shopAfter }),
-  advance: () => set(s => ({ overlay: s.shopAfter ? 'shop' : null, shopAfter:false,notice:'' })),
-  close: () => set({overlay:null,shopAfter:false,notice:''}),
+  startLegendChallenge:()=>set(s=>({overlay:'race',shopAfter:false,notice:'伝説の2人との特別レース！',legendEventPending:false,legendEventSeen:true,legendChallengeActive:true,dialogueStage:'none',raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,qualificationNotice:false})),
+  talk: (speaker, dialogue, shopAfter = false) => set({ overlay:'dialogue',speaker,dialogue,shopAfter,dialogueStage:'none' }),
+  advance: () => set(s => s.dialogueStage==='legend-intro'?{overlay:'dialogue',speaker:'火野 岳',dialogue:'優勝したばかりで悪いが、僕たちとも走ってくれないか？ 速さの世界を見せてあげるよ。',dialogueStage:'legend-invite'}:{ overlay: s.shopAfter ? 'shop' : null, shopAfter:false,notice:'',dialogueStage:'none' }),
+  close: () => set(s=>{
+    if(s.overlay==='cheat')return {overlay:s.cheatReturnToSettings?'settings':null,cheatReturnToSettings:false,shopAfter:false,notice:''};
+    if(s.overlay==='race'&&s.legendEventPending)return {overlay:'dialogue',speaker:'風見 怜',dialogue:'君が優勝した朝倉湊くん？ 噂は聞いているよ。初優勝、おめでとう。',dialogueStage:'legend-intro',shopAfter:false};
+    if(s.overlay==='race'&&s.legendDebriefPending)return {overlay:'dialogue',speaker:'風見 怜',dialogue:'これが全国のトップレーサーの走りだよ。今日は僕たちの勝ち。でも、君のマシンには伸びしろがある。またコースで会おう。',dialogueStage:'legend-debrief',legendDebriefPending:false,legendChallengeActive:false,shopAfter:false};
+    return {overlay:null,shopAfter:false,notice:'',dialogueStage:'none',legendChallengeActive:false};
+  }),
   buy: id => set(s => {
     const result=purchase(s,id);
     if(!result.success)return {notice:result.message};

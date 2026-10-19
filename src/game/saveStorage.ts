@@ -1,5 +1,5 @@
 import type { SaveData } from './saveData';
-export interface SaveStorage { read:()=>Promise<unknown>; write:(data:SaveData)=>Promise<void> }
+export interface SaveStorage { read:()=>Promise<unknown>; write:(data:SaveData)=>Promise<void>; remove?:()=>Promise<void> }
 export const SAVE_DATABASE='tiny-drive-save';
 export const SAVE_STORE='saves';
 export const SAVE_KEY='main';
@@ -31,6 +31,15 @@ export const indexedDbStorage:SaveStorage={
       tx.oncomplete=()=>{db.close();resolve();};
       tx.onabort=()=>{db.close();reject(tx.error??new Error('セーブを書き込めません。'));};
       tx.onerror=()=>{ /* abortで接続を閉じて通知する。 */ };
+    });
+  },
+  async remove(){
+    const db=await openDatabase();
+    return new Promise<void>((resolve,reject)=>{
+      const tx=db.transaction(SAVE_STORE,'readwrite');tx.objectStore(SAVE_STORE).delete(SAVE_KEY);
+      tx.oncomplete=()=>{db.close();resolve();};
+      tx.onabort=()=>{db.close();reject(tx.error??new Error('セーブデータを初期化できません。'));};
+      tx.onerror=()=>{};
     });
   },
 };
