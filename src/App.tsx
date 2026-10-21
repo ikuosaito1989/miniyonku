@@ -13,10 +13,12 @@ import { DialogueView } from './DialogueView';
 import { LegendGallery } from './LegendGallery';
 import { GameSettings } from './GameSettings';
 import { CheatPanel } from './CheatPanel';
+import { TitleScreen } from './TitleScreen';
 const yen=(n:number)=>n.toLocaleString('ja-JP');
 const TrialView=lazy(()=>import('./TrialView'));
 export function App(){
   const game=useGame();
+  const [started,setStarted]=useState(false);
   const [category,setCategory]=useState<Category>('motor');
   const modal=useRef<HTMLDivElement>(null);
   useEffect(()=>{
@@ -38,7 +40,7 @@ export function App(){
   },[]);
   return <main>
     <GameAudio/>
-    <section className="game-shell" aria-label="ゲーム画面">
+    {!started ? <TitleScreen onStart={()=>setStarted(true)}/> : <section className="game-shell" aria-label="ゲーム画面">
       <div className="stage"><ShopWorld/>
         {game.overlay===null&&<button className="game-settings-open" onClick={game.openSettings}>設定</button>}
         {game.overlay!=='race'&&<AudioControls floating/>}
@@ -59,6 +61,6 @@ export function App(){
             <p className="notice" role="status" aria-live="polite">{game.notice||'春夫「じっくり選んでね。各パーツは複数購入できるよ。」'}</p><SaveControls/>
         </div></div>}
       </div>
-    </section>
+    </section>}
   </main>;
 }
