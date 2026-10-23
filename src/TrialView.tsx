@@ -121,8 +121,9 @@ export default function TrialView(){
     <RaceRanking race={state}/>
     <div className="race-viewport">
       <div className="trial-canvas" ref={host}/>
-      <div className="race-scanlines"/><div className="race-condition">電池 {batteryLabel(player.equipment.battery,player.performance.batterySeconds+driving.time)} ／ モーター {(motorFactor(player.performance.motorSeconds+driving.time,player.equipment.motor)*100).toFixed(1)}%</div>
-      {!error&&!showTally&&!showResults&&<><div className="race-lane">{playerPath.changing?`${playerPath.from+1} → ${playerPath.to+1}`:playerPath.lane+1}コース <span>あなた・{playerPath.changing?'レーンチェンジ中':'入門マシン'}</span></div>
+      <div className="race-scanlines"/>
+      {!error&&!showTally&&!showResults&&<><div className="race-condition">電池 {batteryLabel(player.equipment.battery,player.performance.batterySeconds+driving.time)} ／ モーター {(motorFactor(player.performance.motorSeconds+driving.time,player.equipment.motor)*100).toFixed(1)}%</div>
+        <div className="race-lane">{playerPath.changing?`${playerPath.from+1} → ${playerPath.to+1}`:playerPath.lane+1}コース <span>あなた・{playerPath.changing?'レーンチェンジ中':'入門マシン'}</span></div>
         {ready&&<div className="race-start-mark" aria-hidden="true">START<span>▼</span></div>}
         {counting&&<div className="race-countdown" aria-label={`スタートまで ${countdownNumber(state)}`} key={countdownNumber(state)}>{countdownNumber(state)}</div>}
         {state.phase==='running'&&(state.time<1||waitingForGo)&&<div className="race-go" aria-hidden="true">GO!</div>}
