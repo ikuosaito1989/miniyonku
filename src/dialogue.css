@@ -11,3 +11,11 @@
 @media(max-width:600px){.dialogue-layer{padding:8px max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))}.conversation{grid-template-columns:86px minmax(0,1fr);padding:12px;gap:12px;border-width:2px}.conversation h2{font-size:16px;letter-spacing:1px}.conversation-role{font-size:9px;letter-spacing:0}.conversation-body{gap:7px}.conversation-body header{gap:3px}.conversation .conversation-close{min-width:44px;font-size:10px}.conversation-close small{display:none}.conversation-message{font-size:14px;line-height:1.8;max-height:32dvh;padding-right:3px;letter-spacing:0}.conversation-choices{flex-direction:column;gap:0}.conversation-choices button{font-size:13px;gap:4px}.conversation-object>span{font-size:32px;padding:3px 9px}.conversation-object small{font-size:6px;text-align:center;letter-spacing:0}}
 @media(max-width:360px){.conversation{grid-template-columns:68px minmax(0,1fr);gap:8px;padding:10px}.conversation h2{font-size:14px}.conversation-choices button{font-size:12px}}
 @media(max-height:480px){.dialogue-layer{padding:8px}.conversation{grid-template-columns:100px minmax(0,1fr);gap:14px;padding:10px 14px}.conversation-body{gap:3px}.conversation h2{font-size:15px}.conversation-role{font-size:9px;margin-bottom:1px}.conversation-message{max-height:25dvh;font-size:13px;line-height:1.6}.conversation-choices{flex-direction:row;gap:4px 12px}.conversation-choices button{font-size:12px}.conversation .conversation-close{min-height:36px}}
+
+.challenge-letter{display:grid;gap:4px;margin:8px 8px 18px 4px;padding:12px 14px;background:#f2e4bc;color:#4c2937;border:3px double #8c3d4d;box-shadow:4px 5px 0 #081c2f88;text-shadow:none;white-space:normal;animation:challenge-slam .45s ease-out both}
+.challenge-letter>strong{color:#8c3045;font-size:24px;letter-spacing:.2em;line-height:1.2}
+.challenge-letter>span{font-weight:bold;font-size:13px;line-height:1.5}
+.challenge-letter>small{font-size:11px;line-height:1.6}
+@keyframes challenge-slam{0%{opacity:0;transform:translateY(-30px) rotate(-9deg) scale(1.15)}65%{opacity:1;transform:translateY(3px) rotate(1deg) scale(.98)}100%{opacity:1;transform:none}}
+@media(max-height:480px){.challenge-letter{padding:8px;margin-bottom:10px}.challenge-letter>strong{font-size:18px}}
+@media(prefers-reduced-motion:reduce){.challenge-letter{animation:none}}

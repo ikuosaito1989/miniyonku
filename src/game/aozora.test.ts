@@ -1,3 +1,5 @@
+import { parts } from '../data/parts';
+import { isStocked } from '../data/progression';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { useGame } from './store';
@@ -94,7 +96,11 @@ function runChallenge(seed:number,motorSeconds=60){
   return race;
 }
 test('影山はあおぞらのパーツと慣らしで勝てる相手。同じ設定とシードで結果を再現する',()=>{
-  for(const seed of [1,123,999]){const race=runChallenge(seed);assert.equal(race.phase,'finished');assert.equal(rankRacers(race)[0].id,'player');assert.ok(race.racers.some(r=>r.id===challenger.id));}
+  for(const id of Object.values(prepared)){
+    const part=parts.find(p=>p.id===id)!;
+    assert.ok(id==='body-champion'||isStocked(part,modelShops.aozora),`${id}はあおぞらで用意できる`);
+  }
+  for(const seed of [...Array.from({length:32},(_,i)=>i+1),123,999]){const race=runChallenge(seed);assert.equal(race.phase,'finished');assert.equal(rankRacers(race)[0].id,'player');assert.ok(race.racers.some(r=>r.id===challenger.id));}
   assert.deepEqual(runChallenge(123),runChallenge(123));
   assert.notEqual(rankRacers(runChallenge(123,0))[0].id,'player');
 });
@@ -104,4 +110,41 @@ test('ひなた模型店は新しいコースと上位のギア・ターミナ�
   while(race.phase==='countdown')race=stepRace(race);race=launchPlayer(race);
   for(let i=0;i<120*180&&race.phase!=='finished';i++)race=stepRace(race);
   assert.equal(race.phase,'finished');assert.equal(race.racers[0].driving.status,'finished');assert.equal(rankRacers(race)[0].id,'player');
+});
+
+test('あおぞら初優勝で挑戦状→店のパーツで影山に勝利→ひなた入店まで進める',()=>{
+  const original=useGame.getState();
+  try{
+    useGame.setState({...aozoraStart(),inventory:{...useGame.getInitialState().inventory,'body-champion':1}});
+    useGame.getState().startTrial();
+    useGame.getState().settleRace(useGame.getState().raceAttempt,result());
+    useGame.getState().close();
+    assert.equal(useGame.getState().dialogueStage,'villain-intro');assert.match(useGame.getState().dialogue,/挑戦状/);
+    useGame.getState().close();
+    for(const [slot,id] of Object.entries(prepared)){
+      if(!useGame.getState().inventory[id])useGame.getState().buy(id);
+      useGame.getState().equip(id,slot as keyof typeof prepared);
+    }
+    assert.deepEqual(useGame.getState().equipment,prepared);
+    useGame.getState().openSetting();
+    // 充電池で慣らし、新品の勝負用電池へ戻す。
+    useGame.getState().equip('battery-recharge');
+    useGame.getState().breakIn();useGame.getState().breakIn();
+    useGame.getState().equip('battery-power');useGame.getState().close();
+    const state=useGame.getState();
+    const motor=state.units[state.equipment.motor].find(u=>u.id===state.selectedUnits.motor)!;
+    const battery=state.units[state.equipment.battery].find(u=>u.id===state.selectedUnits.battery)!;
+    assert.equal(motor.seconds,60);assert.equal(battery.seconds,0);
+    useGame.getState().openVillainChallenge();useGame.getState().startVillainChallenge();
+    let race=startRace(createRaceState(state.equipment,123,{motorSeconds:motor.seconds,batterySeconds:battery.seconds},'villain','wind'));
+    while(race.phase==='countdown')race=stepRace(race);race=launchPlayer(race);
+    for(let i=0;i<120*180&&race.phase!=='finished';i++)race=stepRace(race);
+    assert.equal(race.phase,'finished');assert.equal(rankRacers(race)[0].id,'player');
+    useGame.getState().settleRace(useGame.getState().raceAttempt,race);
+    useGame.getState().close();assert.equal(useGame.getState().dialogueStage,'villain-win');
+    useGame.getState().close();useGame.getState().leaveShop();useGame.getState().enterShop('hinata');
+    assert.equal(useGame.getState().location,'hinata');
+    const saved=decodeSave({version:1,savedAt:123,game:snapshotGame(useGame.getState())});
+    assert.equal(saved.game.villainDefeated,true);assert.equal(saved.game.location,'hinata');
+  }finally{useGame.setState(original);}
 });

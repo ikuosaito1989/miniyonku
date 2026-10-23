@@ -45,7 +45,7 @@ export function DialogueView(){
       </div>
       <div className="conversation-body">
         <header><div>{person&&<p className="conversation-role">{person.role}</p>}<h2 id="conversation-speaker">{person?.name??speaker}</h2></div><button className="conversation-close" onClick={close} aria-label="会話を閉じる">閉じる <small>Esc</small></button></header>
-        <p className="conversation-message" id="conversation-message">{dialogue}</p>
+        <p className="conversation-message" id="conversation-message">{dialogueStage==='villain-intro'&&<span className="challenge-letter"><strong>挑戦状</strong><span>影山 陸が、机に挑戦状を叩きつけた！</span><small>あおぞら模型店の優勝者へ ─ 勝てば、ひなた模型店への紹介状を渡す。</small></span>}{dialogue}</p>
         <nav className="conversation-choices" aria-label="返答を選ぶ">{choices.map((choice,index)=><button key={choice.action} ref={node=>{buttons.current[index]=node;}} className={selected===index?'is-selected':''} onFocus={()=>setSelected(index)} onClick={()=>choose(index)}><span aria-hidden="true">{selected===index?'▶':'　'}</span>{choice.label}</button>)}</nav>
       </div>
     </section>
