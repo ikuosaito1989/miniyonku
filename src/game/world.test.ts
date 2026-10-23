@@ -25,15 +25,15 @@ test('初優勝→兄弟レース完走の敗北→街→次の店。途中退�
     useGame.getState().close();useGame.getState().startTrial();
     useGame.getState().settleRace(useGame.getState().raceAttempt,completed());
     assert.deepEqual(useGame.getState().unlockedRaces,[nextShopRace.id]);assert.equal(useGame.getState().legendRaceCompleted,false);
-    useGame.getState().close();assert.equal(useGame.getState().dialogueStage,'legend-intro');
+    useGame.getState().close();assert.equal(useGame.getState().overlay,'arrival');useGame.getState().completeArrival();assert.equal(useGame.getState().dialogueStage,'legend-intro');
     useGame.getState().advance();assert.equal(useGame.getState().dialogueStage,'legend-invite');
     useGame.getState().startLegendChallenge();assert.equal(useGame.getState().legendChallengeActive,true);
     useGame.getState().close();useGame.getState().leaveShop();assert.equal(useGame.getState().location,'komorebi');
-    assert.equal(useGame.getState().dialogueStage,'legend-intro');
+    useGame.getState().completeArrival();assert.equal(useGame.getState().dialogueStage,'legend-intro');
     useGame.getState().startLegendChallenge();
     const out=completed(true);out.racers[0].driving.status='out';
     useGame.getState().settleRace(useGame.getState().raceAttempt,out);assert.equal(useGame.getState().legendRaceCompleted,false);
-    useGame.getState().close();useGame.getState().close();useGame.getState().leaveShop();useGame.getState().startLegendChallenge();
+    useGame.getState().close();useGame.getState().close();useGame.getState().leaveShop();useGame.getState().completeArrival();useGame.getState().startLegendChallenge();
     const attempt=useGame.getState().raceAttempt,beforeMoney=useGame.getState().money;
     useGame.getState().settleRace(attempt-1,completed(true));assert.equal(useGame.getState().legendRaceCompleted,false);
     useGame.getState().settleRace(attempt,completed(true));useGame.getState().settleRace(attempt,completed(true));

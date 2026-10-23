@@ -3,6 +3,10 @@ import { room, roomView, type Fixture } from '../data/shop';
 import { createShopGesture } from './shopGesture';
 import { useGame } from './store';
 import { createPeopleTextures, drawShopFixture, drawShopRoom, type Facing, type PersonKind } from './ShopArt';
+import { personDrawing } from './PeopleArt';
+import { createArrival,stepArrivalActor,type ArrivalActor,type ArrivalKind } from './arrival';
+import { EventAudio,type EventSound } from './EventAudio';
+import { useAudioSettings } from './audioSettings';
 import { personSpriteSize } from './PeopleArt';
 import { story } from '../data/story';
 import { nextShopRace } from '../data/shopHints';
@@ -39,6 +43,9 @@ export class ShopScene extends Phaser.Scene {
   private inputVersion=0;
   private boardLines:Phaser.GameObjects.Text[]=[];
   private boardPoints=-1;
+  private arrivalKind:ArrivalKind|null=null;
+  private arriving:{state:ArrivalActor;container:Phaser.GameObjects.Container;kind:string;solid:Phaser.Geom.Rectangle|null}[]=[];
+  private eventAudio=new EventAudio();
   private isTown=false;
   private transitionArmed=true;
   private challengerPerson:Phaser.GameObjects.Container|null=null;
@@ -47,6 +54,10 @@ export class ShopScene extends Phaser.Scene {
   constructor(){ super('shop'); }
   preload(){this.load.image(shopIllustrationKey,shopIllustration);}
   create(){
+    this.eventAudio=new EventAudio();
+    const unlockAudio=()=>{if(useAudioSettings.getState().enabled)this.eventAudio.unlock();};
+    window.addEventListener('pointerdown',unlockAudio,true);window.addEventListener('keydown',unlockAudio,true);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN,()=>{window.removeEventListener('pointerdown',unlockAudio,true);window.removeEventListener('keydown',unlockAudio,true);this.eventAudio.dispose();});
     this.fitCamera();
     this.scale.on(Phaser.Scale.Events.RESIZE,this.fitCamera,this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN,()=>this.scale.off(Phaser.Scale.Events.RESIZE,this.fitCamera,this));
@@ -182,9 +193,72 @@ export class ShopScene extends Phaser.Scene {
       this.challengerPerson.destroy();this.challengerPerson=null;this.solids=this.solids.filter(s=>s!==this.challengerSolid);this.challengerSolid=null;
     }
   }
+  private playEventSound(cue:EventSound){
+    const {enabled,volume}=useAudioSettings.getState();if(enabled)this.eventAudio.play(cue,volume);
+  }
+  private arrivalTexture(kind:string,facing:Facing,frame:number){
+    const key=`arrival-${kind}-${facing}-${frame}`;
+    if(!this.textures.exists(key)){
+      let drawing=kind==='villain'?challengerDrawing(facing,frame):personDrawing('rival',facing,frame);
+      if(kind!=='villain'){
+        const colors:Record<string,string>=kind==='rei'?{'#b14b67':'#42679f','#ec9aa2':'#9bbfe9','#7f3757':'#29456f'}:{'#b14b67':'#c49b3d','#ec9aa2':'#f3d98a','#7f3757':'#8b6529'};
+        drawing=drawing.map(shape=>({...shape,color:colors[shape.color]??shape.color}));
+      }
+      const texture=this.textures.createCanvas(key,personSpriteSize.width,personSpriteSize.height)!;
+      paintPixels(texture.context,drawing);texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
+    }
+    return key;
+  }
+  private clearArrival(){
+    for(const actor of this.arriving){
+      if(actor.kind!=='villain')actor.container.destroy();
+      if(actor.solid)this.solids=this.solids.filter(s=>s!==actor.solid);
+    }
+    this.arriving=[];this.arrivalKind=null;
+  }
+  private updateArrival(delta:number){
+    const kind=useGame.getState().arrivalEvent;if(!kind)return;
+    if(this.arrivalKind!==kind){
+      this.clearArrival();this.resetKeys();this.arrivalKind=kind;
+      const obstacles=this.solids.filter(s=>s!==this.challengerSolid);
+      const actors=createArrival({x:this.player.x,y:this.player.y},obstacles,kind==='legend'?2:1);
+      this.arriving=actors.map((state,index)=>{
+        const actorKind=kind==='villain'?'villain':index?'gaku':'rei';
+        const container=actorKind==='villain'&&this.challengerPerson?this.challengerPerson:this.person(state.position.x,state.position.y,'rival');
+        container.setPosition(state.position.x,state.position.y);
+        if(actorKind!=='villain')container.add(this.add.text(0,-51,index?'火野 岳':'風見 怜',{fontFamily:'sans-serif',fontSize:'9px',color:'#fff2c7',backgroundColor:'#253d50',padding:{x:4,y:2},resolution:2}).setOrigin(.5,1));
+        return {state,container,kind:actorKind,solid:null};
+      });
+      this.playEventSound('arrival');
+    }
+    for(const actor of this.arriving){
+      const before=actor.state.distance;actor.state=stepArrivalActor(actor.state,this.player,delta);
+      actor.container.setPosition(actor.state.position.x,actor.state.position.y).setDepth(actor.state.position.y);
+      const frame=actor.state.arrived?0:Math.floor(actor.state.walkTime/130)%4;
+      (actor.container.list[1] as Phaser.GameObjects.Image).setTexture(this.arrivalTexture(actor.kind,actor.state.facing,frame));
+      if(Math.floor(actor.state.distance/18)>Math.floor(before/18))this.playEventSound('step');
+      if(actor.kind==='villain')this.challengerSolid?.setPosition(actor.container.x-12,actor.container.y-9);
+    }
+    if(this.arriving.length&&this.arriving.every(actor=>actor.state.arrived)){
+      this.resetKeys();this.facing='down';
+      for(const actor of this.arriving){
+        if(actor.kind!=='villain'){
+          actor.solid=new Phaser.Geom.Rectangle(actor.container.x-12,actor.container.y-9,24,21);this.solids.push(actor.solid);
+        }
+      }
+      this.playEventSound('contact');useGame.getState().completeArrival();
+    }
+  }
   update(_time:number,delta:number){
     if(!this.player)return;
     this.syncChallenger();
+    const state=useGame.getState();
+    if(state.overlay==='race'&&this.arriving.length)this.clearArrival();
+    if(!state.overlay){
+      if(state.location==='komorebi'&&state.legendEventPending&&!state.legendRaceCompleted)state.beginArrival('legend');
+      else if(state.location==='aozora'&&state.villainArrivalPending&&!state.villainDefeated)state.beginArrival('villain');
+    }
+    if(useGame.getState().overlay==='arrival'){this.updateArrival(delta);return;}
     const points=useGame.getState().proficiencyPoints;
     if(this.boardPoints!==points){this.boardPoints=points;proficiencyStandings(points).forEach((p,i)=>this.boardLines[i]?.setText(`${i+1} ${p.name.split(' ').at(-1)}\n    ${p.points}pt`).setColor(p.id==='player'?'#ffe18c':'#e6dfbc'));}
     const touchAction=touchInput.consume();
@@ -243,7 +317,7 @@ export class ShopScene extends Phaser.Scene {
     const visitors=cast.visitors.map(v=>({x:v.x-16,y:v.y-42,w:32,h:54,label:v.name,speaker:v.name,shopAfter:false,text:shopAdvice(v.kind,{money:state.money,inventory:state.inventory,equipment:state.equipment,motorSeconds:condition.motorSeconds,qualified:state.unlockedRaces.includes(nextShopRace.id)})}));
     if(shop.id==='aozora'){
       for(const visitor of visitors)visitor.text=visitor.speaker==='三浦 結衣'?(state.villainDefeated?'黒岩くんに勝ったんだね！町へ出て、この店の右隣のひなた模型店へ行けるよ。':state.aozoraWon?'黒岩くんが店の中央で待っているよ。挑戦レースで1位になると、ひなた模型店への紹介状がもらえるんだって。':'ここは優勝1,000円、5位完走でも250円！まずは優勝しよう。町の黒岩くんが、速いレーサーを探しているみたい。'):'黒岩くんに勝つなら、記念ボディにブリーズモーターを約60秒ならして、4:1ギア・スパークセル・スポンジタイヤを試そう。低重心シャーシと軽量化も比べてね。';
-      if(state.aozoraWon)targets.push({x:challengerSpot.x-16,y:challengerSpot.y-42,w:32,h:54,label:challenger.name,speaker:challenger.name,shopAfter:false,text:'挑戦を受ける。',kind:'challenger'});
+      if(state.aozoraWon)targets.push({x:(this.challengerPerson?.x??challengerSpot.x)-16,y:(this.challengerPerson?.y??challengerSpot.y)-42,w:32,h:54,label:challenger.name,speaker:challenger.name,shopAfter:false,text:'挑戦を受ける。',kind:'challenger'});
     }else if(shop.id==='hinata')for(const visitor of visitors)visitor.text=visitor.speaker==='三浦 結衣'?'ひなた模型店へようこそ！ここは長い高速コーナー。ほかの4店と大会会場は、まだ準備中だよ。':'3.5:1ギアは最高速が伸びる反面、駆動力は下がるよ。ゴールドターミナルとロングランセル、スポンジタイヤで安定した5周を目指してみよう。';
     return [...targets,...visitors];
   }

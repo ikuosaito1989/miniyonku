@@ -29,7 +29,7 @@ test('あおぞらの完走賞は1000/600/450/350/250円。通常優勝で黒岩
     useGame.setState(aozoraStart());useGame.getState().startTrial();const attempt=useGame.getState().raceAttempt;
     useGame.getState().settleRace(attempt,result());useGame.getState().settleRace(attempt,result());
     assert.equal(useGame.getState().money,11000);assert.equal(useGame.getState().aozoraWon,true);assert.equal(useGame.getState().villainDefeated,false);
-    useGame.getState().close();assert.equal(useGame.getState().dialogueStage,'villain-intro');assert.equal(useGame.getState().speaker,challenger.name);
+    useGame.getState().close();assert.equal(useGame.getState().overlay,'arrival');useGame.getState().completeArrival();assert.equal(useGame.getState().dialogueStage,'villain-intro');assert.equal(useGame.getState().speaker,challenger.name);
     assert.deepEqual(dialogueChoices(false,false,'villain-intro').map(c=>c.action),['villainRace','close']);
     useGame.getState().close();useGame.getState().leaveShop();useGame.getState().enterShop('hinata');assert.equal(useGame.getState().location,'town');
     useGame.getState().enterShop('aozora');useGame.getState().openVillainChallenge();assert.equal(useGame.getState().dialogueStage,'villain-intro');
@@ -119,6 +119,7 @@ test('あおぞら初優勝で挑戦状→店のパーツで黒岩に勝利→�
     useGame.getState().startTrial();
     useGame.getState().settleRace(useGame.getState().raceAttempt,result());
     useGame.getState().close();
+    assert.equal(useGame.getState().overlay,'arrival');useGame.getState().completeArrival();
     assert.equal(useGame.getState().dialogueStage,'villain-intro');assert.match(useGame.getState().dialogue,/挑戦状/);
     useGame.getState().close();
     for(const [slot,id] of Object.entries(prepared)){
