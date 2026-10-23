@@ -5,7 +5,7 @@ import { compactDevice, raceRenderSize } from '../data/display';
 import { getCircuitTrack, type CircuitId, type CircuitTrack } from '../data/circuit';
 import type { Equipment } from '../data/machine';
 import { FIXED_STEP } from './driving';
-import { completeRaceAfterPlayerFinish, createRaceState, launchPlayer, startRace, stepRace, type RaceState, type RaceChallenge } from './race';
+import { canViewRaceResults, completeRaceAfterPlayerFinish, createRaceState, launchPlayer, startRace, stepRace, type RaceState, type RaceChallenge } from './race';
 import { raceCamera } from '../data/raceCamera';
 import { createFinishPresentation, finishCoastDistance, finishSequence, shouldUseFinishCamera, stepFinishPresentation, type FinishPresentation } from './finishPresentation';
 import { RaceAudio } from './RaceAudio';
@@ -66,7 +66,7 @@ export class TrialRenderer {
   }
   setCamera(mode:TrialCamera){this.cameraMode=mode;}
   showResults(){
-    if(this.finishPresentation.stage==='results'||this.state.racers.find(r=>r.id==='player')?.driving.status!=='finished')return;
+    if(this.finishPresentation.stage==='results'||!canViewRaceResults(this.state))return;
     this.state=completeRaceAfterPlayerFinish(this.state);
     this.finishPresentation={...stepFinishPresentation(this.finishPresentation,this.state,0),stage:'results',finalAge:finishSequence.holdSeconds+finishSequence.tallySeconds};
     this.audio.update(this.state);
@@ -182,6 +182,8 @@ export class TrialRenderer {
       this.accumulator+=elapsed;
       while(this.accumulator>=FIXED_STEP){this.state=stepRace(this.state);this.accumulator-=FIXED_STEP;}
     }
+    const player=this.state.racers.find(r=>r.id==='player');
+    if(player?.driving.status==='out'&&player.driving.stopReason==='lapped')this.showResults();
     // CPUだけが発進してもスタート画角を維持し、自分の発進後に切り替える。
     if(this.state.playerStartOffset!==null)this.startShotBlend=Math.max(0,this.startShotBlend-elapsed/raceCamera.transitionSeconds);
     this.finishPresentation=stepFinishPresentation(this.finishPresentation,this.state,elapsed);

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useGame } from './game/store';
 import { TrialRenderer } from './game/TrialRenderer';
-import { countdownNumber, createRaceState, officialTime, rankRacers } from './game/race';
+import { canViewRaceResults, countdownNumber, createRaceState, officialTime, rankRacers } from './game/race';
 import { getCircuitTrack } from './data/circuit';
 import { currentShop } from './data/world';
 import './trial.css';
@@ -66,7 +66,7 @@ export default function TrialView(){
       if(event.repeat&&['KeyZ','Enter','Space'].includes(event.code)){event.preventDefault();return;}
       if(error)return;
       if(event.target instanceof HTMLButtonElement&&event.code!=='KeyZ')return;
-      if(state.racers.find(r=>r.id==='player')?.driving.status==='finished'&&finish.stage!=='results'&&['KeyZ','Enter','Space'].includes(event.code)){
+      if(canViewRaceResults(state)&&finish.stage!=='results'&&['KeyZ','Enter','Space'].includes(event.code)){
         event.preventDefault();showRaceResults();return;
       }
       if(state.phase==='finished'||(state.phase!=='ready'&&state.playerStartOffset!==null))return;
@@ -89,7 +89,7 @@ export default function TrialView(){
   const standings=rankRacers(state);
   const position=standings.findIndex(r=>r.id==='player')+1;
   const showResults=finish.stage==='results',showTally=finish.stage==='tally';
-  const canViewResults=driving.status==='finished'&&!showResults&&!error;
+  const canViewResults=canViewRaceResults(state)&&!showResults&&!error;
   const lastArrival=finish.arrivals.at(-1);
   const lastFinisher=state.racers.find(r=>r.id===lastArrival?.id);
   const firstFinisher=state.racers.find(r=>r.id===finish.arrivals[0]?.id);
@@ -104,7 +104,7 @@ export default function TrialView(){
     recentGoal?`${lastFinisher?.name}、ゴールイン！ 公式タイム ${clock(officialTime(state,lastFinisher!))}。${state.falseStartPenalty>0?'最終順位は加算後のタイムで決まります。':''}`:
     finished?'全車のゴールを確認！ まもなく最終結果を発表します。':
     finish.stage==='approach'?'いよいよ最終ストレート！ 先頭のマシンがゴールへ飛び込んでくる！':
-    driving.status==='out'?(driving.stopReason==='lapped'?'先頭に1周差をつけられ、リタイア。ほかのマシンの結果を確認しています。':driving.stopReason==='battery'?'電池切れで停止！ 別の電池に交換しよう。':'コースアウト！ マシンを回収したよ。ほかのマシンは走行中。'):
+    driving.status==='out'?(driving.stopReason==='lapped'?'先頭に1周差をつけられ、リタイア。ゴール集計画面へ進みます。':driving.stopReason==='battery'?'電池切れで停止！ 別の電池に交換しよう。':'コースアウト！ マシンを回収したよ。ほかのマシンは走行中。'):
     state.time<2?'スタート！ GOからの反応時間も記録に含まれるよ。':playerPath.changing?`レーンチェンジ！ ${playerPath.from+1}コースから ${playerPath.to+1}コースへ。５周で全レーンを走るよ。`:`あなたは現在 ${position}位！ 赤いマシンの上の黄色い印が目印だよ。`);
 
   return <section className="trial retro-race" aria-label={legendChallenge?'レジェンド挑戦レース':villainChallenge?'影山 陸との挑戦レース':'5台の3Dレース'} data-phase={state.phase} data-finish-stage={finish.stage} onClick={event=>{

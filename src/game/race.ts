@@ -71,9 +71,13 @@ export function stepRace(state:RaceState):RaceState {
     ?{...r,driving:{...r.driving,status:'out' as const,speed:0,stopReason:'lapped' as const}}:r);
   return {...state,racers,time:state.time+FIXED_STEP,phase:racers.every(r=>r.driving.status==='finished'||r.driving.status==='out')?'finished':'running'};
 }
-// 映像の待ち時間だけを省略。固定刻みでCPUの順位・リタイアも確定する。
+export function canViewRaceResults(state:RaceState){
+  const player=state.racers.find(r=>r.id==='player');
+  return player?.driving.status==='finished'||player?.driving.status==='out'&&player.driving.stopReason==='lapped';
+}
+// ゴール・周回遅れ後の待ち時間だけを省略。固定刻みでCPUの順位・リタイアも確定する。
 export function completeRaceAfterPlayerFinish(state:RaceState):RaceState {
-  if(state.racers.find(r=>r.id==='player')?.driving.status!=='finished')return state;
+  if(!canViewRaceResults(state))return state;
   let result=state;
   while(result.phase==='running')result=stepRace(result);
   return result;

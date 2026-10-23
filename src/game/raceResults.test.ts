@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { starterEquipment } from '../data/machine';
 import { getCircuitTrack, type CircuitId } from '../data/circuit';
-import { completeRaceAfterPlayerFinish, createRaceState, launchPlayer, officialTime, rankRacers, startRace, stepRace, type RaceState } from './race';
+import { canViewRaceResults, completeRaceAfterPlayerFinish, createRaceState, launchPlayer, officialTime, rankRacers, startRace, stepRace, type RaceState } from './race';
 import { racePrize } from './reward';
 import { useGame } from './store';
 import { snapshotGame } from './saveData';
@@ -25,7 +25,7 @@ test('ゴール後の結果表示は残りCPUを通常と同じ計算で確定�
     assert.equal(completeRaceAfterPlayerFinish(result),result);
   }
 });
-test('発進前・走行中・リタイアでは結果へのスキップを許可しない',()=>{
+test('発進前・走行中・通常のコースアウトでは結果へのスキップを許可しない',()=>{
   const ready=createRaceState(starterEquipment),running=nearGoal('leaf');
   assert.equal(completeRaceAfterPlayerFinish(ready),ready);
   assert.equal(completeRaceAfterPlayerFinish(startRace(ready)).phase,'countdown');
@@ -65,4 +65,37 @@ test('最強兄弟に周回遅れで敗北しても街を解放し、賞金は�
     assert.equal(useGame.getState().legendRaceCompleted,true);assert.equal(useGame.getState().money,before);
     useGame.getState().close();useGame.getState().close();useGame.getState().leaveShop();assert.equal(useGame.getState().location,'town');
   }finally{useGame.setState(original);}
+});
+
+test('周回遅れ直後に残りCPUの結果を確定でき、停止状態・賞金・兄弟イベントを維持する',()=>{
+  const original=useGame.getState();
+  try{
+    useGame.setState({...useGame.getInitialState(),unlockedRaces:[nextShopRace.id]});
+    useGame.getState().startLegendChallenge();
+    let race=startRace(createRaceState(starterEquipment,123,undefined,true));
+    while(race.phase==='countdown')race=stepRace(race);
+    race=launchPlayer(race);
+    for(let i=0;i<120*120&&race.racers[0].driving.status!=='out';i++)race=stepRace(race);
+    assert.equal(race.phase,'running');assert.equal(race.racers[0].driving.stopReason,'lapped');
+    assert.equal(canViewRaceResults(race),true);
+    const before=structuredClone(race),money=useGame.getState().money;
+    let expected=race;while(expected.phase==='running')expected=stepRace(expected);
+    const result=completeRaceAfterPlayerFinish(race);
+    assert.equal(result.phase,'finished');assert.deepEqual(result,expected);
+    assert.deepEqual(race,before);assert.deepEqual(result.racers[0].driving,before.racers[0].driving);
+    assert.equal(racePrize(result),0);
+    const attempt=useGame.getState().raceAttempt;
+    useGame.getState().settleRace(attempt,result);useGame.getState().settleRace(attempt,result);
+    assert.equal(useGame.getState().money,money);assert.equal(useGame.getState().legendRaceCompleted,true);
+    useGame.getState().close();assert.equal(useGame.getState().dialogueStage,'legend-debrief');
+    useGame.getState().close();useGame.getState().leaveShop();assert.equal(useGame.getState().location,'town');
+  }finally{useGame.setState(original);}
+});
+test('未発進で周回遅れになっても結果を集計できる',()=>{
+  const race=nearGoal('leaf'),length=getCircuitTrack().circuitLength;
+  race.playerStartOffset=null;
+  race.racers=race.racers.map(r=>({...r,driving:{...r.driving,status:r.id==='player'?'ready':'running',distance:r.id==='player'?0:length+1}}));
+  const stopped=stepRace(race),result=completeRaceAfterPlayerFinish(stopped);
+  assert.equal(canViewRaceResults(stopped),true);assert.equal(result.phase,'finished');
+  assert.equal(result.racers[0].driving.stopReason,'lapped');assert.equal(result.playerStartOffset,null);
 });
