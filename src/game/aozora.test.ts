@@ -104,8 +104,8 @@ test('黒岩はあおぞらのパーツと慣らしで勝てる相手。同じ�
   assert.deepEqual(runChallenge(123),runChallenge(123));
   assert.notEqual(rankRacers(runChallenge(123,0))[0].id,'player');
 });
-test('ひなた模型店は新しいコースと上位のギア・ターミナル・電池で走行できる',()=>{
-  const equipment={...prepared,gear:'gear-3.5',terminal:'terminal-1',battery:'battery-endurance'};
+test('ひなた模型店は悪路用装備でロングダートを優勝できる',()=>{
+  const equipment={...prepared,motor:'motor-trail',tire:'tire-trail',accessory:'accessory-damper',chassis:'chassis-trail',rollerFront:'roller-double',rollerSide:'roller-double',rollerRear:'roller-double',gear:'gear-4',terminal:'terminal-1',battery:'battery-endurance'};
   let race=startRace(createRaceState(equipment,123,{motorSeconds:60,batterySeconds:0},false,'sun'));
   while(race.phase==='countdown')race=stepRace(race);race=launchPlayer(race);
   for(let i=0;i<120*180&&race.phase!=='finished';i++)race=stepRace(race);

@@ -106,14 +106,20 @@ export class TrialRenderer {
   private buildTrack(){
     const {circuit,circuitLength,sampleLanePath}=this.track;
     for(let lane=0;lane<circuit.lanes;lane++){
-      const vertices:number[]=[],indices:number[]=[];
+      const vertices:number[]=[],indices:number[]=[],colors:number[]=[];
       for(let i=0;i<=circuit.samples;i++){
         const p=sampleLanePath(i/circuit.samples*circuitLength,lane);
-        for(const offset of [-circuit.laneWidth/2,circuit.laneWidth/2])vertices.push(p.x+p.tangentZ*offset,p.y,p.z-p.tangentX*offset);
+        for(const offset of [-circuit.laneWidth/2,circuit.laneWidth/2]){
+          vertices.push(p.x+p.tangentZ*offset,p.y,p.z-p.tangentX*offset);
+          const surface=this.track.surfaceAt(i/circuit.samples*circuitLength);
+          const color=new THREE.Color(surface.roughness>.9?0x8b7359:surface.grip<.7?0xd2b47a:0xad8d61);
+          color.multiplyScalar(.88+.12*Math.sin(i*13.7+lane*4.1)**2);colors.push(color.r,color.g,color.b);
+        }
         if(i<circuit.samples){const a=i*2;indices.push(a,a+1,a+2,a+1,a+3,a+2);}
       }
       const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.setIndex(indices);geometry.computeVertexNormals();
-      const mesh=this.mesh(geometry,lane%2?0x8d91bb:0xaaaed0);mesh.material.side=THREE.DoubleSide;this.scene.add(mesh);
+      if(circuit.surface.roughness>0)geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
+      const mesh=this.mesh(geometry,circuit.surface.roughness>0?0xffffff:lane%2?0x8d91bb:0xaaaed0);mesh.material.vertexColors=circuit.surface.roughness>0;mesh.material.side=THREE.DoubleSide;this.scene.add(mesh);
       for(const side of [-1,1]){
       const offset=side*circuit.laneWidth/2;
       const vertices:number[]=[],indices:number[]=[];

@@ -244,7 +244,13 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
       const collar=add(new THREE.TorusGeometry(.004,.0012,6,12),partAccent(equipment.shaft,85),side*.101,.033,z);collar.rotation.y=Math.PI/2;collar.name='hollow-shaft-collar';
     }
   }
-  if(equipment.accessory==='accessory-weight'){
+  if(equipment.accessory.startsWith('accessory-damper')){
+    for(const side of [-1,1]){
+      add(new THREE.CylinderGeometry(.003,.003,.05,12),metal,side*.065,.063,.025).name='damper-post';
+      add(new THREE.CylinderGeometry(.01,.01,.016,16),partMaterial(equipment.accessory,75),side*.065,.052,.025).name='damper-mass';
+      for(let ring=0;ring<5;ring++){const spring=add(new THREE.TorusGeometry(.005,.001,4,12),metal,side*.065,.067+ring*.003,.025);spring.rotation.x=Math.PI/2;spring.name='damper-spring';}
+    }
+  }else if(equipment.accessory==='accessory-weight'){
     add(new THREE.BoxGeometry(.052,.007,.024),partMaterial(equipment.accessory,65),0,.034,.066).name='ballast-plate';
     add(new THREE.BoxGeometry(.04,.002,.003),partAccent(equipment.accessory),0,.039,.066).name='ballast-mark';
   }else if(equipment.accessory==='accessory-support'){
@@ -253,9 +259,11 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
   for(const z of [-.083,.083]){
     const axle=add(new THREE.CylinderGeometry(equipment.shaft==='shaft-1'?.002:.003,equipment.shaft==='shaft-1'?.002:.003,.179,12),partMaterial(equipment.shaft,85),0,.033,z);axle.rotation.z=Math.PI/2;axle.name='drive-shaft';
     for(const side of [-1,1]){
-      const tireRadius=equipment.tire==='tire-1'?.034:equipment.tire==='tire-2'?.031:.033;
+      const trailTire=equipment.tire==='tire-trail'||equipment.tire==='tire-sand';
+      const tireRadius=trailTire?.037:equipment.tire==='tire-1'?.034:equipment.tire==='tire-2'?.031:.033;
       const tireWidth=equipment.tire==='tire-1'?.034:equipment.tire==='tire-2'?.022:.028;
       const tire=add(new THREE.CylinderGeometry(tireRadius,tireRadius,tireWidth,40,1),rubber,side*.082,.033,z);tire.rotation.z=Math.PI/2;tire.name=`tire-${equipment.tire}`;
+      if(trailTire)for(let lug=0;lug<16;lug++){const angle=lug*Math.PI/8;const block=add(new THREE.BoxGeometry(tireWidth+.003,.004,.01),rubber,side*.082,.033+Math.cos(angle)*tireRadius,z+Math.sin(angle)*tireRadius);block.rotation.x=angle;block.name='offroad-tread';}
       const sidewall=add(new THREE.TorusGeometry(tireRadius*.81,.0014,5,32),partAccent(equipment.tire,60),side*(.082+tireWidth/2+.001),.033,z);sidewall.rotation.y=Math.PI/2;sidewall.name=`tire-sidewall-${equipment.tire}`;
       if(equipment.tire==='tire-1')for(let pore=0;pore<10;pore++){
         const angle=pore*Math.PI/5,texture=add(new THREE.SphereGeometry(.0014,6,4),partAccent(equipment.tire,25),side*(.082+tireWidth/2+.001),.033+Math.cos(angle)*tireRadius*.58,z+Math.sin(angle)*tireRadius*.58);texture.name='sponge-pore';
@@ -271,6 +279,11 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
   }
   for(const x of [-.101,.101])for(const z of [-.13,0,.125]){
     const slot=z<0?'rollerRear':z>0?'rollerFront':'rollerSide',id=equipment[slot];
+    if(id==='roller-double'){
+      add(new THREE.CylinderGeometry(.0025,.0025,.055,12),metal,x,.065,z).name='double-roller-pole';
+      add(new THREE.CylinderGeometry(.014,.014,.009,24),partMaterial(id,65),x,.083,z).name='double-roller-upper';
+      const upperRing=add(new THREE.TorusGeometry(.01,.0015,6,24),partAccent(id,85),x,.088,z);upperRing.rotation.x=Math.PI/2;
+    }
     const base=add(new THREE.CylinderGeometry(.014,.014,.009,32),partMaterial(id,id==='roller-1'?12:60),x,.045,z);base.name=`roller-${slot}-${id}`;
     const ring=add(new THREE.TorusGeometry(id==='roller-2'?.010:.009,.0015,6,24),partAccent(id,85),x,.050,z);ring.rotation.x=Math.PI/2;ring.name=`roller-accent-${slot}`;
     if(id==='roller-2'){

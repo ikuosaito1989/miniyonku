@@ -27,9 +27,10 @@ export function machinePerformance(equipment: Equipment, condition:MachineCondit
     motorSeconds:condition.motorSeconds,batterySeconds:condition.batterySeconds,motorWearRate:motor.wear??1,
     lateralLimit: (9.81 * (1.2 + tire.grip) + rollerWeight * 0.2)*body.stability*chassis.stability*accessory.stability,
     roughGrip:body.roughGrip,
-    roughResistance:body.roughResistance,
+    roughResistance:body.roughResistance*(tire.roughResistance??1),
+    damping:Math.min(.9,(accessory.damping??0)+(chassis.damping??0)+(front.damping??0)*.45+(side.damping??0)*.35+(rear.damping??0)*.2),
     // 柔らかいスポンジは凹凸に追従し、ハードは舗装向け。
-    tireCompliance:equipment.tire==='tire-1'?1.2:equipment.tire==='tire-2'?.7:1,
+    tireCompliance:tire.compliance??(equipment.tire==='tire-1'?1.2:equipment.tire==='tire-2'?.7:1),
   };
 }
 export type Performance = ReturnType<typeof machinePerformance>;
@@ -40,10 +41,11 @@ export function startDriving(state: DrivingState): DrivingState {
 // 入力なしの試走は乱数を使用せず、同じ装備なら同一結果になる。
 export function surfacePerformance(performance:Performance,surface:TrackSurface){
   const roughness=Math.max(0,Math.min(1,surface.roughness));
-  const contact=1-roughness+roughness*Math.min(1,performance.roughGrip*performance.tireCompliance);
+  const vibration=roughness*(1-performance.damping);
+  const contact=(1-roughness+roughness*Math.min(1,performance.roughGrip*performance.tireCompliance))*(1-vibration*.4);
   return {
     traction:Math.min(1,Math.max(0,surface.grip)*contact),
-    resistance:performance.mass*9.81*roughness*.18*performance.roughResistance/performance.tireCompliance,
+    resistance:performance.mass*9.81*roughness*(.18+.6*vibration)*performance.roughResistance/performance.tireCompliance,
     lateralLimit:performance.lateralLimit*Math.max(0,surface.grip)*contact,
   };
 }
@@ -54,7 +56,7 @@ export function stepDriving(state: DrivingState, performance: Performance, laneO
   if(remaining<=0)return {...state,speed:0,status:'out',stopReason:'battery'};
   const charge=.55+.45*Math.sqrt(remaining);
   const motor=performance.motorWearRate===0?1:motorFactor(performance.motorSeconds+state.time);
-  const road=surfacePerformance(performance,surface);
+  const road=surfacePerformance(performance,track.circuit.surface.roughness>0?track.surfaceAt(state.distance):surface);
   const force=performance.stallForce*charge*motor*Math.max(0,1-state.speed/(performance.freeSpeed*charge*motor))*road.traction;
   const resistance=performance.mass*9.81*0.025+performance.drag*state.speed**2+road.resistance;
   const wheelResistance=state.speed**2*sampleCircuit(startDistance+state.distance).curvature*.002*performance.cornerDrag;

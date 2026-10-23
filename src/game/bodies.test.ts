@@ -30,9 +30,9 @@ test('SUVは舗装でスポーツより不利だが、悪路の接地と抵抗�
 });
 test('路面は表示用の適性だけでなく固定刻みの速度・安定性に作用し再現できる',()=>{
   function run(body:string,rough:boolean){
-    const p=machinePerformance({...starterEquipment,body,motor:'motor-torque',tire:'tire-1'});
+    const p=machinePerformance({...starterEquipment,body,motor:rough?'motor-trail':'motor-torque',tire:rough?'tire-trail':'tire-1'});
     let state=startDriving(createDrivingState());
-    for(let tick=0;tick<14400&&state.status==='running';tick++)state=stepDriving(state,p,0,2,rough?dirtSurface:pavedSurface);
+    for(let tick=0;tick<120*360&&state.status==='running';tick++)state=stepDriving(state,p,0,2,rough?dirtSurface:pavedSurface);
     return state;
   }
   const suv=run('body-manta',true),sport=run('body-arrow',true);

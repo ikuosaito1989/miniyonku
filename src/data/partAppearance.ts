@@ -3,6 +3,15 @@ import { bodies } from './bodies';
 
 export interface PartAppearance { color:string; accent:string; detail:number; mark:string }
 export const partAppearances:Record<string,PartAppearance>={
+  'motor-trail':{color:'#b58a4e',accent:'#f3ce62',detail:4,mark:'TRAIL'},
+  'motor-rally':{color:'#b58a4e',accent:'#f3ce62',detail:4,mark:'TRAIL'},
+  'tire-trail':{color:'#b58a4e',accent:'#f3ce62',detail:4,mark:'TRAIL'},
+  'tire-sand':{color:'#b58a4e',accent:'#f3ce62',detail:4,mark:'TRAIL'},
+  'accessory-damper':{color:'#b58a4e',accent:'#f3ce62',detail:4,mark:'TRAIL'},
+  'accessory-damper-light':{color:'#b58a4e',accent:'#f3ce62',detail:4,mark:'TRAIL'},
+  'roller-double':{color:'#b58a4e',accent:'#f3ce62',detail:4,mark:'TRAIL'},
+  'roller-trail':{color:'#b58a4e',accent:'#f3ce62',detail:4,mark:'TRAIL'},
+  'chassis-trail':{color:'#b58a4e',accent:'#f3ce62',detail:4,mark:'TRAIL'},
   'motor-wind':{color:'#b8d5df',accent:'#3987bd',detail:4,mark:'BREEZE'},
   'motor-rescue':{color:'#8fb5a5',accent:'#365c54',detail:0,mark:'REUSE'},
   ...Object.fromEntries(bodies.map(body=>[body.id,{color:body.color,accent:'#edf3de',detail:body.grade,mark:body.className}])),

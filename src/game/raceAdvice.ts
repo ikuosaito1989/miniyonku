@@ -38,6 +38,10 @@ export function raceAdvice(state:RaceAdviceContext){
   const shop=modelShops[state.shopId],lines=['レース相談は僕に任せて。'];
   if(state.review?.circuitId===shop.circuitId)lines.push(state.review.text);
   else lines.push('この店のレース記録はまだないね。今の装備で改善できる点を見てみよう。');
+  if(state.shopId==='hinata'){lines.push('ひなたはロングダート。舗装用のままでは砂利で失速するよ。トレイルトルクモーター、ブロックトレッドタイヤ、ツインマスダンパー、前中後のポール式ダブルローラーを組み合わせ、4:1ギアから試そう。特にタイヤの接地とダンパーの振動吸収が大切だよ。');
+    const missing=['tire-trail','accessory-damper','motor-trail','roller-double'].map(id=>parts.find(p=>p.id===id)!).find(p=>!(state.inventory[p.id]>0));
+    if(missing)lines.push(`ひなた模型店の「${missing.name}」は${missing.price}円。${state.money>=missing.price?'今の所持金で買えるよ。':`あと${missing.price-state.money}円、完走賞で貯めよう。`}単体では足りない場合もあるので、悪路用の組み合わせを揃えよう。`);
+  }
   const motor=parts.find(p=>p.id===state.equipment.motor)!;
   if(motor.specs.wear!==0&&state.motorSeconds<60)lines.push(`今の${motor.name}は使用${state.motorSeconds.toFixed(0)}秒。作業台であと約${Math.ceil(60-state.motorSeconds)}秒ならそう。慣らしでも電池は減るので残量に注意してね。`);
   else if(motor.specs.wear!==0&&state.motorSeconds>180)lines.push(`今の${motor.name}は使用${state.motorSeconds.toFixed(0)}秒で摩耗中。慣らしを増やしても回復しないので、新品への交換を優先しよう。`);
