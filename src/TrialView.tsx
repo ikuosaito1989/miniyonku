@@ -127,7 +127,7 @@ export default function TrialView(){
         <p className="result-note">{penaltyText?`${penaltyText}を公式タイムに反映済み`:'公式タイムにはGO後の反応時間を含みます'}</p>
         <p className="result-note" role="status">{legendChallenge?'特別レースのため賞金はありません。':prize>0?`${winner?.id==='player'?'優勝賞金':'完走賞'} +${prize}円！`:'今回の賞金はありません。'} 所持金 {money.toLocaleString('ja-JP')}円</p>
         {legendChallenge&&<p className="result-note" role="status">風見 怜と火野 岳が圧倒的な走りを披露した。次こそ追いつこう！</p>}
-        {qualificationNotice&&<p className="result-note" role="status">初優勝！ {nextShopRace.shopName}のレース参加資格を獲得！ 街・次の店への移動は準備中です。</p>}
+        {qualificationNotice&&<p className="result-note" role="status">初優勝！ {nextShopRace.shopName}のレース参加資格を獲得！ 店内下中央の出口から街へ出て、次の模型店へ行こう！</p>}
         {qualificationNotice&&<p className="result-note" role="status">優勝記念ボディ「セイラン Vortex GT」を受け取りました。セッティングで装着できます。</p>}
       </section>}
     </div>

@@ -1,6 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { ShopWorld } from './ShopWorld';
-import { ShopExterior } from './ShopExterior';
+import { TownWorld } from './TownWorld';
+import { shopById, type ShopId } from './data/town';
 import { touchInput } from './game/touchInput';
 import { useGame } from './game/store';
 import { categories, parts, type Category } from './data/parts';
@@ -23,6 +24,7 @@ export function App(){
   const [started,setStarted]=useState(false);
   const [outside,setOutside]=useState(false);
   const leaveShop=useCallback(()=>{touchInput.reset();setOutside(true);},[]);
+  const enterShop=useCallback((id:ShopId)=>{touchInput.reset();useGame.getState().enterShop(id);setOutside(false);},[]);
   const [category,setCategory]=useState<Category>('motor');
   const modal=useRef<HTMLDivElement>(null);
   useEffect(()=>{
@@ -46,7 +48,7 @@ export function App(){
     <GameAudio/>
     {!started ? <TitleScreen onStart={()=>setStarted(true)}/> : <section className="game-shell" aria-label="ゲーム画面">
       <div className="stage">
-        {outside ? <><ShopExterior onEnter={()=>setOutside(false)}/><SaveWarning/></> : <>
+        {outside ? <><TownWorld from={game.currentShopId} onEnter={enterShop}/><SaveWarning/></> : <>
         <ShopWorld onExit={leaveShop}/>
         {game.overlay===null&&<button className="game-settings-open" onClick={game.openSettings}>設定</button>}
         {game.overlay!=='race'&&<AudioControls floating/>}
@@ -60,11 +62,11 @@ export function App(){
         {game.overlay==='setting'&&<SettingView/>}
         {game.overlay==='race'&&<Suspense fallback={<div className="trial-loading">試走コースを準備中…</div>}><TrialView/></Suspense>}
         {game.overlay==='shop'&&<div className="scrim"><div className="modal shop" role="dialog" aria-modal="true" aria-labelledby="modal-title" ref={modal} tabIndex={-1}>
-            <div className="shop-head"><div><p className="eyebrow">PARTS COUNTER</p><h2 id="modal-title">小さなパーツ、大きな可能性。</h2></div><button className="close" onClick={game.close} aria-label="ショップを閉じる">✕</button></div>
+            <div className="shop-head"><div><p className="eyebrow">PARTS COUNTER</p><h2 id="modal-title">{shopById(game.currentShopId).name} · パーツカウンター</h2></div><button className="close" onClick={game.close} aria-label="ショップを閉じる">✕</button></div>
             <div className="shop-balance">所持金 <strong>¥ {yen(game.money)}</strong><span>所持パーツ {Object.values(game.inventory).reduce((a,b)=>a+b,0)} 点（初期装備含む）</span></div>
             <div className="tabs" aria-label="パーツの分類">{Object.entries(categories).map(([key,label])=><button key={key} aria-pressed={category===key} className={category===key?'selected':''} onClick={()=>setCategory(key as Category)}>{label}</button>)}</div>
             <div className="parts">{parts.filter(p=>p.category===category&&isStocked(p)).map(p=><article key={p.id}><div className={`part-icon ${p.category}`}><PartArtwork part={p}/></div><div className="part-info"><h3>{p.name}</h3><p>{p.description}</p><small>{p.performance}</small><span className="owned">所持 {game.inventory[p.id]??0}</span></div><div className="purchase"><strong>¥ {yen(p.price)}</strong><button disabled={game.money<p.price} onClick={()=>game.buy(p.id)}>{game.money<p.price?'所持金不足':'購入する'}</button></div></article>)}</div>
-            <p className="notice" role="status" aria-live="polite">{game.notice||'春夫「じっくり選んでね。各パーツは複数購入できるよ。」'}</p><SaveControls/>
+            <p className="notice" role="status" aria-live="polite">{game.notice||`${shopById(game.currentShopId).owner}「じっくり選んでね。各パーツは複数購入できるよ。」`}</p><SaveControls/>
         </div></div>}
         </>}
       </div>

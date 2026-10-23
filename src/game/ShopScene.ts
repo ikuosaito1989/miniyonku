@@ -1,3 +1,4 @@
+import { shopById } from '../data/town';
 import Phaser from 'phaser';
 import { fixtures, room, roomView, shopExit, type Fixture } from '../data/shop';
 import { createShopGesture } from './shopGesture';
@@ -40,6 +41,9 @@ export class ShopScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN,()=>this.scale.off(Phaser.Scale.Events.RESIZE,this.fitCamera,this));
     this.solids=[];
     createPeopleTextures(this);drawShopRoom(this);
+    const shop=shopById(useGame.getState().currentShopId);
+    this.add.rectangle(220,60,280,48,0x315d56).setDepth(3);
+    this.add.text(91,44,shop.name,{fontFamily:'sans-serif',fontSize:'23px',color:'#fff4d7',resolution:2}).setDepth(4);
     this.add.rectangle(shopExit.x+shopExit.width/2,578,shopExit.width,24,0x315d56,.85).setDepth(1);
     this.add.text(shopExit.x+shopExit.width/2,575,'▼ 出口', {fontFamily:'sans-serif',fontSize:'12px',color:'#fff1c9',resolution:2}).setOrigin(.5).setDepth(2);
     for(const fixture of fixtures){
@@ -49,12 +53,14 @@ export class ShopScene extends Phaser.Scene {
     const board=fixtures.find(f=>f.kind==='board')!;
     this.boardLines=Array.from({length:5},(_,i)=>this.add.text(board.x+5,board.y+23+i*15,'',{fontFamily:'"Noto Sans JP",monospace',fontSize:'5px',color:'#e6dfbc',resolution:2}).setDepth(board.y+board.h+2));
     this.person(shopPeople.owner.x,shopPeople.owner.y,'owner');
-    this.person(shopPeople.rival.x,shopPeople.rival.y,'rival');
-    for(const visitor of shopVisitors){
-      this.person(visitor.x,visitor.y,visitor.kind);
-      this.solids.push(new Phaser.Geom.Rectangle(visitor.x-12,visitor.y-9,24,21));
+    if(shop.id==='komorebi'){
+      this.person(shopPeople.rival.x,shopPeople.rival.y,'rival');
+      for(const visitor of shopVisitors){
+        this.person(visitor.x,visitor.y,visitor.kind);
+        this.solids.push(new Phaser.Geom.Rectangle(visitor.x-12,visitor.y-9,24,21));
+      }
+      this.solids.push(new Phaser.Geom.Rectangle(shopPeople.rival.x-12,shopPeople.rival.y-9,24,21));
     }
-    this.solids.push(new Phaser.Geom.Rectangle(shopPeople.rival.x-12,shopPeople.rival.y-9,24,21));
     this.player=this.person(room.spawn.x,room.spawn.y,'player');
     this.destination=this.add.graphics().setDepth(9999).setVisible(false);
     this.destination.lineStyle(2,0xffdf87).strokeCircle(0,0,8).lineBetween(-12,0,-5,0).lineBetween(5,0,12,0).lineBetween(0,-12,0,-5).lineBetween(0,5,0,12);
@@ -180,11 +186,19 @@ export class ShopScene extends Phaser.Scene {
     const targets:ShopTarget[]=[...fixtures.map(f=>({...f,speaker:f.label,shopAfter:f.kind==='counter'})),{x:shopPeople.rival.x-16,y:shopPeople.rival.y-42,w:32,h:54,label:`ライバル ${story.rival}`,speaker:story.rival,shopAfter:false,text:'ぼくは早瀬凪。この町でミニレーサーを走らせているんだ。湊くん、速いモーターだけじゃなく、ギアやタイヤの組み合わせも大事だよ。'}];
     const state=useGame.getState(),condition=equippedCondition(state.equipment,state.units,state.selectedUnits);
     const visitors=shopVisitors.map(v=>({x:v.x-16,y:v.y-42,w:32,h:54,label:v.name,speaker:v.name,shopAfter:false,text:shopAdvice(v.kind,{money:state.money,inventory:state.inventory,equipment:state.equipment,motorSeconds:condition.motorSeconds,qualified:state.unlockedRaces.includes(nextShopRace.id)})}));
+    if(state.currentShopId!=='komorebi'){
+      const shop=shopById(state.currentShopId);
+      return targets.filter(t=>t.kind).map(t=>t.kind==='counter'?{...t,label:shop.owner,speaker:shop.owner,text:`${shop.name}へようこそ。パーツの購入と作業台を利用できます。専用レースと上位パーツは準備中です。`}:t);
+    }
     return [...targets,...visitors];
   }
   private interactWith(target:ShopTarget){
       this.gesture.reset();
-      if(target.kind==='track')useGame.getState().startTrial();
+      if(target.kind==='track'){
+        const state=useGame.getState();
+        if(state.currentShopId==='komorebi')state.startTrial();
+        else state.talk('あおぞら模型店',state.unlockedRaces.includes(nextShopRace.id)?'レース参加資格は取得済みです。この店の専用レースは準備中です。パーツの購入・セッティングと、街への移動は利用できます。':'こもれび模型店で公式順位1位になると、この店のレース参加資格を獲得できます。この店の専用レースは準備中です。');
+      }
       else if(target.kind==='board')useGame.getState().openProficiency();
       else if(target.kind==='legends')useGame.getState().openLegends();
       else if(target.kind==='bookshelf')useGame.getState().readHintBook();
