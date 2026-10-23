@@ -3,11 +3,12 @@ import { createStarterInventory, equipmentSlots, type Equipment, type EquipmentS
 import { hintBooks, nextShopRace } from '../data/shopHints';
 import type { GameState } from './store';
 import type { UnitInventory } from './condition';
+import { modelShops, type WorldLocation, type ShopId } from '../data/world';
 
-export type SavedGame=Pick<GameState,'money'|'inventory'|'equipment'|'units'|'selectedUnits'|'unitSerial'|'proficiencyPoints'|'unlockedRaces'|'hintBookIndex'|'legendEventSeen'|'cheatUsed'>;
+export type SavedGame=Pick<GameState,'money'|'inventory'|'equipment'|'units'|'selectedUnits'|'unitSerial'|'proficiencyPoints'|'unlockedRaces'|'hintBookIndex'|'legendEventSeen'|'cheatUsed'|'location'|'lastShop'|'legendRaceCompleted'|'aozoraWon'|'villainDefeated'>;
 export interface SaveData { version:1; savedAt:number; game:SavedGame }
 export function snapshotGame(state:SavedGame):SavedGame{
-  return structuredClone({money:state.money,inventory:state.inventory,equipment:state.equipment,units:state.units,selectedUnits:state.selectedUnits,unitSerial:state.unitSerial,proficiencyPoints:state.proficiencyPoints,unlockedRaces:state.unlockedRaces,hintBookIndex:state.hintBookIndex,legendEventSeen:state.legendEventSeen,cheatUsed:state.cheatUsed});
+  return structuredClone({money:state.money,inventory:state.inventory,equipment:state.equipment,units:state.units,selectedUnits:state.selectedUnits,unitSerial:state.unitSerial,proficiencyPoints:state.proficiencyPoints,unlockedRaces:state.unlockedRaces,hintBookIndex:state.hintBookIndex,legendEventSeen:state.legendEventSeen,cheatUsed:state.cheatUsed,location:state.location,lastShop:state.lastShop,legendRaceCompleted:state.legendRaceCompleted,aozoraWon:state.aozoraWon,villainDefeated:state.villainDefeated});
 }
 function object(value:unknown):Record<string,unknown>{
   if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('セーブデータの形式が不正です。');
@@ -68,5 +69,13 @@ export function decodeSave(value:unknown):SaveData{
   }
   if(game.legendEventSeen!==undefined&&typeof game.legendEventSeen!=='boolean')throw new Error('イベント記録が不正です。');
   if(game.cheatUsed!==undefined&&typeof game.cheatUsed!=='boolean')throw new Error('裏技記録が不正です。');
-  return {version:1,savedAt,game:{money:number(game.money,true),inventory,equipment:{...equipment} as Equipment,units,selectedUnits,unitSerial,proficiencyPoints:number(game.proficiencyPoints),unlockedRaces:[...game.unlockedRaces] as string[],hintBookIndex,legendEventSeen:game.legendEventSeen===true,cheatUsed:game.cheatUsed===true}};
+  if(game.legendRaceCompleted!==undefined&&typeof game.legendRaceCompleted!=='boolean')throw new Error('兄弟レースの記録が不正です。');
+  const location=game.location??'komorebi',lastShop=game.lastShop??'komorebi';
+  if(typeof location!=='string'||location!=='town'&&!Object.hasOwn(modelShops,location)||typeof lastShop!=='string'||!Object.hasOwn(modelShops,lastShop))throw new Error('現在地が不正です。');
+  const legendRaceCompleted=game.legendRaceCompleted===true;
+  if((legendRaceCompleted||location!=='komorebi'||lastShop!=='komorebi')&&(!game.unlockedRaces.includes(nextShopRace.id)||!legendRaceCompleted))throw new Error('街の解放条件を満たしていません。');
+  for(const key of ['aozoraWon','villainDefeated'])if(game[key]!==undefined&&typeof game[key]!=='boolean')throw new Error('あおぞらのイベント記録が不正です。');
+  const aozoraWon=game.aozoraWon===true,villainDefeated=game.villainDefeated===true;
+  if(aozoraWon&&!legendRaceCompleted||villainDefeated&&!aozoraWon||(location==='hinata'||lastShop==='hinata')&&!villainDefeated)throw new Error('ひなた模型店の解放条件を満たしていません。');
+  return {version:1,savedAt,game:{money:number(game.money,true),inventory,equipment:{...equipment} as Equipment,units,selectedUnits,unitSerial,proficiencyPoints:number(game.proficiencyPoints),unlockedRaces:[...game.unlockedRaces] as string[],hintBookIndex,legendEventSeen:game.legendEventSeen===true,cheatUsed:game.cheatUsed===true,location:location as WorldLocation,lastShop:lastShop as ShopId,legendRaceCompleted,aozoraWon,villainDefeated}};
 }

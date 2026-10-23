@@ -1,0 +1,68 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { starterEquipment } from '../data/machine';
+import { getCircuitTrack, type CircuitId } from '../data/circuit';
+import { completeRaceAfterPlayerFinish, createRaceState, launchPlayer, officialTime, rankRacers, startRace, stepRace, type RaceState } from './race';
+import { racePrize } from './reward';
+import { useGame } from './store';
+import { snapshotGame } from './saveData';
+import { nextShopRace } from '../data/shopHints';
+
+function nearGoal(circuitId:CircuitId):RaceState{
+  const race=createRaceState(starterEquipment,123,undefined,false,circuitId),track=getCircuitTrack(circuitId);
+  return {...race,phase:'running',time:40,playerStartOffset:0,falseStartPenalty:4,racers:race.racers.map(r=>({...r,driving:{...r.driving,status:'running',time:40,speed:2,distance:track.circuitLength*track.circuit.laps-(r.id==='player'?.001:1)}}))};
+}
+test('ゴール後の結果表示は残りCPUを通常と同じ計算で確定し、フライング・順位・賞金を維持する',()=>{
+  for(const id of ['leaf','wind'] as const){
+    const goal=stepRace(nearGoal(id)),snapshot=structuredClone(goal);
+    assert.equal(goal.racers[0].driving.status,'finished');assert.equal(goal.phase,'running');
+    let expected=goal;while(expected.phase==='running')expected=stepRace(expected);
+    const result=completeRaceAfterPlayerFinish(goal);
+    assert.deepEqual(result,expected);assert.deepEqual(goal,snapshot);
+    assert.deepEqual(result.racers[0].driving,goal.racers[0].driving);
+    assert.equal(officialTime(result,result.racers[0]),officialTime(goal,goal.racers[0]));
+    assert.equal(rankRacers(result).at(-1)?.id,'player');assert.equal(racePrize(result),id==='leaf'?150:250);
+    assert.equal(completeRaceAfterPlayerFinish(result),result);
+  }
+});
+test('発進前・走行中・リタイアでは結果へのスキップを許可しない',()=>{
+  const ready=createRaceState(starterEquipment),running=nearGoal('leaf');
+  assert.equal(completeRaceAfterPlayerFinish(ready),ready);
+  assert.equal(completeRaceAfterPlayerFinish(startRace(ready)).phase,'countdown');
+  assert.equal(completeRaceAfterPlayerFinish(running),running);
+  running.racers[0].driving.status='out';assert.equal(completeRaceAfterPlayerFinish(running),running);
+});
+test('先頭から1周以上の差でリタイア。1周未満・既にゴールした車はリタイアにしない',()=>{
+  for(const id of ['leaf','wind'] as const){
+    const track=getCircuitTrack(id),race=nearGoal(id);
+    race.racers=race.racers.map(r=>({...r,driving:{...r.driving,distance:track.circuitLength*2,speed:0}}));
+    race.racers[0].driving.distance=track.circuitLength+.1;
+    assert.equal(stepRace(race).racers[0].driving.status,'running');
+    race.racers[0].driving.distance=track.circuitLength-.1;
+    const result=stepRace(race);assert.equal(result.racers[0].driving.status,'out');assert.equal(result.racers[0].driving.stopReason,'lapped');
+    assert.equal(result.racers[0].driving.speed,0);assert.equal(racePrize(result),0);
+    race.racers[0].driving.status='finished';assert.equal(stepRace(race).racers[0].driving.status,'finished');
+  }
+});
+test('GO後に未発進のまま周回遅れになった場合もリタイアし、後から発進できない',()=>{
+  const race=nearGoal('leaf'),length=getCircuitTrack().circuitLength;
+  race.playerStartOffset=null;
+  race.racers=race.racers.map(r=>({...r,driving:{...r.driving,status:r.id==='player'?'ready':'running',distance:r.id==='player'?0:length+1}}));
+  const result=stepRace(race);assert.equal(result.racers[0].driving.stopReason,'lapped');assert.equal(launchPlayer(result),result);
+});
+test('最強兄弟に周回遅れで敗北しても街を解放し、賞金は付与しない',()=>{
+  const original=useGame.getState();
+  try{
+    useGame.setState({...useGame.getInitialState(),...snapshotGame(useGame.getInitialState()),unlockedRaces:[nextShopRace.id]});
+    useGame.getState().startLegendChallenge();
+    let race=startRace(createRaceState(starterEquipment,123,undefined,true));
+    while(race.phase==='countdown')race=stepRace(race);
+    race=launchPlayer(race);
+    for(let i=0;i<120*120&&race.phase!=='finished';i++)race=stepRace(race);
+    assert.equal(race.phase,'finished');assert.equal(race.racers[0].driving.stopReason,'lapped');
+    const before=useGame.getState().money;
+    useGame.getState().settleRace(useGame.getState().raceAttempt,race);
+    assert.equal(useGame.getState().legendRaceCompleted,true);assert.equal(useGame.getState().money,before);
+    useGame.getState().close();useGame.getState().close();useGame.getState().leaveShop();assert.equal(useGame.getState().location,'town');
+  }finally{useGame.setState(original);}
+});

@@ -9,6 +9,9 @@ const outfits={
   guide:{ink:'#40314b',shirt:'#9c568c',light:'#e6a6c5',shade:'#693f73',hair:'#593d50',hairLight:'#ad7887',pants:'#65587e'},
   mechanic:{ink:'#273c50',shirt:'#317d91',light:'#9bd3cc',shade:'#24536f',hair:'#333e54',hairLight:'#728091',pants:'#365777'},
 } as const;
+const challengerColors:Record<string,string>={'#b14b67':'#514164','#ec9aa2':'#a49ab9','#7f3757':'#30283f','#39304b':'#242532','#89637c':'#535369','#4c4e70':'#343347'};
+/** 共通の小学生顔を使い、髪色と服装だけを影山用に変える。 */
+export function challengerDrawing(direction:Facing,frame=0):PixelShape[]{return personDrawing('rival',direction,frame).map(shape=>({...shape,color:challengerColors[shape.color]??shape.color}));}
 
 /** 役割ごとの服・体型と、方向別の独立したシルエットを持つオリジナル原画。 */
 export function personDrawing(kind:PersonKind,direction:Facing,frame:number):PixelShape[]{

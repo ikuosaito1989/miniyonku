@@ -3,14 +3,15 @@ import assert from 'node:assert/strict';
 import { dialogueChoices, dialoguePeople, dialoguePerson } from '../data/dialoguePeople';
 import { story, shopVisitors } from '../data/story';
 
-test('実際の話者表記から4人の顔を選び、役割や空白の違いを吸収する',()=>{
+test('実際の話者表記から店主・来店客・兄弟の顔を選び、空白の違いを吸収する',()=>{
   assert.equal(dialoguePerson(`店主 ${story.owner}`),'owner');
   assert.equal(dialoguePerson(story.rival),'rival');
   for(const visitor of shopVisitors)assert.equal(dialoguePerson(visitor.name),visitor.kind);
   assert.equal(dialoguePerson('小野寺　春夫'),'owner');
   assert.equal(dialoguePerson('モーターパーツ棚'),null);
   assert.equal(dialoguePerson('セッティング本棚 1 / 6・はじめての走行会'),null);
-  assert.equal(new Set(Object.values(dialoguePeople).map(person=>person.name)).size,4);
+  assert.equal(dialoguePerson('青井 晴彦'),'aozoraOwner');
+  assert.equal(new Set(Object.values(dialoguePeople).map(person=>person.name)).size,Object.keys(dialoguePeople).length);
 });
 test('店主の承諾だけショップへ進み、断る・一般会話・本棚では閉じる',()=>{
   assert.deepEqual(dialogueChoices(true,false).map(choice=>choice.action),['advance','close']);

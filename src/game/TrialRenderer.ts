@@ -2,12 +2,12 @@ import * as THREE from 'three';
 import { buildMachineModel } from './MachineModel';
 import { freshCondition, type MachineCondition } from './condition';
 import { compactDevice, raceRenderSize } from '../data/display';
-import { circuit, circuitLength, laneOffset, sampleCircuit, sampleLanePath, startDistance } from '../data/circuit';
+import { getCircuitTrack, type CircuitId, type CircuitTrack } from '../data/circuit';
 import type { Equipment } from '../data/machine';
 import { FIXED_STEP } from './driving';
-import { createRaceState, launchPlayer, startRace, stepRace, type RaceState } from './race';
+import { completeRaceAfterPlayerFinish, createRaceState, launchPlayer, startRace, stepRace, type RaceState, type RaceChallenge } from './race';
 import { raceCamera } from '../data/raceCamera';
-import { createFinishPresentation, finishCoastDistance, shouldUseFinishCamera, stepFinishPresentation, type FinishPresentation } from './finishPresentation';
+import { createFinishPresentation, finishCoastDistance, finishSequence, shouldUseFinishCamera, stepFinishPresentation, type FinishPresentation } from './finishPresentation';
 import { RaceAudio } from './RaceAudio';
 
 export type TrialCamera = 'broadcast' | 'overview';
@@ -30,9 +30,11 @@ export class TrialRenderer {
   private startShotBlend = 1;
   private finishPresentation = createFinishPresentation();
   private audio:RaceAudio;
+  private track:CircuitTrack;
 
-  constructor(private host: HTMLElement, private equipment: Equipment, private report: (state: RaceState) => void, private reportFinish:(state:FinishPresentation)=>void, private condition:MachineCondition=freshCondition, private seed=0x5eed,private legendChallenge=false) {
-    this.state=createRaceState(equipment,seed,condition,legendChallenge);
+  constructor(private host: HTMLElement, private equipment: Equipment, private report: (state: RaceState) => void, private reportFinish:(state:FinishPresentation)=>void, private condition:MachineCondition=freshCondition, private seed=0x5eed,private challenge:RaceChallenge=false,private circuitId:CircuitId='leaf') {
+    this.track=getCircuitTrack(circuitId);
+    this.state=createRaceState(equipment,seed,condition,challenge,circuitId);
     this.renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});
     this.renderer.setPixelRatio(1);
     this.renderer.setClearColor(0x315b2a);
@@ -63,9 +65,16 @@ export class TrialRenderer {
     this.report({...this.state});
   }
   setCamera(mode:TrialCamera){this.cameraMode=mode;}
+  showResults(){
+    if(this.finishPresentation.stage==='results'||this.state.racers.find(r=>r.id==='player')?.driving.status!=='finished')return;
+    this.state=completeRaceAfterPlayerFinish(this.state);
+    this.finishPresentation={...stepFinishPresentation(this.finishPresentation,this.state,0),stage:'results',finalAge:finishSequence.holdSeconds+finishSequence.tallySeconds};
+    this.audio.update(this.state);
+    this.report({...this.state});this.reportFinish(this.finishPresentation);
+  }
   setSound(enabled:boolean,volume=0.35){this.audio.setVolume(volume);this.audio.setEnabled(enabled);}
   restart(){
-    this.state=createRaceState(this.equipment,this.seed,this.condition,this.legendChallenge);this.accumulator=0;this.lastTime=0;this.lastReport=-1;this.cameraMode='broadcast';this.startShotBlend=1;
+    this.state=createRaceState(this.equipment,this.seed,this.condition,this.challenge,this.circuitId);this.accumulator=0;this.lastTime=0;this.lastReport=-1;this.cameraMode='broadcast';this.startShotBlend=1;
     this.finishPresentation=createFinishPresentation();this.reportFinish(this.finishPresentation);
     this.report({...this.state});
   }
@@ -95,6 +104,7 @@ export class TrialRenderer {
     return new THREE.Mesh(geometry,new THREE.MeshLambertMaterial({color,flatShading:true}));
   }
   private buildTrack(){
+    const {circuit,circuitLength,sampleLanePath}=this.track;
     for(let lane=0;lane<circuit.lanes;lane++){
       const vertices:number[]=[],indices:number[]=[];
       for(let i=0;i<=circuit.samples;i++){
@@ -118,6 +128,7 @@ export class TrialRenderer {
     }
   }
   private buildStart(){
+    const {circuit,sampleCircuit,startDistance,laneOffset}=this.track;
     const start=sampleCircuit(startDistance);
     const group=new THREE.Group();group.position.set(start.x,0,start.z);group.rotation.y=Math.atan2(start.tangentX,start.tangentZ);
     const colors=[0x5685ce,0xcf5263,0xd4b749,0x50a889,0xb17bcb];
@@ -146,6 +157,7 @@ export class TrialRenderer {
     group.add(attendant);this.scene.add(group);
   }
   private updateCamera(){
+    const {circuit,sampleLanePath}=this.track;
     const player=this.state.racers.find(r=>r.id==='player')!;
     const p=sampleLanePath(player.driving.distance,player.lane);
     const overview=this.cameraMode==='overview';
@@ -153,7 +165,7 @@ export class TrialRenderer {
     const blend=this.startShotBlend*this.startShotBlend*(3-2*this.startShotBlend);
     const startHeight=Math.max(raceCamera.start.height,raceCamera.start.minWidth/this.aspect);
     const runningHeight=Math.max(raceCamera.running.height,raceCamera.running.minWidth/this.aspect);
-    const viewHeight=overview?Math.max(8,12/this.aspect):goalShot?Math.max(raceCamera.finish.height,raceCamera.finish.minWidth/this.aspect):THREE.MathUtils.lerp(runningHeight,startHeight,blend);
+    const viewHeight=overview?Math.max(circuit.radiusZ*2+3,(circuit.radiusX*2+3)/this.aspect):goalShot?Math.max(raceCamera.finish.height,raceCamera.finish.minWidth/this.aspect):THREE.MathUtils.lerp(runningHeight,startHeight,blend);
     this.camera.left=-viewHeight*this.aspect/2;this.camera.right=viewHeight*this.aspect/2;
     this.camera.top=viewHeight/2;this.camera.bottom=-viewHeight/2;this.camera.updateProjectionMatrix();
     const start=sampleLanePath(0,(circuit.lanes-1)/2);
@@ -164,6 +176,7 @@ export class TrialRenderer {
     this.camera.position.copy(target).add(offset);this.camera.lookAt(target);
   }
   private animate=(now:number)=>{
+    const {sampleLanePath}=this.track;
     const elapsed=this.lastTime?Math.min((now-this.lastTime)/1000,0.1):0;this.lastTime=now;
     if(this.state.phase==='running'||this.state.phase==='countdown'){
       this.accumulator+=elapsed;
@@ -175,8 +188,9 @@ export class TrialRenderer {
     for(const racer of this.state.racers){
       const p=sampleLanePath(racer.driving.distance+finishCoastDistance(racer,this.finishPresentation),racer.lane);
       const car=this.cars.get(racer.id)!;
-      car.position.set(p.x,p.y+(racer.driving.status==='out'?0.14:0.015),p.z);
-      car.rotation.order='YXZ';car.rotation.set(-p.pitch,Math.atan2(p.tangentX,p.tangentZ),racer.driving.status==='out'?0.9:0);
+      const crashed=racer.driving.status==='out'&&!racer.driving.stopReason;
+      car.position.set(p.x,p.y+(crashed?0.14:0.015),p.z);
+      car.rotation.order='YXZ';car.rotation.set(-p.pitch,Math.atan2(p.tangentX,p.tangentZ),crashed?0.9:0);
       if(racer.id==='player')this.playerMarker.position.copy(car.position).add(new THREE.Vector3(0,0.24,0));
     }
     this.audio.update(this.state);

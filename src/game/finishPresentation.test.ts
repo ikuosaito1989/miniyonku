@@ -23,7 +23,9 @@ test('通過時刻と公式順位を分離し、通過イベントを一度だ�
   assert.equal(presentation.arrivals.length,2);assert.equal(presentation.arrivals[0].age,1);
   const before=structuredClone(race);
   assert.ok(finishCoastDistance(race.racers[0],presentation)>0);
-  assert.ok(finishCoastDistance(race.racers[0],presentation)<finishSequence.coastDistance);
+  const coast=finishCoastDistance(race.racers[0],presentation);
+  const later=stepFinishPresentation(presentation,race,5);
+  assert.ok(finishCoastDistance(race.racers[0],later)>coast+1,'ゴール後も走行を続ける');
   assert.deepEqual(race,before);assert.equal(officialTime(race,race.racers[0]),51);
 });
 test('全車の確定前に結果へ進まず、通過演出→集計→結果の順で表示する',()=>{

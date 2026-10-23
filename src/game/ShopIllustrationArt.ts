@@ -6,23 +6,22 @@ import { fixtureArtFrame, shopIllustrationKey, shopIllustrationSize } from '../d
 const text=(scene:Phaser.Scene,x:number,y:number,value:string,size:number,color:string,depth=1)=>
   scene.add.text(x,y,value,{fontFamily:'"Noto Sans JP",monospace',fontSize:`${size}px`,color,resolution:2}).setDepth(depth);
 
-export function drawIllustratedRoom(scene:Phaser.Scene){
+export function drawIllustratedRoom(scene:Phaser.Scene,mirrored=false){
   if(!scene.textures.exists(shopIllustrationKey))return false;
-  scene.add.image(0,0,shopIllustrationKey).setOrigin(0).setDisplaySize(shopIllustrationSize.width,shopIllustrationSize.height).setDepth(-100);
-  text(scene,91,44,story.shop,23,'#fff4d7');
-  text(scene,94,71,`${story.town}　小さな走り、大きな夢`,8,'#d0e5de');
-  text(scene,702,268,'作業台 ↑',10,'#41666a');text(scene,657,508,'店内走行コース',11,'#41666a');
+  scene.add.image(0,0,shopIllustrationKey).setOrigin(0).setDisplaySize(shopIllustrationSize.width,shopIllustrationSize.height).setFlipX(mirrored).setDepth(-100);
+  if(!mirrored){text(scene,91,44,story.shop,23,'#fff4d7');text(scene,94,71,`${story.town}　小さな走り、大きな夢`,8,'#d0e5de');}
+  text(scene,mirrored?160:702,268,'作業台 ↑',10,'#41666a');text(scene,mirrored?155:657,508,'店内走行コース',11,'#41666a');
   return true;
 }
 
-export function drawIllustratedFixture(scene:Phaser.Scene,fixture:Fixture){
+export function drawIllustratedFixture(scene:Phaser.Scene,fixture:Fixture,sourceFixture:Fixture=fixture,mirrored=false){
   if(!scene.textures.exists(shopIllustrationKey))return false;
-  const frame=fixtureArtFrame(fixture),texture=scene.textures.get(shopIllustrationKey);
+  const frame=fixtureArtFrame(fixture),crop=fixtureArtFrame(sourceFixture),texture=scene.textures.get(shopIllustrationKey);
   const source=texture.getSourceImage() as HTMLImageElement;
   const sx=source.width/shopIllustrationSize.width,sy=source.height/shopIllustrationSize.height;
-  const key=`fixture-${fixture.kind}-${fixture.x}-${fixture.y}`;
-  if(!texture.has(key))texture.add(key,0,Math.round(frame.x*sx),Math.round(frame.y*sy),Math.round(frame.width*sx),Math.round(frame.height*sy));
-  scene.add.image(frame.x,frame.y,shopIllustrationKey,key).setOrigin(0).setDisplaySize(frame.width,frame.height).setDepth(frame.depth);
+  const key=`fixture-${sourceFixture.kind}-${sourceFixture.x}-${sourceFixture.y}`;
+  if(!texture.has(key))texture.add(key,0,Math.round(crop.x*sx),Math.round(crop.y*sy),Math.round(crop.width*sx),Math.round(crop.height*sy));
+  scene.add.image(frame.x,frame.y,shopIllustrationKey,key).setOrigin(0).setDisplaySize(frame.width,frame.height).setFlipX(mirrored).setDepth(frame.depth);
   if(fixture.kind==='board')text(scene,fixture.x+5,fixture.y+6,'熟練度表',6,'#fff1a7',frame.depth+1);
   if(fixture.kind==='legends'){
     scene.add.rectangle(fixture.x+fixture.w/2,fixture.y+fixture.h-5,176,11,0x183640,.95).setDepth(frame.depth+1);

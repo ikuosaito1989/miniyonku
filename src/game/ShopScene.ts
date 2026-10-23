@@ -1,22 +1,29 @@
-import { shopById } from '../data/town';
 import Phaser from 'phaser';
-import { fixtures, room, roomView, shopExit, type Fixture } from '../data/shop';
+import { room, roomView, type Fixture } from '../data/shop';
 import { createShopGesture } from './shopGesture';
 import { useGame } from './store';
 import { createPeopleTextures, drawShopFixture, drawShopRoom, type Facing, type PersonKind } from './ShopArt';
 import { personSpriteSize } from './PeopleArt';
-import { shopPeople, shopVisitors, story } from '../data/story';
+import { story } from '../data/story';
 import { nextShopRace } from '../data/shopHints';
 import { equippedCondition } from './condition';
 import { shopAdvice } from './shopAdvice';
 import { touchInput } from './touchInput';
 import { compactDevice } from '../data/display';
-import { findWalkingPath, isAtShopExit, type Point } from './navigation';
+import { findWalkingPath, type Point } from './navigation';
 import { proficiencyStandings } from '../data/proficiency';
 import shopIllustration from '../assets/shop/interior-v1.webp';
 import { shopIllustrationKey } from '../data/shopIllustration';
+import { currentShop, isVenueOpen, shopExit, townSpawn, townVenues, venueMessage } from '../data/world';
+import { shopCast } from '../data/shopCast';
+import { mirroredShop, shopLayout } from '../data/shopLayout';
+import { challenger, challengerSpot } from '../data/challenger';
+import { challengerDrawing } from './PeopleArt';
+import { paintPixels } from './pixelDrawing';
+import { drawTown } from './TownArt';
+import { getCircuitTrack } from '../data/circuit';
 
-interface ShopTarget {x:number;y:number;w:number;h:number;label:string;speaker:string;shopAfter:boolean;text:string;kind?:Fixture['kind']}
+interface ShopTarget {x:number;y:number;w:number;h:number;label:string;speaker:string;shopAfter:boolean;text:string;kind?:Fixture['kind']|'exit'|'venue'|'challenger';venueId?:string}
 export class ShopScene extends Phaser.Scene {
   private gesture=createShopGesture();
   private pendingTarget:ShopTarget|null=null;
@@ -32,36 +39,64 @@ export class ShopScene extends Phaser.Scene {
   private inputVersion=0;
   private boardLines:Phaser.GameObjects.Text[]=[];
   private boardPoints=-1;
-  constructor(private readonly onExit:()=>void=()=>{}){ super('shop'); }
-  private leaving=false;
+  private isTown=false;
+  private transitionArmed=true;
+  private challengerPerson:Phaser.GameObjects.Container|null=null;
+  private challengerSolid:Phaser.Geom.Rectangle|null=null;
+  private get cast(){return shopCast(currentShop(useGame.getState().location).id);}
+  constructor(){ super('shop'); }
   preload(){this.load.image(shopIllustrationKey,shopIllustration);}
   create(){
     this.fitCamera();
     this.scale.on(Phaser.Scale.Events.RESIZE,this.fitCamera,this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN,()=>this.scale.off(Phaser.Scale.Events.RESIZE,this.fitCamera,this));
     this.solids=[];
-    createPeopleTextures(this);drawShopRoom(this);
-    const shop=shopById(useGame.getState().currentShopId);
-    this.add.rectangle(220,60,280,48,0x315d56).setDepth(3);
-    this.add.text(91,44,shop.name,{fontFamily:'sans-serif',fontSize:'23px',color:'#fff4d7',resolution:2}).setDepth(4);
-    this.add.rectangle(shopExit.x+shopExit.width/2,578,shopExit.width,24,0x315d56,.85).setDepth(1);
-    this.add.text(shopExit.x+shopExit.width/2,575,'▼ 出口', {fontFamily:'sans-serif',fontSize:'12px',color:'#fff1c9',resolution:2}).setOrigin(.5).setDepth(2);
-    for(const fixture of fixtures){
-      drawShopFixture(this,fixture);
+    this.isTown=useGame.getState().location==='town';
+    createPeopleTextures(this);
+    if(this.isTown){
+      drawTown(this,useGame.getState());
+      this.solids=townVenues.map(v=>new Phaser.Geom.Rectangle(v.x,v.y,v.w,v.h));
+    }else{
+    const shopId=currentShop(useGame.getState().location).id,layout=shopLayout(shopId),mirrored=mirroredShop(shopId);
+    const fixtures=layout.map(f=>f.target);
+    drawShopRoom(this,mirrored);
+    for(const {source,target:fixture} of layout){
+      drawShopFixture(this,fixture,source,mirrored);
       this.solids.push(new Phaser.Geom.Rectangle(fixture.x,fixture.y,fixture.w,fixture.h));
     }
     const board=fixtures.find(f=>f.kind==='board')!;
     this.boardLines=Array.from({length:5},(_,i)=>this.add.text(board.x+5,board.y+23+i*15,'',{fontFamily:'"Noto Sans JP",monospace',fontSize:'5px',color:'#e6dfbc',resolution:2}).setDepth(board.y+board.h+2));
-    this.person(shopPeople.owner.x,shopPeople.owner.y,'owner');
-    if(shop.id==='komorebi'){
-      this.person(shopPeople.rival.x,shopPeople.rival.y,'rival');
-      for(const visitor of shopVisitors){
-        this.person(visitor.x,visitor.y,visitor.kind);
-        this.solids.push(new Phaser.Geom.Rectangle(visitor.x-12,visitor.y-9,24,21));
-      }
-      this.solids.push(new Phaser.Geom.Rectangle(shopPeople.rival.x-12,shopPeople.rival.y-9,24,21));
+    const cast=this.cast;
+    this.person(cast.owner.x,cast.owner.y,'owner');
+    this.person(cast.rival.x,cast.rival.y,'rival');
+    for(const visitor of cast.visitors){
+      this.person(visitor.x,visitor.y,visitor.kind);
+      this.solids.push(new Phaser.Geom.Rectangle(visitor.x-12,visitor.y-9,24,21));
     }
-    this.player=this.person(room.spawn.x,room.spawn.y,'player');
+    this.solids.push(new Phaser.Geom.Rectangle(cast.rival.x-12,cast.rival.y-9,24,21));
+    const shop=currentShop(useGame.getState().location);
+    // 店内の基本レイアウトは共有し、店名・色・展示コースを切り替える。
+    if(shop.id!=='komorebi'){
+      const signX=mirrored?748:204;
+      this.add.rectangle(480,320,880,570,shop.color,.09).setDepth(1);
+      this.add.rectangle(signX,70,260,64,shop.id==='aozora'?0x284b6b:0x6a5234).setDepth(110);
+      this.add.text(signX,49,shop.name,{fontFamily:'sans-serif',fontSize:'21px',fontStyle:'bold',color:'#f8edcc',resolution:2}).setOrigin(.5,0).setDepth(111);
+      this.add.text(signX,80,shop.id==='aozora'?'連続コーナーで磨く、次の走り':'高速コーナーをつなぐ、持久力の勝負',{fontFamily:'sans-serif',fontSize:'8px',color:'#c7e6e6',resolution:2}).setOrigin(.5,0).setDepth(111);
+      const f=fixtures.find(f=>f.kind==='track')!,{circuit,circuitLength,sampleCircuit}=getCircuitTrack(shop.circuitId),g=this.add.graphics().setDepth(f.y+f.h+1);
+      const plotX=(f.w-28)/(2*(circuit.radiusX+Math.abs(circuit.asymmetry))),plotY=(f.h-38)/(2*(circuit.radiusZ+Math.abs(circuit.chicane)));
+      g.fillStyle(0x476d75).fillRoundedRect(f.x+3,f.y+3,f.w-6,f.h-6,9);
+      for(let lane=0;lane<6;lane++){
+        g.lineStyle(2,0xe5e2c8);g.beginPath();
+        for(let i=0;i<=160;i++){const p=sampleCircuit(i/160*circuitLength),scale=1-lane*.065,x=f.x+f.w/2+p.x*plotX*scale,y=f.y+f.h/2+p.z*plotY*scale;if(i===0)g.moveTo(x,y);else g.lineTo(x,y);}
+        g.strokePath();
+      }
+      this.add.text(f.x+f.w/2,f.y+f.h-20,getCircuitTrack(shop.circuitId).circuit.name,{fontFamily:'sans-serif',fontSize:'9px',color:'#fff1bc',resolution:2}).setOrigin(.5,0).setDepth(f.y+f.h+2);
+    }
+    this.add.rectangle(480,580,84,15,0x34564e).setDepth(590);
+    this.add.text(480,575,'▼ 緑川町へ',{fontFamily:'sans-serif',fontSize:'10px',color:'#fff1bd',resolution:2}).setOrigin(.5,0).setDepth(591);
+    }
+    const spawn=this.isTown?townSpawn(useGame.getState().lastShop):room.spawn;
+    this.player=this.person(spawn.x,spawn.y,'player');
     this.destination=this.add.graphics().setDepth(9999).setVisible(false);
     this.destination.lineStyle(2,0xffdf87).strokeCircle(0,0,8).lineBetween(-12,0,-5,0).lineBetween(5,0,12,0).lineBetween(0,-12,0,-5).lineBetween(0,5,0,12);
     this.inputVersion=touchInput.version();
@@ -77,15 +112,12 @@ export class ShopScene extends Phaser.Scene {
         if(useGame.getState().overlay){this.gesture.reset();return;}
         const point=this.cameras.main.getWorldPoint(pointer.x,pointer.y);
         const targets=this.getTargets();
-        const owner=Math.abs(point.x-shopPeople.owner.x)<24&&point.y>shopPeople.owner.y-44&&point.y<shopPeople.owner.y+16;
+        const ownerPosition=this.cast.owner;
+        const owner=!this.isTown&&Math.abs(point.x-ownerPosition.x)<24&&point.y>ownerPosition.y-44&&point.y<ownerPosition.y+16;
         const target=owner?targets.find(t=>t.kind==='counter'):targets.find(t=>point.x>=t.x-5&&point.x<=t.x+t.w+5&&point.y>=t.y-5&&point.y<=t.y+t.h+5);
         const emptyFloor=!target&&point.x>=56&&point.x<=904&&point.y>=136&&point.y<=582&&!this.solids.some(r=>r.contains(point.x,point.y));
         const action=this.gesture.up(pointer.id,pointer.x,pointer.y,pointer.upTime,emptyFloor);
         if(action==='setting'){this.cancelRoute();this.pendingTarget=null;useGame.getState().openSetting();}
-        else if(action==='tap'&&point.x>=shopExit.x&&point.x<=shopExit.x+shopExit.width&&point.y>=560){
-          this.pendingTarget=null;
-          this.route=findWalkingPath({x:this.player.x,y:this.player.y},{x:point.x,y:578},this.solids);
-        }
         else if(action==='tap'&&target){
           this.pendingTarget=target;
           this.route=findWalkingPath({x:this.player.x,y:this.player.y},{x:target.x+target.w/2,y:target.y+target.h/2},this.solids);
@@ -134,8 +166,25 @@ export class ShopScene extends Phaser.Scene {
     if(kind==='player')this.playerSprite=sprite;
     return this.add.container(x,y,[shadow,sprite]).setDepth(y);
   }
+  private syncChallenger(){
+    const state=useGame.getState(),visible=state.location==='aozora'&&state.aozoraWon;
+    if(visible&&!this.challengerPerson){
+      const key='person-challenger-down';
+      if(!this.textures.exists(key)){
+        const texture=this.textures.createCanvas(key,personSpriteSize.width,personSpriteSize.height)!;
+        paintPixels(texture.context,challengerDrawing('down'));texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
+      }
+      this.challengerPerson=this.person(challengerSpot.x,challengerSpot.y,'rival');
+      (this.challengerPerson.list[1] as Phaser.GameObjects.Image).setTexture(key);
+      this.challengerPerson.add(this.add.text(0,-51,'影山 陸',{fontFamily:'sans-serif',fontSize:'9px',color:'#f2def4',backgroundColor:'#35273e',padding:{x:4,y:2},resolution:2}).setOrigin(.5,1));
+      this.challengerSolid=new Phaser.Geom.Rectangle(challengerSpot.x-12,challengerSpot.y-9,24,21);this.solids.push(this.challengerSolid);
+    }else if(!visible&&this.challengerPerson){
+      this.challengerPerson.destroy();this.challengerPerson=null;this.solids=this.solids.filter(s=>s!==this.challengerSolid);this.challengerSolid=null;
+    }
+  }
   update(_time:number,delta:number){
-    if(!this.player||this.leaving)return;
+    if(!this.player)return;
+    this.syncChallenger();
     const points=useGame.getState().proficiencyPoints;
     if(this.boardPoints!==points){this.boardPoints=points;proficiencyStandings(points).forEach((p,i)=>this.boardLines[i]?.setText(`${i+1} ${p.name.split(' ').at(-1)}\n    ${p.points}pt`).setColor(p.id==='player'?'#ffe18c':'#e6dfbc'));}
     const touchAction=touchInput.consume();
@@ -169,9 +218,9 @@ export class ShopScene extends Phaser.Scene {
     if(!this.route.length)this.destination.setVisible(false);
     this.playerSprite.setTexture(`person-player-${this.facing}-${moving?Math.floor(this.walkTime/130)%4:0}`);
     this.player.setDepth(this.player.y);
-    if(isAtShopExit(this.player)){
-      this.leaving=true;this.resetKeys();useGame.setState({nearby:''});this.onExit();return;
-    }
+    const atExit=!this.isTown&&this.player.y>=567&&Math.abs(this.player.x-480)<32;
+    if(!atExit)this.transitionArmed=true;
+    else if(this.transitionArmed){this.transitionArmed=false;this.cancelRoute();useGame.getState().leaveShop();return;}
     const targets=this.getTargets();
     const distance=(t:ShopTarget)=>Math.hypot(this.player.x-Phaser.Math.Clamp(this.player.x,t.x,t.x+t.w),this.player.y-Phaser.Math.Clamp(this.player.y,t.y,t.y+t.h));
     const nearest=targets.map(t=>({t,d:distance(t)})).sort((a,b)=>a.d-b.d)[0];
@@ -183,22 +232,31 @@ export class ShopScene extends Phaser.Scene {
     if(action&&target)this.interactWith(target);
   }
   private getTargets():ShopTarget[]{
-    const targets:ShopTarget[]=[...fixtures.map(f=>({...f,speaker:f.label,shopAfter:f.kind==='counter'})),{x:shopPeople.rival.x-16,y:shopPeople.rival.y-42,w:32,h:54,label:`ライバル ${story.rival}`,speaker:story.rival,shopAfter:false,text:'ぼくは早瀬凪。この町でミニレーサーを走らせているんだ。湊くん、速いモーターだけじゃなく、ギアやタイヤの組み合わせも大事だよ。'}];
+    if(this.isTown)return townVenues.map(v=>({x:v.x,y:v.y,w:v.w,h:v.h,label:v.name,speaker:v.name,shopAfter:false,text:venueMessage(v),kind:'venue',venueId:v.id}));
+    const cast=this.cast;
+    const targets:ShopTarget[]=[...shopLayout(currentShop(useGame.getState().location).id).map(({target:f})=>({...f,speaker:f.label,shopAfter:f.kind==='counter'})),{x:cast.rival.x-16,y:cast.rival.y-42,w:32,h:54,label:`ライバル ${story.rival}`,speaker:story.rival,shopAfter:false,text:'湊くん、速いモーターだけじゃなく、ギアやタイヤの組み合わせも大事だよ。'}];
     const state=useGame.getState(),condition=equippedCondition(state.equipment,state.units,state.selectedUnits);
-    const visitors=shopVisitors.map(v=>({x:v.x-16,y:v.y-42,w:32,h:54,label:v.name,speaker:v.name,shopAfter:false,text:shopAdvice(v.kind,{money:state.money,inventory:state.inventory,equipment:state.equipment,motorSeconds:condition.motorSeconds,qualified:state.unlockedRaces.includes(nextShopRace.id)})}));
-    if(state.currentShopId!=='komorebi'){
-      const shop=shopById(state.currentShopId);
-      return targets.filter(t=>t.kind).map(t=>t.kind==='counter'?{...t,label:shop.owner,speaker:shop.owner,text:`${shop.name}へようこそ。パーツの購入と作業台を利用できます。専用レースと上位パーツは準備中です。`}:t);
-    }
+    const shop=currentShop(state.location);
+    const counter=targets.find(t=>t.kind==='counter')!;counter.label=`店主 ${shop.owner}`;counter.speaker=shop.owner;counter.text=shop.welcome;
+    const track=targets.find(t=>t.kind==='track')!;track.label=getCircuitTrack(shop.circuitId).circuit.name;
+    targets.push({...shopExit,label:'緑川町への出口',speaker:shop.name,shopAfter:false,text:'外の町へ出よう。',kind:'exit'});
+    const visitors=cast.visitors.map(v=>({x:v.x-16,y:v.y-42,w:32,h:54,label:v.name,speaker:v.name,shopAfter:false,text:shopAdvice(v.kind,{money:state.money,inventory:state.inventory,equipment:state.equipment,motorSeconds:condition.motorSeconds,qualified:state.unlockedRaces.includes(nextShopRace.id)})}));
+    if(shop.id==='aozora'){
+      for(const visitor of visitors)visitor.text=visitor.speaker==='三浦 結衣'?(state.villainDefeated?'影山くんに勝ったんだね！町へ出て、この店の右隣のひなた模型店へ行けるよ。':state.aozoraWon?'影山くんが店の中央で待っているよ。挑戦レースで1位になると、ひなた模型店への紹介状がもらえるんだって。':'ここは優勝1,000円、5位完走でも250円！まずは優勝しよう。町の影山くんが、速いレーサーを探しているみたい。'):'影山くんに勝つなら、記念ボディにブリーズモーターを約60秒ならして、4:1ギア・スパークセル・スポンジタイヤを試そう。低重心シャーシと軽量化も比べてね。';
+      if(state.aozoraWon)targets.push({x:challengerSpot.x-16,y:challengerSpot.y-42,w:32,h:54,label:challenger.name,speaker:challenger.name,shopAfter:false,text:'挑戦を受ける。',kind:'challenger'});
+    }else if(shop.id==='hinata')for(const visitor of visitors)visitor.text=visitor.speaker==='三浦 結衣'?'ひなた模型店へようこそ！ここは長い高速コーナー。ほかの4店と大会会場は、まだ準備中だよ。':'3.5:1ギアは最高速が伸びる反面、駆動力は下がるよ。ゴールドターミナルとロングランセル、スポンジタイヤで安定した5周を目指してみよう。';
     return [...targets,...visitors];
   }
   private interactWith(target:ShopTarget){
       this.gesture.reset();
-      if(target.kind==='track'){
-        const state=useGame.getState();
-        if(state.currentShopId==='komorebi')state.startTrial();
-        else state.talk('あおぞら模型店',state.unlockedRaces.includes(nextShopRace.id)?'レース参加資格は取得済みです。この店の専用レースは準備中です。パーツの購入・セッティングと、街への移動は利用できます。':'こもれび模型店で公式順位1位になると、この店のレース参加資格を獲得できます。この店の専用レースは準備中です。');
+      if(target.kind==='exit')useGame.getState().leaveShop();
+      else if(target.kind==='challenger')useGame.getState().openVillainChallenge();
+      else if(target.kind==='venue'){
+        const venue=townVenues.find(v=>v.id===target.venueId)!;
+        if(venue.shopId&&isVenueOpen(venue,useGame.getState()))useGame.getState().enterShop(venue.shopId);
+        else useGame.getState().talk(venue.name,venueMessage(venue));
       }
+      else if(target.kind==='track')useGame.getState().startTrial();
       else if(target.kind==='board')useGame.getState().openProficiency();
       else if(target.kind==='legends')useGame.getState().openLegends();
       else if(target.kind==='bookshelf')useGame.getState().readHintBook();

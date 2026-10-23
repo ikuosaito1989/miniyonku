@@ -1,11 +1,11 @@
 import { parts } from '../data/parts';
 import { equipmentSlots, type Equipment } from '../data/machine';
-import { circuit, circuitLength, sampleCircuit, sampleLanePath, startDistance } from '../data/circuit';
+import { circuit, getCircuitTrack, type CircuitTrack } from '../data/circuit';
 import { freshCondition, motorFactor, remainingCharge, type MachineCondition } from './condition';
 import type { TrackSurface } from '../data/surfaces';
 
 export const FIXED_STEP = 1/120;
-export interface DrivingState { time: number; distance: number; speed: number; stress: number; status: 'ready'|'running'|'finished'|'out'; stopReason?:'battery'; }
+export interface DrivingState { time: number; distance: number; speed: number; stress: number; status: 'ready'|'running'|'finished'|'out'; stopReason?:'battery'|'lapped'; }
 export function machinePerformance(equipment: Equipment, condition:MachineCondition=freshCondition) {
   const get = (category: keyof Equipment) => {
     const part = parts.find(p => p.id === equipment[category] && p.category === equipmentSlots[category].category);
@@ -47,8 +47,9 @@ export function surfacePerformance(performance:Performance,surface:TrackSurface)
     lateralLimit:performance.lateralLimit*Math.max(0,surface.grip)*contact,
   };
 }
-export function stepDriving(state: DrivingState, performance: Performance, laneOffset=0, initialLane?:number, surface:TrackSurface=circuit.surface): DrivingState {
+export function stepDriving(state: DrivingState, performance: Performance, laneOffset=0, initialLane?:number, surface:TrackSurface=circuit.surface, track:CircuitTrack=getCircuitTrack()): DrivingState {
   if(state.status!=='running')return state;
+  const {circuit,circuitLength,sampleCircuit,sampleLanePath,startDistance}=track;
   const remaining=remainingCharge(performance.batterySeconds+state.time,performance.batteryEndurance*4,performance.batteryConsumption);
   if(remaining<=0)return {...state,speed:0,status:'out',stopReason:'battery'};
   const charge=.55+.45*Math.sqrt(remaining);

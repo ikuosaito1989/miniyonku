@@ -9,8 +9,8 @@ export async function loadSavedGame(storage:SaveStorage,store:StoreApi<GameState
   const raw=await storage.read();
   if(raw===undefined)return null;
   const data=decodeSave(raw);
-  // レース途中・会話中でも復元先は必ず模型店。賞金などは保存済み値だけを使う。
-  store.setState({...store.getInitialState(),...data.game,legendEventPending:data.game.unlockedRaces.includes(nextShopRace.id)&&!data.game.legendEventSeen});
+  // UIや途中レースは再開せず、保存した店の入口／街の店前から復帰する。
+  store.setState({...store.getInitialState(),...data.game,legendEventPending:data.game.unlockedRaces.includes(nextShopRace.id)&&!data.game.legendRaceCompleted,villainArrivalPending:data.game.aozoraWon&&!data.game.villainDefeated});
   return data.savedAt;
 }
 export function startAutoSave(storage:SaveStorage,status:(status:SaveStatus)=>void,store:StoreApi<GameState>=useGame){

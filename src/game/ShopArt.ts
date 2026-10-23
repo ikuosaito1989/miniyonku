@@ -13,8 +13,8 @@ const ink=palette.outline;
 function rect(g:Phaser.GameObjects.Graphics,x:number,y:number,w:number,h:number,color:number){g.fillStyle(color).fillRect(Math.round(x),Math.round(y),w,h);}
 function label(scene:Phaser.Scene,x:number,y:number,text:string,size=10,color='#f5ead0',depth=0){return scene.add.text(x,y,text,{fontFamily:'"Noto Sans JP", monospace',fontSize:`${size}px`,color,resolution:2}).setDepth(depth);}
 
-export function drawShopRoom(scene:Phaser.Scene){
-  if(drawIllustratedRoom(scene))return;
+export function drawShopRoom(scene:Phaser.Scene,mirrored=false){
+  if(drawIllustratedRoom(scene,mirrored))return;
   const g=scene.add.graphics();
   rect(g,0,0,960,640,0x303e56);rect(g,40,35,880,85,palette.wall);
   for(let y=36;y<108;y+=4)for(let x=42;x<918;x+=5){
@@ -66,8 +66,8 @@ function kitBox(g:Phaser.GameObjects.Graphics,x:number,y:number,w:number,h:numbe
   rect(g,x+2,y+h-3,w-4,2,color);rect(g,x+3,y+3,3,2,0xfefeff);
 }
 
-export function drawShopFixture(scene:Phaser.Scene,f:Fixture){
-  if(drawIllustratedFixture(scene,f))return;
+export function drawShopFixture(scene:Phaser.Scene,f:Fixture,source:Fixture=f,mirrored=false){
+  if(drawIllustratedFixture(scene,f,source,mirrored))return;
   const g=scene.add.graphics().setDepth(f.y+f.h);const {x,y,w,h}=f;
   if(f.kind==='legends'){
     rect(g,x,y,w,h,0x253f55);rect(g,x+3,y+3,w-6,h-6,0x162b3e);

@@ -1,7 +1,7 @@
-import { circuit, circuitLength } from '../data/circuit';
+import { getCircuitTrack } from '../data/circuit';
 import type { RaceState, Racer } from './race';
 
-export const finishSequence = { approachDistance:2.4, coastDistance:1.1, holdSeconds:2.2, tallySeconds:1.6 };
+export const finishSequence = { approachDistance:2.4, coastSpeedFactor:.7, holdSeconds:2.2, tallySeconds:1.6 };
 export interface FinishArrival { id:string; age:number; crossingTime:number; }
 export interface FinishPresentation {
   stage:'racing'|'approach'|'finish'|'tally'|'results';
@@ -10,6 +10,7 @@ export interface FinishPresentation {
 }
 export function createFinishPresentation():FinishPresentation { return {stage:'racing',arrivals:[],finalAge:0}; }
 export function stepFinishPresentation(previous:FinishPresentation,race:RaceState,elapsed:number):FinishPresentation {
+  const {circuit,circuitLength}=getCircuitTrack(race.circuitId);
   const delta=Math.max(0,elapsed);
   const arrivals=previous.arrivals.map(a=>({...a,age:a.age+delta}));
   for(const racer of race.racers){
@@ -25,12 +26,13 @@ export function stepFinishPresentation(previous:FinishPresentation,race:RaceStat
     arrivals.length||race.phase==='finished'?'finish':approaching?'approach':'racing';
   return {stage,arrivals,finalAge};
 }
-// ゴール後の見た目だけを減速させる。公式の距離・タイムは変更しない。
+// ゴール後も流し走行を続ける。公式の距離・タイムは変更しない。
 export function finishCoastDistance(racer:Racer,presentation:FinishPresentation){
   const arrival=presentation.arrivals.find(a=>a.id===racer.id);
-  return arrival?finishSequence.coastDistance*(1-Math.exp(-racer.driving.speed*arrival.age/finishSequence.coastDistance)):0;
+  return arrival?Math.max(.5,racer.driving.speed*finishSequence.coastSpeedFactor)*arrival.age:0;
 }
 export function shouldUseFinishCamera(race:RaceState,presentation:FinishPresentation){
+  const {circuit,circuitLength}=getCircuitTrack(race.circuitId);
   if(race.playerStartOffset===null||!['approach','finish'].includes(presentation.stage))return false;
   return race.phase==='finished'||race.racers.some(r=>r.id==='player'&&r.driving.status==='finished')||
     presentation.arrivals.some(a=>a.age<2)||race.racers.some(r=>r.driving.status==='running'&&r.driving.distance>=circuitLength*circuit.laps-finishSequence.approachDistance);

@@ -21,7 +21,7 @@ test('破損・未来バージョン・未知パーツ・未所持装備・個�
     d=>{(d as {version:number}).version=2;},d=>{d.game.money=-1;},d=>{d.game.money=NaN;},
     d=>{d.game.inventory.unknown=1;},d=>{d.game.inventory['gear-4']=.5;},
     d=>{d.game.equipment.motor='gear-4';},d=>{d.game.equipment.motor='motor-rev';},
-    d=>{d.game.equipment.rollerFront='roller-1';d.game.inventory['roller-1']=1;d.game.equipment.rollerRear='roller-1';},
+    d=>{d.game.equipment.rollerFront='roller-2';},
     d=>{d.game.units['motor-stock']=[];},d=>{d.game.units['motor-stock'][0].seconds=Infinity;},
     d=>{d.game.units['motor-stock'][0].id='starter-battery';},d=>{d.game.selectedUnits.motor='missing';},
     d=>{d.game.units['motor-stock'][0].id='unit-2';d.game.selectedUnits.motor='unit-2';d.game.unitSerial=1;},

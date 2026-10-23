@@ -22,18 +22,19 @@ test('購入した装備を交換し、所持数を消費せず元の装備へ�
   assert.deepEqual(equipPart(changed,wallet.inventory,'motor-stock'),starterEquipment);
 });
 
-test('ローラーの前横後は独立し、左右1組の所持数を超えて装着できない',()=>{
+test('ローラーは所持1セットで前横後をまとめて交換し、未所持品は使えない',()=>{
   const inventory={...createStarterInventory(),'roller-2':1};
   const front=equipPart(starterEquipment,inventory,'roller-2','rollerFront');
   assert.equal(front.rollerFront,'roller-2');
-  assert.equal(front.rollerSide,'roller-0');
-  assert.equal(front.rollerRear,'roller-0');
-  assert.equal(equipPart(front,inventory,'roller-2','rollerSide'),front);
+  assert.equal(front.rollerSide,'roller-2');
+  assert.equal(front.rollerRear,'roller-2');
+  assert.deepEqual(equipPart(front,inventory,'roller-2','rollerSide'),front);
   assert.equal(equipPart(front,inventory,'roller-2','motor'),front);
   const side=equipPart(front,{...inventory,'roller-2':2},'roller-2','rollerSide');
   assert.equal(side.rollerSide,'roller-2');
   const removed=equipPart(side,inventory,'roller-0','rollerFront');
-  assert.equal(equipPart(removed,inventory,'roller-2','rollerRear'),removed);
+  assert.equal(removed.rollerFront,'roller-0');assert.equal(removed.rollerSide,'roller-0');assert.equal(removed.rollerRear,'roller-0');
+  assert.equal(equipPart(removed,inventory,'roller-1','rollerRear'),removed);
   assert.equal(equipPart(front,inventory,'roller-2','rollerFront').rollerFront,'roller-2');
 });
 test('タイヤとホイールは別枠で交換する',()=>{

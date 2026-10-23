@@ -15,7 +15,7 @@ test('無料の初期装備は13枠すべて所持し、そのまま完走でき
   const inventory=createStarterInventory();
   assert.equal(Object.keys(starterEquipment).length,13);
   for(const [slot,id] of Object.entries(starterEquipment)){
-    assert.equal(inventory[id],slot.startsWith('roller')?3:1);assert.equal(parts.find(p=>p.id===id)?.category,equipmentSlots[slot as EquipmentSlot].category);
+    assert.equal(inventory[id],1);assert.equal(parts.find(p=>p.id===id)?.category,equipmentSlots[slot as EquipmentSlot].category);
   }
   const result=run();assert.equal(result.status,'finished');assert.equal(result.distance,circuitLength*circuit.laps);assert.ok(result.time>0);
 });

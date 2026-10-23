@@ -3,7 +3,7 @@ import { nextShopRace } from '../data/shopHints';
 export interface AdviceContext { money:number; inventory:Record<string,number>; equipment:Equipment; motorSeconds:number; qualified:boolean }
 export function shopAdvice(role:'guide'|'mechanic',state:AdviceContext){
   if(role==='guide')return state.qualified
-    ?`${nextShopRace.shopName}のレース参加資格、獲得おめでとう！下中央の出口から街へ出て、あおぞら模型店へ行けるよ。こもれび模型店の優勝賞金500円は何度でももらえるよ。`
+    ?`${nextShopRace.shopName}のレース参加資格、獲得おめでとう！全国で活躍する最強兄弟とのレースで決着がついたら、下の出口から街へ出られるよ。この特別レースは周回遅れの敗北でも大丈夫。途中でやめた場合も出口で再挑戦できるよ。優勝賞金500円は何度でももらえるよ。`
     :'まずはこの店の1位を目指そう！初優勝で次の模型店の参加資格がもらえるよ。最下位でも完走賞150円。左下のセッティング本棚を順番に読むと、改造の進め方がわかるよ。';
   if(state.equipment.gear==='gear-5')return state.inventory['gear-4']
     ?'4:1ギアをもう持っているね！買ったパーツは自動では付かないよ。右上の作業台でギアを4:1に交換して、もう一度走ってみよう。'
