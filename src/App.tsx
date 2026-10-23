@@ -1,5 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { ShopWorld } from './ShopWorld';
+import { ShopExterior } from './ShopExterior';
+import { touchInput } from './game/touchInput';
 import { useGame } from './game/store';
 import { categories, parts, type Category } from './data/parts';
 import { SettingView } from './SettingView';
@@ -19,15 +21,16 @@ const TrialView=lazy(()=>import('./TrialView'));
 export function App(){
   const game=useGame();
   const [started,setStarted]=useState(false);
+  const [outside,setOutside]=useState(false);
   const [category,setCategory]=useState<Category>('motor');
   const modal=useRef<HTMLDivElement>(null);
   useEffect(()=>{
-    if(game.overlay)modal.current?.focus();
-  },[game.overlay]);
+    if(!outside&&game.overlay)modal.current?.focus();
+  },[game.overlay,outside]);
   useEffect(()=>{
     const handler=(e:KeyboardEvent)=>{
       const state=useGame.getState();
-      if(!state.overlay)return;
+      if(outside||!state.overlay)return;
       if(e.key==='Escape'){e.preventDefault();state.close();}
       if(e.key==='Tab'&&state.overlay==='shop'&&modal.current){
         const controls=modal.current.querySelectorAll<HTMLButtonElement>('button:not(:disabled)');
@@ -37,11 +40,14 @@ export function App(){
       }
     };
     window.addEventListener('keydown',handler);return()=>window.removeEventListener('keydown',handler);
-  },[]);
+  },[outside]);
   return <main>
     <GameAudio/>
     {!started ? <TitleScreen onStart={()=>setStarted(true)}/> : <section className="game-shell" aria-label="ゲーム画面">
-      <div className="stage"><ShopWorld/>
+      <div className="stage">
+        {outside ? <><ShopExterior onEnter={()=>setOutside(false)}/><SaveWarning/></> : <>
+        <ShopWorld/>
+        <button className="shop-exit" onClick={()=>{touchInput.reset();game.close();setOutside(true);}}>店の外へ</button>
         {game.overlay===null&&<button className="game-settings-open" onClick={game.openSettings}>設定</button>}
         {game.overlay!=='race'&&<AudioControls floating/>}
         <SaveWarning/>
@@ -60,6 +66,7 @@ export function App(){
             <div className="parts">{parts.filter(p=>p.category===category&&isStocked(p)).map(p=><article key={p.id}><div className={`part-icon ${p.category}`}><PartArtwork part={p}/></div><div className="part-info"><h3>{p.name}</h3><p>{p.description}</p><small>{p.performance}</small><span className="owned">所持 {game.inventory[p.id]??0}</span></div><div className="purchase"><strong>¥ {yen(p.price)}</strong><button disabled={game.money<p.price} onClick={()=>game.buy(p.id)}>{game.money<p.price?'所持金不足':'購入する'}</button></div></article>)}</div>
             <p className="notice" role="status" aria-live="polite">{game.notice||'春夫「じっくり選んでね。各パーツは複数購入できるよ。」'}</p><SaveControls/>
         </div></div>}
+        </>}
       </div>
     </section>}
   </main>;
