@@ -1,7 +1,9 @@
+import { rivals } from '../data/rivals';
+import { legends } from '../data/legends';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
-import { buildMachineModel } from './MachineModel';
+import { buildMachineModel, buildRaceMachineModel } from './MachineModel';
 import { starterEquipment } from '../data/machine';
 import { bodies } from '../data/bodies';
 
@@ -65,4 +67,27 @@ test('全ボディの曲面形状が有限でレーンに収まり、軽・SUV�
   }
   assert.ok(heights['body-manta']>heights['body-stream']);
   assert.ok(heights['body-stream']<heights['body-arrow']);
+});
+
+test('通常CPUは箱型軽ワゴンの外観。記念車と最強兄弟は従来の造形を維持する',()=>{
+  const mob=buildRaceMachineModel(rivals[0]);
+  assert.ok(mob.getObjectByName('mob-kei-yellow-plate'));
+  assert.ok(mob.getObjectByName('mob-kei-plastic-bumper'));
+  assert.ok(mob.getObjectByName('mob-kei-square-headlight'));
+  assert.equal(mob.getObjectByName('rear-wing'),undefined);
+  const size=new THREE.Box3().setFromObject(mob).getSize(new THREE.Vector3());
+  assert.ok(size.x<.22&&size.z<.3&&size.y<.13);
+  const shell=mob.getObjectByName('body-shell') as THREE.Mesh;
+  assert.ok(shell.geometry instanceof THREE.BoxGeometry);
+  const protectedCars=[{id:'player',color:0xff0000,equipment:{...starterEquipment,body:'body-champion'}},...legends.slice(0,2).map(legend=>({...legend,color:0xff0000}))];
+  for(const racer of protectedCars){
+    const current=buildRaceMachineModel(racer),previous=buildMachineModel(racer.color,racer.equipment);
+    assert.equal(current.getObjectByName('mob-kei-yellow-plate'),undefined);
+    const geometry=(model:THREE.Group)=>{
+      const result:unknown[]=[];model.traverse(object=>{if(object instanceof THREE.Mesh)result.push([object.name,Array.from(object.geometry.getAttribute('position').array),object.position.toArray()]);});return result;
+    };
+    assert.deepEqual(geometry(current),geometry(previous));
+    for(const model of [current,previous])model.traverse(object=>{if(object instanceof THREE.Mesh){object.geometry.dispose();object.material.dispose();}});
+  }
+  mob.traverse(object=>{if(object instanceof THREE.Mesh){object.geometry.dispose();object.material.dispose();}});
 });

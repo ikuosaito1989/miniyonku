@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import type { Equipment } from '../data/machine';
+import type { Entrant } from '../data/rivals';
 import { bodyDesign } from '../data/bodies';
 import { partAppearances } from '../data/partAppearance';
 
@@ -45,8 +46,15 @@ function lowWedgeShell(sections:number[][],color:number,shininess=85){
   return new THREE.Mesh(geometry,new THREE.MeshPhongMaterial({color,shininess,side:THREE.DoubleSide}));
 }
 
-export function buildMachineModel(racerColor:number,equipment:Equipment){
-  const design=bodyDesign(equipment.body);
+export function buildRaceMachineModel(racer:Pick<Entrant,'id'|'color'|'equipment'>){
+  return buildMachineModel(racer.color,racer.equipment,racer.id!=='player'&&!racer.id.startsWith('legend-')?'mob-kei':'stock');
+}
+
+export function buildMachineModel(racerColor:number,equipment:Equipment,appearance:'stock'|'mob-kei'='stock'){
+  const original=bodyDesign(equipment.body);
+  // NPCの外観だけを軽ワゴン風にする。装備性能・記念車・レジェンド専用車は維持。
+  const isMob=appearance==='mob-kei'&&original.id!=='body-champion'&&!original.id.startsWith('body-legend-');
+  const design=isMob?{...original,shape:'kei' as const,silhouette:undefined,width:.056,cabinHeight:.042,cabinFront:.041,cabinRear:-.092}:original;
   // 3Dプレビューはボディ固有色、レース中はレーサーごとの塗色を使う。
   const isStarter=design.silhouette==='starter-wedge',isChampion=design.silhouette==='champion-aero';
   const color=isChampion?Number.parseInt(design.color.slice(1),16):racerColor;
@@ -73,23 +81,29 @@ export function buildMachineModel(racerColor:number,equipment:Equipment){
     :style==='muscle'
     ?[[-.128,w*.77,.015],[-.10,w*.97,.021],[-.07,w,.022],[0,w*.9,.021],[.08,w,.023],[.12,w*.87,.018],[.132,w*.74,.013]]
     :[[-.128,.035,.012],[-.116,w*.85,.016],[-.08,w,.02],[0,w,.021],[.08,w*.97,.018],[.117,w*.83,.014],[.132,.026,.009]];
-  const body=isStarter
+  const body=isMob
+    ?new THREE.Mesh(new THREE.BoxGeometry(.112,.035,.24),new THREE.MeshPhongMaterial({color,shininess:12}))
+    :isStarter
     ?lowWedgeShell([[-.137,.043,.045,.053,.067],[-.119,.064,.045,.056,.071],[-.092,.074,.045,.057,.072],[-.065,.071,.045,.056,.07],[-.02,.064,.045,.054,.067],[.035,.061,.045,.053,.065],[.077,.057,.045,.052,.062],[.105,.047,.045,.051,.06],[.132,.027,.046,.05,.057],[.145,.004,.048,.05,.053]],color)
     :isChampion
     ?lowWedgeShell([[-.145,.025,.045,.054,.07],[-.12,.061,.045,.06,.078],[-.09,.078,.045,.061,.078],[-.05,.074,.045,.058,.073],[0,.064,.045,.055,.069],[.045,.065,.045,.054,.067],[.085,.058,.045,.052,.064],[.12,.043,.045,.05,.06],[.148,.018,.047,.05,.056],[.158,.002,.048,.05,.053]],color,105)
     :shell(sections,color,boxy);
+  if(isMob)body.position.y=.06;
   body.name='body-shell';car.add(body);
   const rear=design.cabinRear,front=design.cabinFront,height=design.cabinHeight;
-  const canopy=isStarter
+  const canopy=isMob
+    ?new THREE.Mesh(new THREE.BoxGeometry(.099,.046,.142),new THREE.MeshPhongMaterial({color:0x35494e,shininess:18}))
+    :isStarter
     ?lowWedgeShell([[-.091,.004,.067,.071,.072],[-.078,.026,.067,.078,.087],[-.054,.036,.067,.081,.091],[-.018,.037,.067,.081,.091],[.014,.031,.066,.078,.086],[.04,.019,.064,.071,.077],[.051,.002,.063,.066,.067]],0x193b52,52)
     :isChampion
     ?lowWedgeShell([[-.09,.003,.069,.073,.074],[-.073,.028,.069,.078,.087],[-.046,.036,.069,.082,.091],[-.012,.034,.069,.081,.09],[.022,.025,.067,.076,.083],[.043,.002,.064,.068,.069]],0x172c49,58)
     :shell([[rear-.014,.002,.001],[rear,w*.68,height*.72],[rear+.02,w*.7,height],[front-.015,w*.65,height],[front+.022,w*.7,.002],[front+.028,.002,.001]],0x193b52,boxy);
-  if(!isStarter&&!isChampion)canopy.position.y=.018;
+  if(isMob)canopy.position.set(0,.094,-.024);
+  else if(!isStarter&&!isChampion)canopy.position.y=.018;
   canopy.name='cabin-glass';car.add(canopy);
   if(!isStarter&&!isChampion){
-    const roof=shell([[rear+.005,.003,.001],[rear+.02,w*.7,.002],[front-.017,w*.65,.002],[front-.012,.003,.001]],color,boxy);
-    roof.position.y=.022+height;roof.name='roof';car.add(roof);
+    const roof=isMob?new THREE.Mesh(new THREE.BoxGeometry(.108,.005,.152),new THREE.MeshPhongMaterial({color,shininess:12})):shell([[rear+.005,.003,.001],[rear+.02,w*.7,.002],[front-.017,w*.65,.002],[front-.012,.003,.001]],color,boxy);
+    if(isMob)roof.position.set(0,.12,-.024);else roof.position.y=.022+height;roof.name='roof';car.add(roof);
   }else if(isStarter){
     // 小さな赤いルーフパネルで、窓とボンネットをはっきり分ける。
     const roof=lowWedgeShell([[-.039,.023,.088,.09,.091],[-.025,.026,.088,.091,.092],[.004,.026,.088,.091,.092],[.015,.018,.085,.087,.088]],color,95);roof.name='roof';car.add(roof);
@@ -99,6 +113,17 @@ export function buildMachineModel(racerColor:number,equipment:Equipment){
     const mesh=new THREE.Mesh(geometry,material);mesh.name=name;car.add(mesh);return mesh;
   };
   const white=new THREE.MeshPhongMaterial({color:0xf4f4eb,shininess:95,side:THREE.DoubleSide});
+  if(isMob){
+    const plastic=new THREE.MeshPhongMaterial({color:0x34393a,shininess:2});
+    for(const z of [-.124,.124])add(new THREE.BoxGeometry(.115,.012,.009),plastic,0,.05,z).name='mob-kei-plastic-bumper';
+    add(new THREE.BoxGeometry(.028,.012,.002),new THREE.MeshPhongMaterial({color:0xe9cd58,shininess:5}),0,.06,.13).name='mob-kei-yellow-plate';
+    for(const side of [-1,1]){
+      add(new THREE.BoxGeometry(.003,.004,.015),plastic,side*.057,.074,-.008).name='mob-kei-door-handle';
+      add(new THREE.BoxGeometry(.025,.013,.004),accent,side*.036,.073,.123).name='mob-kei-square-headlight';
+      add(new THREE.BoxGeometry(.014,.016,.004),new THREE.MeshPhongMaterial({color:0xb74f43,shininess:8}),side*.043,.068,-.123).name='mob-kei-square-tail-light';
+      add(new THREE.BoxGeometry(.004,.04,.007),new THREE.MeshPhongMaterial({color,shininess:12}),side*.051,.094,-.02).name='mob-kei-window-pillar';
+    }
+  }
   const teal=new THREE.MeshPhongMaterial({color:0x27b6a7,shininess:85,side:THREE.DoubleSide});
   if(isChampion){
     // 固有ロゴを使わない、赤白のノーズと青緑の流線アクセント。
@@ -109,14 +134,16 @@ export function buildMachineModel(racerColor:number,equipment:Equipment){
     const pillar=add(new THREE.CapsuleGeometry(.0025,height*.7,3,8),frame,side*w*.69,.073+height*.45,(rear+front)/2);
     pillar.rotation.z=side*.16;
     add(new THREE.CapsuleGeometry(.0015,.1,3,8),accent,side*w,.056,-.006).rotation.x=Math.PI/2;
-    const lamp=add(isStarter?new THREE.BoxGeometry(.012,.004,.005):new THREE.SphereGeometry(1,16,8),isStarter?new THREE.MeshPhongMaterial({color:0xf6d45b,shininess:65}):accent,side*(isStarter?.036:w*.55),isStarter?.055:(style==='wedge'?.057:.061),isStarter?.128:.123);
-    if(!isStarter)lamp.scale.set(style==='muscle'?.018:.016,style==='wedge'?.002:.005,.003);
-    lamp.rotation.z=style==='flow'?side*.3:style==='wedge'?side*.14:0;
+    if(!isMob){
+      const lamp=add(isStarter?new THREE.BoxGeometry(.012,.004,.005):new THREE.SphereGeometry(1,16,8),isStarter?new THREE.MeshPhongMaterial({color:0xf6d45b,shininess:65}):accent,side*(isStarter?.036:w*.55),isStarter?.055:(style==='wedge'?.057:.061),isStarter?.128:.123);
+      if(!isStarter)lamp.scale.set(style==='muscle'?.018:.016,style==='wedge'?.002:.005,.003);
+      lamp.rotation.z=style==='flow'?side*.3:style==='wedge'?side*.14:0;
+    }
     const red=new THREE.MeshPhongMaterial({color:0xe4554c});
     if(style==='muscle'){
       for(const offset of [0,.016]){const tail=add(new THREE.CylinderGeometry(.006,.006,.003,20),red,side*(.029+offset),.063,-.126);tail.rotation.x=Math.PI/2;tail.name='round-tail';}
       add(new THREE.BoxGeometry(.009,.005,.06),frame,side*w,.039,-.008);
-    }else{
+    }else if(!isMob){
       const tail=add(new THREE.SphereGeometry(1,16,8),red,side*w*.63,.061,-.12);tail.scale.set(.014,.004,.003);
     }
     if(style==='starter-wedge'){

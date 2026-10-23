@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { buildMachineModel } from './MachineModel';
+import { buildRaceMachineModel } from './MachineModel';
 import { freshCondition, type MachineCondition } from './condition';
 import { compactDevice, raceRenderSize } from '../data/display';
 import { getCircuitTrack, type CircuitId, type CircuitTrack } from '../data/circuit';
@@ -48,7 +48,7 @@ export class TrialRenderer {
     const ground=new THREE.Mesh(new THREE.PlaneGeometry(100,100),new THREE.MeshLambertMaterial({map:grass}));
     ground.rotation.x=-Math.PI/2;ground.position.y=-0.025;this.scene.add(ground);
     this.buildTrack();this.buildStart();
-    for(const racer of this.state.racers){const car=buildMachineModel(racer.color,racer.equipment);this.cars.set(racer.id,car);this.scene.add(car);}
+    for(const racer of this.state.racers){const car=buildRaceMachineModel(racer);this.cars.set(racer.id,car);this.scene.add(car);}
     this.playerMarker.rotation.z=Math.PI;this.scene.add(this.playerMarker);
     this.observer=new ResizeObserver(()=>this.resize());this.observer.observe(host);this.resize();
     this.audio=new RaceAudio();
