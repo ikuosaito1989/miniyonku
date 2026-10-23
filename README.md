@@ -1,6 +1,6 @@
 # TINY DRIVE — こもれび模型店
 
-プレビュー公開先：https://preview-miniyonku.ikuosaito1989.workers.dev
+プレビュー公開先：https://preview-shiningscorpion.ikuosaito1989.workers.dev
 
 ゲーム画面左上の「店の外へ」から、会話・買い物・セッティング・レース中でも店先へ出られます。店先の「模型店に入る」で店内に戻れます。途中のレースは終了し、獲得済みの所持金・パーツ・消耗状態は維持します。
 
