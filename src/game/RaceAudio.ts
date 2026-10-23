@@ -17,7 +17,6 @@ export class RaceAudio {
   private enabled=true;
   private volume=0.35;
   private disposed=false;
-  private resuming=false;
   private lastState:RaceState|null=null;
   private gesture=()=>this.unlock();
   private stateChange=()=>{if(this.context&&this.context.state!=='running'&&this.context.state!=='closed'&&!document.hidden&&this.enabled)this.unlock();};
@@ -53,9 +52,9 @@ export class RaceAudio {
         this.motorGain=context.createGain();this.motorGain.gain.value=0;
         this.motor.connect(this.motorGain).connect(this.master);this.motor.start();
       }
-      if(!document.hidden&&!this.resuming&&this.context.state!=='running'){
-        const context=this.context;this.resuming=true;
-        void context.resume().then(()=>{if(!this.disposed&&this.context===context&&this.lastState)this.update(this.lastState);}).catch(()=>{}).finally(()=>{this.resuming=false;});
+      if(!document.hidden&&this.context.state!=='running'){
+        const context=this.context;
+        void context.resume().then(()=>{if(!this.disposed&&this.context===context&&this.lastState)this.update(this.lastState);}).catch(()=>{});
       }
     }catch{ /* 音声非対応でもレースは継続する。 */ }
   }

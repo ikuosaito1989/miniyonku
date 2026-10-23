@@ -16,7 +16,6 @@ export class MusicPlayer {
   private disposed=false;
   private generation=0;
   private pending=false;
-  private resuming=false;
   private stateChange=()=>{
     if(this.disposed||!this.enabled||!this.visible)return;
     if(this.context?.state==='running'){this.play();return;}
@@ -36,9 +35,10 @@ export class MusicPlayer {
         this.context=new AudioContext();this.context.onstatechange=this.stateChange;this.gain=this.context.createGain();
         this.gain.gain.value=this.volume*0.6;this.gain.connect(this.context.destination);
       }
-      if(this.resuming)return;
-      const context=this.context;this.resuming=true;
-      void context.resume().then(()=>{if(!this.disposed&&this.enabled&&this.visible&&context.state==='running')this.play();}).catch(()=>this.report('waiting')).finally(()=>{this.resuming=false;});
+      const context=this.context;
+      if(context.state==='running'){this.play();return;}
+      // iOSではresume()が未解決のまま残ることがある。次のタップも必ず再試行する。
+      void context.resume().then(()=>{if(!this.disposed&&this.context===context&&this.enabled&&this.visible&&context.state==='running')this.play();}).catch(()=>{if(!this.disposed&&this.context===context)this.report('waiting');});
     }catch{this.report('error');}
   }
 

@@ -58,3 +58,28 @@ test('初回操作後だけ再生。ロード中のシーン切替で旧BGMが�
     if(originalContext)Object.defineProperty(globalThis,'AudioContext',originalContext);else Reflect.deleteProperty(globalThis,'AudioContext');
   }
 });
+
+test('Safariで最初のresumeが未解決でも次の操作で再試行し、BGMを1本だけ再生する',async()=>{
+  const descriptor=Object.getOwnPropertyDescriptor(globalThis,'AudioContext'),originalFetch=globalThis.fetch;
+  let context:Context,firstResume:()=>void=()=>{};
+  const packed=await packMusic(new Uint8Array([1,2,3]));
+  class Context{
+    state='suspended';currentTime=0;destination={};onstatechange:(()=>void)|null=null;requests=0;starts=0;
+    constructor(){context=this;}
+    createGain(){return {gain:{value:0,setTargetAtTime(){}},connect(){}};}
+    resume(){this.requests++;if(this.requests===1)return new Promise<void>(resolve=>{firstResume=resolve;});this.state='running';return Promise.resolve();}
+    close(){this.state='closed';return Promise.resolve();}
+    decodeAudioData(){return Promise.resolve({});}
+    createBufferSource(){return {buffer:null,loop:false,onended:null,connect(){},disconnect(){},start(){context.starts++;},stop(){}};}
+  }
+  Object.defineProperty(globalThis,'AudioContext',{configurable:true,value:Context});
+  globalThis.fetch=async()=>new Response(packed);
+  const player=new MusicPlayer({shop:{url:'shop'},race:{url:'race'}},()=>{});
+  const flush=()=>new Promise(resolve=>setTimeout(resolve,25));
+  try{
+    player.unlock();assert.equal(context!.requests,1);
+    player.unlock();await flush();assert.equal(context!.requests,2);assert.equal(context!.starts,1);
+    firstResume();await flush();assert.equal(context!.starts,1);
+    player.setSettings(false,.35);player.unlock();assert.equal(context!.requests,2);
+  }finally{player.dispose();globalThis.fetch=originalFetch;if(descriptor)Object.defineProperty(globalThis,'AudioContext',descriptor);else Reflect.deleteProperty(globalThis,'AudioContext');}
+});
