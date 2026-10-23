@@ -1,6 +1,7 @@
 import { story } from './story';
 export const room = { width:960, height:640, spawn:{x:480,y:550} };
 // 店内の描画範囲。外側の背景を除き、表示領域全体へ合わせる。
+export const shopExit = { x:409, y:574, width:145, height:8 };
 export const roomView = { x:40, y:35, width:880, height:579 };
 export interface Fixture { x:number; y:number; w:number; h:number; kind:'shelf'|'counter'|'bench'|'track'|'plant'|'board'|'bookshelf'|'legends'; label:string; text:string }
 export const fixtures:Fixture[] = [

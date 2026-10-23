@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { fixtures,room } from '../data/shop';
 import { shopPeople, shopVisitors } from '../data/story';
-import { canStand,canTravel,findWalkingPath,type Point } from './navigation';
+import { canStand,canTravel,findWalkingPath,isAtShopExit,type Point } from './navigation';
 const obstacles=[...fixtures.map(f=>({x:f.x,y:f.y,width:f.w,height:f.h})),...[shopPeople.rival,...shopVisitors].map(p=>({x:p.x-12,y:p.y-9,width:24,height:21}))];
 function verify(start:Point,route:Point[]){
   let previous=start;
@@ -29,5 +29,18 @@ test('増えた来店客を迂回し、全員の会話範囲へ到達できる',
   for(const person of shopVisitors){
     const route=findWalkingPath(room.spawn,person,obstacles);verify(room.spawn,route);
     assert.ok(route.length>0);assert.ok(Math.hypot(route.at(-1)!.x-person.x,route.at(-1)!.y-person.y)<62);
+  }
+});
+
+test('入口の手前では退出せず、出口まで歩くと退出できる',()=>{
+  assert.equal(isAtShopExit(room.spawn),false);
+  assert.equal(isAtShopExit({x:480,y:570}),false);
+  assert.equal(isAtShopExit({x:400,y:578}),false);
+  assert.equal(isAtShopExit({x:560,y:578}),false);
+  assert.equal(isAtShopExit({x:480,y:600}),false);
+  for(const start of [room.spawn,{x:480,y:250},{x:890,y:540}]){
+    const route=findWalkingPath(start,{x:480,y:578},obstacles);
+    verify(start,route);
+    assert.ok(isAtShopExit(route.at(-1)!));
   }
 });

@@ -1,3 +1,4 @@
+import { shopExit } from '../data/shop';
 export interface Point { x:number;y:number }
 export interface Obstacle { x:number;y:number;width:number;height:number }
 export const walkBounds={left:56,right:904,top:136,bottom:582};
@@ -46,4 +47,8 @@ export function findWalkingPath(start:Point,target:Point,obstacles:Obstacle[]):P
     result.push(p);before=p;
   }
   return result;
+}
+
+export function isAtShopExit(point:Point){
+  return point.x>=shopExit.x&&point.x<=shopExit.x+shopExit.width&&point.y>=shopExit.y&&point.y<=shopExit.y+shopExit.height;
 }

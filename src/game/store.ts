@@ -1,3 +1,4 @@
+import { shopById, type ShopId } from '../data/town';
 import { create } from 'zustand';
 import { parts } from '../data/parts';
 import { purchase, type Wallet } from './purchase';
@@ -11,6 +12,7 @@ import { batteryCharge, batteryCapacity, batteryConsumption, createStarterUnits,
 import { breakInPractice } from '../data/proficiency';
 import { hintBooks, nextShopRace } from '../data/shopHints';
 export interface GameState extends Wallet {
+  currentShopId:ShopId; enterShop:(id:ShopId)=>void;
   cheatUsed:boolean;cheatReturnToSettings:boolean;
   openCheat:(fromSettings?:boolean)=>void;applyCheat:(amount:'max'|1000)=>void;
   purchaseCount:number;
@@ -34,6 +36,7 @@ export interface GameState extends Wallet {
 }
 export const useGame = create<GameState>((set) => ({
   hintBookIndex:0,unlockedRaces:[],qualificationNotice:false,legendEventSeen:false,legendEventPending:false,legendDebriefPending:false,legendChallengeActive:false,dialogueStage:'none',cheatUsed:false,cheatReturnToSettings:false,
+  currentShopId:'komorebi',enterShop:id=>set({currentShopId:id,overlay:null,nearby:'',notice:'',shopAfter:false,dialogueStage:'none'}),
   purchaseCount:0,
   readHintBook:()=>set(s=>{
     const index=s.hintBookIndex%hintBooks.length,book=hintBooks[index];
@@ -98,7 +101,7 @@ export const useGame = create<GameState>((set) => ({
     return {overlay:null,shopAfter:false,notice:'',dialogueStage:'none',legendChallengeActive:false};
   }),
   buy: id => set(s => {
-    const result=purchase(s,id);
+    const result=purchase(s,id,{name:shopById(s.currentShopId).name,maxPartLevel:2});
     if(!result.success)return {notice:result.message};
     const consumable=id.startsWith('motor-')||id.startsWith('battery-');
     return {...result.wallet,purchaseCount:s.purchaseCount+1,notice:result.message,...(consumable?{unitSerial:s.unitSerial+1,units:{...s.units,[id]:[...(s.units[id]??[]),{id:`unit-${s.unitSerial+1}`,seconds:0}]}}:{})};
