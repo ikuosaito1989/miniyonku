@@ -37,7 +37,7 @@ test('初回操作後だけ再生。ロード中のシーン切替で旧BGMが�
   }
   Object.defineProperty(globalThis,'AudioContext',{configurable:true,value:FakeContext});
   globalThis.fetch=(url)=>new Promise<Response>(resolve=>pending.set(String(url),resolve));
-  const player=new MusicPlayer({shop:{url:'shop'},race:{url:'race'}},()=>{});
+  const player=new MusicPlayer({shop:{url:'shop'},race:{url:'race'},event:{url:'event'}},()=>{});
   const settle=()=>new Promise(resolve=>setTimeout(resolve,25));
   try{
     assert.equal(contexts.length,0);player.unlock();await settle();
@@ -52,7 +52,11 @@ test('初回操作後だけ再生。ロード中のシーン切替で旧BGMが�
     player.setSettings(false,.2);player.setScene('shop');await settle();assert.equal(contexts[0].sources[0].stopped,true);
     player.setSettings(true,.2);await settle();assert.equal(contexts[0].sources.length,2);
     contexts[0].state='interrupted';contexts[0].onstatechange?.();await settle();assert.equal(contexts[0].state,'running');
-    player.dispose();assert.equal(contexts[0].state,'closed');assert.equal(contexts[0].sources[1].stopped,true);
+    player.setScene('event');await settle();assert.ok(pending.has('event'));assert.equal(contexts[0].sources[1].stopped,true);
+    pending.get('event')!(new Response(packed));await settle();assert.equal(contexts[0].sources.length,3);assert.equal(contexts[0].sources[2].loop,true);
+    player.setScene('event');await settle();assert.equal(contexts[0].sources.length,3);
+    player.setScene('shop');await settle();assert.equal(contexts[0].sources[2].stopped,true);assert.equal(contexts[0].sources.length,4);
+    player.dispose();assert.equal(contexts[0].state,'closed');assert.equal(contexts[0].sources[3].stopped,true);
   }finally{
     player.dispose();globalThis.fetch=originalFetch;
     if(originalContext)Object.defineProperty(globalThis,'AudioContext',originalContext);else Reflect.deleteProperty(globalThis,'AudioContext');
@@ -74,7 +78,7 @@ test('Safariで最初のresumeが未解決でも次の操作で再試行し、BG
   }
   Object.defineProperty(globalThis,'AudioContext',{configurable:true,value:Context});
   globalThis.fetch=async()=>new Response(packed);
-  const player=new MusicPlayer({shop:{url:'shop'},race:{url:'race'}},()=>{});
+  const player=new MusicPlayer({shop:{url:'shop'},race:{url:'race'},event:{url:'event'}},()=>{});
   const flush=()=>new Promise(resolve=>setTimeout(resolve,25));
   try{
     player.unlock();assert.equal(context!.requests,1);
