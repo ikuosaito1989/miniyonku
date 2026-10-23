@@ -128,24 +128,39 @@ export class TrialRenderer {
     }
   }
   private buildStart(){
-    const {circuit,sampleCircuit,startDistance,laneOffset}=this.track;
+    const {circuit,sampleCircuit,startDistance,sampleLanePath,startRampHeight}=this.track;
     const start=sampleCircuit(startDistance);
-    const group=new THREE.Group();group.position.set(start.x,0,start.z);group.rotation.y=Math.atan2(start.tangentX,start.tangentZ);
+    const group=new THREE.Group();group.position.set(start.x,startRampHeight(0),start.z);group.rotation.y=Math.atan2(start.tangentX,start.tangentZ);
     const colors=[0x5685ce,0xcf5263,0xd4b749,0x50a889,0xb17bcb];
-    for(let lane=0;lane<circuit.lanes;lane++){
-      const x=laneOffset(lane);
-      const pad=this.mesh(new THREE.BoxGeometry(circuit.laneWidth-0.018,0.008,1.35),colors[lane]);pad.position.set(x,0.009,-0.425);group.add(pad);
-      for(let row=0;row<2;row++)for(let i=0;i<4;i++){
-        const marker=this.mesh(new THREE.BoxGeometry((circuit.laneWidth-0.02)/4,0.005,0.035),(i+row)%2?0x26354b:0xf5f1da);
-        marker.position.set(x+(i-1.5)*(circuit.laneWidth-0.02)/4,0.016,(row-0.5)*0.035);group.add(marker);
+    // 色付きの発進台とラインも路面の高さに合わせ、浮いた平板にしない。
+    const strip=(lane:number,from:number,to:number,left:number,right:number,color:number)=>{
+      const vertices:number[]=[],indices:number[]=[],steps=Math.max(2,Math.ceil((to-from)*32));
+      for(let i=0;i<=steps;i++){
+        const p=sampleLanePath(from+(to-from)*i/steps,lane);
+        for(const offset of [left,right])vertices.push(p.x+p.tangentZ*offset,p.y+(to-from<.1?.015:.01),p.z-p.tangentX*offset);
+        if(i<steps){const a=i*2;indices.push(a,a+1,a+2,a+1,a+3,a+2);}
       }
+      const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.setIndex(indices);geometry.computeVertexNormals();
+      const mesh=this.mesh(geometry,color);mesh.material.side=THREE.DoubleSide;this.scene.add(mesh);
+    };
+    for(let lane=0;lane<circuit.lanes;lane++){
+      const half=circuit.laneWidth/2-.01;
+      strip(lane,-1.2,1.55,-half,half,colors[lane]);
+      for(let row=0;row<2;row++)for(let i=0;i<4;i++){
+        strip(lane,(row-1)*.04,row*.04+.001,-half+i*half/2,-half+(i+1)*half/2,(i+row)%2?0x26354b:0xf5f1da);
+      }
+    }
+    for(const lane of [0,circuit.lanes-1])for(const distance of [-1.2,-.5,.5]){
+      const p=sampleLanePath(distance,lane),side=lane===0?-1:1,offset=side*(circuit.laneWidth/2-.02);
+      const support=this.mesh(new THREE.BoxGeometry(.035,p.y,.05),0x526477);
+      support.name='start-ramp-support';support.position.set(p.x+p.tangentZ*offset,p.y/2,p.z-p.tangentX*offset);this.scene.add(support);
     }
     const canvas=document.createElement('canvas');canvas.width=160;canvas.height=32;
     const context=canvas.getContext('2d')!;context.font='bold 28px monospace';context.textAlign='center';
     context.fillStyle='#463e23';context.fillText('G O A L',82,27);context.fillStyle='#f8dc65';context.fillText('G O A L',80,25);
     const texture=new THREE.CanvasTexture(canvas);texture.magFilter=THREE.NearestFilter;texture.minFilter=THREE.NearestFilter;texture.colorSpace=THREE.SRGBColorSpace;this.textures.push(texture);
     const goalLabel=new THREE.Mesh(new THREE.PlaneGeometry(0.85,0.17),new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false}));
-    goalLabel.rotation.x=-Math.PI/2;goalLabel.position.set(0,0.02,0.4);group.add(goalLabel);
+    goalLabel.rotation.x=-Math.PI/2-sampleLanePath(.4,2).pitch;goalLabel.position.set(0,startRampHeight(.4)-startRampHeight(0)+.02,.4);group.add(goalLabel);
     // 自作のスタート係。既存作品のキャラクターを使わない。
     const attendant=new THREE.Group();attendant.position.set(-circuit.laneWidth*circuit.lanes/2-0.23,0,-0.15);
     const block=(w:number,h:number,d:number,x:number,y:number,z:number,color:number)=>{
@@ -154,6 +169,7 @@ export class TrialRenderer {
     block(0.11,0.15,0.08,0,0.16,0,0xe0a34c);block(0.09,0.09,0.08,0,0.28,0,0xefc09a);
     block(0.12,0.03,0.11,0,0.34,0,0x304461);block(0.04,0.1,0.06,-0.03,0.04,0,0x25364b);block(0.04,0.1,0.06,0.03,0.04,0,0x25364b);
     block(0.025,0.15,0.025,-0.11,0.25,0,0xefc09a);block(0.12,0.08,0.008,-0.17,0.35,0,0xf8df79);
+    const podium=this.mesh(new THREE.BoxGeometry(.3,startRampHeight(0),.4),0x526477);podium.position.set(attendant.position.x,-startRampHeight(0)/2,attendant.position.z);group.add(podium);
     group.add(attendant);this.scene.add(group);
   }
   private updateCamera(){
@@ -169,8 +185,8 @@ export class TrialRenderer {
     this.camera.left=-viewHeight*this.aspect/2;this.camera.right=viewHeight*this.aspect/2;
     this.camera.top=viewHeight/2;this.camera.bottom=-viewHeight/2;this.camera.updateProjectionMatrix();
     const start=sampleLanePath(0,(circuit.lanes-1)/2);
-    const target=overview?new THREE.Vector3(0,0,0):goalShot?new THREE.Vector3(start.x-start.tangentX*raceCamera.finish.lookBehind,0,start.z-start.tangentZ*raceCamera.finish.lookBehind):new THREE.Vector3(p.x+p.tangentX*raceCamera.running.lookAhead,p.y,p.z+p.tangentZ*raceCamera.running.lookAhead)
-      .lerp(new THREE.Vector3(start.x-start.tangentX*raceCamera.start.lookBehind,0,start.z-start.tangentZ*raceCamera.start.lookBehind),blend);
+    const target=overview?new THREE.Vector3(0,0,0):goalShot?new THREE.Vector3(start.x-start.tangentX*raceCamera.finish.lookBehind,start.y,start.z-start.tangentZ*raceCamera.finish.lookBehind):new THREE.Vector3(p.x+p.tangentX*raceCamera.running.lookAhead,p.y,p.z+p.tangentZ*raceCamera.running.lookAhead)
+      .lerp(new THREE.Vector3(start.x-start.tangentX*raceCamera.start.lookBehind,start.y,start.z-start.tangentZ*raceCamera.start.lookBehind),blend);
     const offset=new THREE.Vector3(...(goalShot?raceCamera.finish.offset:raceCamera.running.offset));
     if(!overview&&!goalShot)offset.lerp(new THREE.Vector3(...raceCamera.start.offset),blend);
     this.camera.position.copy(target).add(offset);this.camera.lookAt(target);

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { starterEquipment, createStarterInventory } from '../data/machine';
 import { parts } from '../data/parts';
 import { isStocked } from '../data/progression';
-import { batteryCharge, batteryLabel, createStarterUnits } from './condition';
+import { batteryCapacity, batteryCharge, batteryLabel, createStarterUnits } from './condition';
 import { createDrivingState, machinePerformance, startDriving, stepDriving } from './driving';
 import { purchase } from './purchase';
 import { useGame } from './store';
@@ -33,7 +33,7 @@ test('充電電池は基準出力95%。長時間使用後も電池切れせず�
 test('所持金0・通常電池切れから充電電池に交換し、何度慣らしても残量固定。モーターは消耗する',()=>{
   const original=useGame.getState();
   try{
-    useGame.setState({...useGame.getInitialState(),money:0,units:{...createStarterUnits(),'battery-basic':[{id:'starter-battery',seconds:360}]}});
+    useGame.setState({...useGame.getInitialState(),money:0,units:{...createStarterUnits(),'battery-basic':[{id:'starter-battery',seconds:batteryCapacity('battery-basic')}]}});
     useGame.getState().openSetting();useGame.getState().exchangeReusable('battery');
     for(let i=0;i<15;i++)useGame.getState().breakIn();
     let state=useGame.getState();

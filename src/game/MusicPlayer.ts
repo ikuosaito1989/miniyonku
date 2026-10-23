@@ -16,6 +16,13 @@ export class MusicPlayer {
   private disposed=false;
   private generation=0;
   private pending=false;
+  private resuming=false;
+  private stateChange=()=>{
+    if(this.disposed||!this.enabled||!this.visible)return;
+    if(this.context?.state==='running'){this.play();return;}
+    this.report('waiting');
+    if(this.interacted)this.unlock();
+  };
 
   constructor(private tracks:Record<MusicScene,{url:string}>,private report:(status:MusicStatus)=>void){}
 
@@ -23,12 +30,15 @@ export class MusicPlayer {
     this.interacted=true;
     if(this.disposed||!this.enabled||!this.visible)return;
     try{
+      if(this.context?.state==='closed'){this.stop();this.cache.clear();this.context=null;this.gain=null;}
       if(!this.context){
         if(!globalThis.crypto?.subtle)throw new Error('BGM再生にはHTTPSが必要です');
-        this.context=new AudioContext();this.gain=this.context.createGain();
+        this.context=new AudioContext();this.context.onstatechange=this.stateChange;this.gain=this.context.createGain();
         this.gain.gain.value=this.volume*0.6;this.gain.connect(this.context.destination);
       }
-      void this.context.resume().then(()=>{if(!this.disposed&&this.enabled&&this.visible)this.play();}).catch(()=>this.report('waiting'));
+      if(this.resuming)return;
+      const context=this.context;this.resuming=true;
+      void context.resume().then(()=>{if(!this.disposed&&this.enabled&&this.visible&&context.state==='running')this.play();}).catch(()=>this.report('waiting')).finally(()=>{this.resuming=false;});
     }catch{this.report('error');}
   }
 
@@ -53,7 +63,7 @@ export class MusicPlayer {
   }
 
   private play(){
-    const context=this.context;if(!context||!this.gain||!this.enabled||!this.visible)return;
+    const context=this.context;if(!context||context.state!=='running'||!this.gain||!this.enabled||!this.visible)return;
     if(this.source){this.report('playing');return;}
     if(this.pending)return;
     const scene=this.scene,generation=this.generation;this.pending=true;this.report('loading');
@@ -69,7 +79,13 @@ export class MusicPlayer {
       this.pending=false;
       if(!this.enabled||!this.visible)return;
       const source=context.createBufferSource();source.buffer=decoded;source.loop=true;
-      source.connect(this.gain!);source.start();this.source=source;this.report('playing');
+      source.onended=()=>{
+        if(this.source!==source||this.disposed)return;
+        this.source=null;source.disconnect();
+        if(this.enabled&&this.visible)this.unlock();
+      };
+      source.connect(this.gain!);source.start();this.source=source;
+      this.report(context.state==='running'?'playing':'waiting');
     }).catch(()=>{
       this.cache.delete(scene);
       if(!this.disposed&&generation===this.generation){this.pending=false;this.report('error');}
@@ -78,10 +94,11 @@ export class MusicPlayer {
 
   private stop(){
     this.generation++;this.pending=false;
+    if(this.source)this.source.onended=null;
     this.source?.stop();this.source?.disconnect();this.source=null;
   }
 
   dispose(){
-    this.disposed=true;this.stop();void this.context?.close().catch(()=>{});this.context=null;this.cache.clear();
+    this.disposed=true;if(this.context)this.context.onstatechange=null;this.stop();void this.context?.close().catch(()=>{});this.context=null;this.cache.clear();
   }
 }

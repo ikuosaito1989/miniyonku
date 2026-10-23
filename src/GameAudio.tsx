@@ -23,9 +23,10 @@ export function GameAudio(){
     const unlock=()=>music.unlock();
     const key=(event:KeyboardEvent)=>{if(!event.repeat)unlock();};
     const visibility=()=>music.setVisible(!document.hidden);
-    window.addEventListener('pointerdown',unlock,true);window.addEventListener('keydown',key,true);
-    document.addEventListener('visibilitychange',visibility);visibility();
-    return()=>{window.removeEventListener('pointerdown',unlock,true);window.removeEventListener('keydown',key,true);document.removeEventListener('visibilitychange',visibility);music.dispose();player.current=null;};
+    window.addEventListener('pointerdown',unlock,true);window.addEventListener('pointerup',unlock,true);window.addEventListener('touchend',unlock,true);window.addEventListener('keydown',key,true);
+    document.addEventListener('visibilitychange',visibility);
+    window.addEventListener('focus',visibility);window.addEventListener('pageshow',visibility);visibility();
+    return()=>{window.removeEventListener('pointerdown',unlock,true);window.removeEventListener('pointerup',unlock,true);window.removeEventListener('touchend',unlock,true);window.removeEventListener('keydown',key,true);document.removeEventListener('visibilitychange',visibility);window.removeEventListener('focus',visibility);window.removeEventListener('pageshow',visibility);music.dispose();player.current=null;};
   },[]);
   useEffect(()=>{player.current?.setScene(race?'race':'shop');},[race]);
   useEffect(()=>{player.current?.setSettings(enabled,volume);},[enabled,volume]);

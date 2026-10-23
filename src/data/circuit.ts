@@ -24,19 +24,28 @@ function buildCircuit(id:CircuitId){
   }
   const laneChange={start:circuitLength*.4,end:circuitLength*.6,bridgeHeight:.22};
   const smooth=(value:number)=>{const t=Math.max(0,Math.min(1,value));return t*t*(3-2*t);};
+  const startRamp={height:.36,riseStart:-2.4,crestStart:-.8,descentStart:-.4,descentEnd:1.6};
+  function startRampHeight(distance:number){
+    const progress=((distance%circuitLength)+circuitLength)%circuitLength;
+    const position=progress>circuitLength/2?progress-circuitLength:progress;
+    if(position<startRamp.riseStart||position>startRamp.descentEnd)return 0;
+    if(position<startRamp.crestStart)return startRamp.height*smooth((position-startRamp.riseStart)/(startRamp.crestStart-startRamp.riseStart));
+    if(position<startRamp.descentStart)return startRamp.height;
+    return startRamp.height*(1-smooth((position-startRamp.descentStart)/(startRamp.descentEnd-startRamp.descentStart)));
+  }
   const wrapLane=(lane:number)=>((lane%circuit.lanes)+circuit.lanes)%circuit.lanes;
   function lanePoint(distance:number,initialLane:number){
     const lap=Math.floor(distance/circuitLength),progress=distance-lap*circuitLength,from=wrapLane(initialLane+lap),to=wrapLane(from+1);
     const u=Math.max(0,Math.min(1,(progress-laneChange.start)/(laneChange.end-laneChange.start))),offset=laneOffset(from)+(laneOffset(to)-laneOffset(from))*smooth(u),p=sampleCircuit(startDistance+distance);
     const height=from===circuit.lanes-1?laneChange.bridgeHeight*smooth(Math.min(u/.2,(1-u)/.2)):0;
-    return {x:p.x+p.tangentZ*offset,y:height,z:p.z-p.tangentX*offset,from,to,lane:u<.5?from:to,changing:u>0&&u<1};
+    return {x:p.x+p.tangentZ*offset,y:height+startRampHeight(distance),z:p.z-p.tangentX*offset,from,to,lane:u<.5?from:to,changing:u>0&&u<1};
   }
   function sampleLanePath(distance:number,initialLane:number){
     const epsilon=.002,p=lanePoint(distance,initialLane),before=lanePoint(distance-epsilon,initialLane),after=lanePoint(distance+epsilon,initialLane);
     const dx=(after.x-before.x)/(2*epsilon),dy=(after.y-before.y)/(2*epsilon),dz=(after.z-before.z)/(2*epsilon),ddx=(after.x-2*p.x+before.x)/epsilon**2,ddz=(after.z-2*p.z+before.z)/epsilon**2,horizontal=Math.hypot(dx,dz);
     return {...p,tangentX:dx/horizontal,tangentZ:dz/horizontal,pitch:Math.atan2(dy,horizontal),pathScale:Math.hypot(dx,dy,dz),curvature:Math.abs(dx*ddz-dz*ddx)/horizontal**3};
   }
-  return {circuit,circuitLength,startDistance,laneOffset,sampleCircuit,laneChange,sampleLanePath};
+  return {circuit,circuitLength,startDistance,laneOffset,sampleCircuit,laneChange,sampleLanePath,startRamp,startRampHeight};
 }
 export type CircuitTrack=ReturnType<typeof buildCircuit>;
 const tracks:Record<CircuitId,CircuitTrack>={leaf:buildCircuit('leaf'),wind:buildCircuit('wind'),sun:buildCircuit('sun')};

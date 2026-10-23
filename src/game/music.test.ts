@@ -28,7 +28,7 @@ test('初回操作後だけ再生。ロード中のシーン切替で旧BGMが�
   const contexts:FakeContext[]=[];
   const pending=new Map<string,(response:Response)=>void>();
   class FakeContext {
-    currentTime=0;destination={};state='suspended';sources:Array<{started:boolean;stopped:boolean;loop:boolean}>=[];
+    currentTime=0;destination={};state='suspended';onstatechange:(()=>void)|null=null;sources:Array<{started:boolean;stopped:boolean;loop:boolean}>=[];
     constructor(){contexts.push(this);}
     createGain(){return {gain:{value:0,setTargetAtTime(){}},connect(){}};}
     resume(){this.state='running';return Promise.resolve();}suspend(){this.state='suspended';return Promise.resolve();}close(){this.state='closed';return Promise.resolve();}
@@ -51,6 +51,7 @@ test('初回操作後だけ再生。ロード中のシーン切替で旧BGMが�
     player.setVisible(true);await settle();assert.equal(contexts[0].state,'running');
     player.setSettings(false,.2);player.setScene('shop');await settle();assert.equal(contexts[0].sources[0].stopped,true);
     player.setSettings(true,.2);await settle();assert.equal(contexts[0].sources.length,2);
+    contexts[0].state='interrupted';contexts[0].onstatechange?.();await settle();assert.equal(contexts[0].state,'running');
     player.dispose();assert.equal(contexts[0].state,'closed');assert.equal(contexts[0].sources[1].stopped,true);
   }finally{
     player.dispose();globalThis.fetch=originalFetch;

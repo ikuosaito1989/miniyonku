@@ -45,7 +45,7 @@ test('途中報告と慣らしは重複せず、再購入時だけ古いモー�
     s=useGame.getState();assert.equal(s.units['motor-stock'].length,1);assert.equal(s.units['motor-stock'][0].seconds,0);
     assert.equal(equippedCondition(s.equipment,s.units,s.selectedUnits).motorSeconds,0);
     s.selectUnit('motor','starter-motor');s=useGame.getState();assert.equal(equippedCondition(s.equipment,s.units,s.selectedUnits).motorSeconds,0);
-    s.openSetting();useGame.setState({units:{...s.units,'battery-basic':[{id:'starter-battery',seconds:360}]}});
+    s.openSetting();useGame.setState({units:{...s.units,'battery-basic':[{id:'starter-battery',seconds:batteryCapacity('battery-basic')}]}});
     const before=useGame.getState().units['motor-stock'][0].seconds;useGame.getState().breakIn();assert.equal(useGame.getState().units['motor-stock'][0].seconds,before);
   }finally{useGame.setState(original);}
 });
