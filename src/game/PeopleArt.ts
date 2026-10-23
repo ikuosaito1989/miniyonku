@@ -10,8 +10,34 @@ const outfits={
   mechanic:{ink:'#273c50',shirt:'#317d91',light:'#9bd3cc',shade:'#24536f',hair:'#333e54',hairLight:'#728091',pants:'#365777'},
 } as const;
 const challengerColors:Record<string,string>={'#b14b67':'#514164','#ec9aa2':'#a49ab9','#7f3757':'#30283f','#39304b':'#242532','#89637c':'#535369','#4c4e70':'#343347'};
-/** 共通の小学生顔を使い、髪色と服装だけを影山用に変える。 */
-export function challengerDrawing(direction:Facing,frame=0):PixelShape[]{return personDrawing('rival',direction,frame).map(shape=>({...shape,color:challengerColors[shape.color]??shape.color}));}
+/** 共通の小学生原画から、丸い頬・幅広の胴・太い眉で黒岩を描き分ける。 */
+export function challengerDrawing(direction:Facing,frame=0):PixelShape[]{
+  const facing=direction==='left'?'right':direction;
+  const widen=(x:number,y:number)=>Math.round(30+(x-30)*(y<36?1.25:1.45));
+  const shapes:PixelShape[]=personDrawing('rival',facing,frame).map(shape=>{
+    const color=challengerColors[shape.color]??shape.color;
+    if(shape.kind==='rect')return {...shape,color,x:widen(shape.x,shape.y),w:widen(shape.x+shape.w,shape.y)-widen(shape.x,shape.y)};
+    return {...shape,color,points:shape.points.map(([x,y])=>[widen(x,y),y] as const)};
+  });
+  const pen=pixelPen(),bob=frame===1||frame===3?1:0;
+  if(facing!=='up'){
+    if(facing==='down'){
+      pen.polygon([[19,18+bob],[27,21+bob],[27,23+bob],[19,21+bob]],'#242532');
+      pen.polygon([[33,21+bob],[41,18+bob],[41,21+bob],[33,23+bob]],'#242532');
+      pen.polygon([[25,30+bob],[36,29+bob],[34,33+bob],[27,34+bob]],'#713d50');
+      pen.rect(27,30+bob,7,1,'#fff0d8');
+      pen.rect(17,29+bob,5,2,'#e4a08b');pen.rect(39,29+bob,5,2,'#e4a08b');
+    }else{
+      pen.polygon([[36,18+bob],[43,20+bob],[43,23+bob],[36,21+bob]],'#242532');
+      pen.rect(39,30+bob,6,2,'#713d50');pen.rect(40,30+bob,4,1,'#fff0d8');
+    }
+    // 黒と金の横縞ジャケット。体格を服のシルエットでも伝える。
+    pen.rect(facing==='down'?17:25,47+bob,facing==='down'?27:16,4,'#b9a15c');
+    pen.rect(facing==='down'?18:25,52+bob,facing==='down'?25:16,2,'#30283f');
+  }
+  const drawing=[...shapes,...pen.shapes];
+  return direction==='left'?drawing.map(shape=>shape.kind==='rect'?{...shape,x:60-shape.x-shape.w}:{...shape,points:shape.points.map(([x,y])=>[60-x,y] as const)}):drawing;
+}
 
 /** 役割ごとの服・体型と、方向別の独立したシルエットを持つオリジナル原画。 */
 export function personDrawing(kind:PersonKind,direction:Facing,frame:number):PixelShape[]{

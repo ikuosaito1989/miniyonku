@@ -96,7 +96,7 @@ export default function TrialView(){
   const winner=standings.find(r=>r.driving.status==='finished');
   const recentGoal=lastArrival&&lastArrival.age<1.8;
   const message=error||(showTally?'全マシンの走行が終了！ フライング加算も含めて、公式記録を集計しています。':
-    showResults?(legendChallenge?'伝説の2人は異次元の速さ！ 背中が遠い……この悔しさを次の挑戦につなげよう。':villainChallenge?(position===1&&driving.status==='finished'?'影山 陸に勝利！ ひなた模型店への紹介状を手に入れた。模型店に戻って影山の話を聞こう。':'影山 陸との勝負は敗北。店内の影山に話しかければ、準備して再挑戦できるよ。'):driving.status==='out'?(driving.stopReason==='lapped'?'周回遅れでリタイア。セッティングを見直して挑戦しよう！':driving.stopReason==='battery'?'今回は電池切れ。電池を交換しよう！':'今回はコースアウト。次は完走を目指そう！'):`最終結果！ あなたは ${position}位。公式記録は ${clock(playerTime)}${penaltyText?`（${penaltyText}込み）`:''}。`):
+    showResults?(legendChallenge?'伝説の2人は異次元の速さ！ 背中が遠い……この悔しさを次の挑戦につなげよう。':villainChallenge?(position===1&&driving.status==='finished'?'黒岩 豪に勝利！ ひなた模型店への紹介状を手に入れた。模型店に戻って黒岩の話を聞こう。':'黒岩 豪との勝負は敗北。店内の黒岩に話しかければ、準備して再挑戦できるよ。'):driving.status==='out'?(driving.stopReason==='lapped'?'周回遅れでリタイア。セッティングを見直して挑戦しよう！':driving.stopReason==='battery'?'今回は電池切れ。電池を交換しよう！':'今回はコースアウト。次は完走を目指そう！'):`最終結果！ あなたは ${position}位。公式記録は ${clock(playerTime)}${penaltyText?`（${penaltyText}込み）`:''}。`):
     ready?'画面をタップでカウント開始 → GOで再タップして発進！':
     counting?(state.falseStartPenalty>0?`${penaltyText}。GOより早く発進した分を記録に加えるよ。`:`${countdownNumber(state)}…… GOまで待とう。今押すとフライングだよ！`):
     waitingForGo?'GO！ 画面のどこでもタップして発進！':
@@ -107,13 +107,13 @@ export default function TrialView(){
     driving.status==='out'?(driving.stopReason==='lapped'?'先頭に1周差をつけられ、リタイア。ゴール集計画面へ進みます。':driving.stopReason==='battery'?'電池切れで停止！ 別の電池に交換しよう。':'コースアウト！ マシンを回収したよ。ほかのマシンは走行中。'):
     state.time<2?'スタート！ GOからの反応時間も記録に含まれるよ。':playerPath.changing?`レーンチェンジ！ ${playerPath.from+1}コースから ${playerPath.to+1}コースへ。５周で全レーンを走るよ。`:`あなたは現在 ${position}位！ 赤いマシンの上の黄色い印が目印だよ。`);
 
-  return <section className="trial retro-race" aria-label={legendChallenge?'レジェンド挑戦レース':villainChallenge?'影山 陸との挑戦レース':'5台の3Dレース'} data-phase={state.phase} data-finish-stage={finish.stage} onClick={event=>{
+  return <section className="trial retro-race" aria-label={legendChallenge?'レジェンド挑戦レース':villainChallenge?'黒岩 豪との挑戦レース':'5台の3Dレース'} data-phase={state.phase} data-finish-stage={finish.stage} onClick={event=>{
     // 操作ボタン自身の処理と二重発火させない。カメラ・音・退出も発進しない。
     if(event.target instanceof Element&&event.target.closest('button,a,input,select,textarea,[data-audio-controls]'))return;
     if(canViewResults)showRaceResults();
     else if(!error&&(ready||waitingForLaunch))start();
   }}>
-    <header className="race-header"><h2>{legendChallenge?'レジェンド挑戦':villainChallenge?'影山 陸からの挑戦':circuit.name}<span>{circuit.lanes}レーン・{circuit.laps}周レース</span></h2><nav aria-label="レース操作">
+    <header className="race-header"><h2>{legendChallenge?'レジェンド挑戦':villainChallenge?'黒岩 豪からの挑戦':circuit.name}<span>{circuit.lanes}レーン・{circuit.laps}周レース</span></h2><nav aria-label="レース操作">
       <AudioControls/>
       <button className="race-camera-button" onClick={()=>{renderer.current?.setCamera(overview?'broadcast':'overview');setOverview(!overview);}} aria-pressed={overview}>{overview?'マシンを見る':'コース全体'}</button>
       <button onClick={close}>模型店へ <small>Esc</small></button>
@@ -140,8 +140,8 @@ export default function TrialView(){
         {legendChallenge&&<p className="result-note" role="status">風見 怜と火野 岳が圧倒的な走りを披露した。次こそ追いつこう！</p>}
         {qualificationNotice&&<p className="result-note" role="status">初優勝！ {nextShopRace.shopName}のレース参加資格を獲得！ 店に戻り、訪ねてきた最強兄弟と特別レースを走ろう。その後、出口から街へ進めます。</p>}
         {qualificationNotice&&<p className="result-note" role="status">優勝記念ボディ「セイラン Vortex GT」を受け取りました。セッティングで装着できます。</p>}
-        {shop.id==='aozora'&&aozoraWon&&!villainChallenge&&!villainDefeated&&<p className="result-note" role="status">あおぞらの優勝者に、影山 陸から挑戦状！ 模型店へ戻って話を聞こう。</p>}
-        {thirdShopNotice&&<p className="result-note" role="status">影山 陸を撃破！ ひなた模型店が解放されました。町に出て、あおぞら模型店の右隣へ進もう。</p>}
+        {shop.id==='aozora'&&aozoraWon&&!villainChallenge&&!villainDefeated&&<p className="result-note" role="status">あおぞらの優勝者に、黒岩 豪から挑戦状！ 模型店へ戻って話を聞こう。</p>}
+        {thirdShopNotice&&<p className="result-note" role="status">黒岩 豪を撃破！ ひなた模型店が解放されました。町に出て、あおぞら模型店の右隣へ進もう。</p>}
       </section>}
     </div>
     <footer className="race-message">

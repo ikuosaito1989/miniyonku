@@ -42,7 +42,7 @@ export interface GameState extends Wallet {
 export const useGame = create<GameState>((set) => ({
   aozoraWon:false,villainDefeated:false,villainChallengeActive:false,villainArrivalPending:false,villainDebriefPending:false,thirdShopNotice:false,
   openVillainChallenge:()=>set(s=>s.location!=='aozora'||!s.aozoraWon||s.overlay==='race'?s:{overlay:'dialogue',speaker:challenger.name,dialogue:s.villainDefeated?'くっ、今日はお前の勝ちだ。ひなた模型店への紹介状は約束どおり渡した。次は俺が勝つ。覚えておけよ！':challengerInvitation,dialogueStage:s.villainDefeated?'villain-win':'villain-intro',shopAfter:false,villainArrivalPending:false}),
-  startVillainChallenge:()=>set(s=>s.location!=='aozora'||!s.aozoraWon||s.villainDefeated?s:{overlay:'race',shopAfter:false,notice:'影山 陸からの挑戦！',legendChallengeActive:false,legendDebriefPending:false,villainChallengeActive:true,villainArrivalPending:false,villainDebriefPending:false,dialogueStage:'none',raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,qualificationNotice:false,thirdShopNotice:false}),
+  startVillainChallenge:()=>set(s=>s.location!=='aozora'||!s.aozoraWon||s.villainDefeated?s:{overlay:'race',shopAfter:false,notice:'黒岩 豪からの挑戦！',legendChallengeActive:false,legendDebriefPending:false,villainChallengeActive:true,villainArrivalPending:false,villainDebriefPending:false,dialogueStage:'none',raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,qualificationNotice:false,thirdShopNotice:false}),
   location:'komorebi',lastShop:'komorebi',legendRaceCompleted:false,
   leaveShop:()=>set(s=>{
     if(s.location==='town'||s.overlay==='race')return s;

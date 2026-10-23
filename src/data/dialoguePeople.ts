@@ -4,7 +4,7 @@ export const dialoguePeople:Record<DialoguePersonId,{name:string;role:string;exp
   owner:{name:story.owner,role:'こもれび模型店 店主',expression:'明るい笑顔',ageGroup:'adult',faceBase:'owner'},
   aozoraOwner:{name:'青井 晴彦',role:'あおぞら模型店 店主',expression:'気さくな笑顔',ageGroup:'adult',faceBase:'owner'},
   hinataOwner:{name:'日向 誠二',role:'ひなた模型店 店主',expression:'頼もしい笑顔',ageGroup:'adult',faceBase:'owner'},
-  villain:{name:'影山 陸',role:'挑戦的な小学生レーサー',expression:'生意気な笑顔',ageGroup:'elementary',faceBase:'rival'},
+  villain:{name:'黒岩 豪',role:'あおぞら模型店の挑戦者・小学生',expression:'太い眉と不敵な笑み',ageGroup:'elementary',faceBase:'rival'},
   rival:{name:story.rival,role:'ライバル・小学生',expression:'自信のある笑顔',ageGroup:'elementary',faceBase:'rival'},
   guide:{name:shopVisitors.find(person=>person.kind==='guide')!.name,role:'走行会が好きな小学生',expression:'励ます笑顔',ageGroup:'elementary',faceBase:'child-common'},
   mechanic:{name:shopVisitors.find(person=>person.kind==='mechanic')!.name,role:'マシンに詳しい小学生',expression:'元気な笑顔',ageGroup:'elementary',faceBase:'child-common'},

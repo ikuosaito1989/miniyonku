@@ -176,7 +176,7 @@ export class ShopScene extends Phaser.Scene {
       }
       this.challengerPerson=this.person(challengerSpot.x,challengerSpot.y,'rival');
       (this.challengerPerson.list[1] as Phaser.GameObjects.Image).setTexture(key);
-      this.challengerPerson.add(this.add.text(0,-51,'影山 陸',{fontFamily:'sans-serif',fontSize:'9px',color:'#f2def4',backgroundColor:'#35273e',padding:{x:4,y:2},resolution:2}).setOrigin(.5,1));
+      this.challengerPerson.add(this.add.text(0,-51,'黒岩 豪',{fontFamily:'sans-serif',fontSize:'9px',color:'#f2def4',backgroundColor:'#35273e',padding:{x:4,y:2},resolution:2}).setOrigin(.5,1));
       this.challengerSolid=new Phaser.Geom.Rectangle(challengerSpot.x-12,challengerSpot.y-9,24,21);this.solids.push(this.challengerSolid);
     }else if(!visible&&this.challengerPerson){
       this.challengerPerson.destroy();this.challengerPerson=null;this.solids=this.solids.filter(s=>s!==this.challengerSolid);this.challengerSolid=null;
@@ -242,7 +242,7 @@ export class ShopScene extends Phaser.Scene {
     targets.push({...shopExit,label:'緑川町への出口',speaker:shop.name,shopAfter:false,text:'外の町へ出よう。',kind:'exit'});
     const visitors=cast.visitors.map(v=>({x:v.x-16,y:v.y-42,w:32,h:54,label:v.name,speaker:v.name,shopAfter:false,text:shopAdvice(v.kind,{money:state.money,inventory:state.inventory,equipment:state.equipment,motorSeconds:condition.motorSeconds,qualified:state.unlockedRaces.includes(nextShopRace.id)})}));
     if(shop.id==='aozora'){
-      for(const visitor of visitors)visitor.text=visitor.speaker==='三浦 結衣'?(state.villainDefeated?'影山くんに勝ったんだね！町へ出て、この店の右隣のひなた模型店へ行けるよ。':state.aozoraWon?'影山くんが店の中央で待っているよ。挑戦レースで1位になると、ひなた模型店への紹介状がもらえるんだって。':'ここは優勝1,000円、5位完走でも250円！まずは優勝しよう。町の影山くんが、速いレーサーを探しているみたい。'):'影山くんに勝つなら、記念ボディにブリーズモーターを約60秒ならして、4:1ギア・スパークセル・スポンジタイヤを試そう。低重心シャーシと軽量化も比べてね。';
+      for(const visitor of visitors)visitor.text=visitor.speaker==='三浦 結衣'?(state.villainDefeated?'黒岩くんに勝ったんだね！町へ出て、この店の右隣のひなた模型店へ行けるよ。':state.aozoraWon?'黒岩くんが店の中央で待っているよ。挑戦レースで1位になると、ひなた模型店への紹介状がもらえるんだって。':'ここは優勝1,000円、5位完走でも250円！まずは優勝しよう。町の黒岩くんが、速いレーサーを探しているみたい。'):'黒岩くんに勝つなら、記念ボディにブリーズモーターを約60秒ならして、4:1ギア・スパークセル・スポンジタイヤを試そう。低重心シャーシと軽量化も比べてね。';
       if(state.aozoraWon)targets.push({x:challengerSpot.x-16,y:challengerSpot.y-42,w:32,h:54,label:challenger.name,speaker:challenger.name,shopAfter:false,text:'挑戦を受ける。',kind:'challenger'});
     }else if(shop.id==='hinata')for(const visitor of visitors)visitor.text=visitor.speaker==='三浦 結衣'?'ひなた模型店へようこそ！ここは長い高速コーナー。ほかの4店と大会会場は、まだ準備中だよ。':'3.5:1ギアは最高速が伸びる反面、駆動力は下がるよ。ゴールドターミナルとロングランセル、スポンジタイヤで安定した5周を目指してみよう。';
     return [...targets,...visitors];

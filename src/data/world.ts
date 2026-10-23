@@ -8,7 +8,7 @@ export interface ModelShop extends ShopStock { id:ShopId; owner:string; circuitI
 export const modelShops:Record<ShopId,ModelShop>={
   komorebi:{...starterShop,id:'komorebi',owner:'小野寺 春夫',circuitId:'leaf',stage:1,color:0x528672,welcome:'いらっしゃい、湊くん。完走賞を貯めてパーツを買い足そう！初優勝すると、全国で活躍する兄弟が訪ねてくるらしいよ。'},
   aozora:{id:'aozora',name:'あおぞら模型店',maxPartLevel:3,owner:'青井 晴彦',circuitId:'wind',stage:2,color:0x497eaf,welcome:'春夫さんから話は聞いているよ。ようこそ、あおぞら模型店へ！連続コーナーでは加速と安定性の両立が大切だ。低重心シャーシや中空シャフト、新しいモーターを試してごらん。'},
-  hinata:{id:'hinata',name:'ひなた模型店',maxPartLevel:4,owner:'日向 誠二',circuitId:'sun',stage:3,color:0xb78e4f,welcome:'影山くんを破ったレーサーだね。ようこそ、ひなた模型店へ！ここは長い高速コーナーが続くんだ。3.5:1ギア、ゴールドターミナル、ロングランセルで伸びと持久力を比べてみよう。'},
+  hinata:{id:'hinata',name:'ひなた模型店',maxPartLevel:4,owner:'日向 誠二',circuitId:'sun',stage:3,color:0xb78e4f,welcome:'黒岩くんを破ったレーサーだね。ようこそ、ひなた模型店へ！ここは長い高速コーナーが続くんだ。3.5:1ギア、ゴールドターミナル、ロングランセルで伸びと持久力を比べてみよう。'},
 };
 export function currentShop(location:WorldLocation){return modelShops[location==='town'?'komorebi':location];}
 export interface WorldProgress {legendRaceCompleted:boolean;villainDefeated:boolean}
@@ -31,7 +31,7 @@ export const townVenues:TownVenue[]=[
 export const shopExit={x:440,y:575,w:80,h:7};
 export function townSpawn(shop:ShopId){const venue=townVenues.find(v=>v.shopId===shop)!;return {x:venue.x+venue.w/2,y:venue.y+venue.h+42};}
 export function venueMessage(venue:TownVenue){
-  if(venue.shopId==='hinata')return 'ひなた模型店へ入るには、あおぞら模型店で優勝した後に現れる影山 陸との挑戦レースで1位になろう。勝利すれば紹介状をもらえます。';
+  if(venue.shopId==='hinata')return 'ひなた模型店へ入るには、あおぞら模型店で優勝した後に現れる黒岩 豪との挑戦レースで1位になろう。勝利すれば紹介状をもらえます。';
   return venue.kind==='stadium'
     ?`${venue.name}は、熟練度${venue.stage}段階目から参加する大会の会場。現在は開催準備中のため入場できません。開幕のお知らせを待とう。`
     :`${venue.name}は、先の町の大会に向けて開店準備中。現在は入れません。まずはあおぞら模型店の連続コーナーに挑戦しよう。`;

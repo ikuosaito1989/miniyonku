@@ -12,7 +12,7 @@ export function GameSettings(){
   const openCheat=useGame(s=>s.openCheat);
   const location=useGame(s=>s.location),townUnlocked=useGame(s=>s.legendRaceCompleted);
   const aozoraWon=useGame(s=>s.aozoraWon),villainDefeated=useGame(s=>s.villainDefeated);
-  const nextGoal=!townUnlocked?'こもれび模型店で優勝し、最強兄弟との特別レースを体験しよう。周回遅れでの敗北でもイベントは進み、店の下の出口から街へ出られます。':villainDefeated?'影山 陸に勝利！ひなた模型店へ進めます。あおぞらの右隣にある入口を調べよう。他の4店と大会会場は準備中です。':aozoraWon?'あおぞら模型店の中央にいる影山 陸と勝負しよう。挑戦レースで1位になると、ひなた模型店への紹介状がもらえます。':'あおぞら模型店で優勝を目指そう。賞金は1位1,000円・2位600円・3位450円・4位350円・5位250円。優勝すると新しい挑戦者が現れます。';
+  const nextGoal=!townUnlocked?'こもれび模型店で優勝し、最強兄弟との特別レースを体験しよう。周回遅れでの敗北でもイベントは進み、店の下の出口から街へ出られます。':villainDefeated?'黒岩 豪に勝利！ひなた模型店へ進めます。あおぞらの右隣にある入口を調べよう。他の4店と大会会場は準備中です。':aozoraWon?'あおぞら模型店の中央にいる黒岩 豪と勝負しよう。挑戦レースで1位になると、ひなた模型店への紹介状がもらえます。':'あおぞら模型店で優勝を目指そう。賞金は1位1,000円・2位600円・3位450円・4位350円・5位250円。優勝すると新しい挑戦者が現れます。';
   const secretTaps=useRef<{count:number;at:number}>({count:0,at:0});
   const tapSystemMark=()=>{
     const now=performance.now();

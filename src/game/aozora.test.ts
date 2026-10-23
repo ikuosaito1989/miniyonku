@@ -22,7 +22,7 @@ function result(challenge=false):RaceState{
   const race=createRaceState(starterEquipment,123,undefined,challenge?'villain':false,'wind');
   return {...race,phase:'finished',playerStartOffset:0,racers:race.racers.map((r,i)=>({...r,driving:{...r.driving,status:'finished',time:40+i}}))};
 }
-test('あおぞらの完走賞は1000/600/450/350/250円。通常優勝で影山が現れ、次店はまだ開かない',()=>{
+test('あおぞらの完走賞は1000/600/450/350/250円。通常優勝で黒岩が現れ、次店はまだ開かない',()=>{
   const original=useGame.getState();
   try{
     for(const [place,prize] of [1000,600,450,350,250].entries())assert.equal(racePrize({...result(),falseStartPenalty:place+.5}),prize);
@@ -35,7 +35,7 @@ test('あおぞらの完走賞は1000/600/450/350/250円。通常優勝で影山
     useGame.getState().enterShop('aozora');useGame.getState().openVillainChallenge();assert.equal(useGame.getState().dialogueStage,'villain-intro');
   }finally{useGame.setState(original);}
 });
-test('影山への勝利だけで紹介状を獲得。途中退出・敗北・周回遅れ・フライング逆転・古い通知では解放しない',()=>{
+test('黒岩への勝利だけで紹介状を獲得。途中退出・敗北・周回遅れ・フライング逆転・古い通知では解放しない',()=>{
   const original=useGame.getState();
   try{
     useGame.setState({...aozoraStart(),aozoraWon:true});
@@ -56,7 +56,7 @@ test('影山への勝利だけで紹介状を獲得。途中退出・敗北・�
     useGame.getState().startTrial();assert.equal(useGame.getState().overlay,'race');
   }finally{useGame.setState(original);}
 });
-test('あおぞら優勝前・影山撃破後と現在地を保存。旧データは未クリアを補完し、偽の次店解放を拒否',async()=>{
+test('あおぞら優勝前・黒岩撃破後と現在地を保存。旧データは未クリアを補完し、偽の次店解放を拒否',async()=>{
   const original=useGame.getState();
   try{
     useGame.setState(aozoraStart());const base=snapshotGame(useGame.getState());
@@ -72,7 +72,7 @@ test('あおぞら優勝前・影山撃破後と現在地を保存。旧デー�
     assert.throws(()=>decodeSave({version:1,savedAt:123,game:{...base,aozoraWon:'yes'}}));
   }finally{useGame.setState(original);}
 });
-test('3店舗の人物は異なる位置にいて、あおぞらの全員と影山に障害物を迂回して近づける',()=>{
+test('3店舗の人物は異なる位置にいて、あおぞらの全員と黒岩に障害物を迂回して近づける',()=>{
   const casts=['komorebi','aozora','hinata'].map(id=>shopCast(id as 'komorebi'|'aozora'|'hinata'));
   assert.equal(new Set(casts.map(c=>`${c.owner.x},${c.owner.y}`)).size,3);
   assert.equal(new Set(casts.map(c=>`${c.rival.x},${c.rival.y}`)).size,3);
@@ -95,7 +95,7 @@ function runChallenge(seed:number,motorSeconds=60){
   for(let i=0;i<120*180&&race.phase!=='finished';i++)race=stepRace(race);
   return race;
 }
-test('影山はあおぞらのパーツと慣らしで勝てる相手。同じ設定とシードで結果を再現する',()=>{
+test('黒岩はあおぞらのパーツと慣らしで勝てる相手。同じ設定とシードで結果を再現する',()=>{
   for(const id of Object.values(prepared)){
     const part=parts.find(p=>p.id===id)!;
     assert.ok(id==='body-champion'||isStocked(part,modelShops.aozora),`${id}はあおぞらで用意できる`);
@@ -112,7 +112,7 @@ test('ひなた模型店は新しいコースと上位のギア・ターミナ�
   assert.equal(race.phase,'finished');assert.equal(race.racers[0].driving.status,'finished');assert.equal(rankRacers(race)[0].id,'player');
 });
 
-test('あおぞら初優勝で挑戦状→店のパーツで影山に勝利→ひなた入店まで進める',()=>{
+test('あおぞら初優勝で挑戦状→店のパーツで黒岩に勝利→ひなた入店まで進める',()=>{
   const original=useGame.getState();
   try{
     useGame.setState({...aozoraStart(),inventory:{...useGame.getInitialState().inventory,'body-champion':1}});
@@ -146,5 +146,20 @@ test('あおぞら初優勝で挑戦状→店のパーツで影山に勝利→�
     assert.equal(useGame.getState().location,'hinata');
     const saved=decodeSave({version:1,savedAt:123,game:snapshotGame(useGame.getState())});
     assert.equal(saved.game.villainDefeated,true);assert.equal(saved.game.location,'hinata');
+  }finally{useGame.setState(original);}
+});
+
+test('優勝記念ボディはこもれび初優勝のみ。あおぞら・黒岩戦・ひなたでは増えない',()=>{
+  const original=useGame.getState();
+  try{
+    useGame.setState({...useGame.getInitialState()});
+    useGame.getState().startTrial();useGame.getState().settleRace(useGame.getState().raceAttempt,{...result(),circuitId:'leaf'});
+    assert.equal(useGame.getState().inventory['body-champion'],1);
+    for(const location of ['aozora','hinata'] as const)for(const challenge of [false,true]){
+      useGame.setState({...aozoraStart(),location,aozoraWon:true,inventory:{...useGame.getInitialState().inventory,'body-champion':1}});
+      if(challenge&&location==='aozora')useGame.getState().startVillainChallenge();else useGame.getState().startTrial();
+      useGame.getState().settleRace(useGame.getState().raceAttempt,result(challenge));
+      assert.equal(useGame.getState().inventory['body-champion'],1);
+    }
   }finally{useGame.setState(original);}
 });
