@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { fixtures, room, roomView, type Fixture } from '../data/shop';
+import { fixtures, room, roomView, shopExit, type Fixture } from '../data/shop';
 import { createShopGesture } from './shopGesture';
 import { useGame } from './store';
 import { createPeopleTextures, drawShopFixture, drawShopRoom, type Facing, type PersonKind } from './ShopArt';
@@ -10,7 +10,7 @@ import { equippedCondition } from './condition';
 import { shopAdvice } from './shopAdvice';
 import { touchInput } from './touchInput';
 import { compactDevice } from '../data/display';
-import { findWalkingPath, type Point } from './navigation';
+import { findWalkingPath, isAtShopExit, type Point } from './navigation';
 import { proficiencyStandings } from '../data/proficiency';
 import shopIllustration from '../assets/shop/interior-v1.webp';
 import { shopIllustrationKey } from '../data/shopIllustration';
@@ -31,7 +31,8 @@ export class ShopScene extends Phaser.Scene {
   private inputVersion=0;
   private boardLines:Phaser.GameObjects.Text[]=[];
   private boardPoints=-1;
-  constructor(){ super('shop'); }
+  constructor(private readonly onExit:()=>void=()=>{}){ super('shop'); }
+  private leaving=false;
   preload(){this.load.image(shopIllustrationKey,shopIllustration);}
   create(){
     this.fitCamera();
@@ -39,6 +40,8 @@ export class ShopScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN,()=>this.scale.off(Phaser.Scale.Events.RESIZE,this.fitCamera,this));
     this.solids=[];
     createPeopleTextures(this);drawShopRoom(this);
+    this.add.rectangle(shopExit.x+shopExit.width/2,578,shopExit.width,24,0x315d56,.85).setDepth(1);
+    this.add.text(shopExit.x+shopExit.width/2,575,'▼ 出口', {fontFamily:'sans-serif',fontSize:'12px',color:'#fff1c9',resolution:2}).setOrigin(.5).setDepth(2);
     for(const fixture of fixtures){
       drawShopFixture(this,fixture);
       this.solids.push(new Phaser.Geom.Rectangle(fixture.x,fixture.y,fixture.w,fixture.h));
@@ -73,6 +76,10 @@ export class ShopScene extends Phaser.Scene {
         const emptyFloor=!target&&point.x>=56&&point.x<=904&&point.y>=136&&point.y<=582&&!this.solids.some(r=>r.contains(point.x,point.y));
         const action=this.gesture.up(pointer.id,pointer.x,pointer.y,pointer.upTime,emptyFloor);
         if(action==='setting'){this.cancelRoute();this.pendingTarget=null;useGame.getState().openSetting();}
+        else if(action==='tap'&&point.x>=shopExit.x&&point.x<=shopExit.x+shopExit.width&&point.y>=560){
+          this.pendingTarget=null;
+          this.route=findWalkingPath({x:this.player.x,y:this.player.y},{x:point.x,y:578},this.solids);
+        }
         else if(action==='tap'&&target){
           this.pendingTarget=target;
           this.route=findWalkingPath({x:this.player.x,y:this.player.y},{x:target.x+target.w/2,y:target.y+target.h/2},this.solids);
@@ -122,7 +129,7 @@ export class ShopScene extends Phaser.Scene {
     return this.add.container(x,y,[shadow,sprite]).setDepth(y);
   }
   update(_time:number,delta:number){
-    if(!this.player)return;
+    if(!this.player||this.leaving)return;
     const points=useGame.getState().proficiencyPoints;
     if(this.boardPoints!==points){this.boardPoints=points;proficiencyStandings(points).forEach((p,i)=>this.boardLines[i]?.setText(`${i+1} ${p.name.split(' ').at(-1)}\n    ${p.points}pt`).setColor(p.id==='player'?'#ffe18c':'#e6dfbc'));}
     const touchAction=touchInput.consume();
@@ -156,6 +163,9 @@ export class ShopScene extends Phaser.Scene {
     if(!this.route.length)this.destination.setVisible(false);
     this.playerSprite.setTexture(`person-player-${this.facing}-${moving?Math.floor(this.walkTime/130)%4:0}`);
     this.player.setDepth(this.player.y);
+    if(isAtShopExit(this.player)){
+      this.leaving=true;this.resetKeys();useGame.setState({nearby:''});this.onExit();return;
+    }
     const targets=this.getTargets();
     const distance=(t:ShopTarget)=>Math.hypot(this.player.x-Phaser.Math.Clamp(this.player.x,t.x,t.x+t.w),this.player.y-Phaser.Math.Clamp(this.player.y,t.y,t.y+t.h));
     const nearest=targets.map(t=>({t,d:distance(t)})).sort((a,b)=>a.d-b.d)[0];

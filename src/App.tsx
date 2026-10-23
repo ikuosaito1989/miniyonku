@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { ShopWorld } from './ShopWorld';
 import { ShopExterior } from './ShopExterior';
 import { touchInput } from './game/touchInput';
@@ -22,6 +22,7 @@ export function App(){
   const game=useGame();
   const [started,setStarted]=useState(false);
   const [outside,setOutside]=useState(false);
+  const leaveShop=useCallback(()=>{touchInput.reset();setOutside(true);},[]);
   const [category,setCategory]=useState<Category>('motor');
   const modal=useRef<HTMLDivElement>(null);
   useEffect(()=>{
@@ -46,8 +47,7 @@ export function App(){
     {!started ? <TitleScreen onStart={()=>setStarted(true)}/> : <section className="game-shell" aria-label="ゲーム画面">
       <div className="stage">
         {outside ? <><ShopExterior onEnter={()=>setOutside(false)}/><SaveWarning/></> : <>
-        <ShopWorld/>
-        <button className="shop-exit" onClick={()=>{touchInput.reset();game.close();setOutside(true);}}>店の外へ</button>
+        <ShopWorld onExit={leaveShop}/>
         {game.overlay===null&&<button className="game-settings-open" onClick={game.openSettings}>設定</button>}
         {game.overlay!=='race'&&<AudioControls floating/>}
         <SaveWarning/>
