@@ -79,6 +79,7 @@ kbd { font-family: inherit; font-size: 10px; padding: 2px 5px; border: 1px solid
 .primary span { float: right; }
 .shop-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .close { border: 1px solid #d1d6c5; background: transparent; border-radius: 4px; padding: 7px 11px; color: #526b60; }
+.shop-head .close { flex-shrink: 0; min-width: 48px; min-height: 48px; touch-action: manipulation; }
 .shop-balance { display: flex; gap: 14px; align-items: center; font-size: 11px; margin: 18px 0; color: #74816e; }
 .shop-balance strong { font-size: 19px; color: #395545; }
 .shop-balance > span { margin-left: auto; }
