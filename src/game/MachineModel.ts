@@ -1,3 +1,4 @@
+import { challenger } from '../data/challenger';
 import * as THREE from 'three';
 import type { Equipment } from '../data/machine';
 import type { Entrant } from '../data/rivals';
@@ -47,7 +48,20 @@ function lowWedgeShell(sections:number[][],color:number,shininess=85){
 }
 
 export function buildRaceMachineModel(racer:Pick<Entrant,'id'|'color'|'equipment'>){
-  return buildMachineModel(racer.color,racer.equipment,racer.id!=='player'&&!racer.id.startsWith('legend-')?'mob-kei':'stock');
+  const model=buildMachineModel(racer.color,racer.equipment,racer.id!=='player'&&!racer.id.startsWith('legend-')?'mob-kei':'stock');
+  if(racer.id===challenger.id){
+    // 黒岩専用の黒金カラー。遠い画角でも屋根の2本線で識別できる。
+    const gold=new THREE.MeshPhongMaterial({color:0xf5cb50,shininess:45});
+    for(const side of [-1,1]){
+      const stripe=new THREE.Mesh(new THREE.BoxGeometry(.014,.002,.145),gold);
+      stripe.name='kuroiwa-gold-roof-stripe';stripe.position.set(side*.022,.124,-.024);model.add(stripe);
+      const hood=new THREE.Mesh(new THREE.BoxGeometry(.014,.002,.027),gold);
+      hood.name='kuroiwa-gold-hood-stripe';hood.position.set(side*.022,.079,.104);model.add(hood);
+    }
+    const bumper=new THREE.Mesh(new THREE.BoxGeometry(.102,.004,.003),gold);
+    bumper.name='kuroiwa-gold-front-marker';bumper.position.set(0,.055,.130);model.add(bumper);
+  }
+  return model;
 }
 
 export function buildMachineModel(racerColor:number,equipment:Equipment,appearance:'stock'|'mob-kei'='stock'){

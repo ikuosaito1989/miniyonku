@@ -1,3 +1,4 @@
+import { challenger } from '../data/challenger';
 import { rivals } from '../data/rivals';
 import { legends } from '../data/legends';
 import { test } from 'node:test';
@@ -98,5 +99,10 @@ test('通常CPUは箱型軽ワゴンの外観。記念車と最強兄弟は従�
     assert.deepEqual(geometry(current),geometry(previous));
     for(const model of [current,previous])model.traverse(object=>{if(object instanceof THREE.Mesh){object.geometry.dispose();object.material.dispose();}});
   }
+  const ku=buildRaceMachineModel(challenger),paint=(ku.getObjectByName('body-shell') as THREE.Mesh).material as THREE.MeshPhongMaterial;
+  assert.equal(paint.color.getHex(),0x15191f);
+  assert.ok(ku.getObjectByName('kuroiwa-gold-roof-stripe'));
+  assert.equal(mob.getObjectByName('kuroiwa-gold-roof-stripe'),undefined);
+  ku.traverse(object=>{if(object instanceof THREE.Mesh){object.geometry.dispose();object.material.dispose();}});
   mob.traverse(object=>{if(object instanceof THREE.Mesh){object.geometry.dispose();object.material.dispose();}});
 });
