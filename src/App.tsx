@@ -45,7 +45,7 @@ export function App(){
     {!started ? <TitleScreen onStart={()=>setStarted(true)}/> : <section className="game-shell" aria-label="ゲーム画面">
       <div className="stage"><ShopWorld/>
         {game.overlay===null&&<button className="game-settings-open" onClick={game.openSettings}>設定</button>}
-        {game.overlay!=='race'&&<AudioControls floating/>}
+        {game.overlay!=='race'&&game.overlay!=='settings'&&<AudioControls floating/>}
         <SaveWarning/>
         <TouchControls/>
         {game.overlay==='dialogue'&&<DialogueView/>}

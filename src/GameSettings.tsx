@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { SaveControls } from './SaveControls';
+import { AudioControls } from './GameAudio';
 import { resetSave, useSaveStatus } from './game/persistence';
 import { useGame } from './game/store';
 import './game-settings.css';
@@ -27,11 +28,12 @@ export function GameSettings(){
   };
   return <div className="scrim game-settings-scrim"><section className="game-settings" role="dialog" aria-modal="true" aria-labelledby="game-settings-title" onKeyDown={e=>{
     if(e.key!=='Tab')return;
-    const controls=Array.from(e.currentTarget.querySelectorAll<HTMLButtonElement>('button:not(:disabled)'));
+    const controls=Array.from(e.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled),summary,input:not(:disabled),a[href]')).filter(control=>control.getClientRects().length>0);
     if(e.shiftKey&&document.activeElement===controls[0]){e.preventDefault();controls.at(-1)?.focus();}
     else if(!e.shiftKey&&document.activeElement===controls.at(-1)){e.preventDefault();controls[0]?.focus();}
   }}>
     <header><div><small onClick={tapSystemMark}>KOMOREBI MODEL / SYSTEM</small><h2 id="game-settings-title">ゲーム設定</h2></div><button autoFocus onClick={close}>閉じる</button></header>
+    <section className="game-settings-audio" aria-label="音量・サウンド設定"><h3>音量・サウンド</h3><AudioControls/></section>
     <section className="game-settings-balance" aria-label="ゲームの進行状況"><small>所持金</small><strong>¥ {yen(money)}</strong><span>熟練度 {points} pt</span></section>
     <section className="game-settings-manual"><h3>次の目標</h3><p>現在地：{location==='town'?'緑川町':currentShop(location).name}</p><p>{nextGoal}</p><p>街でも指を滑らせて移動できます。入口をタップ、または近づいてZ・Enterで入店・調査します。</p><p>レースでは先頭に1周差をつけられるとリタイア。ゴール後は画面タップ、またはZ・Enter・Spaceで結果を表示できます。再挑戦は模型店のコースから行います。</p></section>
     <section className="game-settings-manual"><h3>あそびかた・操作説明</h3><dl><div><dt>店内を移動</dt><dd>スマホ：画面を押したまま指を滑らせる。PC：方向キーまたはWASD。</dd></div><div><dt>人と話す・調べる</dt><dd>スマホ：人物や棚・設備をタップ。PC：近づいてZまたはEnter。</dd></div><div><dt>セッティングを開く</dt><dd>スマホ：床をすばやく2回タップ（ダブルタップ）。PC：作業台を調べる。</dd></div><div><dt>パーツを交換</dt><dd>セッティング画面で部位を選び、所持パーツを選択。ローラーは1セットで前・横・後をまとめて交換。</dd></div><div><dt>レースを操作</dt><dd>コースを調べてレースへ。画面をタップしてカウント開始、GOの表示中にもう一度タップして発進。</dd></div></dl></section>
