@@ -52,8 +52,8 @@ export function buildRaceMachineModel(racer:Pick<Entrant,'id'|'color'|'equipment
 
 export function buildMachineModel(racerColor:number,equipment:Equipment,appearance:'stock'|'mob-kei'='stock'){
   const original=bodyDesign(equipment.body);
-  // NPCの外観だけを軽ワゴン風にする。装備性能・記念車・レジェンド専用車は維持。
-  const isMob=appearance==='mob-kei'&&original.id!=='body-champion'&&!original.id.startsWith('body-legend-');
+  // コハクK660と通常NPCは同じ素朴な軽ワゴンの造形を使う。性能データは変更しない。
+  const isMob=(original.id==='body-stream'||appearance==='mob-kei')&&original.id!=='body-champion'&&!original.id.startsWith('body-legend-');
   const design=isMob?{...original,shape:'kei' as const,silhouette:undefined,width:.056,cabinHeight:.042,cabinFront:.041,cabinRear:-.092}:original;
   // 3Dプレビューはボディ固有色、レース中はレーサーごとの塗色を使う。
   const isStarter=design.silhouette==='starter-wedge',isChampion=design.silhouette==='champion-aero';

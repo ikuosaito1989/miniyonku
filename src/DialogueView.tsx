@@ -1,3 +1,4 @@
+import { DoctorPortrait } from './DoctorPortrait';
 import { ChallengerPortrait } from './ChallengerPortrait';
 import { useEffect, useRef, useState } from 'react';
 import { useGame } from './game/store';
@@ -8,15 +9,15 @@ import guide from './assets/portraits/guide-pop.webp';
 import mechanic from './assets/portraits/mechanic-pop.webp';
 import './dialogue.css';
 
-const portraits:Record<DialoguePersonId,string>={owner,aozoraOwner:owner,hinataOwner:owner,villain:rival,rival,guide,mechanic,legendRei:rival,legendGaku:guide};
+const portraits:Record<DialoguePersonId,string>={owner,aozoraOwner:owner,hinataOwner:owner,villain:rival,rival,guide,mechanic,legendRei:rival,legendGaku:guide,doctor:owner};
 export function DialogueView(){
-  const {speaker,dialogue,shopAfter,advance,close,dialogueStage,startLegendChallenge,startVillainChallenge}=useGame();
+  const {speaker,dialogue,shopAfter,advance,close,dialogueStage,startLegendChallenge,startVillainChallenge,openSetting}=useGame();
   const [selected,setSelected]=useState(0);
   const panel=useRef<HTMLElement>(null),buttons=useRef<Array<HTMLButtonElement|null>>([]);
   const id=dialoguePerson(speaker),person=id?dialoguePeople[id]:null;
   const book=speaker.startsWith('セッティング本棚');
   const choices=dialogueChoices(shopAfter,book,dialogueStage);
-  const choose=(index:number)=>{const action=choices[index]?.action;if(action==='advance')advance();else if(action==='legendRace')startLegendChallenge();else if(action==='villainRace')startVillainChallenge();else close();};
+  const choose=(index:number)=>{const action=choices[index]?.action;if(action==='advance')advance();else if(action==='legendSetting')openSetting();else if(action==='legendRace')startLegendChallenge();else if(action==='villainRace')startVillainChallenge();else close();};
   useEffect(()=>{setSelected(0);buttons.current[0]?.focus();},[speaker,dialogue]);
   useEffect(()=>{
     const key=(event:KeyboardEvent)=>{
@@ -42,7 +43,7 @@ export function DialogueView(){
   return <div className="dialogue-layer">
     <section ref={panel} className="conversation" role="dialog" aria-modal="true" aria-labelledby="conversation-speaker" aria-describedby="conversation-message">
       <div className="conversation-portrait" aria-hidden="true">
-        {id==='villain'?<ChallengerPortrait/>:id?<img src={portraits[id]} alt="" decoding="async"/>:<div className="conversation-object"><span>{book?'本':'調'}</span><small>{book?'SETTING NOTES':'KOMOREBI MODEL'}</small></div>}
+        {id==='doctor'?<DoctorPortrait/>:id==='villain'?<ChallengerPortrait/>:id?<img src={portraits[id]} alt="" decoding="async"/>:<div className="conversation-object"><span>{book?'本':'調'}</span><small>{book?'SETTING NOTES':'KOMOREBI MODEL'}</small></div>}
       </div>
       <div className="conversation-body">
         <header><div>{person&&<p className="conversation-role">{person.role}</p>}<h2 id="conversation-speaker">{person?.name??speaker}</h2></div><button className="conversation-close" onClick={close} aria-label="会話を閉じる">閉じる <small>Esc</small></button></header>

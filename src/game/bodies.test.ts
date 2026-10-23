@@ -7,7 +7,7 @@ import { dirtSurface, pavedSurface } from '../data/surfaces';
 import { createDrivingState, machinePerformance, startDriving, stepDriving, surfacePerformance } from './driving';
 
 test('軽→コンパクト→1.5Lの入手段階、全ボディの図柄と性能データが一致する',()=>{
-  assert.equal(bodies[0].className,'軽ハッチ');assert.equal(bodies[1].className,'コンパクト');
+  assert.equal(bodies[0].className,'入門用軽ワゴン');assert.equal(bodies[1].className,'コンパクト');
   assert.equal(bodies.find(b=>b.id==='body-sedan')?.grade,3);
   for(const b of bodies){
     const p=parts.find(p=>p.id===b.id)!;

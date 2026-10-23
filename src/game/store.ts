@@ -1,3 +1,6 @@
+import { doctor, doctorGiftBody, doctorGiftMessage } from '../data/doctor';
+import { replaceConsumable } from './consumables';
+import { reviewRace, type RaceReview } from './raceAdvice';
 import type { ArrivalKind } from './arrival';
 import { create } from 'zustand';
 import { parts } from '../data/parts';
@@ -13,8 +16,9 @@ import { breakInPractice } from '../data/proficiency';
 import { hintBooks, nextShopRace } from '../data/shopHints';
 import { canEnterShop, currentShop, type ShopId, type WorldLocation } from '../data/world';
 import { challenger, challengerInvitation } from '../data/challenger';
-export type DialogueStage='none'|'legend-intro'|'legend-invite'|'legend-debrief'|'villain-intro'|'villain-win'|'villain-loss';
+export type DialogueStage='none'|'legend-intro'|'legend-invite'|'legend-debrief'|'villain-intro'|'villain-win'|'villain-loss'|'doctor-gift';
 export interface GameState extends Wallet {
+  doctorGiftReceived:boolean;openLegendChallenge:()=>void;
   arrivalEvent:ArrivalKind|null;beginArrival:(kind:ArrivalKind)=>void;completeArrival:()=>void;
   aozoraWon:boolean;villainDefeated:boolean;villainChallengeActive:boolean;villainArrivalPending:boolean;villainDebriefPending:boolean;thirdShopNotice:boolean;
   openVillainChallenge:()=>void;startVillainChallenge:()=>void;
@@ -23,6 +27,8 @@ export interface GameState extends Wallet {
   cheatUsed:boolean;cheatReturnToSettings:boolean;
   openCheat:(fromSettings?:boolean)=>void;applyCheat:(amount:'max'|1000)=>void;
   purchaseCount:number;
+  lastRaceReview:RaceReview|null;
+  exchangeReusable:(slot:'motor'|'battery')=>void;
   hintBookIndex:number; readHintBook:()=>void;
   unlockedRaces:string[]; qualificationNotice:boolean;
   legendEventSeen:boolean;legendEventPending:boolean;legendDebriefPending:boolean;legendChallengeActive:boolean;dialogueStage:DialogueStage;startLegendChallenge:()=>void;
@@ -42,10 +48,12 @@ export interface GameState extends Wallet {
   talk: (speaker: string, text: string, shopAfter?: boolean) => void; advance: () => void; close: () => void; buy: (id: string) => void;
 }
 export const useGame = create<GameState>((set) => ({
-  arrivalEvent:null,
-  beginArrival:kind=>set(s=>s.overlay||kind==='legend'&&(s.location!=='komorebi'||!s.unlockedRaces.includes(nextShopRace.id)||s.legendRaceCompleted)||kind==='villain'&&(s.location!=='aozora'||!s.aozoraWon||s.villainDefeated)?s:{overlay:'arrival',arrivalEvent:kind,dialogueStage:'none',shopAfter:false}),
+  arrivalEvent:null,doctorGiftReceived:false,
+  beginArrival:kind=>set(s=>s.overlay||kind==='legend'&&(s.location!=='komorebi'||!s.unlockedRaces.includes(nextShopRace.id)||s.legendRaceCompleted)||kind==='villain'&&(s.location!=='aozora'||!s.aozoraWon||s.villainDefeated)||kind==='doctor'&&(s.location!=='komorebi'||!s.legendRaceCompleted||s.doctorGiftReceived)?s:{overlay:'arrival',arrivalEvent:kind,dialogueStage:'none',shopAfter:false}),
   completeArrival:()=>set(s=>{
     if(s.overlay!=='arrival'||!s.arrivalEvent)return s;
+    if(s.arrivalEvent==='doctor'&&!s.legendRaceCompleted)return s;
+    if(s.arrivalEvent==='doctor')return s.doctorGiftReceived?{overlay:null,arrivalEvent:null}:{overlay:'dialogue',arrivalEvent:null,speaker:doctor.name,dialogue:doctorGiftMessage,dialogueStage:'doctor-gift',shopAfter:false,doctorGiftReceived:true,inventory:{...s.inventory,[doctorGiftBody]:Math.max(1,s.inventory[doctorGiftBody]??0)}};
     return s.arrivalEvent==='villain'
       ?{overlay:'dialogue',arrivalEvent:null,speaker:challenger.name,dialogue:challengerInvitation,dialogueStage:'villain-intro',villainArrivalPending:false,shopAfter:false}
       :{overlay:'dialogue',arrivalEvent:null,legendEventPending:false,speaker:'風見 怜',dialogue:'君がこもれび模型店で優勝した朝倉湊くんだね。僕たちは兄弟で全国の大会を回っているんだ。町へ出る前に、僕たちと一度走ってみないか？ 周回遅れでリタイアしても、この特別レースの経験になるよ。',dialogueStage:'legend-intro',shopAfter:false};
@@ -56,13 +64,14 @@ export const useGame = create<GameState>((set) => ({
   location:'komorebi',lastShop:'komorebi',legendRaceCompleted:false,
   leaveShop:()=>set(s=>{
     if(s.location==='town'||s.overlay==='race'||s.overlay==='arrival')return s;
-    if(!s.unlockedRaces.includes(nextShopRace.id))return {overlay:'dialogue',speaker:'小野寺 春夫',dialogue:'まずは、こもれび模型店で1位を目指してみよう。優勝したら、外の町の模型店にも挑戦できるよ。',shopAfter:false,dialogueStage:'none'};
-    if(!s.legendRaceCompleted)return {overlay:'arrival',arrivalEvent:'legend',dialogueStage:'none',shopAfter:false,legendEventPending:true};
+    if(s.unlockedRaces.includes(nextShopRace.id)&&!s.legendRaceCompleted)return {overlay:'arrival',arrivalEvent:'legend',dialogueStage:'none',shopAfter:false,legendEventPending:true};
+    if(s.location==='komorebi'&&s.legendRaceCompleted&&!s.doctorGiftReceived)return {overlay:'arrival',arrivalEvent:'doctor',dialogueStage:'none',shopAfter:false};
     return {location:'town',lastShop:s.location,overlay:null,nearby:'',notice:'',shopAfter:false};
   }),
-  enterShop:id=>set(s=>s.location!=='town'||!s.legendRaceCompleted||!s.unlockedRaces.includes(nextShopRace.id)||!canEnterShop(id,s)?s:{location:id,lastShop:id,overlay:null,nearby:'',notice:'',shopAfter:false}),
+  enterShop:id=>set(s=>s.location!=='town'||!canEnterShop(id,s)?s:{location:id,lastShop:id,overlay:null,nearby:'',notice:'',shopAfter:false}),
   hintBookIndex:0,unlockedRaces:[],qualificationNotice:false,legendEventSeen:false,legendEventPending:false,legendDebriefPending:false,legendChallengeActive:false,dialogueStage:'none',cheatUsed:false,cheatReturnToSettings:false,
-  purchaseCount:0,
+  purchaseCount:0,lastRaceReview:null,
+  exchangeReusable:slot=>set(s=>s.location==='town'||s.overlay==='race'||s.overlay==='arrival'?s:{...replaceConsumable(s,slot==='motor'?'motor-rescue':'battery-recharge'),notice:slot==='motor'?'リユースモーターを装着しました。他の種類のモーターは保持しています。':'リチャージセルを装着しました。他の種類の電池は保持しています。'}),
   readHintBook:()=>set(s=>{
     const index=s.hintBookIndex%hintBooks.length,book=hintBooks[index];
     return {overlay:'dialogue',speaker:`セッティング本棚 ${index+1} / ${hintBooks.length}・${book.title}`,dialogue:`${book.text}（閉じてもう一度調べると次の本）`,shopAfter:false,hintBookIndex:(index+1)%hintBooks.length};
@@ -104,11 +113,10 @@ export const useGame = create<GameState>((set) => ({
     const playerWon=reward&&player?.driving.status==='finished'&&rankRacers(race)[0]?.id==='player';
     const firstAozoraWin=playerWon&&s.location==='aozora'&&!s.villainChallengeActive&&!s.aozoraWon;
     const defeatedVillain=playerWon&&s.location==='aozora'&&s.villainChallengeActive&&!s.villainDefeated;
-    const winnerBody='body-champion';
-    const inventory=firstWin&&!(s.inventory[winnerBody]>0)?{...s.inventory,[winnerBody]:1}:s.inventory;
+    const inventory=s.inventory;
     if(!delta&&!reward)return s;
     const practice=reward&&player?(player.driving.status==='finished'?5+(rankRacers(race)[0]?.id==='player'?5:0):seconds>0?1:0):0;
-    return {units,inventory,usageSeconds:Math.max(s.usageSeconds,seconds),money:s.money+prize,proficiencyPoints:s.proficiencyPoints+practice,...(firstWin?{unlockedRaces:[...s.unlockedRaces,nextShopRace.id],qualificationNotice:true,...(!s.legendRaceCompleted?{legendEventPending:true}:{})}:{}),...(firstAozoraWin?{aozoraWon:true,villainArrivalPending:true}:{}),...(defeatedVillain?{villainDefeated:true,thirdShopNotice:true}:{}),...(s.villainChallengeActive&&reward?{villainDebriefPending:true}:{}),...(completedLegend?{legendRaceCompleted:true}:{}),...(s.legendChallengeActive&&reward?{legendDebriefPending:true}:{}),...(reward?{lastPrize:prize,settledAttempt:attempt}:{})};
+    return {...(reward?{lastRaceReview:reviewRace(race)}:{}),units,inventory,usageSeconds:Math.max(s.usageSeconds,seconds),money:s.money+prize,proficiencyPoints:s.proficiencyPoints+practice,...(firstWin?{unlockedRaces:[...s.unlockedRaces,nextShopRace.id],qualificationNotice:true,...(!s.legendRaceCompleted?{legendEventPending:true}:{})}:{}),...(firstAozoraWin?{aozoraWon:true,villainArrivalPending:true}:{}),...(defeatedVillain?{villainDefeated:true,thirdShopNotice:true}:{}),...(s.villainChallengeActive&&reward?{villainDebriefPending:true}:{}),...(completedLegend?{legendRaceCompleted:true}:{}),...(s.legendChallengeActive&&reward?{legendDebriefPending:true}:{}),...(reward?{lastPrize:prize,settledAttempt:attempt}:{})};
   }),
   openSetting: () => set({overlay:'setting',shopAfter:false,notice:''}),
   openSettings:()=>set({overlay:'settings',shopAfter:false,notice:''}),
@@ -120,23 +128,26 @@ export const useGame = create<GameState>((set) => ({
     for(const key of ['motor','battery'] as const)if(equipment[key]!==s.equipment[key])selectedUnits[key]=s.units[equipment[key]]?.[0]?.id??'';
     return {equipment,selectedUnits};
   }),
+  openLegendChallenge:()=>set(s=>s.location!=='komorebi'||!s.unlockedRaces.includes(nextShopRace.id)||s.legendRaceCompleted||s.overlay==='race'||s.overlay==='arrival'?s:{overlay:'dialogue',speaker:'火野 岳',dialogue:'準備はできたかい？ 僕たち兄弟とのレースに、何度でも挑んでおいで。',dialogueStage:'legend-invite',shopAfter:false}),
   startLegendChallenge:()=>set(s=>s.location!=='komorebi'||!s.unlockedRaces.includes(nextShopRace.id)||s.overlay==='arrival'?s:({overlay:'race',shopAfter:false,notice:'最強兄弟との特別レース！',legendEventPending:false,legendDebriefPending:false,legendEventSeen:true,legendChallengeActive:true,dialogueStage:'none',raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,qualificationNotice:false})),
   talk: (speaker, dialogue, shopAfter = false) => set({ overlay:'dialogue',speaker,dialogue,shopAfter,dialogueStage:'none' }),
   advance: () => set(s => s.dialogueStage==='legend-intro'?{overlay:'dialogue',speaker:'火野 岳',dialogue:'優勝したばかりで悪いが、僕たちとも走ってくれないか？ 速さの世界を見せてあげるよ。',dialogueStage:'legend-invite'}:{ overlay: s.shopAfter ? 'shop' : null, shopAfter:false,notice:'',dialogueStage:'none' }),
   close: () => set(s=>{
     if(s.overlay==='arrival')return s;
+    if(s.overlay==='dialogue'&&s.dialogueStage==='legend-debrief'&&s.legendRaceCompleted&&!s.doctorGiftReceived)return {overlay:'arrival',arrivalEvent:'doctor',dialogueStage:'none',shopAfter:false};
     if(s.overlay==='cheat')return {overlay:s.cheatReturnToSettings?'settings':null,cheatReturnToSettings:false,shopAfter:false,notice:''};
     if(s.overlay==='race'&&s.villainChallengeActive&&s.villainDebriefPending)return {overlay:'dialogue',speaker:challenger.name,dialogue:s.villainDefeated?'な、なんだと……俺が負けた？ ちっ、約束は守る。ひなた模型店への紹介状だ。町の、あおぞら模型店の右隣へ行け。次は負けないからな！':'ふん、まだその程度か。ギアと電池、それにモーターの慣らしを見直してこい。ここで待っている。勝てるまで何度でも相手をしてやる！',dialogueStage:s.villainDefeated?'villain-win':'villain-loss',villainChallengeActive:false,villainDebriefPending:false,shopAfter:false};
     if(s.overlay==='race'&&s.location==='aozora'&&s.villainArrivalPending)return {overlay:'arrival',arrivalEvent:'villain',dialogueStage:'none',shopAfter:false};
     if(s.overlay==='race'&&s.location==='komorebi'&&s.legendEventPending)return {overlay:'arrival',arrivalEvent:'legend',dialogueStage:'none',shopAfter:false};
-    if(s.overlay==='race'&&s.legendDebriefPending)return {overlay:'dialogue',speaker:'風見 怜',dialogue:s.legendRaceCompleted?'これが僕たち兄弟の走りだよ。今日は僕たちの勝ち。でも、君のマシンには伸びしろがある。外の町へ出て、あおぞら模型店にも挑戦してごらん。店の下の出口から行けるよ。またコースで会おう！':'今回は最後まで走れなかったね。電池や安定性を調整して、僕たちともう一度走ろう。出口で声をかけてくれれば、いつでも待っているよ。',dialogueStage:'legend-debrief',legendDebriefPending:false,legendChallengeActive:false,shopAfter:false};
+    if(s.overlay==='race'&&s.legendDebriefPending)return {overlay:'dialogue',speaker:'風見 怜',dialogue:s.legendRaceCompleted?'これが僕たち兄弟の走りだよ。今日は僕たちの勝ち。でも、君のマシンには伸びしろがある。外の町へ出て、あおぞら模型店にも挑戦してごらん。店の下の出口から行けるよ。またコースで会おう！':'今回は最後まで走れなかったね。電池や安定性を調整して、僕たちともう一度走ろう。出口で声をかけてくれれば、いつでも待っているよ。',dialogueStage:'legend-debrief',legendDebriefPending:false,legendChallengeActive:false,legendEventPending:!s.legendRaceCompleted,shopAfter:false};
     return {overlay:null,shopAfter:false,notice:'',dialogueStage:'none',legendChallengeActive:false,villainChallengeActive:false,villainDebriefPending:false};
   }),
   buy: id => set(s => {
+    if(s.overlay==='race'||s.overlay==='arrival')return s;
     if(s.location==='town')return {notice:'パーツは模型店の店主から購入できます。'};
     const result=purchase(s,id,currentShop(s.location));
     if(!result.success)return {notice:result.message};
     const consumable=id.startsWith('motor-')||id.startsWith('battery-');
-    return {...result.wallet,purchaseCount:s.purchaseCount+1,notice:result.message,...(consumable?{unitSerial:s.unitSerial+1,units:{...s.units,[id]:[...(s.units[id]??[]),{id:`unit-${s.unitSerial+1}`,seconds:0}]}}:{})};
+    return {...result.wallet,purchaseCount:s.purchaseCount+1,notice:result.message,...(consumable?replaceConsumable(s,id):{})};
   }),
 }));

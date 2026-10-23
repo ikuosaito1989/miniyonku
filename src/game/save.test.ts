@@ -25,7 +25,7 @@ test('破損・未来バージョン・未知パーツ・未所持装備・個�
     d=>{d.game.units['motor-stock']=[];},d=>{d.game.units['motor-stock'][0].seconds=Infinity;},
     d=>{d.game.units['motor-stock'][0].id='starter-battery';},d=>{d.game.selectedUnits.motor='missing';},
     d=>{d.game.units['motor-stock'][0].id='unit-2';d.game.selectedUnits.motor='unit-2';d.game.unitSerial=1;},
-    d=>{delete d.game.inventory['battery-recharge'];},d=>{d.game.unlockedRaces=['unknown'];},
+    d=>{delete d.game.inventory['battery-basic'];},d=>{d.game.unlockedRaces=['unknown'];},
     d=>{d.game.hintBookIndex=999;},
   ];
   for(const mutate of mutations){const data=saved();mutate(data);assert.throws(()=>decodeSave(data));}
@@ -36,7 +36,7 @@ test('購入・装備・個体消耗・熟練度・資格を復元し、レー�
   try{
     useGame.setState({...useGame.getInitialState(),...initial(),money:5000});
     useGame.getState().buy('motor-torque');useGame.getState().equip('motor-torque','motor');
-    useGame.getState().openSetting();useGame.getState().equip('battery-recharge','battery');useGame.getState().breakIn();
+    useGame.getState().openSetting();useGame.getState().exchangeReusable('battery');useGame.getState().breakIn();
     useGame.setState({unlockedRaces:[nextShopRace.id],hintBookIndex:3});
     const data:SaveData={version:1,savedAt:5678,game:snapshotGame(useGame.getState())};
     useGame.getState().startTrial();useGame.setState({money:0,lastPrize:300,qualificationNotice:true});
@@ -49,9 +49,11 @@ test('購入・装備・個体消耗・熟練度・資格を復元し、レー�
   }finally{useGame.setState(original);}
 });
 test('未保存なら新規開始、ロード失敗では状態も既存データも変更しない',async()=>{
-  const before=snapshotGame(useGame.getState());let writes=0;
+  let writes=0;
   const storage:SaveStorage={read:async()=>undefined,write:async()=>{writes++;}};
   assert.equal(await loadSavedGame(storage),null);
+  assert.equal(useGame.getState().location,'town');
+  const before=snapshotGame(useGame.getState());
   storage.read=async()=>({...saved(),version:99});await assert.rejects(loadSavedGame(storage));
   storage.read=async()=>{throw new Error('blocked');};await assert.rejects(loadSavedGame(storage));
   assert.equal(writes,0);assert.deepEqual(snapshotGame(useGame.getState()),before);
@@ -90,4 +92,24 @@ test('UIの変化だけでは保存せず、走行中はチェックポイント
     const next=structuredClone(units);next['motor-stock'][0].seconds=6;useGame.setState({units:next});
     useGame.getState().close();await tick();assert.equal(writes.at(-1)?.game.units['motor-stock'][0].seconds,6);
   }finally{session.stop();useGame.setState(original);}
+});
+
+
+test('新規開始だけ街から始まり、店内・街のセーブは保存した場所を復元する',async()=>{
+  const original=useGame.getState();
+  try{
+    await loadSavedGame({read:async()=>undefined,write:async()=>{}});
+    assert.equal(useGame.getState().location,'town');
+    useGame.getState().enterShop('komorebi');
+    assert.equal(useGame.getState().location,'komorebi');
+    const inside={version:1 as const,savedAt:1234,game:snapshotGame(useGame.getState())};
+    useGame.getState().leaveShop();
+    await loadSavedGame({read:async()=>inside,write:async()=>{}});
+    assert.equal(useGame.getState().location,'komorebi');
+    useGame.getState().leaveShop();
+    const outside={version:1 as const,savedAt:1235,game:snapshotGame(useGame.getState())};
+    useGame.getState().enterShop('komorebi');
+    await loadSavedGame({read:async()=>outside,write:async()=>{}});
+    assert.equal(useGame.getState().location,'town');
+  }finally{useGame.setState(original);}
 });

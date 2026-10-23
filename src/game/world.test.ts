@@ -21,7 +21,13 @@ test('初優勝→兄弟レース完走の敗北→街→次の店。途中退�
   const original=useGame.getState();
   try{
     useGame.setState({...useGame.getInitialState(),...snapshotGame(useGame.getInitialState())});
-    useGame.getState().leaveShop();assert.equal(useGame.getState().location,'komorebi');assert.match(useGame.getState().dialogue,/1位/);
+    useGame.setState({location:'town',lastShop:'komorebi'});
+    assert.equal(useGame.getState().location,'town');
+    useGame.getState().enterShop('aozora');assert.equal(useGame.getState().location,'town');
+    useGame.getState().enterShop('hinata');assert.equal(useGame.getState().location,'town');
+    useGame.getState().enterShop('komorebi');assert.equal(useGame.getState().location,'komorebi');
+    useGame.getState().leaveShop();assert.equal(useGame.getState().location,'town');
+    useGame.getState().enterShop('komorebi');
     useGame.getState().close();useGame.getState().startTrial();
     useGame.getState().settleRace(useGame.getState().raceAttempt,completed());
     assert.deepEqual(useGame.getState().unlockedRaces,[nextShopRace.id]);assert.equal(useGame.getState().legendRaceCompleted,false);
@@ -39,7 +45,7 @@ test('初優勝→兄弟レース完走の敗北→街→次の店。途中退�
     useGame.getState().settleRace(attempt,completed(true));useGame.getState().settleRace(attempt,completed(true));
     assert.equal(useGame.getState().legendRaceCompleted,true);assert.equal(useGame.getState().money,beforeMoney);
     useGame.getState().close();assert.match(useGame.getState().dialogue,/あおぞら/);
-    useGame.getState().close();useGame.getState().leaveShop();assert.equal(useGame.getState().location,'town');
+    useGame.getState().close();useGame.getState().completeArrival();useGame.getState().close();useGame.getState().leaveShop();assert.equal(useGame.getState().location,'town');
     useGame.getState().enterShop('aozora');assert.equal(useGame.getState().location,'aozora');
     useGame.getState().leaveShop();assert.equal(useGame.getState().lastShop,'aozora');
     useGame.getState().enterShop('komorebi');assert.equal(useGame.getState().location,'komorebi');
@@ -75,7 +81,7 @@ test('旧セーブで兄弟に挑戦済みでも完走済みとは推定せず�
       assert.equal(useGame.getState().location,location);assert.equal(useGame.getState().lastShop,'aozora');assert.equal(useGame.getState().overlay,null);
       assert.deepEqual(decodeSave(data),data);
     }
-    assert.throws(()=>decodeSave({version:1,savedAt:123,game:{...decoded.game,location:'town'}}));
+    assert.equal(decodeSave({version:1,savedAt:123,game:{...decoded.game,location:'town'}}).game.location,'town');
   }finally{useGame.setState(original);}
 });
 

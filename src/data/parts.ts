@@ -6,7 +6,7 @@ export interface Part { id: string; level:number; category: Category; name: stri
 type PartDefinition=Omit<Part,'level'>;
 const definitions: PartDefinition[] = [
   {id:'motor-wind',category:'motor',name:'ブリーズモーター',price:1400,description:'あおぞら模型店の中級向け。連続コーナーの立ち上がりと伸びを両立。ギア・重心の調整で走りが変わる。',specs:{rpm:18000,torque:1.45,weight:19},performance:'18,000 rpm / トルク 1.45 mN·m / 19 g'},
-  {id:'motor-rescue',category:'motor',name:'リユースモーター',price:0,description:'初期所持の救済用。消耗せず、慣らし不要で性能一定。標準より低出力。非売品。',specs:{rpm:11000,torque:.95,weight:18,wear:0},performance:'11,000 rpm / 0.95 mN·m / 18 g / 消耗なし・慣らし不要 / 非売品'},
+  {id:'motor-rescue',category:'motor',name:'リユースモーター',price:0,description:'作業台で無料交換できる救済用。消耗せず、慣らし不要で性能一定。標準より低出力。非売品。',specs:{rpm:11000,torque:.95,weight:18,wear:0},performance:'11,000 rpm / 0.95 mN·m / 18 g / 消耗なし・慣らし不要 / 非売品'},
   ...bodies.map((body):PartDefinition=>({id:body.id,category:'body',name:body.name,price:body.price,description:`${body.className}：${body.description}`,specs:{weight:body.weight,drag:body.drag,stability:body.cornering,roughGrip:body.roughGrip,roughResistance:body.roughResistance},performance:`${body.weight} g / 空気抵抗 ×${body.drag.toFixed(2)} / 旋回 ×${body.cornering.toFixed(2)} / 悪路接地 ×${body.roughGrip.toFixed(2)} / 悪路抵抗 ×${body.roughResistance.toFixed(2)}`})),
   {id:'battery-entry',category:'battery',name:'プラスセル',price:250,description:'初めての強化に適したバランス型電池2本。',specs:{weight:42,power:1.04,endurance:110},performance:'2本 42 g / 出力 ×1.04 / 持続係数110秒'},
   {id:'shaft-entry',category:'shaft',name:'ライトスチールシャフト',price:250,description:'標準シャフトより少し軽い入門用。',specs:{weight:5},performance:'重量 5 g'},
@@ -16,7 +16,7 @@ const definitions: PartDefinition[] = [
   {id:'chassis-light',category:'chassis',name:'K1 ライト',price:1000,description:'肉抜きで軽量化。加速重視の設計。',specs:{weight:16,efficiency:1.02,stability:0.97},performance:'16 g / 駆動効率 ×1.02 / 安定性 ×0.97'},
   {id:'chassis-low',category:'chassis',name:'K2 ローセンター',price:1100,description:'低重心でコーナーの安定性を高める。',specs:{weight:23,efficiency:0.98,stability:1.08},performance:'23 g / 駆動効率 ×0.98 / 安定性 ×1.08'},
   {id:'battery-basic',category:'battery',name:'ベーシックセル',price:150,description:'出力は控えめだが軽い入門用電池2本。',specs:{weight:40,power:1,endurance:90},performance:'2本 40 g / 出力 ×1.00 / 持続係数90秒'},
-  {id:'battery-recharge',category:'battery',name:'リチャージセル',price:0,description:'最初から持っている救済用の充電電池2本。残量は減らず、交換・充電の費用も不要。通常電池より出力が少し弱い。非売品。',specs:{weight:40,power:.95,endurance:90,consumption:0},performance:'2本 40 g / 出力 ×0.95 / 残量100%固定・充電不要 / 非売品'},
+  {id:'battery-recharge',category:'battery',name:'リチャージセル',price:0,description:'作業台で無料交換できる救済用の充電電池2本。残量は減らず、交換・充電の費用も不要。通常電池より出力が少し弱い。非売品。',specs:{weight:40,power:.95,endurance:90,consumption:0},performance:'2本 40 g / 出力 ×0.95 / 残量100%固定・充電不要 / 非売品'},
   {id:'battery-power',category:'battery',name:'スパークセル',price:450,description:'高出力の短距離向け電池2本。後半の電圧低下に注意。',specs:{weight:45,power:1.12,endurance:55},performance:'2本 45 g / 出力 ×1.12 / 持続係数55秒'},
   {id:'battery-endurance',category:'battery',name:'ロングランセル',price:650,description:'出力低下の緩やかな長距離向け電池2本。',specs:{weight:43,power:1.02,endurance:180},performance:'2本 43 g / 出力 ×1.02 / 持続係数180秒'},
   {id:'wheel-basic',category:'wheel',name:'スタンダード5スポーク',price:250,description:'タイヤとは別に交換するホイール4本セット。',specs:{weight:6,diameter:17,cornerDrag:1},performance:'4本 6 g / リム径17 mm / コーナー抵抗 ×1.00'},

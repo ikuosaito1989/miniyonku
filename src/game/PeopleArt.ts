@@ -141,3 +141,20 @@ export function personDrawing(kind:PersonKind,direction:Facing,frame:number):Pix
   if(direction==='left')return pen.shapes.map(shape=>shape.kind==='rect'?{...shape,x:60-shape.x-shape.w}:{...shape,points:shape.points.map(([x,y])=>[60-x,y] as const)});
   return pen.shapes;
 }
+
+/** 店主と同じ大人の原画を基に、白衣・白髪・丸眼鏡の研究家を描く。 */
+export function doctorDrawing(direction:Facing,frame=0):PixelShape[]{
+  const facing=direction==='left'?'right':direction;
+  const colors:Record<string,string>={'#607ca0':'#e4ece6','#b0c8de':'#ffffff','#415674':'#a9c3ba','#656176':'#d6e1dc','#ada0ac':'#ffffff','#b89a72':'#e4ece6','#e0c59b':'#ffffff','#927d66':'#b9d0c7','#ead3ac':'#ffffff','#c1a888':'#d6e4dc','#d8b98b':'#e4ece6','#a78868':'#a9c3ba'};
+  const shapes=personDrawing('owner',facing,frame).map(shape=>({...shape,color:colors[shape.color]??shape.color}));
+  const pen=pixelPen(),bob=frame===1||frame===3?1:0;
+  if(facing==='down'){
+    pen.rect(18,20+bob,10,8,'#2e4c54');pen.rect(31,20+bob,10,8,'#2e4c54');
+    pen.rect(20,22+bob,6,4,'#d6f0eb');pen.rect(33,22+bob,6,4,'#d6f0eb');pen.rect(28,22+bob,3,2,'#2e4c54');
+    pen.polygon([[28,40],[32,40],[34,48],[30,52],[27,48]],'#397d78');
+  }else if(facing==='right'){
+    pen.rect(34,20+bob,9,8,'#2e4c54');pen.rect(36,22+bob,5,4,'#d6f0eb');pen.rect(27,21+bob,7,2,'#2e4c54');
+  }
+  const drawing=[...shapes,...pen.shapes];
+  return direction==='left'?drawing.map(shape=>shape.kind==='rect'?{...shape,x:60-shape.x-shape.w}:{...shape,points:shape.points.map(([x,y])=>[60-x,y] as const)}):drawing;
+}

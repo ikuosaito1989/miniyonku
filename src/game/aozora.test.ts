@@ -129,9 +129,9 @@ test('あおぞら初優勝で挑戦状→店のパーツで黒岩に勝利→�
     assert.deepEqual(useGame.getState().equipment,prepared);
     useGame.getState().openSetting();
     // 充電池で慣らし、新品の勝負用電池へ戻す。
-    useGame.getState().equip('battery-recharge');
+    useGame.getState().exchangeReusable('battery');
     useGame.getState().breakIn();useGame.getState().breakIn();
-    useGame.getState().equip('battery-power');useGame.getState().close();
+    useGame.getState().buy('battery-power');useGame.getState().close();
     const state=useGame.getState();
     const motor=state.units[state.equipment.motor].find(u=>u.id===state.selectedUnits.motor)!;
     const battery=state.units[state.equipment.battery].find(u=>u.id===state.selectedUnits.battery)!;
@@ -150,12 +150,12 @@ test('あおぞら初優勝で挑戦状→店のパーツで黒岩に勝利→�
   }finally{useGame.setState(original);}
 });
 
-test('優勝記念ボディはこもれび初優勝のみ。あおぞら・黒岩戦・ひなたでは増えない',()=>{
+test('セイランは初優勝だけでは配布せず、あおぞら・黒岩戦・ひなたでも増えない',()=>{
   const original=useGame.getState();
   try{
     useGame.setState({...useGame.getInitialState()});
     useGame.getState().startTrial();useGame.getState().settleRace(useGame.getState().raceAttempt,{...result(),circuitId:'leaf'});
-    assert.equal(useGame.getState().inventory['body-champion'],1);
+    assert.equal(useGame.getState().inventory['body-champion'],undefined);
     for(const location of ['aozora','hinata'] as const)for(const challenge of [false,true]){
       useGame.setState({...aozoraStart(),location,aozoraWon:true,inventory:{...useGame.getInitialState().inventory,'body-champion':1}});
       if(challenge&&location==='aozora')useGame.getState().startVillainChallenge();else useGame.getState().startTrial();

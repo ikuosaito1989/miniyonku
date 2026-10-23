@@ -21,7 +21,7 @@ test('店頭と購入ロジックが共通の販売制限を使い、上位パ�
   assert.equal(purchase(wallet,top.id).success,false);
   assert.equal(purchase(wallet,top.id,{name:'テスト上位店',maxPartLevel:10}).success,true);
 });
-test('初優勝記念ボディはLv.10相当の非売品として受け取る',()=>{
+test('博士からのセイランボディはLv.10相当の非売品',()=>{
   const reward=parts.find(part=>part.id==='body-champion')!;
   assert.equal(reward.level,10);
   assert.equal(isStocked(reward,{name:'最上位店',maxPartLevel:10}),false);

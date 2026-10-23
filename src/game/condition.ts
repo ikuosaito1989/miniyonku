@@ -23,4 +23,4 @@ export function equippedCondition(equipment:Equipment,units:UnitInventory,select
   const age=(slot:'motor'|'battery')=>{const list=units[equipment[slot]];return (list?.find(u=>u.id===selected[slot])??list?.[0])?.seconds??0;};
   return {motorSeconds:age('motor'),batterySeconds:age('battery')};
 }
-export function createStarterUnits():UnitInventory{return {'motor-rescue':[{id:'starter-rescue-motor',seconds:0}],'motor-stock':[{id:'starter-motor',seconds:0}],'battery-basic':[{id:'starter-battery',seconds:0}],'battery-recharge':[{id:'starter-recharge',seconds:0}]};}
+export function createStarterUnits():UnitInventory{return {'motor-stock':[{id:'starter-motor',seconds:0}],'battery-basic':[{id:'starter-battery',seconds:0}]};}

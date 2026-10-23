@@ -31,12 +31,12 @@ test('公式初優勝だけで次の参加資格を獲得。敗北・途中・�
     useGame.getState().startTrial();let attempt=useGame.getState().raceAttempt;
     useGame.getState().settleRace(attempt,win);useGame.getState().settleRace(attempt,win);
     assert.deepEqual(useGame.getState().unlockedRaces,[nextShopRace.id]);assert.equal(useGame.getState().qualificationNotice,true);
-    assert.equal(useGame.getState().inventory['body-champion'],1);
+    assert.equal(useGame.getState().inventory['body-champion'],undefined);
     useGame.getState().startTrial();attempt=useGame.getState().raceAttempt;
     assert.equal(useGame.getState().qualificationNotice,false);
     useGame.getState().settleRace(attempt-1,win);assert.equal(useGame.getState().qualificationNotice,false);
     useGame.getState().settleRace(attempt,win);assert.deepEqual(useGame.getState().unlockedRaces,[nextShopRace.id]);assert.equal(useGame.getState().qualificationNotice,false);
-    assert.equal(useGame.getState().inventory['body-champion'],1);
+    assert.equal(useGame.getState().inventory['body-champion'],undefined);
   }finally{useGame.setState(original);}
 });
 test('案内役は財布・購入済み・装備・慣らし・資格に応じてヒントを変える',()=>{

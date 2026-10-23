@@ -1,6 +1,8 @@
+import { doctor } from './doctor';
 import { story, shopVisitors } from './story';
-export type DialoguePersonId='owner'|'aozoraOwner'|'hinataOwner'|'villain'|'rival'|'guide'|'mechanic'|'legendRei'|'legendGaku';
+export type DialoguePersonId='owner'|'aozoraOwner'|'hinataOwner'|'villain'|'rival'|'guide'|'mechanic'|'legendRei'|'legendGaku'|'doctor';
 export const dialoguePeople:Record<DialoguePersonId,{name:string;role:string;expression:string;ageGroup:'adult'|'elementary';faceBase:string}>={
+  doctor:{name:doctor.name,role:doctor.role,expression:'眼鏡と白髪、穏やかな笑顔',ageGroup:'adult',faceBase:'doctor'},
   owner:{name:story.owner,role:'こもれび模型店 店主',expression:'明るい笑顔',ageGroup:'adult',faceBase:'owner'},
   aozoraOwner:{name:'青井 晴彦',role:'あおぞら模型店 店主',expression:'気さくな笑顔',ageGroup:'adult',faceBase:'owner'},
   hinataOwner:{name:'日向 誠二',role:'ひなた模型店 店主',expression:'頼もしい笑顔',ageGroup:'adult',faceBase:'owner'},
@@ -20,7 +22,8 @@ export function dialogueChoices(shopAfter:boolean,book:boolean,stage='none'){
   if(stage==='villain-loss')return [{label:'準備して、もう一度挑む',action:'close' as const}];
   if(stage==='villain-win')return [{label:'ひなた模型店へ向かう',action:'close' as const}];
   if(stage==='legend-intro')return [{label:'うん、僕が優勝したよ',action:'advance' as const}];
-  if(stage==='legend-invite')return [{label:'一緒にレースする！',action:'legendRace' as const},{label:'少し準備してからにする',action:'close' as const}];
+  if(stage==='legend-invite')return [{label:'一緒にレースする！',action:'legendRace' as const},{label:'セッティングしてからにする',action:'legendSetting' as const}];
+  if(stage==='doctor-gift')return [{label:'セイランボディ、ありがとう！',action:'close' as const}];
   if(stage==='legend-debrief')return [{label:'もっと速くなるよ',action:'close' as const}];
   return shopAfter?[{label:'はい、パーツを見せてください',action:'advance' as const},{label:'いいえ、また今度',action:'close' as const}]:
     [{label:book?'本を閉じる':'話を終える',action:'close' as const}];

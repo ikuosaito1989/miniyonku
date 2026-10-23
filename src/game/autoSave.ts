@@ -7,7 +7,7 @@ import { nextShopRace } from '../data/shopHints';
 export type SaveStatus={phase:'loading'|'saving'|'saved'|'error'|'temporary';savedAt:number|null;message:string};
 export async function loadSavedGame(storage:SaveStorage,store:StoreApi<GameState>=useGame){
   const raw=await storage.read();
-  if(raw===undefined)return null;
+  if(raw===undefined){store.setState({...store.getInitialState(),location:'town',lastShop:'komorebi'});return null;}
   const data=decodeSave(raw);
   // UIや途中レースは再開せず、保存した店の入口／街の店前から復帰する。
   store.setState({...store.getInitialState(),...data.game,legendEventPending:data.game.unlockedRaces.includes(nextShopRace.id)&&!data.game.legendRaceCompleted,villainArrivalPending:data.game.aozoraWon&&!data.game.villainDefeated});

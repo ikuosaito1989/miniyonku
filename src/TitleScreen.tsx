@@ -26,7 +26,7 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
       <p className="title-subtitle">こもれび模型店</p>
       <div className="title-rule" />
       <p className="title-story">お気に入りの一台を、きみの手で。<br />パーツを選んで、走らせて、少しずつ速くなる。</p>
-      <button className="title-start" ref={startButton} onClick={onStart}>模型店へ <span aria-hidden="true">→</span></button>
+      <button className="title-start" ref={startButton} onClick={onStart}>ゲーム開始 <span aria-hidden="true">→</span></button>
       <p className="title-input">タップ / Enter / Space / Z でスタート</p>
     </div>
     <footer className="title-footer"><span>進行はこのブラウザに自動保存されます</span><span>TINY DRIVE · v0.1</span></footer>

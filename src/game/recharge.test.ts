@@ -9,9 +9,9 @@ import { purchase } from './purchase';
 import { useGame } from './store';
 import { createRaceState } from './race';
 
-test('充電電池は無料の初期予備1組。どの店でも購入できず、残量は常に100%',()=>{
-  assert.equal(createStarterInventory()['battery-recharge'],1);
-  assert.equal(createStarterUnits()['battery-recharge'][0].seconds,0);
+test('充電電池は無料交換の救済パーツ。どの店でも購入できず、残量は常に100%',()=>{
+  assert.equal(createStarterInventory()['battery-recharge'],undefined);
+  assert.equal(createStarterUnits()['battery-recharge'],undefined);
   const part=parts.find(p=>p.id==='battery-recharge')!;
   assert.equal(isStocked(part),false);
   assert.equal(purchase({money:10000,inventory:{}},part.id,{name:'上位店',maxPartLevel:10}).success,false);
@@ -34,7 +34,7 @@ test('所持金0・通常電池切れから充電電池に交換し、何度慣�
   const original=useGame.getState();
   try{
     useGame.setState({...useGame.getInitialState(),money:0,units:{...createStarterUnits(),'battery-basic':[{id:'starter-battery',seconds:360}]}});
-    useGame.getState().openSetting();useGame.getState().equip('battery-recharge','battery');
+    useGame.getState().openSetting();useGame.getState().exchangeReusable('battery');
     for(let i=0;i<15;i++)useGame.getState().breakIn();
     let state=useGame.getState();
     assert.equal(state.equipment.battery,'battery-recharge');assert.equal(state.units['motor-stock'][0].seconds,450);

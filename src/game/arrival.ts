@@ -1,5 +1,5 @@
 import { canStand,findWalkingPath,type Obstacle,type Point } from './navigation';
-export type ArrivalKind='legend'|'villain';
+export type ArrivalKind='legend'|'villain'|'doctor';
 export interface ArrivalActor {position:Point;route:Point[];facing:'up'|'down'|'left'|'right';walkTime:number;distance:number;arrived:boolean}
 export const arrivalSpeed=95,contactDistance=38;
 // 主人公の周囲の通行可能な接触位置まで、家具と来店客を避けて歩く。

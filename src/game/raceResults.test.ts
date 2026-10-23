@@ -63,7 +63,7 @@ test('最強兄弟に周回遅れで敗北しても街を解放し、賞金は�
     const before=useGame.getState().money;
     useGame.getState().settleRace(useGame.getState().raceAttempt,race);
     assert.equal(useGame.getState().legendRaceCompleted,true);assert.equal(useGame.getState().money,before);
-    useGame.getState().close();useGame.getState().close();useGame.getState().leaveShop();assert.equal(useGame.getState().location,'town');
+    useGame.getState().close();useGame.getState().close();useGame.getState().completeArrival();useGame.getState().close();useGame.getState().leaveShop();assert.equal(useGame.getState().location,'town');
   }finally{useGame.setState(original);}
 });
 
@@ -88,7 +88,7 @@ test('周回遅れ直後に残りCPUの結果を確定でき、停止状態・�
     useGame.getState().settleRace(attempt,result);useGame.getState().settleRace(attempt,result);
     assert.equal(useGame.getState().money,money);assert.equal(useGame.getState().legendRaceCompleted,true);
     useGame.getState().close();assert.equal(useGame.getState().dialogueStage,'legend-debrief');
-    useGame.getState().close();useGame.getState().leaveShop();assert.equal(useGame.getState().location,'town');
+    useGame.getState().close();useGame.getState().completeArrival();useGame.getState().close();useGame.getState().leaveShop();assert.equal(useGame.getState().location,'town');
   }finally{useGame.setState(original);}
 });
 test('未発進で周回遅れになっても結果を集計できる',()=>{

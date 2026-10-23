@@ -8,7 +8,7 @@ import { starterEquipment } from '../data/machine';
 import { bodies } from '../data/bodies';
 
 test('曲面マシンの頂点は有限で、従来のレーン内寸法に収まる',()=>{
-  const model=buildMachineModel(0xe85438,starterEquipment);
+  const model=buildMachineModel(0xe85438,{...starterEquipment,body:'body-champion'});
   let curved=false;
   model.traverse(object=>{
     if(!(object instanceof THREE.Mesh))return;
@@ -23,13 +23,22 @@ test('曲面マシンの頂点は有限で、従来のレーン内寸法に収�
   model.traverse(object=>{if(object instanceof THREE.Mesh){object.geometry.dispose();object.material.dispose();}});
 });
 
-test('入門ボディは赤い低床ウェッジにリヤウイングと前後フェンダーを備え、レース色を反映する',()=>{
-  const model=buildMachineModel(0xd94232,starterEquipment);
-  assert.equal((model.getObjectByName('body-shell') as THREE.Mesh).material instanceof THREE.MeshPhongMaterial?((model.getObjectByName('body-shell') as THREE.Mesh).material as THREE.MeshPhongMaterial).color.getHex():0,0xd94232);
-  assert.ok(model.getObjectByName('rear-wing'));
-  assert.ok(model.getObjectByName('front-fender-arch'));
-  assert.ok(model.getObjectByName('rear-fender-arch'));
-  model.traverse(object=>{if(object instanceof THREE.Mesh){object.geometry.dispose();object.material.dispose();}});
+test('コハクK660はモブ車と同じ箱型軽ワゴンで、ウイングのない地味な入門車',()=>{
+  const model=buildMachineModel(0xb4b09a,starterEquipment);
+  const mob=buildMachineModel(0xb4b09a,starterEquipment,'mob-kei');
+  const body=model.getObjectByName('body-shell') as THREE.Mesh;
+  assert.ok(body.geometry instanceof THREE.BoxGeometry);
+  assert.equal((body.material as THREE.MeshPhongMaterial).color.getHex(),0xb4b09a);
+  assert.equal((body.material as THREE.MeshPhongMaterial).shininess,12);
+  assert.ok(model.getObjectByName('mob-kei-yellow-plate'));
+  assert.ok(model.getObjectByName('mob-kei-plastic-bumper'));
+  assert.ok(model.getObjectByName('mob-kei-square-headlight'));
+  assert.equal(model.getObjectByName('rear-wing'),undefined);
+  const geometry=(car:THREE.Group)=>{
+    const result:unknown[]=[];car.traverse(object=>{if(object instanceof THREE.Mesh)result.push([object.name,Array.from(object.geometry.getAttribute('position').array),object.position.toArray()]);});return result;
+  };
+  assert.deepEqual(geometry(model),geometry(mob));
+  for(const car of [model,mob])car.traverse(object=>{if(object instanceof THREE.Mesh){object.geometry.dispose();object.material.dispose();}});
 });
 
 test('初優勝ボディは独自の赤白青緑リバリーと立体フィンを持つ最上位モデル',()=>{
@@ -46,7 +55,7 @@ test('初優勝ボディは独自の赤白青緑リバリーと立体フィン�
 });
 
 test('装備したタイヤ・ホイール・ローラーと内部パーツが個別の造形でプレビューされる',()=>{
-  const equipment={...starterEquipment,tire:'tire-2',wheel:'wheel-light',rollerFront:'roller-2',rollerSide:'roller-1',rollerRear:'roller-0',chassis:'chassis-light',motor:'motor-rev',gear:'gear-4',battery:'battery-power',shaft:'shaft-1',terminal:'terminal-1',accessory:'accessory-support'};
+  const equipment={...starterEquipment,body:'body-champion',tire:'tire-2',wheel:'wheel-light',rollerFront:'roller-2',rollerSide:'roller-1',rollerRear:'roller-0',chassis:'chassis-light',motor:'motor-rev',gear:'gear-4',battery:'battery-power',shaft:'shaft-1',terminal:'terminal-1',accessory:'accessory-support'};
   const model=buildMachineModel(0xd94232,equipment);
   for(const name of ['tire-tire-2','tire-sidewall-tire-2','wheel-rim-wheel-light','wheel-spoke-wheel-light','roller-rollerFront-roller-2','roller-bearing-rollerFront','roller-rollerSide-roller-1','roller-rollerRear-roller-0','chassis-lightening-slot','motor-cooling-fin','gear-inspection-cap','battery-service-cover','hollow-shaft-collar','terminal-contact','underbody-support'])assert.ok(model.getObjectByName(name),name);
   const count=(name:string)=>{let total=0;model.traverse(object=>{if(object.name===name)total++;});return total;};
@@ -66,7 +75,7 @@ test('全ボディの曲面形状が有限でレーンに収まり、軽・SUV�
     model.traverse(object=>{if(object instanceof THREE.Mesh){object.geometry.dispose();object.material.dispose();}});
   }
   assert.ok(heights['body-manta']>heights['body-stream']);
-  assert.ok(heights['body-stream']<heights['body-arrow']);
+  assert.ok(heights['body-stream']>heights['body-arrow']);
 });
 
 test('通常CPUは箱型軽ワゴンの外観。記念車と最強兄弟は従来の造形を維持する',()=>{
