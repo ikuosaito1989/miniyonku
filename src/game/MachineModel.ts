@@ -48,7 +48,7 @@ function lowWedgeShell(sections:number[][],color:number,shininess=85){
 }
 
 export function buildRaceMachineModel(racer:Pick<Entrant,'id'|'color'|'equipment'>){
-  const model=buildMachineModel(racer.color,racer.equipment,racer.id!=='player'&&!racer.id.startsWith('legend-')?'mob-kei':'stock');
+  const model=buildMachineModel(racer.color,racer.equipment,racer.id!=='player'&&racer.id!=='riku'&&!racer.id.startsWith('legend-')?'mob-kei':'stock');
   if(racer.id===challenger.id){
     // 黒岩専用の黒金カラー。遠い画角でも屋根の2本線で識別できる。
     const gold=new THREE.MeshPhongMaterial({color:0xf5cb50,shininess:45});

@@ -7,5 +7,5 @@ export const shopCasts={
 };
 export function shopCast(id:ShopId){
   const cast=shopCasts[id];
-  return {owner:{...cast.owner,name:modelShops[id].owner},rival:{...cast.rival,name:story.rival},visitors:cast.visitors};
+  return {owner:{...cast.owner,name:modelShops[id].owner},rival:{...cast.rival,name:id==='hinata'?'森野 陸':story.rival},visitors:cast.visitors};
 }

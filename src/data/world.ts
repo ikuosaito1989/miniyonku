@@ -11,9 +11,9 @@ export const modelShops:Record<ShopId,ModelShop>={
   hinata:{id:'hinata',name:'ひなた模型店',maxPartLevel:4,owner:'日向 誠二',circuitId:'sun',stage:3,color:0xb78e4f,welcome:'黒岩くんを破ったレーサーだね。ようこそ、ひなた模型店へ！ここは砂利・砂地・連続コーナーが続く長いダートコースだ。悪路用モーターとブロックタイヤ、ダンパー、ポール式ダブルローラーで挑もう。'},
 };
 export function currentShop(location:WorldLocation){return modelShops[location==='town'?'komorebi':location];}
-export interface WorldProgress {legendRaceCompleted:boolean;villainDefeated:boolean}
+export interface WorldProgress {legendRaceCompleted:boolean;villainDefeated:boolean;officialQualified?:boolean}
 export function canEnterShop(id:ShopId,progress:WorldProgress){return id==='komorebi'||progress.legendRaceCompleted&&(id==='aozora'||progress.villainDefeated);}
-export function isVenueOpen(venue:TownVenue,progress:WorldProgress){return !!venue.shopId&&canEnterShop(venue.shopId,progress);}
+export function isVenueOpen(venue:TownVenue,progress:WorldProgress){return venue.id==='stadium-5'?progress.officialQualified===true:!!venue.shopId&&canEnterShop(venue.shopId,progress);}
 export interface TownVenue {id:string;name:string;kind:'shop'|'stadium';stage:number;x:number;y:number;w:number;h:number;entrance:'north'|'south';color:number;shopId?:ShopId}
 export const townVenues:TownVenue[]=[
   {id:'komorebi',name:'こもれび模型店',kind:'shop',stage:1,x:78,y:150,w:132,h:88,entrance:'south',color:0x528672,shopId:'komorebi'},
@@ -31,6 +31,7 @@ export const townVenues:TownVenue[]=[
 export const shopExit={x:440,y:575,w:80,h:7};
 export function townSpawn(shop:ShopId){const venue=townVenues.find(v=>v.shopId===shop)!;return {x:venue.x+venue.w/2,y:venue.y+venue.h+42};}
 export function venueMessage(venue:TownVenue){
+  if(venue.id==='stadium-5')return '若葉公式ダート杯はひなた模型店で1位になると出場できます。森野 陸・黒岩 豪・モブ2人との5台レース。ほかの公式会場は準備中です。';
   if(venue.shopId==='hinata')return 'ひなた模型店へ入るには、あおぞら模型店で優勝した後に現れる黒岩 豪との挑戦レースで1位になろう。勝利すれば紹介状をもらえます。';
   return venue.kind==='stadium'
     ?`${venue.name}は、熟練度${venue.stage}段階目から参加する大会の会場。現在は開催準備中のため入場できません。開幕のお知らせを待とう。`

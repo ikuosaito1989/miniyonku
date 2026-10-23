@@ -1,7 +1,8 @@
 import { doctor } from './doctor';
 import { story, shopVisitors } from './story';
-export type DialoguePersonId='owner'|'aozoraOwner'|'hinataOwner'|'villain'|'rival'|'guide'|'mechanic'|'legendRei'|'legendGaku'|'doctor';
+export type DialoguePersonId='owner'|'aozoraOwner'|'hinataOwner'|'villain'|'rival'|'guide'|'mechanic'|'legendRei'|'legendGaku'|'doctor'|'offroader';
 export const dialoguePeople:Record<DialoguePersonId,{name:string;role:string;expression:string;ageGroup:'adult'|'elementary';faceBase:string}>={
+  offroader:{name:'森野 陸',role:'ダートが得意な小学生レーサー',expression:'茶色の髪と緑の服、自信のある笑顔',ageGroup:'elementary',faceBase:'child-common'},
   doctor:{name:doctor.name,role:doctor.role,expression:'眼鏡と白髪、穏やかな笑顔',ageGroup:'adult',faceBase:'doctor'},
   owner:{name:story.owner,role:'こもれび模型店 店主',expression:'明るい笑顔',ageGroup:'adult',faceBase:'owner'},
   aozoraOwner:{name:'青井 晴彦',role:'あおぞら模型店 店主',expression:'気さくな笑顔',ageGroup:'adult',faceBase:'owner'},
@@ -18,6 +19,7 @@ export function dialoguePerson(speaker:string):DialoguePersonId|null{
   return (Object.keys(dialoguePeople) as DialoguePersonId[]).find(id=>normalize(speaker).includes(normalize(dialoguePeople[id].name)))??null;
 }
 export function dialogueChoices(shopAfter:boolean,book:boolean,stage='none'){
+  if(stage==='official-invite')return [{label:'公式レースに出場する！',action:'officialRace' as const},{label:'セッティングしてから',action:'legendSetting' as const}];
   if(stage==='villain-intro')return [{label:'勝負を受ける！',action:'villainRace' as const},{label:'セッティングを見直してから',action:'close' as const}];
   if(stage==='villain-loss')return [{label:'準備して、もう一度挑む',action:'close' as const}];
   if(stage==='villain-win')return [{label:'ひなた模型店へ向かう',action:'close' as const}];

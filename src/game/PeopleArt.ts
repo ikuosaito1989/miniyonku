@@ -158,3 +158,9 @@ export function doctorDrawing(direction:Facing,frame=0):PixelShape[]{
   const drawing=[...shapes,...pen.shapes];
   return direction==='left'?drawing.map(shape=>shape.kind==='rect'?{...shape,x:60-shape.x-shape.w}:{...shape,points:shape.points.map(([x,y])=>[60-x,y] as const)}):drawing;
 }
+
+// 共通の小学生の顔・体を再利用し、森野陸は土色の髪と緑の服で統一する。
+export function offroaderDrawing(direction:Facing,frame=0):PixelShape[]{
+  const colors:Record<string,string>={'#317d91':'#58784b','#9bd3cc':'#c0d398','#24536f':'#3a5136','#333e54':'#5c4635','#728091':'#a08156'};
+  return personDrawing('mechanic',direction,frame).map(shape=>({...shape,color:colors[shape.color]??shape.color}));
+}

@@ -5,7 +5,7 @@ import { room, roomView, type Fixture } from '../data/shop';
 import { createShopGesture } from './shopGesture';
 import { useGame } from './store';
 import { createPeopleTextures, drawShopFixture, drawShopRoom, type Facing, type PersonKind } from './ShopArt';
-import { personDrawing } from './PeopleArt';
+import { offroaderDrawing, personDrawing } from './PeopleArt';
 import { createArrival,stepArrivalActor,type ArrivalActor,type ArrivalKind } from './arrival';
 import { EventAudio,type EventSound } from './EventAudio';
 import { useAudioSettings } from './audioSettings';
@@ -83,7 +83,15 @@ export class ShopScene extends Phaser.Scene {
     this.boardLines=Array.from({length:5},(_,i)=>this.add.text(board.x+5,board.y+23+i*15,'',{fontFamily:'"Noto Sans JP",monospace',fontSize:'5px',color:'#e6dfbc',resolution:2}).setDepth(board.y+board.h+2));
     const cast=this.cast;
     this.person(cast.owner.x,cast.owner.y,'owner');
-    this.person(cast.rival.x,cast.rival.y,'rival');
+    const rivalPerson=this.person(cast.rival.x,cast.rival.y,useGame.getState().location==='hinata'?'mechanic':'rival');
+    if(useGame.getState().location==='hinata'){
+      const key='person-offroader-down';
+      if(!this.textures.exists(key)){
+        const texture=this.textures.createCanvas(key,personSpriteSize.width,personSpriteSize.height)!;
+        paintPixels(texture.context,offroaderDrawing('down'));texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
+      }
+      (rivalPerson.list[1] as Phaser.GameObjects.Image).setTexture(key);
+    }
     for(const visitor of cast.visitors){
       this.person(visitor.x,visitor.y,visitor.kind);
       this.solids.push(new Phaser.Geom.Rectangle(visitor.x-12,visitor.y-9,24,21));
@@ -331,7 +339,7 @@ export class ShopScene extends Phaser.Scene {
   private getTargets():ShopTarget[]{
     if(this.isTown)return townVenues.map(v=>({x:v.x,y:v.y,w:v.w,h:v.h,label:v.name,speaker:v.name,shopAfter:false,text:venueMessage(v),kind:'venue',venueId:v.id}));
     const cast=this.cast;
-    const targets:ShopTarget[]=[...shopLayout(currentShop(useGame.getState().location).id).map(({target:f})=>({...f,speaker:f.label,shopAfter:f.kind==='counter'})),{x:cast.rival.x-16,y:cast.rival.y-42,w:32,h:54,label:`ライバル ${story.rival}`,speaker:story.rival,shopAfter:false,text:'湊くん、速いモーターだけじゃなく、ギアやタイヤの組み合わせも大事だよ。'}];
+    const targets:ShopTarget[]=[...shopLayout(currentShop(useGame.getState().location).id).map(({target:f})=>({...f,speaker:f.label,shopAfter:f.kind==='counter'})),{x:cast.rival.x-16,y:cast.rival.y-42,w:32,h:54,label:`ライバル ${cast.rival.name}`,speaker:cast.rival.name,shopAfter:false,text:'湊くん、速いモーターだけじゃなく、ギアやタイヤの組み合わせも大事だよ。'}];
     const state=useGame.getState(),condition=equippedCondition(state.equipment,state.units,state.selectedUnits);
     const shop=currentShop(state.location);
     const counter=targets.find(t=>t.kind==='counter')!;counter.label=`店主 ${shop.owner}`;counter.speaker=shop.owner;counter.text=shop.welcome;
@@ -349,7 +357,7 @@ export class ShopScene extends Phaser.Scene {
     if(shop.id==='aozora'){
       for(const visitor of visitors)visitor.text=visitor.speaker==='三浦 結衣'?(state.villainDefeated?'黒岩くんに勝ったんだね！町へ出て、この店の右隣のひなた模型店へ行けるよ。':state.aozoraWon?'黒岩くんが店の中央で待っているよ。挑戦レースで1位になると、ひなた模型店への紹介状がもらえるんだって。':'ここは優勝1,000円、5位完走でも250円！まずは優勝しよう。町の黒岩くんが、速いレーサーを探しているみたい。'):'黒岩くんに勝つなら、記念ボディにブリーズモーターを約60秒ならして、4:1ギア・スパークセル・スポンジタイヤを試そう。低重心シャーシと軽量化も比べてね。';
       if(state.aozoraWon)targets.push({x:(this.challengerPerson?.x??challengerSpot.x)-16,y:(this.challengerPerson?.y??challengerSpot.y)-42,w:32,h:54,label:challenger.name,speaker:challenger.name,shopAfter:false,text:'挑戦を受ける。',kind:'challenger'});
-    }else if(shop.id==='hinata')for(const visitor of visitors)visitor.text=visitor.speaker==='三浦 結衣'?'ひなた模型店へようこそ！ここは砂利と砂地が続くロングダート。ほかの4店と大会会場は、まだ準備中だよ。':'トレイルトルクモーター・ブロックタイヤ・ダンパーで接地と駆動力を確保しよう。ポール式ダブルローラーは前中後に装着できるよ。4:1ギアから試そう。';
+    }else if(shop.id==='hinata')for(const visitor of visitors)visitor.text=visitor.speaker==='三浦 結衣'?'ひなた模型店へようこそ！ここは砂利と砂地が続くロングダート。ここで優勝すると若葉公式ダート杯への出場権がもらえるよ。街の若葉レース場で森野くんや黒岩くんと勝負しよう。':'トレイルトルクモーター・ブロックタイヤ・ダンパーで接地と駆動力を確保しよう。ポール式ダブルローラーは前中後に装着できるよ。4:1ギアから試そう。';
     for(const visitor of visitors){
       if(visitor.speaker==='佐伯 匠'){visitor.label='佐伯 匠（レース相談）';visitor.text='装備と前回のレースを見て、勝つための相談に乗るよ。';}
       else visitor.text+=' 負けた理由や、どのパーツを替えるとよいかは、整備役の佐伯 匠に相談してね。';
@@ -358,7 +366,8 @@ export class ShopScene extends Phaser.Scene {
   }
   private interactWith(target:ShopTarget){
       this.gesture.reset();
-      if(target.speaker==='佐伯 匠'){
+      if(target.speaker==='森野 陸')useGame.getState().openOfficialRace();
+      else if(target.speaker==='佐伯 匠'){
         const state=useGame.getState();
         state.talk(target.speaker,raceAdvice({shopId:currentShop(state.location).id,equipment:state.equipment,inventory:state.inventory,money:state.money,...equippedCondition(state.equipment,state.units,state.selectedUnits),review:state.lastRaceReview,motorAges:Object.fromEntries(Object.entries(state.units).map(([id,list])=>[id,list[0]?.seconds??0])),batteryAges:Object.fromEntries(Object.entries(state.units).map(([id,list])=>[id,list[0]?.seconds??0]))}));
       }
@@ -367,7 +376,8 @@ export class ShopScene extends Phaser.Scene {
       else if(target.kind==='challenger')useGame.getState().openVillainChallenge();
       else if(target.kind==='venue'){
         const venue=townVenues.find(v=>v.id===target.venueId)!;
-        if(venue.shopId&&isVenueOpen(venue,useGame.getState()))useGame.getState().enterShop(venue.shopId);
+        if(venue.id==='stadium-5')useGame.getState().openOfficialRace();
+        else if(venue.shopId&&isVenueOpen(venue,useGame.getState()))useGame.getState().enterShop(venue.shopId);
         else useGame.getState().talk(venue.name,venueMessage(venue));
       }
       else if(target.kind==='track')useGame.getState().startTrial();

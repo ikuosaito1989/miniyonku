@@ -23,7 +23,7 @@ export function drawTown(scene:Phaser.Scene,progress:WorldProgress){
   }
   rect(70,65,363,57,0x3e5e59);rect(73,68,357,51,0xe8e5cc);rect(77,72,349,43,0x416860);
   text(92,78,'緑 川 町',23);text(257,86,'模型と走りのまち',12,'#d9e6cc');
-  text(480,85,progress.villainDefeated?'ひなた模型店へ、紹介状を持って。':'あおぞら模型店へ、新しい走りを探しに。',12,'#2e4c47');
+  text(480,85,progress.officialQualified?'若葉レース場で公式ダート杯に出場しよう！':progress.villainDefeated?'ひなた模型店へ、紹介状を持って。':'あおぞら模型店へ、新しい走りを探しに。',12,'#2e4c47');
   for(const v of townVenues){
     const {x,y,w,h}=v,open=isVenueOpen(v,progress);
     const building=scene.add.graphics().setDepth(y+h);
@@ -51,12 +51,12 @@ export function drawTown(scene:Phaser.Scene,progress:WorldProgress){
     text(x+w/2,y+22,v.name,10,'#324e59',y+h+1).setOrigin(.5,0);
     if(!open){
       building.fillStyle(0x657582).fillRect(x+37,y+75,w-74,11);
-      text(x+w/2,y+76,v.shopId==='hinata'?'紹介状が必要':'準備中',7,'#ede4c9',y+h+1).setOrigin(.5,0);
+      text(x+w/2,y+76,v.id==='stadium-5'?'ひなた優勝で出場':v.shopId==='hinata'?'紹介状が必要':'準備中',7,'#ede4c9',y+h+1).setOrigin(.5,0);
     }
-    if(v.kind==='stadium')text(x+w/2,y-20,`熟練度 ${v.stage}段階〜・準備中`,9,'#294a4c',y+h+1).setOrigin(.5,0);
+    if(v.kind==='stadium')text(x+w/2,y-20,v.id==='stadium-5'?(open?'公式ダート杯・受付中':'ひなた優勝で出場権獲得'):`熟練度 ${v.stage}段階〜・準備中`,9,'#294a4c',y+h+1).setOrigin(.5,0);
     // 入場できる店の入口を地面にも表示。北側入口は通路の案内矢印。
     const entranceY=v.entrance==='south'?y+h+12:y-15;
-    if(open)text(x+w/2,entranceY,'▼ 入る',10,'#314f4b',y+h+2).setOrigin(.5,0);
+    if(open)text(x+w/2,entranceY,v.id==='stadium-5'?'▼ 公式戦受付':'▼ 入る',10,'#314f4b',y+h+2).setOrigin(.5,0);
   }
   for(const [x,y] of [[61,243],[229,243],[397,243],[565,243],[733,243],[61,458],[397,458],[733,458],[901,445]]){
     const tree=scene.add.graphics().setDepth(y+10);

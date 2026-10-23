@@ -1,3 +1,4 @@
+import { officialRace } from '../data/officialRace';
 import { doctor, doctorGiftBody, doctorGiftMessage } from '../data/doctor';
 import { replaceConsumable } from './consumables';
 import { reviewRace, type RaceReview } from './raceAdvice';
@@ -16,8 +17,10 @@ import { breakInPractice } from '../data/proficiency';
 import { hintBooks, nextShopRace } from '../data/shopHints';
 import { canEnterShop, currentShop, type ShopId, type WorldLocation } from '../data/world';
 import { challenger, challengerInvitation } from '../data/challenger';
-export type DialogueStage='none'|'legend-intro'|'legend-invite'|'legend-debrief'|'villain-intro'|'villain-win'|'villain-loss'|'doctor-gift';
+export type DialogueStage='none'|'legend-intro'|'legend-invite'|'legend-debrief'|'villain-intro'|'villain-win'|'villain-loss'|'doctor-gift'|'official-invite';
 export interface GameState extends Wallet {
+  officialQualified:boolean;officialWon:boolean;officialChallengeActive:boolean;officialQualificationNotice:boolean;
+  openOfficialRace:()=>void;startOfficialRace:()=>void;
   doctorGiftReceived:boolean;openLegendChallenge:()=>void;
   arrivalEvent:ArrivalKind|null;beginArrival:(kind:ArrivalKind)=>void;completeArrival:()=>void;
   aozoraWon:boolean;villainDefeated:boolean;villainChallengeActive:boolean;villainArrivalPending:boolean;villainDebriefPending:boolean;thirdShopNotice:boolean;
@@ -48,6 +51,9 @@ export interface GameState extends Wallet {
   talk: (speaker: string, text: string, shopAfter?: boolean) => void; advance: () => void; close: () => void; buy: (id: string) => void;
 }
 export const useGame = create<GameState>((set) => ({
+  officialQualified:false,officialWon:false,officialChallengeActive:false,officialQualificationNotice:false,
+  openOfficialRace:()=>set(s=>s.overlay==='race'||s.overlay==='arrival'||!['town','hinata'].includes(s.location)?s:s.officialQualified?{overlay:'dialogue',speaker:'森野 陸',dialogue:officialRace.invitation,dialogueStage:'official-invite',shopAfter:false}:{overlay:'dialogue',speaker:'森野 陸',dialogue:'僕は森野 陸。ダートなら任せて！ ひなた模型店のレースで1位になれば、若葉公式ダート杯への出場権がもらえるよ。砂地の接地とダンパーを整えて勝負しよう。',dialogueStage:'none',shopAfter:false}),
+  startOfficialRace:()=>set(s=>!s.officialQualified||!['town','hinata'].includes(s.location)||s.overlay==='race'||s.overlay==='arrival'?s:{overlay:'race',officialChallengeActive:true,legendChallengeActive:false,villainChallengeActive:false,legendDebriefPending:false,villainDebriefPending:false,shopAfter:false,dialogueStage:'none',notice:'',raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,officialQualificationNotice:false,qualificationNotice:false,thirdShopNotice:false}),
   arrivalEvent:null,doctorGiftReceived:false,
   beginArrival:kind=>set(s=>s.overlay||kind==='legend'&&(s.location!=='komorebi'||!s.unlockedRaces.includes(nextShopRace.id)||s.legendRaceCompleted)||kind==='villain'&&(s.location!=='aozora'||!s.aozoraWon||s.villainDefeated)||kind==='doctor'&&(s.location!=='komorebi'||!s.legendRaceCompleted||s.doctorGiftReceived)?s:{overlay:'arrival',arrivalEvent:kind,dialogueStage:'none',shopAfter:false}),
   completeArrival:()=>set(s=>{
@@ -97,7 +103,7 @@ export const useGame = create<GameState>((set) => ({
     const practice=breakInPractice(motor?.seconds??0,duration);
     return {units,proficiencyPoints:s.proficiencyPoints+practice,notice:`${duration.toFixed(0)}秒の慣らし運転を行いました。${rechargeable?'充電電池の残量は減りません。':'電池も消耗します。'}${practice>0?' 整備の熟練度が上がりました。':''}`};
   }),
-  startTrial: () => set(s=>s.location==='town'?s:({overlay:'race',shopAfter:false,notice:'',legendChallengeActive:false,legendDebriefPending:false,villainChallengeActive:false,villainDebriefPending:false,thirdShopNotice:false,raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,qualificationNotice:false})),
+  startTrial: () => set(s=>s.location==='town'?s:({overlay:'race',officialChallengeActive:false,officialQualificationNotice:false,shopAfter:false,notice:'',legendChallengeActive:false,legendDebriefPending:false,villainChallengeActive:false,villainDebriefPending:false,thirdShopNotice:false,raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,qualificationNotice:false})),
   settleRace: (attempt,race) => set(s=>{
     if(attempt!==s.raceAttempt)return s;
     const player=race.racers.find(r=>r.id==='player');
@@ -113,10 +119,12 @@ export const useGame = create<GameState>((set) => ({
     const playerWon=reward&&player?.driving.status==='finished'&&rankRacers(race)[0]?.id==='player';
     const firstAozoraWin=playerWon&&s.location==='aozora'&&!s.villainChallengeActive&&!s.aozoraWon;
     const defeatedVillain=playerWon&&s.location==='aozora'&&s.villainChallengeActive&&!s.villainDefeated;
+    const firstHinataWin=playerWon&&race.circuitId==='sun'&&s.location==='hinata'&&!s.officialChallengeActive&&race.event!=='official'&&!s.officialQualified;
+    const officialWin=playerWon&&s.officialChallengeActive&&race.event==='official';
     const inventory=s.inventory;
     if(!delta&&!reward)return s;
     const practice=reward&&player?(player.driving.status==='finished'?5+(rankRacers(race)[0]?.id==='player'?5:0):seconds>0?1:0):0;
-    return {...(reward?{lastRaceReview:reviewRace(race)}:{}),units,inventory,usageSeconds:Math.max(s.usageSeconds,seconds),money:s.money+prize,proficiencyPoints:s.proficiencyPoints+practice,...(firstWin?{unlockedRaces:[...s.unlockedRaces,nextShopRace.id],qualificationNotice:true,...(!s.legendRaceCompleted?{legendEventPending:true}:{})}:{}),...(firstAozoraWin?{aozoraWon:true,villainArrivalPending:true}:{}),...(defeatedVillain?{villainDefeated:true,thirdShopNotice:true}:{}),...(s.villainChallengeActive&&reward?{villainDebriefPending:true}:{}),...(completedLegend?{legendRaceCompleted:true}:{}),...(s.legendChallengeActive&&reward?{legendDebriefPending:true}:{}),...(reward?{lastPrize:prize,settledAttempt:attempt}:{})};
+    return {...(firstHinataWin?{officialQualified:true,officialQualificationNotice:true}:{}),...(officialWin?{officialWon:true}:{}),...(reward?{lastRaceReview:reviewRace(race)}:{}),units,inventory,usageSeconds:Math.max(s.usageSeconds,seconds),money:s.money+prize,proficiencyPoints:s.proficiencyPoints+practice,...(firstWin?{unlockedRaces:[...s.unlockedRaces,nextShopRace.id],qualificationNotice:true,...(!s.legendRaceCompleted?{legendEventPending:true}:{})}:{}),...(firstAozoraWin?{aozoraWon:true,villainArrivalPending:true}:{}),...(defeatedVillain?{villainDefeated:true,thirdShopNotice:true}:{}),...(s.villainChallengeActive&&reward?{villainDebriefPending:true}:{}),...(completedLegend?{legendRaceCompleted:true}:{}),...(s.legendChallengeActive&&reward?{legendDebriefPending:true}:{}),...(reward?{lastPrize:prize,settledAttempt:attempt}:{})};
   }),
   openSetting: () => set({overlay:'setting',shopAfter:false,notice:''}),
   openSettings:()=>set({overlay:'settings',shopAfter:false,notice:''}),
@@ -136,6 +144,8 @@ export const useGame = create<GameState>((set) => ({
     if(s.overlay==='arrival')return s;
     if(s.overlay==='dialogue'&&s.dialogueStage==='legend-debrief'&&s.legendRaceCompleted&&!s.doctorGiftReceived)return {overlay:'arrival',arrivalEvent:'doctor',dialogueStage:'none',shopAfter:false};
     if(s.overlay==='cheat')return {overlay:s.cheatReturnToSettings?'settings':null,cheatReturnToSettings:false,shopAfter:false,notice:''};
+    if(s.overlay==='race'&&s.officialChallengeActive)return {overlay:'dialogue',speaker:'森野 陸',dialogue:s.officialWon?'公式戦の優勝記録は残っているよ。また若葉レース場で勝負しよう。':'また若葉レース場で勝負しよう！ セッティングや電池を整えて、受付に話しかければ何度でも挑戦できるよ。',officialChallengeActive:false,dialogueStage:'none',shopAfter:false};
+    if(s.overlay==='race'&&s.officialQualificationNotice)return {overlay:'dialogue',speaker:'日向 誠二',dialogue:officialRace.invitation,dialogueStage:'none',officialQualificationNotice:false,shopAfter:false};
     if(s.overlay==='race'&&s.villainChallengeActive&&s.villainDebriefPending)return {overlay:'dialogue',speaker:challenger.name,dialogue:s.villainDefeated?'な、なんだと……俺が負けた？ ちっ、約束は守る。ひなた模型店への紹介状だ。町の、あおぞら模型店の右隣へ行け。次は負けないからな！':'ふん、まだその程度か。ギアと電池、それにモーターの慣らしを見直してこい。ここで待っている。勝てるまで何度でも相手をしてやる！',dialogueStage:s.villainDefeated?'villain-win':'villain-loss',villainChallengeActive:false,villainDebriefPending:false,shopAfter:false};
     if(s.overlay==='race'&&s.location==='aozora'&&s.villainArrivalPending)return {overlay:'arrival',arrivalEvent:'villain',dialogueStage:'none',shopAfter:false};
     if(s.overlay==='race'&&s.location==='komorebi'&&s.legendEventPending)return {overlay:'arrival',arrivalEvent:'legend',dialogueStage:'none',shopAfter:false};
