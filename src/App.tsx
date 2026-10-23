@@ -1,3 +1,4 @@
+import { keepScreenAwake } from './game/wakeLock';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { ShopWorld } from './ShopWorld';
 import { useGame } from './game/store';
@@ -20,6 +21,7 @@ const TrialView=lazy(()=>import('./TrialView'));
 export function App(){
   const game=useGame();
   const [started,setStarted]=useState(false);
+  useEffect(()=>{if(started)return keepScreenAwake();},[started]);
   const shop=currentShop(game.location);
   const [category,setCategory]=useState<Category>('motor');
   const modal=useRef<HTMLDivElement>(null);

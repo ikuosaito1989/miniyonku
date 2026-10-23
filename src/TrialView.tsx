@@ -3,7 +3,7 @@ import { useGame } from './game/store';
 import { TrialRenderer } from './game/TrialRenderer';
 import { canViewRaceResults, countdownNumber, createRaceState, officialTime, rankRacers } from './game/race';
 import { getCircuitTrack } from './data/circuit';
-import { officialRace } from './data/officialRace';
+import { officialRace, officialRounds } from './data/officialRace';
 import { currentShop, modelShops } from './data/world';
 import './trial.css';
 import { createFinishPresentation } from './game/finishPresentation';
@@ -38,9 +38,12 @@ export default function TrialView(){
   const officialChallenge=useGame(s=>s.officialChallengeActive),officialQualificationNotice=useGame(s=>s.officialQualificationNotice);
   const challenge=officialChallenge?'official' as const:legendChallenge?true:villainChallenge?'villain' as const:false;
   const location=useGame(s=>s.location),shop=officialChallenge?modelShops.hinata:currentShop(location);
-  const prizes=prizesForCircuit(shop.circuitId);
-  const {circuit,circuitLength,sampleLanePath}=getCircuitTrack(shop.circuitId);
-  const [state,setState]=useState(()=>createRaceState(equipment,useGame.getState().raceSeed,undefined,challenge,shop.circuitId));
+  const officialRound=useGame(s=>s.officialRound),speedWon=useGame(s=>s.officialSpeedWon),dirtWon=useGame(s=>s.officialDirtWon);
+  const circuitId=officialChallenge?officialRounds[officialRound].circuitId:shop.circuitId;
+  const raceName=officialChallenge?`${officialRace.name}・${officialRounds[officialRound].name}`:'';
+  const prizes=prizesForCircuit(circuitId);
+  const {circuit,circuitLength,sampleLanePath}=getCircuitTrack(circuitId);
+  const [state,setState]=useState(()=>createRaceState(equipment,useGame.getState().raceSeed,undefined,challenge,circuitId));
   const [finish,setFinish]=useState(createFinishPresentation);
   const [overview,setOverview]=useState(false);
   const [error,setError]=useState('');
@@ -49,15 +52,15 @@ export default function TrialView(){
   useEffect(()=>{
     const stored=useGame.getState();
     const condition=equippedCondition(equipment,stored.units,stored.selectedUnits);
-    setState(createRaceState(equipment,stored.raceSeed,condition,challenge,shop.circuitId));setFinish(createFinishPresentation());setError('');setOverview(false);
+    setState(createRaceState(equipment,stored.raceSeed,condition,challenge,circuitId));setFinish(createFinishPresentation());setError('');setOverview(false);
     const raceAttempt=useGame.getState().raceAttempt;
     try{renderer.current=new TrialRenderer(host.current!,equipment,race=>{
       useGame.getState().settleRace(raceAttempt,race);
       setState(race);
-    },setFinish,condition,stored.raceSeed,challenge,shop.circuitId);}
+    },setFinish,condition,stored.raceSeed,challenge,circuitId);}
     catch{setError('3D表示を開始できませんでした。WebGL対応ブラウザで再試行してください。');}
     return()=>{renderer.current?.dispose();renderer.current=null;};
-  },[equipment,challenge,shop.circuitId]);
+  },[equipment,challenge,circuitId]);
   useEffect(()=>{renderer.current?.setSound(sound,volume);},[sound,volume,equipment]);
 
   const requestClose=useCallback(()=>{
@@ -120,7 +123,7 @@ export default function TrialView(){
     if(canViewResults)showRaceResults();
     else if(!error&&(ready||waitingForLaunch))start();
   }}>
-    <header className="race-header"><h2>{officialChallenge?officialRace.name:legendChallenge?'レジェンド挑戦':villainChallenge?'黒岩 豪からの挑戦':circuit.name}<span>{circuit.lanes}レーン・{circuit.laps}周レース</span></h2><nav aria-label="レース操作">
+    <header className="race-header"><h2>{officialChallenge?raceName:legendChallenge?'レジェンド挑戦':villainChallenge?'黒岩 豪からの挑戦':circuit.name}<span>{circuit.lanes}レーン・{circuit.laps}周レース</span></h2><nav aria-label="レース操作">
       <AudioControls/>
       <button className="race-camera-button" onClick={()=>{renderer.current?.setCamera(overview?'broadcast':'overview');setOverview(!overview);}} aria-pressed={overview}>{overview?'マシンを見る':'コース全体'}</button>
       <button onClick={requestClose}>{officialChallenge?'受付へ':'模型店へ'} <small>Esc</small></button>
@@ -139,14 +142,14 @@ export default function TrialView(){
         <div className="race-timing" aria-label="走行状況">{firstFinisher?<><span>TIME <b>{clock(playerTime)}</b></span><span>{finished?'WINNER':'先着TIME'} <b>{clock(officialTime(state,finished?winner!:firstFinisher))}</b></span></>:<><span>POS <b>{ready||counting?'—':position} / 5</b></span><span>LAP <b>{Math.min(circuit.laps,Math.floor(driving.distance/circuitLength)+1)} / {circuit.laps}</b></span><span>TIME <b>{clock(playerTime)}</b></span><span className="race-speed"><b>{(driving.speed*3.6).toFixed(1)}</b> km/h</span></>}</div>
       </>}
       {showTally&&<section className="race-tally" aria-label="記録集計中"><span>TINY DRIVE</span><h3>レース記録を集計中…</h3><p>公式タイムで最終順位を確定します</p></section>}
-      {showResults&&<section className="race-results" aria-label="レース最終結果"><p className="result-eyebrow">{officialChallenge?'若葉レース場':shop.name}</p><h3>{officialChallenge?officialRace.name:circuit.name} <span>レース結果</span></h3>
+      {showResults&&<section className="race-results" aria-label="レース最終結果"><p className="result-eyebrow">{officialChallenge?'若葉レース場':shop.name}</p><h3>{officialChallenge?raceName:circuit.name} <span>レース結果</span></h3>
         {winner&&<p className="result-winner">WINNER <strong>{winner.name}</strong> <b>{clock(officialTime(state,winner))}</b></p>}
         <table><thead><tr><th>順位</th><th>マシン</th><th>スタート</th><th>公式タイム</th></tr></thead><tbody>{standings.map((r,i)=><tr key={r.id} className={r.id==='player'?'result-player':''}><td>{r.driving.status==='out'?'—':i+1}</td><td><i style={{backgroundColor:`#${r.color.toString(16).padStart(6,'0')}`}}/>{r.name}</td><td>{r.lane+1}コース</td><td>{r.driving.status==='out'?(r.driving.stopReason==='lapped'?'周回遅れ':r.driving.stopReason==='battery'?'BATTERY EMPTY':'COURSE OUT'):clock(officialTime(state,r))}</td></tr>)}</tbody></table>
         <p className="result-note">{penaltyText?`${penaltyText}を公式タイムに反映済み`:'公式タイムにはGO後の反応時間を含みます'}</p>
         <p className="result-note" role="status">{legendChallenge?'特別レースのため賞金はありません。':prize>0?`${winner?.id==='player'?'優勝賞金':'完走賞'} +${prize}円！`:'今回の賞金はありません。'} 所持金 {money.toLocaleString('ja-JP')}円</p>
         {legendChallenge&&<p className="result-note" role="status">風見 怜と火野 岳が圧倒的な走りを披露した。次こそ追いつこう！</p>}
         {officialQualificationNotice&&<p className="result-note" role="status">ひなた初優勝！ 若葉公式ダート杯の出場権を獲得しました。街の若葉レース場へ向かおう。</p>}
-        {officialChallenge&&<p className="result-note" role="status">{position===1&&driving.status==='finished'?'若葉公式ダート杯・優勝記録を達成！':'森野 陸・黒岩 豪・2人のレーサーとの公式戦。何度でも再挑戦できます。'}</p>}
+        {officialChallenge&&<p className="result-note" role="status">{speedWon&&dirtWon?'2レースとも1位！ 若葉公式ダート杯・総合優勝！':`高速舗装：${speedWon?'1位獲得':'未クリア'} ／ オフロード：${dirtWon?'1位獲得':'未クリア'}。戦間でセッティングを変更し、両レースで1位を目指そう。`}</p>}
         {qualificationNotice&&<p className="result-note" role="status">初優勝！ {nextShopRace.shopName}のレース参加資格を獲得！ 店に戻り、訪ねてきた最強兄弟と特別レースを走ろう。その後、出口から街へ進めます。</p>}
         {qualificationNotice&&<p className="result-note" role="status">最強兄弟が挑戦を待っています。特別レースを終えると、博士からセイランボディを受け取れます。</p>}
         {shop.id==='aozora'&&aozoraWon&&!villainChallenge&&!villainDefeated&&<p className="result-note" role="status">あおぞらの優勝者に、黒岩 豪から挑戦状！ 模型店へ戻って話を聞こう。</p>}

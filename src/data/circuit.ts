@@ -1,6 +1,7 @@
 import { pavedSurface, dirtSurface } from './surfaces';
-export type CircuitId='leaf'|'wind'|'sun';
+export type CircuitId='leaf'|'wind'|'sun'|'sprint';
 export const circuitDefinitions={
+  sprint:{surface:pavedSurface,name:'若葉ロングストレート',laps:5,laneWidth:.22,lanes:5,radiusX:18,radiusZ:4,asymmetry:0,chicane:0,samples:1440},
   leaf:{surface:pavedSurface,name:'リーフループ',laps:5,laneWidth:.22,lanes:5,radiusX:4.5,radiusZ:2.6,asymmetry:.45,chicane:0,samples:720},
   wind:{surface:pavedSurface,name:'そよかぜテクニカル',laps:5,laneWidth:.22,lanes:5,radiusX:5.2,radiusZ:3.2,asymmetry:.35,chicane:1,samples:960},
   sun:{surface:dirtSurface,name:'サンリッジ・ダートエンデューロ',laps:5,laneWidth:.22,lanes:5,radiusX:9.8,radiusZ:6.4,asymmetry:1.1,chicane:1.5,samples:1440},
@@ -8,7 +9,15 @@ export const circuitDefinitions={
 function buildCircuit(id:CircuitId){
   const circuit=circuitDefinitions[id];
   const weave=id==='sun'?.48:0;
-  const point=(t:number)=>({x:Math.cos(t)*circuit.radiusX+Math.cos(t*2)*circuit.asymmetry+Math.cos(t*4)*weave,z:Math.sin(t)*circuit.radiusZ+Math.sin(t*3)*circuit.chicane});
+  const stadiumPoint=(t:number)=>{
+    const straight=28,radius=4,total=straight*2+2*Math.PI*radius;
+    let d=((t/(2*Math.PI)*total)%total+total)%total;
+    if(d<straight)return {x:-14+d,z:-radius};d-=straight;
+    if(d<Math.PI*radius){const a=-Math.PI/2+d/radius;return {x:14+radius*Math.cos(a),z:radius*Math.sin(a)};}d-=Math.PI*radius;
+    if(d<straight)return {x:14-d,z:radius};d-=straight;
+    const a=Math.PI/2+d/radius;return {x:-14+radius*Math.cos(a),z:radius*Math.sin(a)};
+  };
+  const point=(t:number)=>id==='sprint'?stadiumPoint(t):({x:Math.cos(t)*circuit.radiusX+Math.cos(t*2)*circuit.asymmetry+Math.cos(t*4)*weave,z:Math.sin(t)*circuit.radiusZ+Math.sin(t*3)*circuit.chicane});
   const points=Array.from({length:circuit.samples+1},(_,i)=>point(i/circuit.samples*Math.PI*2)),lengths=[0];
   for(let i=1;i<points.length;i++)lengths.push(lengths[i-1]+Math.hypot(points[i].x-points[i-1].x,points[i].z-points[i-1].z));
   const circuitLength=lengths.at(-1)!;
@@ -19,6 +28,10 @@ function buildCircuit(id:CircuitId){
     let low=0,high=lengths.length-1;
     while(low+1<high){const mid=(low+high)>>>1;if(lengths[mid]<=wrapped)low=mid;else high=mid;}
     const f=(wrapped-lengths[low])/(lengths[high]-lengths[low]),t=(low+f)/circuit.samples*Math.PI*2;
+    if(id==='sprint'){
+      const e=.0001,p=point(t),before=point(t-e),after=point(t+e),dx=(after.x-before.x)/(2*e),dz=(after.z-before.z)/(2*e),ddx=(after.x-2*p.x+before.x)/e**2,ddz=(after.z-2*p.z+before.z)/e**2,m=Math.hypot(dx,dz);
+      return {...p,tangentX:dx/m,tangentZ:dz/m,curvature:Math.abs(dx*ddz-dz*ddx)/m**3};
+    }
     const dx=-circuit.radiusX*Math.sin(t)-2*circuit.asymmetry*Math.sin(t*2)-4*weave*Math.sin(t*4),dz=circuit.radiusZ*Math.cos(t)+3*circuit.chicane*Math.cos(t*3);
     const ddx=-circuit.radiusX*Math.cos(t)-4*circuit.asymmetry*Math.cos(t*2)-16*weave*Math.cos(t*4),ddz=-circuit.radiusZ*Math.sin(t)-9*circuit.chicane*Math.sin(t*3),magnitude=Math.hypot(dx,dz);
     return {...point(t),tangentX:dx/magnitude,tangentZ:dz/magnitude,curvature:Math.abs(dx*ddz-dz*ddx)/magnitude**3};
@@ -54,7 +67,7 @@ function buildCircuit(id:CircuitId){
   return {surfaceAt,circuit,circuitLength,startDistance,laneOffset,sampleCircuit,laneChange,sampleLanePath,startRamp,startRampHeight};
 }
 export type CircuitTrack=ReturnType<typeof buildCircuit>;
-const tracks:Record<CircuitId,CircuitTrack>={leaf:buildCircuit('leaf'),wind:buildCircuit('wind'),sun:buildCircuit('sun')};
+const tracks:Record<CircuitId,CircuitTrack>={leaf:buildCircuit('leaf'),wind:buildCircuit('wind'),sun:buildCircuit('sun'),sprint:buildCircuit('sprint')};
 export const getCircuitTrack=(id:CircuitId='leaf')=>tracks[id];
 // 既存の計算・テストのデフォルトは入門コースのまま。
 export const {circuit,circuitLength,startDistance,laneOffset,sampleCircuit,laneChange,sampleLanePath}=tracks.leaf;

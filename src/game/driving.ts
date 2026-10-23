@@ -21,6 +21,7 @@ export function machinePerformance(equipment: Equipment, condition:MachineCondit
   return {
     freeSpeed: motor.rpm * terminal.efficiency * battery.power / 60 / gear.ratio * 2 * Math.PI * radius,
     stallForce: motor.torque/1000 * gear.ratio * terminal.efficiency * battery.power * chassis.efficiency * accessory.efficiency * 0.8 / radius,
+    treadDrag:tire.pavedDrag??0,
     mass, drag: (0.012 * body.drag + friction * 0.025), cornerDrag:wheel.cornerDrag,
     batteryEndurance:battery.endurance,
     batteryConsumption:battery.consumption??1,
@@ -44,6 +45,7 @@ export function surfacePerformance(performance:Performance,surface:TrackSurface)
   const vibration=roughness*(1-performance.damping);
   const contact=(1-roughness+roughness*Math.min(1,performance.roughGrip*performance.tireCompliance))*(1-vibration*.4);
   return {
+    rollingDrag:performance.treadDrag*(1-roughness),
     traction:Math.min(1,Math.max(0,surface.grip)*contact),
     resistance:performance.mass*9.81*roughness*(.18+.6*vibration)*performance.roughResistance/performance.tireCompliance,
     lateralLimit:performance.lateralLimit*Math.max(0,surface.grip)*contact,
@@ -58,7 +60,7 @@ export function stepDriving(state: DrivingState, performance: Performance, laneO
   const motor=performance.motorWearRate===0?1:motorFactor(performance.motorSeconds+state.time);
   const road=surfacePerformance(performance,track.circuit.surface.roughness>0?track.surfaceAt(state.distance):surface);
   const force=performance.stallForce*charge*motor*Math.max(0,1-state.speed/(performance.freeSpeed*charge*motor))*road.traction;
-  const resistance=performance.mass*9.81*0.025+performance.drag*state.speed**2+road.resistance;
+  const resistance=performance.mass*9.81*0.025+(performance.drag+road.rollingDrag)*state.speed**2+road.resistance;
   const wheelResistance=state.speed**2*sampleCircuit(startDistance+state.distance).curvature*.002*performance.cornerDrag;
   const speed=Math.max(0,state.speed+(force-resistance-wheelResistance)/performance.mass*FIXED_STEP);
   const path=initialLane===undefined?undefined:sampleLanePath(state.distance,initialLane);
