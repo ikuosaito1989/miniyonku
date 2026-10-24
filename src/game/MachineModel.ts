@@ -244,17 +244,21 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
       const collar=add(new THREE.TorusGeometry(.004,.0012,6,12),partAccent(equipment.shaft,85),side*.101,.033,z);collar.rotation.y=Math.PI/2;collar.name='hollow-shaft-collar';
     }
   }
-  if(equipment.accessory.startsWith('accessory-damper')){
-    for(const side of [-1,1]){
-      add(new THREE.CylinderGeometry(.003,.003,.05,12),metal,side*.065,.063,.025).name='damper-post';
-      add(new THREE.CylinderGeometry(.01,.01,.016,16),partMaterial(equipment.accessory,75),side*.065,.052,.025).name='damper-mass';
-      for(let ring=0;ring<5;ring++){const spring=add(new THREE.TorusGeometry(.005,.001,4,12),metal,side*.065,.067+ring*.003,.025);spring.rotation.x=Math.PI/2;spring.name='damper-spring';}
+  for(const [accessoryIndex,accessoryId] of [equipment.accessory,equipment.accessory2,equipment.accessory3].entries()){
+    const accessoryStart=car.children.length;
+    if(accessoryId.startsWith('accessory-damper')){
+      for(const side of [-1,1]){
+        add(new THREE.CylinderGeometry(.003,.003,.05,12),metal,side*.065,.063,.025).name='damper-post';
+        add(new THREE.CylinderGeometry(.01,.01,.016,16),partMaterial(accessoryId,75),side*.065,.052,.025).name='damper-mass';
+        for(let ring=0;ring<5;ring++){const spring=add(new THREE.TorusGeometry(.005,.001,4,12),metal,side*.065,.067+ring*.003,.025);spring.rotation.x=Math.PI/2;spring.name='damper-spring';}
+      }
+    }else if(accessoryId==='accessory-weight'){
+      add(new THREE.BoxGeometry(.052,.007,.024),partMaterial(accessoryId,65),0,.034,.066).name='ballast-plate';
+      add(new THREE.BoxGeometry(.04,.002,.003),partAccent(accessoryId),0,.039,.066).name='ballast-mark';
+    }else if(accessoryId==='accessory-support'){
+      for(const side of [-1,1])add(new THREE.BoxGeometry(.008,.012,.11),partMaterial(accessoryId,75),side*.07,.031,0).name='underbody-support';
     }
-  }else if(equipment.accessory==='accessory-weight'){
-    add(new THREE.BoxGeometry(.052,.007,.024),partMaterial(equipment.accessory,65),0,.034,.066).name='ballast-plate';
-    add(new THREE.BoxGeometry(.04,.002,.003),partAccent(equipment.accessory),0,.039,.066).name='ballast-mark';
-  }else if(equipment.accessory==='accessory-support'){
-    for(const side of [-1,1])add(new THREE.BoxGeometry(.008,.012,.11),partMaterial(equipment.accessory,75),side*.07,.031,0).name='underbody-support';
+    for(const item of car.children.slice(accessoryStart))item.position.z+=accessoryIndex*.022;
   }
   for(const z of [-.083,.083]){
     const axle=add(new THREE.CylinderGeometry(equipment.shaft==='shaft-1'?.002:.003,equipment.shaft==='shaft-1'?.002:.003,.179,12),partMaterial(equipment.shaft,85),0,.033,z);axle.rotation.z=Math.PI/2;axle.name='drive-shaft';

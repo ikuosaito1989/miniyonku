@@ -1,5 +1,5 @@
 import { parts } from '../data/parts';
-import { equipmentSlots, type Equipment } from '../data/machine';
+import { accessorySlots, equipmentSlots, type Equipment } from '../data/machine';
 import { circuit, getCircuitTrack, type CircuitTrack } from '../data/circuit';
 import { batteryCapacityMultiplier, freshCondition, motorFactor, remainingCharge, type MachineCondition } from './condition';
 import type { TrackSurface } from '../data/surfaces';
@@ -12,7 +12,9 @@ export function machinePerformance(equipment: Equipment, condition:MachineCondit
     if (!part) throw new Error(`装備が不正です: ${category}`);
     return part.specs;
   };
-  const motor=get('motor'),gear=get('gear'),tire=get('tire'),terminal=get('terminal'),body=get('body'),chassis=get('chassis'),battery=get('battery'),wheel=get('wheel'),accessory=get('accessory');
+  const motor=get('motor'),gear=get('gear'),tire=get('tire'),terminal=get('terminal'),body=get('body'),chassis=get('chassis'),battery=get('battery'),wheel=get('wheel');
+  const accessories=accessorySlots.map(get);
+  const accessory={efficiency:accessories.reduce((n,p)=>n*p.efficiency,1),stability:accessories.reduce((n,p)=>n*p.stability,1),damping:accessories.reduce((n,p)=>n+(p.damping??0),0)};
   const front=get('rollerFront'),side=get('rollerSide'),rear=get('rollerRear');
   const friction=front.friction*.45+side.friction*.35+rear.friction*.2;
   const rollerWeight=front.weight*.45+side.weight*.35+rear.weight*.2;

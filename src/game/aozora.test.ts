@@ -98,7 +98,7 @@ function runChallenge(seed:number,motorSeconds=60){
 test('黒岩はあおぞらのパーツと慣らしで勝てる相手。同じ設定とシードで結果を再現する',()=>{
   for(const id of Object.values(prepared)){
     const part=parts.find(p=>p.id===id)!;
-    assert.ok(id==='body-champion'||isStocked(part,modelShops.aozora),`${id}はあおぞらで用意できる`);
+    assert.ok(id==='accessory-none'||id==='body-champion'||isStocked(part,modelShops.aozora),`${id}はあおぞらで用意できる`);
   }
   for(const seed of [...Array.from({length:32},(_,i)=>i+1),123,999]){const race=runChallenge(seed);assert.equal(race.phase,'finished');assert.equal(rankRacers(race)[0].id,'player');assert.ok(race.racers.some(r=>r.id===challenger.id));}
   assert.deepEqual(runChallenge(123),runChallenge(123));

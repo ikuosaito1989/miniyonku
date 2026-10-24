@@ -30,12 +30,17 @@ export function decodeSave(value:unknown):SaveData{
     if(inventory[id]>100000)throw new Error('所持数が上限を超えています。');
   }
   for(const [id,count]of Object.entries(createStarterInventory()))if(!['motor','battery'].includes(byId.get(id)!.category)&&(inventory[id]??0)<count)throw new Error('初期パーツが不足しています。');
-  const equipment=object(game.equipment),counts:Record<string,number>={};
+  const equipment={...object(game.equipment)};
+  // 旧セーブの補助パーツを①に保持し、追加枠は空で復元する。
+  if(equipment.accessory2===undefined)equipment.accessory2='accessory-none';
+  if(equipment.accessory3===undefined)equipment.accessory3='accessory-none';
+  const counts:Record<string,number>={};
   if(Object.keys(equipment).length!==Object.keys(equipmentSlots).length)throw new Error('装備枠が不正です。');
   for(const slot of Object.keys(equipmentSlots) as EquipmentSlot[]){
     const id=equipment[slot],part=typeof id==='string'?byId.get(id):undefined;
     if(!part||part.category!==equipmentSlots[slot].category)throw new Error('装備の種類が不正です。');
     // Roller inventory counts complete sets; one set equips every position.
+    if(part.id==='accessory-none')continue;
     if(part.category==='roller')counts[part.id]=1;
     else counts[part.id]=(counts[part.id]??0)+1;
     if(counts[part.id]>(inventory[part.id]??0))throw new Error('未所持のパーツを装備しています。');

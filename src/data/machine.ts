@@ -2,7 +2,7 @@ import type { Category } from './parts';
 
 export const equipmentSlots = {
   body:{label:'ボディ',category:'body'},chassis:{label:'シャーシ',category:'chassis'},motor:{label:'モーター',category:'motor'},gear:{label:'ギア',category:'gear'},battery:{label:'電池',category:'battery'},tire:{label:'タイヤ',category:'tire'},wheel:{label:'ホイール',category:'wheel'},
-  rollerFront:{label:'フロントローラー',category:'roller'},rollerSide:{label:'サイドローラー（中）',category:'roller'},rollerRear:{label:'リヤローラー',category:'roller'},shaft:{label:'シャフト',category:'shaft'},terminal:{label:'ターミナル',category:'terminal'},accessory:{label:'その他',category:'accessory'},
+  rollerFront:{label:'フロントローラー',category:'roller'},rollerSide:{label:'サイドローラー（中）',category:'roller'},rollerRear:{label:'リヤローラー',category:'roller'},shaft:{label:'シャフト',category:'shaft'},terminal:{label:'ターミナル',category:'terminal'},accessory:{label:'その他 ①',category:'accessory'},accessory2:{label:'その他 ②',category:'accessory'},accessory3:{label:'その他 ③',category:'accessory'},
 } satisfies Record<string,{label:string;category:Category}>;
 export type EquipmentSlot = keyof typeof equipmentSlots;
 export type Equipment = Record<EquipmentSlot, string>;
@@ -11,10 +11,12 @@ export type Equipment = Record<EquipmentSlot, string>;
 export const starterEquipment: Equipment = {
   motor: 'motor-stock', gear: 'gear-5', tire: 'tire-0',
   rollerFront:'roller-0',rollerSide:'roller-0',rollerRear:'roller-0',shaft:'shaft-0',terminal:'terminal-0',
-  body:'body-stream',chassis:'chassis-basic',battery:'battery-basic',wheel:'wheel-basic',accessory:'accessory-none',
+  body:'body-stream',chassis:'chassis-basic',battery:'battery-basic',wheel:'wheel-basic',accessory:'accessory-none',accessory2:'accessory-none',accessory3:'accessory-none',
 };
 export function createStarterInventory(): Record<string, number> {
   const inventory:Record<string,number>={};
   for(const id of new Set(Object.values(starterEquipment)))inventory[id]=(inventory[id]??0)+1;
   return inventory;
 }
+
+export const accessorySlots=['accessory','accessory2','accessory3'] as const;

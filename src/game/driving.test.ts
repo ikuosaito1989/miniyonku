@@ -11,9 +11,9 @@ function run(equipment=starterEquipment){
   for(let i=0;i<120*120&&state.status==='running';i++)state=stepDriving(state,performance);
   return state;
 }
-test('無料の初期装備は13枠すべて所持し、そのまま完走できる',()=>{
+test('無料の初期装備は15枠すべて所持し、そのまま完走できる',()=>{
   const inventory=createStarterInventory();
-  assert.equal(Object.keys(starterEquipment).length,13);
+  assert.equal(Object.keys(starterEquipment).length,15);
   for(const [slot,id] of Object.entries(starterEquipment)){
     assert.equal(inventory[id],1);assert.equal(parts.find(p=>p.id===id)?.category,equipmentSlots[slot as EquipmentSlot].category);
   }
