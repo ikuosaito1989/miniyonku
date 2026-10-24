@@ -1,3 +1,4 @@
+import { raceIntroAt, stepRaceIntro, type RaceIntro } from './raceIntro';
 import * as THREE from 'three';
 import { buildRaceMachineModel } from './MachineModel';
 import { freshCondition, type MachineCondition } from './condition';
@@ -31,8 +32,12 @@ export class TrialRenderer {
   private finishPresentation = createFinishPresentation();
   private audio:RaceAudio;
   private track:CircuitTrack;
+  private intro=raceIntroAt(0);
+  private introLastTime=0;
+  private resetIntroClock=()=>{this.introLastTime=0;};
+  private reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  constructor(private host: HTMLElement, private equipment: Equipment, private report: (state: RaceState) => void, private reportFinish:(state:FinishPresentation)=>void, private condition:MachineCondition=freshCondition, private seed=0x5eed,private challenge:RaceChallenge=false,private circuitId:CircuitId='leaf') {
+  constructor(private host: HTMLElement, private equipment: Equipment, private report: (state: RaceState) => void, private reportFinish:(state:FinishPresentation)=>void, private condition:MachineCondition=freshCondition, private seed=0x5eed,private challenge:RaceChallenge=false,private circuitId:CircuitId='leaf',private reportIntro:(intro:RaceIntro)=>void=()=>{}) {
     this.track=getCircuitTrack(circuitId);
     this.state=createRaceState(equipment,seed,condition,challenge,circuitId);
     this.renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});
@@ -52,10 +57,16 @@ export class TrialRenderer {
     this.playerMarker.rotation.z=Math.PI;this.scene.add(this.playerMarker);
     this.observer=new ResizeObserver(()=>this.resize());this.observer.observe(host);this.resize();
     this.audio=new RaceAudio();
-    this.report({...this.state});this.reportFinish(this.finishPresentation);this.frame=requestAnimationFrame(this.animate);
+    document.addEventListener('visibilitychange',this.resetIntroClock);
+    this.report({...this.state});this.reportFinish(this.finishPresentation);this.reportIntro(this.intro);this.frame=requestAnimationFrame(this.animate);
   }
 
+  skipIntro(){
+    if(this.intro.stage==='done')return;
+    this.intro=raceIntroAt(10);this.lastTime=0;this.accumulator=0;this.reportIntro(this.intro);
+  }
   start(){
+    if(this.intro.stage!=='done'){this.skipIntro();return;}
     this.audio.unlock();
     const previous=this.state;
     this.state=previous.phase==='ready'?startRace(previous):launchPlayer(previous);
@@ -64,7 +75,7 @@ export class TrialRenderer {
     this.audio.update(this.state);
     this.report({...this.state});
   }
-  setCamera(mode:TrialCamera){this.cameraMode=mode;}
+  setCamera(mode:TrialCamera){if(this.intro.stage==='done')this.cameraMode=mode;}
   showResults(){
     if(this.finishPresentation.stage==='results'||!canViewRaceResults(this.state))return;
     this.state=completeRaceAfterPlayerFinish(this.state);
@@ -75,6 +86,7 @@ export class TrialRenderer {
   setSound(enabled:boolean,volume=0.35){this.audio.setVolume(volume);this.audio.setEnabled(enabled);}
   restart(){
     this.state=createRaceState(this.equipment,this.seed,this.condition,this.challenge,this.circuitId);this.accumulator=0;this.lastTime=0;this.lastReport=-1;this.cameraMode='broadcast';this.startShotBlend=1;
+    this.intro=raceIntroAt(0);this.introLastTime=0;this.reportIntro(this.intro);
     this.finishPresentation=createFinishPresentation();this.reportFinish(this.finishPresentation);
     this.report({...this.state});
   }
@@ -182,6 +194,21 @@ export class TrialRenderer {
     const {circuit,sampleLanePath}=this.track;
     const player=this.state.racers.find(r=>r.id==='player')!;
     const p=sampleLanePath(player.driving.distance,player.lane);
+    if(this.intro.stage!=='done'){
+      const age=this.intro.age,start=sampleLanePath(0,(circuit.lanes-1)/2);
+      const wide=Math.max(circuit.radiusZ*2+4,(circuit.radiusX*2+4)/this.aspect)*1.25;
+      const tourHeight=Math.max(3.2,4.5/this.aspect),gridHeight=Math.max(raceCamera.start.height,raceCamera.start.minWidth/this.aspect);
+      const smooth=(v:number)=>{const t=THREE.MathUtils.clamp(v,0,1);return t*t*(3-2*t);};
+      let target=new THREE.Vector3(0,0,0),height=wide;
+      if(this.intro.stage==='tour'&&!this.reducedMotion){
+        const progress=(age-2)/5.5,p=sampleLanePath(progress*this.track.circuitLength,(circuit.lanes-1)/2),zoom=smooth((age-2)/.8);
+        target.lerp(new THREE.Vector3(p.x,p.y,p.z),zoom);height=THREE.MathUtils.lerp(wide,tourHeight,zoom);
+      }else if(this.intro.stage==='grid'&&!this.reducedMotion){
+        const zoom=smooth((age-7.5)/2.5);target=new THREE.Vector3(start.x-start.tangentX*raceCamera.start.lookBehind*zoom,start.y,start.z-start.tangentZ*raceCamera.start.lookBehind*zoom);height=THREE.MathUtils.lerp(tourHeight,gridHeight,zoom);
+      }
+      this.camera.left=-height*this.aspect/2;this.camera.right=height*this.aspect/2;this.camera.top=height/2;this.camera.bottom=-height/2;this.camera.updateProjectionMatrix();
+      this.camera.position.copy(target).add(new THREE.Vector3(...raceCamera.start.offset));this.camera.lookAt(target);return;
+    }
     const overview=this.cameraMode==='overview';
     const goalShot=!overview&&shouldUseFinishCamera(this.state,this.finishPresentation);
     const blend=this.startShotBlend*this.startShotBlend*(3-2*this.startShotBlend);
@@ -200,7 +227,9 @@ export class TrialRenderer {
   private animate=(now:number)=>{
     const {sampleLanePath}=this.track;
     const elapsed=this.lastTime?Math.min((now-this.lastTime)/1000,0.1):0;this.lastTime=now;
-    if(this.state.phase==='running'||this.state.phase==='countdown'){
+    const introElapsed=this.introLastTime?Math.max(0,(now-this.introLastTime)/1000):0;this.introLastTime=now;
+    this.intro=stepRaceIntro(this.intro,introElapsed,!document.hidden);
+    if(this.intro.stage==='done'&&(this.state.phase==='running'||this.state.phase==='countdown')){
       this.accumulator+=elapsed;
       while(this.accumulator>=FIXED_STEP){this.state=stepRace(this.state);this.accumulator-=FIXED_STEP;}
     }
@@ -217,12 +246,14 @@ export class TrialRenderer {
       car.rotation.order='YXZ';car.rotation.set(-p.pitch,Math.atan2(p.tangentX,p.tangentZ),crashed?0.9:0);
       if(racer.id==='player')this.playerMarker.position.copy(car.position).add(new THREE.Vector3(0,0.24,0));
     }
+    this.playerMarker.visible=this.intro.stage==='done';
     this.audio.update(this.state);
     this.updateCamera();this.renderer.render(this.scene,this.camera);
-    if(now-this.lastReport>100){this.report({...this.state});this.reportFinish(this.finishPresentation);this.lastReport=now;}
+    if(now-this.lastReport>100){this.report({...this.state});this.reportFinish(this.finishPresentation);this.reportIntro(this.intro);this.lastReport=now;}
     this.frame=requestAnimationFrame(this.animate);
   };
   dispose(){
+    document.removeEventListener('visibilitychange',this.resetIntroClock);
     this.audio.dispose();
     this.report({...this.state});
     cancelAnimationFrame(this.frame);this.observer.disconnect();
