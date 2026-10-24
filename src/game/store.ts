@@ -19,8 +19,9 @@ import { canEnterShop, currentShop, type ShopId, type WorldLocation } from '../d
 import { challenger, challengerInvitation } from '../data/challenger';
 export type DialogueStage='none'|'legend-intro'|'legend-invite'|'legend-debrief'|'villain-intro'|'villain-win'|'villain-loss'|'doctor-gift'|'official-invite';
 export interface GameState extends Wallet {
+  enterOfficialVenue:()=>void;townReturnVenue:'stadium-5'|null;
   officialQualified:boolean;officialWon:boolean;officialSpeedWon:boolean;officialDirtWon:boolean;officialRound:OfficialRound;officialChallengeActive:boolean;officialQualificationNotice:boolean;
-  openOfficialRace:()=>void;startOfficialRace:()=>void;
+  openOfficialRace:(round?:OfficialRound)=>void;startOfficialRace:()=>void;
   doctorGiftReceived:boolean;openLegendChallenge:()=>void;
   arrivalEvent:ArrivalKind|null;beginArrival:(kind:ArrivalKind)=>void;completeArrival:()=>void;
   aozoraWon:boolean;villainDefeated:boolean;villainChallengeActive:boolean;villainArrivalPending:boolean;villainDebriefPending:boolean;thirdShopNotice:boolean;
@@ -51,9 +52,10 @@ export interface GameState extends Wallet {
   talk: (speaker: string, text: string, shopAfter?: boolean) => void; advance: () => void; close: () => void; buy: (id: string) => void;
 }
 export const useGame = create<GameState>((set) => ({
+  townReturnVenue:null,enterOfficialVenue:()=>set(s=>s.location!=='town'||!s.officialQualified||s.overlay==='race'||s.overlay==='arrival'?s:{location:'stadium-5',overlay:null,nearby:'',notice:'',shopAfter:false,townReturnVenue:null}),
   officialQualified:false,officialWon:false,officialSpeedWon:false,officialDirtWon:false,officialRound:'speed',officialChallengeActive:false,officialQualificationNotice:false,
-  openOfficialRace:()=>set(s=>s.overlay==='race'||s.overlay==='arrival'||!['town','hinata'].includes(s.location)?s:s.officialQualified?{overlay:'dialogue',speaker:'森野 陸',dialogue:officialRace.invitation+`\n\n高速舗装：${s.officialSpeedWon?'1位獲得':'未クリア'} ／ ダート：${s.officialDirtWon?'1位獲得':'未クリア'}。次は${s.officialSpeedWon&&!s.officialDirtWon?'第2戦の悪路用':'第1戦の高速用'}セッティングを準備しよう。`,dialogueStage:'official-invite',shopAfter:false}:{overlay:'dialogue',speaker:'森野 陸',dialogue:'僕は森野 陸。ダートなら任せて！ ひなた模型店のレースで1位になれば、若葉公式ダート杯への出場権がもらえるよ。砂地の接地とダンパーを整えて勝負しよう。',dialogueStage:'none',shopAfter:false}),
-  startOfficialRace:()=>set(s=>!s.officialQualified||!['town','hinata'].includes(s.location)||s.overlay==='race'||s.overlay==='arrival'?s:{overlay:'race',officialChallengeActive:true,officialRound:s.officialSpeedWon&&!s.officialDirtWon?'dirt':'speed',...(s.officialSpeedWon&&s.officialDirtWon?{officialSpeedWon:false,officialDirtWon:false}:{}),legendChallengeActive:false,villainChallengeActive:false,legendDebriefPending:false,villainDebriefPending:false,shopAfter:false,dialogueStage:'none',notice:'',raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,officialQualificationNotice:false,qualificationNotice:false,thirdShopNotice:false}),
+  openOfficialRace:round=>set(s=>s.overlay==='race'||s.overlay==='arrival'?s:s.location==='stadium-5'&&round&&round!==(s.officialSpeedWon&&!s.officialDirtWon?'dirt':'speed')?{overlay:'dialogue',speaker:'大会受付係',dialogue:!s.officialSpeedWon?'まずは左の第1戦・高速ロングコースで1位を取ってください。第2戦はその後に参加できます。':s.officialDirtWon?'両戦クリア済みです。新しい大会は第1戦から開始できます。':'第1戦はクリア済みです。ピットで組み直して、右の第2戦・オフロードコースへどうぞ。',dialogueStage:'none',shopAfter:false}:!['town','hinata','stadium-5'].includes(s.location)?s:s.location!=='stadium-5'?{overlay:'dialogue',speaker:'森野 陸',dialogue:'公式レースは、街の若葉レース場の中にある2つのコースで開催するよ。ひなたで優勝して出場権を取ったら、会場へ入って受付とコースを調べよう。',dialogueStage:'none',shopAfter:false}:s.officialQualified?{overlay:'dialogue',speaker:'大会受付係',dialogue:officialRace.briefing+`\n\n高速舗装：${s.officialSpeedWon?'1位獲得':'未クリア'} ／ ダート：${s.officialDirtWon?'1位獲得':'未クリア'}。次は${s.officialSpeedWon&&!s.officialDirtWon?'第2戦の悪路用':'第1戦の高速用'}セッティングを準備しよう。`,dialogueStage:'official-invite',shopAfter:false}:{overlay:'dialogue',speaker:'森野 陸',dialogue:'僕は森野 陸。ダートなら任せて！ ひなた模型店のレースで1位になれば、若葉公式ダート杯への出場権がもらえるよ。砂地の接地とダンパーを整えて勝負しよう。',dialogueStage:'none',shopAfter:false}),
+  startOfficialRace:()=>set(s=>!s.officialQualified||s.location!=='stadium-5'||s.overlay==='race'||s.overlay==='arrival'?s:{overlay:'race',officialChallengeActive:true,officialRound:s.officialSpeedWon&&!s.officialDirtWon?'dirt':'speed',...(s.officialSpeedWon&&s.officialDirtWon?{officialSpeedWon:false,officialDirtWon:false}:{}),legendChallengeActive:false,villainChallengeActive:false,legendDebriefPending:false,villainDebriefPending:false,shopAfter:false,dialogueStage:'none',notice:'',raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,officialQualificationNotice:false,qualificationNotice:false,thirdShopNotice:false}),
   arrivalEvent:null,doctorGiftReceived:false,
   beginArrival:kind=>set(s=>s.overlay||kind==='legend'&&(s.location!=='komorebi'||!s.unlockedRaces.includes(nextShopRace.id)||s.legendRaceCompleted)||kind==='villain'&&(s.location!=='aozora'||!s.aozoraWon||s.villainDefeated)||kind==='doctor'&&(s.location!=='komorebi'||!s.legendRaceCompleted||s.doctorGiftReceived)?s:{overlay:'arrival',arrivalEvent:kind,dialogueStage:'none',shopAfter:false}),
   completeArrival:()=>set(s=>{
@@ -72,9 +74,9 @@ export const useGame = create<GameState>((set) => ({
     if(s.location==='town'||s.overlay==='race'||s.overlay==='arrival')return s;
     if(s.unlockedRaces.includes(nextShopRace.id)&&!s.legendRaceCompleted)return {overlay:'arrival',arrivalEvent:'legend',dialogueStage:'none',shopAfter:false,legendEventPending:true};
     if(s.location==='komorebi'&&s.legendRaceCompleted&&!s.doctorGiftReceived)return {overlay:'arrival',arrivalEvent:'doctor',dialogueStage:'none',shopAfter:false};
-    return {location:'town',lastShop:s.location,overlay:null,nearby:'',notice:'',shopAfter:false};
+    return {location:'town',townReturnVenue:s.location==='stadium-5'?'stadium-5':null,lastShop:s.location==='stadium-5'?s.lastShop:s.location,overlay:null,nearby:'',notice:'',shopAfter:false};
   }),
-  enterShop:id=>set(s=>s.location!=='town'||!canEnterShop(id,s)?s:{location:id,lastShop:id,overlay:null,nearby:'',notice:'',shopAfter:false}),
+  enterShop:id=>set(s=>s.location!=='town'||!canEnterShop(id,s)?s:{location:id,lastShop:id,townReturnVenue:null,overlay:null,nearby:'',notice:'',shopAfter:false}),
   hintBookIndex:0,unlockedRaces:[],qualificationNotice:false,legendEventSeen:false,legendEventPending:false,legendDebriefPending:false,legendChallengeActive:false,dialogueStage:'none',cheatUsed:false,cheatReturnToSettings:false,
   purchaseCount:0,lastRaceReview:null,
   exchangeReusable:slot=>set(s=>s.location==='town'||s.overlay==='race'||s.overlay==='arrival'?s:{...replaceConsumable(s,slot==='motor'?'motor-rescue':'battery-recharge'),notice:slot==='motor'?'リユースモーターを装着しました。他の種類のモーターは保持しています。':'リチャージセルを装着しました。他の種類の電池は保持しています。'}),
@@ -103,7 +105,7 @@ export const useGame = create<GameState>((set) => ({
     const practice=breakInPractice(motor?.seconds??0,duration);
     return {units,proficiencyPoints:s.proficiencyPoints+practice,notice:`${duration.toFixed(0)}秒の慣らし運転を行いました。${rechargeable?'充電電池の残量は減りません。':'電池も消耗します。'}${practice>0?' 整備の熟練度が上がりました。':''}`};
   }),
-  startTrial: () => set(s=>s.location==='town'?s:({overlay:'race',officialChallengeActive:false,officialQualificationNotice:false,shopAfter:false,notice:'',legendChallengeActive:false,legendDebriefPending:false,villainChallengeActive:false,villainDebriefPending:false,thirdShopNotice:false,raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,qualificationNotice:false})),
+  startTrial: () => set(s=>s.location==='town'||s.location==='stadium-5'?s:({overlay:'race',officialChallengeActive:false,officialQualificationNotice:false,shopAfter:false,notice:'',legendChallengeActive:false,legendDebriefPending:false,villainChallengeActive:false,villainDebriefPending:false,thirdShopNotice:false,raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,qualificationNotice:false})),
   settleRace: (attempt,race) => set(s=>{
     if(attempt!==s.raceAttempt)return s;
     const player=race.racers.find(r=>r.id==='player');
@@ -156,7 +158,7 @@ export const useGame = create<GameState>((set) => ({
   }),
   buy: id => set(s => {
     if(s.overlay==='race'||s.overlay==='arrival')return s;
-    if(s.location==='town')return {notice:'パーツは模型店の店主から購入できます。'};
+    if(s.location==='town'||s.location==='stadium-5')return {notice:'パーツは模型店の店主から購入できます。'};
     const result=purchase(s,id,currentShop(s.location));
     if(!result.success)return {notice:result.message};
     const consumable=id.startsWith('motor-')||id.startsWith('battery-');

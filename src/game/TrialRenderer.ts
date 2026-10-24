@@ -42,7 +42,7 @@ export class TrialRenderer {
     this.state=createRaceState(equipment,seed,condition,challenge,circuitId);
     this.renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});
     this.renderer.setPixelRatio(1);
-    this.renderer.setClearColor(0x315b2a);
+    this.renderer.setClearColor(challenge==='official'?0x344d5b:0x315b2a);
     this.renderer.outputColorSpace=THREE.SRGBColorSpace;
     this.renderer.domElement.style.width='100%';
     this.renderer.domElement.style.height='100%';
@@ -50,8 +50,9 @@ export class TrialRenderer {
     this.scene.add(new THREE.HemisphereLight(0xe4efff,0x45653b,2));
     const sun=new THREE.DirectionalLight(0xffffff,1.3);sun.position.set(-3,8,4);this.scene.add(sun);
     const grass=this.grassTexture();
-    const ground=new THREE.Mesh(new THREE.PlaneGeometry(100,100),new THREE.MeshLambertMaterial({map:grass}));
+    const ground=new THREE.Mesh(new THREE.PlaneGeometry(100,100),new THREE.MeshLambertMaterial(challenge==='official'?{color:0x7c928f}:{map:grass}));
     ground.rotation.x=-Math.PI/2;ground.position.y=-0.025;this.scene.add(ground);
+    if(challenge==='official')this.buildOfficialArena();
     this.buildTrack();this.buildStart();
     for(const racer of this.state.racers){const car=buildRaceMachineModel(racer);this.cars.set(racer.id,car);this.scene.add(car);}
     this.playerMarker.rotation.z=Math.PI;this.scene.add(this.playerMarker);
@@ -114,6 +115,22 @@ export class TrialRenderer {
   }
   private mesh(geometry:THREE.BufferGeometry,color:number){
     return new THREE.Mesh(geometry,new THREE.MeshLambertMaterial({color,flatShading:true}));
+  }
+  private buildOfficialArena(){
+    const {circuit}=this.track;
+    // 公式戦は模型店の芝生会場と分け、観客席と照明を持つ競技フロアにする。
+    for(const side of [-1,1])for(let row=0;row<3;row++){
+      const stand=this.mesh(new THREE.BoxGeometry(circuit.radiusX*1.8,.22,.35),row%2?0x8aa8bc:0x466b82);
+      stand.position.set(0,.12+row*.15,side*(circuit.radiusZ+1.7+row*.4));this.scene.add(stand);
+      for(let i=-5;i<=5;i++){
+        const seat=this.mesh(new THREE.BoxGeometry(.22,.12,.16),[0xb2d3c4,0xd0b16c,0x87acb9][(i+5)%3]);
+        seat.position.set(i*circuit.radiusX*.13,.32+row*.15,stand.position.z);this.scene.add(seat);
+      }
+    }
+    for(const x of [-1,1])for(const z of [-1,1]){
+      const pole=this.mesh(new THREE.CylinderGeometry(.035,.05,2.8,8),0x355263);pole.position.set(x*(circuit.radiusX+1.3),1.4,z*(circuit.radiusZ+1));this.scene.add(pole);
+      const lamp=this.mesh(new THREE.BoxGeometry(.38,.14,.12),0xf3ecc3);lamp.position.set(pole.position.x,2.8,pole.position.z);this.scene.add(lamp);
+    }
   }
   private buildTrack(){
     const {circuit,circuitLength,sampleLanePath}=this.track;

@@ -1,3 +1,5 @@
+import { officialVenue, officialVenueFixtures, officialVenuePeople } from '../data/officialVenue';
+import { drawOfficialVenue } from './OfficialVenueArt';
 import { doctor, doctorSpot, doctorAdvice } from '../data/doctor';
 import { raceAdvice } from './raceAdvice';
 import Phaser from 'phaser';
@@ -29,7 +31,7 @@ import { paintPixels } from './pixelDrawing';
 import { drawTown } from './TownArt';
 import { getCircuitTrack } from '../data/circuit';
 
-interface ShopTarget {x:number;y:number;w:number;h:number;label:string;speaker:string;shopAfter:boolean;text:string;kind?:Fixture['kind']|'exit'|'venue'|'challenger'|'legend-challenger';venueId?:string}
+interface ShopTarget {x:number;y:number;w:number;h:number;label:string;speaker:string;shopAfter:boolean;text:string;kind?:Fixture['kind']|'exit'|'venue'|'challenger'|'legend-challenger'|'official-speed'|'official-dirt'|'official-reception';venueId?:string}
 export class ShopScene extends Phaser.Scene {
   private gesture=createShopGesture();
   private pendingTarget:ShopTarget|null=null;
@@ -49,6 +51,7 @@ export class ShopScene extends Phaser.Scene {
   private arriving:{state:ArrivalActor;container:Phaser.GameObjects.Container;kind:string;solid:Phaser.Geom.Rectangle|null}[]=[];
   private eventAudio=new EventAudio();
   private isTown=false;
+  private isOfficial=false;
   private transitionArmed=true;
   private doctorPerson:Phaser.GameObjects.Container|null=null;
   private doctorSolid:Phaser.Geom.Rectangle|null=null;
@@ -66,11 +69,27 @@ export class ShopScene extends Phaser.Scene {
     this.scale.on(Phaser.Scale.Events.RESIZE,this.fitCamera,this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN,()=>this.scale.off(Phaser.Scale.Events.RESIZE,this.fitCamera,this));
     this.solids=[];
-    this.isTown=useGame.getState().location==='town';
+    this.isTown=useGame.getState().location==='town';this.isOfficial=useGame.getState().location==='stadium-5';
     createPeopleTextures(this);
     if(this.isTown){
       drawTown(this,useGame.getState());
       this.solids=townVenues.map(v=>new Phaser.Geom.Rectangle(v.x,v.y,v.w,v.h));
+    }else if(this.isOfficial){
+      drawOfficialVenue(this);
+      this.solids=officialVenueFixtures.map(f=>new Phaser.Geom.Rectangle(f.x,f.y,f.w,f.h));
+      for(const npc of officialVenuePeople){
+        const person=this.person(npc.x,npc.y,npc.kind);
+        if(npc.id==='go'||npc.id==='riku'){
+          const key=`venue-${npc.id}-down`;
+          if(!this.textures.exists(key)){
+            const texture=this.textures.createCanvas(key,personSpriteSize.width,personSpriteSize.height)!;
+            paintPixels(texture.context,npc.id==='go'?challengerDrawing('down'):offroaderDrawing('down'));texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
+          }
+          (person.list[1] as Phaser.GameObjects.Image).setTexture(key);
+        }
+        this.solids.push(new Phaser.Geom.Rectangle(npc.x-12,npc.y-9,24,21));
+        this.add.text(npc.x,npc.y+17,npc.name,{fontFamily:'sans-serif',fontSize:'9px',color:'#234844',resolution:2}).setOrigin(.5,0).setDepth(npc.y+1);
+      }
     }else{
     const shopId=currentShop(useGame.getState().location).id,layout=shopLayout(shopId),mirrored=mirroredShop(shopId);
     const fixtures=layout.map(f=>f.target);
@@ -118,7 +137,7 @@ export class ShopScene extends Phaser.Scene {
     this.add.rectangle(480,580,84,15,0x34564e).setDepth(590);
     this.add.text(480,575,'▼ 緑川町へ',{fontFamily:'sans-serif',fontSize:'10px',color:'#fff1bd',resolution:2}).setOrigin(.5,0).setDepth(591);
     }
-    const spawn=this.isTown?townSpawn(useGame.getState().lastShop):room.spawn;
+    const spawn=this.isTown?townSpawn(useGame.getState().townReturnVenue??useGame.getState().lastShop):this.isOfficial?officialVenue.spawn:room.spawn;
     this.player=this.person(spawn.x,spawn.y,'player');
     this.destination=this.add.graphics().setDepth(9999).setVisible(false);
     this.destination.lineStyle(2,0xffdf87).strokeCircle(0,0,8).lineBetween(-12,0,-5,0).lineBetween(5,0,12,0).lineBetween(0,-12,0,-5).lineBetween(0,5,0,12);
@@ -338,6 +357,11 @@ export class ShopScene extends Phaser.Scene {
   }
   private getTargets():ShopTarget[]{
     if(this.isTown)return townVenues.map(v=>({x:v.x,y:v.y,w:v.w,h:v.h,label:v.name,speaker:v.name,shopAfter:false,text:venueMessage(v),kind:'venue',venueId:v.id}));
+    if(this.isOfficial)return [
+      ...officialVenueFixtures.filter(f=>f.kind!=='decoration').map(f=>({...f,speaker:f.label,shopAfter:false,text:f.kind==='bench'?'ここでマシンを組み直そう。':'コースに出場する。',kind:f.kind as ShopTarget['kind']})),
+      ...officialVenuePeople.map(p=>({x:p.x-16,y:p.y-42,w:32,h:54,label:p.name,speaker:p.name,shopAfter:false,text:p.text})),
+      {...officialVenue.exit,label:'緑川町への出口',speaker:officialVenue.name,shopAfter:false,text:'町へ戻る。',kind:'exit' as const},
+    ];
     const cast=this.cast;
     const targets:ShopTarget[]=[...shopLayout(currentShop(useGame.getState().location).id).map(({target:f})=>({...f,speaker:f.label,shopAfter:f.kind==='counter'})),{x:cast.rival.x-16,y:cast.rival.y-42,w:32,h:54,label:`ライバル ${cast.rival.name}`,speaker:cast.rival.name,shopAfter:false,text:'湊くん、速いモーターだけじゃなく、ギアやタイヤの組み合わせも大事だよ。'}];
     const state=useGame.getState(),condition=equippedCondition(state.equipment,state.units,state.selectedUnits);
@@ -366,7 +390,9 @@ export class ShopScene extends Phaser.Scene {
   }
   private interactWith(target:ShopTarget){
       this.gesture.reset();
-      if(target.speaker==='森野 陸')useGame.getState().openOfficialRace();
+      if(target.kind==='official-speed'||target.kind==='official-dirt')useGame.getState().openOfficialRace(target.kind==='official-speed'?'speed':'dirt');
+      else if(target.kind==='official-reception'||this.isOfficial&&target.speaker==='大会受付係')useGame.getState().openOfficialRace();
+      else if(target.speaker==='森野 陸'){if(this.isOfficial)useGame.getState().talk(target.speaker,target.text);else useGame.getState().openOfficialRace();}
       else if(target.speaker==='佐伯 匠'){
         const state=useGame.getState();
         state.talk(target.speaker,raceAdvice({shopId:currentShop(state.location).id,equipment:state.equipment,inventory:state.inventory,money:state.money,...equippedCondition(state.equipment,state.units,state.selectedUnits),review:state.lastRaceReview,motorAges:Object.fromEntries(Object.entries(state.units).map(([id,list])=>[id,list[0]?.seconds??0])),batteryAges:Object.fromEntries(Object.entries(state.units).map(([id,list])=>[id,list[0]?.seconds??0]))}));
@@ -376,7 +402,7 @@ export class ShopScene extends Phaser.Scene {
       else if(target.kind==='challenger')useGame.getState().openVillainChallenge();
       else if(target.kind==='venue'){
         const venue=townVenues.find(v=>v.id===target.venueId)!;
-        if(venue.id==='stadium-5')useGame.getState().openOfficialRace();
+        if(venue.id==='stadium-5'){if(useGame.getState().officialQualified)useGame.getState().enterOfficialVenue();else useGame.getState().talk(venue.name,venueMessage(venue));}
         else if(venue.shopId&&isVenueOpen(venue,useGame.getState()))useGame.getState().enterShop(venue.shopId);
         else useGame.getState().talk(venue.name,venueMessage(venue));
       }

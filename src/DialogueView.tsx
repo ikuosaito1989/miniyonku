@@ -10,7 +10,7 @@ import guide from './assets/portraits/guide-pop.webp';
 import mechanic from './assets/portraits/mechanic-pop.webp';
 import './dialogue.css';
 
-const portraits:Record<DialoguePersonId,string>={offroader:mechanic,owner,aozoraOwner:owner,hinataOwner:owner,villain:rival,rival,guide,mechanic,legendRei:rival,legendGaku:guide,doctor:owner};
+const portraits:Record<DialoguePersonId,string>={venueStaff:owner,offroader:mechanic,owner,aozoraOwner:owner,hinataOwner:owner,villain:rival,rival,guide,mechanic,legendRei:rival,legendGaku:guide,doctor:owner};
 export function DialogueView(){
   const {speaker,dialogue,shopAfter,advance,close,dialogueStage,startLegendChallenge,startVillainChallenge,startOfficialRace,openSetting}=useGame();
   const [selected,setSelected]=useState(0);

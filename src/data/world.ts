@@ -2,7 +2,7 @@ import { starterShop, type ShopStock } from './progression';
 import type { CircuitId } from './circuit';
 
 export type ShopId='komorebi'|'aozora'|'hinata';
-export type WorldLocation=ShopId|'town';
+export type WorldLocation=ShopId|'town'|'stadium-5';
 export interface ModelShop extends ShopStock { id:ShopId; owner:string; circuitId:CircuitId; stage:number; color:number; welcome:string }
 // 店の進行段階とパーツの入手段階は別。入門店の既存品揃えを維持する。
 export const modelShops:Record<ShopId,ModelShop>={
@@ -10,7 +10,7 @@ export const modelShops:Record<ShopId,ModelShop>={
   aozora:{id:'aozora',name:'あおぞら模型店',maxPartLevel:3,owner:'青井 晴彦',circuitId:'wind',stage:2,color:0x497eaf,welcome:'春夫さんから話は聞いているよ。ようこそ、あおぞら模型店へ！連続コーナーでは加速と安定性の両立が大切だ。低重心シャーシや中空シャフト、新しいモーターを試してごらん。'},
   hinata:{id:'hinata',name:'ひなた模型店',maxPartLevel:4,owner:'日向 誠二',circuitId:'sun',stage:3,color:0xb78e4f,welcome:'黒岩くんを破ったレーサーだね。ようこそ、ひなた模型店へ！ここは砂利・砂地・連続コーナーが続く長いダートコースだ。悪路用モーターとブロックタイヤ、ダンパー、ポール式ダブルローラーで挑もう。'},
 };
-export function currentShop(location:WorldLocation){return modelShops[location==='town'?'komorebi':location];}
+export function currentShop(location:WorldLocation){return modelShops[location==='town'?'komorebi':location==='stadium-5'?'hinata':location];}
 export interface WorldProgress {legendRaceCompleted:boolean;villainDefeated:boolean;officialQualified?:boolean}
 export function canEnterShop(id:ShopId,progress:WorldProgress){return id==='komorebi'||progress.legendRaceCompleted&&(id==='aozora'||progress.villainDefeated);}
 export function isVenueOpen(venue:TownVenue,progress:WorldProgress){return venue.id==='stadium-5'?progress.officialQualified===true:!!venue.shopId&&canEnterShop(venue.shopId,progress);}
@@ -29,7 +29,7 @@ export const townVenues:TownVenue[]=[
   {id:'stadium-10',name:'緑川グランプリ',kind:'stadium',stage:10,x:750,y:316,w:132,h:88,entrance:'north',color:0xb59b52},
 ];
 export const shopExit={x:440,y:575,w:80,h:7};
-export function townSpawn(shop:ShopId){const venue=townVenues.find(v=>v.shopId===shop)!;return {x:venue.x+venue.w/2,y:venue.y+venue.h+42};}
+export function townSpawn(shop:ShopId|'stadium-5'){const venue=townVenues.find(v=>v.id===shop)!;return {x:venue.x+venue.w/2,y:venue.entrance==='north'?venue.y-42:venue.y+venue.h+42};}
 export function venueMessage(venue:TownVenue){
   if(venue.id==='stadium-5')return '若葉公式ダート杯はひなた模型店で1位になると出場できます。森野 陸・黒岩 豪・モブ2人との5台レース。ほかの公式会場は準備中です。';
   if(venue.shopId==='hinata')return 'ひなた模型店へ入るには、あおぞら模型店で優勝した後に現れる黒岩 豪との挑戦レースで1位になろう。勝利すれば紹介状をもらえます。';

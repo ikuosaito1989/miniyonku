@@ -26,7 +26,7 @@ test('ひなたの一位でのみ公式戦の出場権。二重報酬なし、�
   useGame.getState().close();assert.match(useGame.getState().dialogue,/出場権/);useGame.getState().close();useGame.getState().leaveShop();
   const save=decodeSave({version:1,savedAt:123,game:snapshotGame(useGame.getState())});
   await loadSavedGame({read:async()=>save,write:async()=>{}});assert.equal(useGame.getState().location,'town');assert.equal(useGame.getState().officialQualified,true);
-  useGame.getState().openOfficialRace();assert.equal(useGame.getState().dialogueStage,'official-invite');assert.deepEqual(dialogueChoices(false,false,'official-invite').map(x=>x.action),['officialRace','legendSetting']);
+  useGame.getState().enterOfficialVenue();assert.equal(useGame.getState().location,'stadium-5');useGame.getState().openOfficialRace();assert.equal(useGame.getState().dialogueStage,'official-invite');assert.deepEqual(dialogueChoices(false,false,'official-invite').map(x=>x.action),['officialRace','legendSetting']);
   useGame.getState().openSetting();useGame.getState().close();useGame.getState().openOfficialRace();useGame.getState().startOfficialRace();assert.equal(useGame.getState().officialChallengeActive,true);
   useGame.getState().close();useGame.getState().close();useGame.getState().openOfficialRace();useGame.getState().startOfficialRace();useGame.getState().settleRace(useGame.getState().raceAttempt,result(true,true,'sprint'));assert.equal(useGame.getState().officialWon,false);assert.equal(useGame.getState().officialSpeedWon,true);
   const intermission=decodeSave({version:1,savedAt:124,game:snapshotGame(useGame.getState())});await loadSavedGame({read:async()=>intermission,write:async()=>{}});assert.equal(useGame.getState().officialSpeedWon,true);assert.equal(useGame.getState().officialWon,false);

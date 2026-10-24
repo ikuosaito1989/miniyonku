@@ -68,7 +68,7 @@ export default function TrialView(){
   useEffect(()=>{renderer.current?.setSound(sound,volume);},[sound,volume,equipment]);
 
   const requestClose=useCallback(()=>{
-    if(!error&&state.phase!=='finished'&&!window.confirm(`レースを終了して${officialChallenge?'受付':'模型店'}に戻りますか？\n途中で戻ると、このレースの賞金は受け取れません。`))return;
+    if(!error&&state.phase!=='finished'&&!window.confirm(`レースを終了して${officialChallenge?'会場':'模型店'}に戻りますか？\n途中で戻ると、このレースの賞金は受け取れません。`))return;
     close();
   },[close,error,state.phase,officialChallenge]);
   const skipIntro=useCallback(()=>renderer.current?.skipIntro(),[]);
@@ -131,7 +131,7 @@ export default function TrialView(){
     <header className="race-header"><h2>{officialChallenge?raceName:legendChallenge?'レジェンド挑戦':villainChallenge?'黒岩 豪からの挑戦':circuit.name}<span>{circuit.lanes}レーン・{circuit.laps}周レース</span></h2><nav aria-label="レース操作">
       <AudioControls/>
       <button className="race-camera-button" disabled={introducing} onClick={()=>{renderer.current?.setCamera(overview?'broadcast':'overview');setOverview(!overview);}} aria-pressed={overview}>{overview?'マシンを見る':'コース全体'}</button>
-      <button onClick={requestClose}>{officialChallenge?'受付へ':'模型店へ'} <small>Esc</small></button>
+      <button onClick={requestClose}>{officialChallenge?'会場へ':'模型店へ'} <small>Esc</small></button>
     </nav></header>
     {!introducing&&<RaceRanking race={state}/>}
     <div className="race-viewport">
@@ -174,7 +174,7 @@ export default function TrialView(){
         {ready&&!introducing&&!error?<button className="race-start-button" onClick={start}>▶ カウント開始</button>:null}
         {waitingForLaunch&&!error&&<button className="race-start-button" onClick={start}>{counting?'▶ 発進（早出）':'▶ GO！ 発進'}</button>}
         {canViewResults&&<button className="race-start-button" onClick={showRaceResults}>▶ 結果を見る</button>}
-        {(showResults||error)&&<button onClick={requestClose}>{officialChallenge?'受付へ戻る':'模型店へ戻る'}</button>}
+        {(showResults||error)&&<button onClick={requestClose}>{officialChallenge?'会場へ戻る':'模型店へ戻る'}</button>}
         {!ready&&!finished&&!waitingForLaunch&&!canViewResults&&!error&&<span className="race-running">走行中<span>●</span></span>}
       </div>
     </footer>
