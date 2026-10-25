@@ -4,16 +4,15 @@ import { AudioControls } from './GameAudio';
 import { resetSave, useSaveStatus } from './game/persistence';
 import { useGame } from './game/store';
 import './game-settings.css';
+import { currentMission, missionNextAction } from './game/mission';
 import { currentShop } from './data/world';
 const yen=(value:number)=>value.toLocaleString('ja-JP');
 
 export function GameSettings(){
   const close=useGame(s=>s.close),money=useGame(s=>s.money),points=useGame(s=>s.proficiencyPoints);
   const openCheat=useGame(s=>s.openCheat);
-  const location=useGame(s=>s.location),townUnlocked=useGame(s=>s.legendRaceCompleted);
-  const aozoraWon=useGame(s=>s.aozoraWon),villainDefeated=useGame(s=>s.villainDefeated);
-  const officialQualified=useGame(s=>s.officialQualified),wakabaUnlocked=useGame(s=>s.wakabaUnlocked),thirdQualified=useGame(s=>s.thirdOfficialQualified),technicalCup=useGame(s=>s.technicalCup);
-  const nextGoal=technicalCup.results.length?'星空テクニカル杯の結果は記録済みです。この大会は再出場できません。第2・第4公式会場は開催準備中です。':thirdQualified?'第3公式大会の出場権を獲得！ 街の星空レース場へ入って、約2分の連続コーナーに挑戦しよう。':wakabaUnlocked?'わかば模型店が開放されました。コーナリングを磨き、店のレースで優勝して第3公式大会の出場権を得よう。':officialQualified?'若葉公式レース会場へ入ろう。場内の左コースで高速戦、右コースでダート戦。ピットで装備を組み直して総合3位以内で次の店へ進もう。大会は一度きり、4位以下はゲームオーバー。':!townUnlocked?'こもれび模型店で優勝し、最強兄弟との特別レースを体験しよう。周回遅れでの敗北でもイベントは進み、店の下の出口から街へ出られます。':villainDefeated?'黒岩 豪に勝利！ひなた模型店へ進めます。あおぞらの右隣にある入口を調べよう。ひなたで優勝すると若葉公式レース会場へ入場できます。':aozoraWon?'あおぞら模型店の中央にいる黒岩 豪と勝負しよう。挑戦レースで1位になると、ひなた模型店への紹介状がもらえます。':'あおぞら模型店で優勝を目指そう。賞金は1位1,000円・2位600円・3位450円・4位350円・5位250円。優勝すると新しい挑戦者が現れます。';
+  const state=useGame(),location=state.location,mission=currentMission(state);
+  const nextGoal=[mission.title,missionNextAction(state,mission),mission.hint].join(' ');
   const secretTaps=useRef<{count:number;at:number}>({count:0,at:0});
   const tapSystemMark=()=>{
     const now=performance.now();

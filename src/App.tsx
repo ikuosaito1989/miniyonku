@@ -1,3 +1,4 @@
+import { MissionGuide } from './MissionGuide';
 import { TownMap } from './TownMap';
 import { GameOver } from './GameOver';
 import { keepScreenAwake } from './game/wakeLock';
@@ -53,6 +54,7 @@ export function App(){
         {game.overlay===null&&<AudioControls floating/>}
         <SaveWarning/>
         <TownMap/>
+        <MissionGuide/>
         <TouchControls/>
         {game.overlay==='game-over'&&<GameOver/>}
         {game.overlay==='dialogue'&&<DialogueView/>}
