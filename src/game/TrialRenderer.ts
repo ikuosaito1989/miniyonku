@@ -1,4 +1,4 @@
-import { raceIntroAt, stepRaceIntro, type RaceIntro } from './raceIntro';
+import { raceIntroDuration, raceIntroTiming, raceIntroAt, stepRaceIntro, type RaceIntro } from './raceIntro';
 import * as THREE from 'three';
 import { buildRaceMachineModel } from './MachineModel';
 import { freshCondition, type MachineCondition } from './condition';
@@ -64,7 +64,7 @@ export class TrialRenderer {
 
   skipIntro(){
     if(this.intro.stage==='done')return;
-    this.intro=raceIntroAt(10);this.lastTime=0;this.accumulator=0;this.reportIntro(this.intro);
+    this.intro=raceIntroAt(raceIntroDuration);this.lastTime=0;this.accumulator=0;this.reportIntro(this.intro);
   }
   start(){
     if(this.intro.stage!=='done'){this.skipIntro();return;}
@@ -218,10 +218,10 @@ export class TrialRenderer {
       const smooth=(v:number)=>{const t=THREE.MathUtils.clamp(v,0,1);return t*t*(3-2*t);};
       let target=new THREE.Vector3(0,0,0),height=wide;
       if(this.intro.stage==='tour'&&!this.reducedMotion){
-        const progress=(age-2)/5.5,p=sampleLanePath(progress*this.track.circuitLength,(circuit.lanes-1)/2),zoom=smooth((age-2)/.8);
+        const progress=(age-raceIntroTiming.overview)/raceIntroTiming.tour,p=sampleLanePath(progress*this.track.circuitLength,(circuit.lanes-1)/2),zoom=smooth((age-raceIntroTiming.overview)/1.6);
         target.lerp(new THREE.Vector3(p.x,p.y,p.z),zoom);height=THREE.MathUtils.lerp(wide,tourHeight,zoom);
       }else if(this.intro.stage==='grid'&&!this.reducedMotion){
-        const zoom=smooth((age-7.5)/2.5);target=new THREE.Vector3(start.x-start.tangentX*raceCamera.start.lookBehind*zoom,start.y,start.z-start.tangentZ*raceCamera.start.lookBehind*zoom);height=THREE.MathUtils.lerp(tourHeight,gridHeight,zoom);
+        const zoom=smooth((age-raceIntroTiming.overview-raceIntroTiming.tour)/raceIntroTiming.grid);target=new THREE.Vector3(start.x-start.tangentX*raceCamera.start.lookBehind*zoom,start.y,start.z-start.tangentZ*raceCamera.start.lookBehind*zoom);height=THREE.MathUtils.lerp(tourHeight,gridHeight,zoom);
       }
       this.camera.left=-height*this.aspect/2;this.camera.right=height*this.aspect/2;this.camera.top=height/2;this.camera.bottom=-height/2;this.camera.updateProjectionMatrix();
       this.camera.position.copy(target).add(new THREE.Vector3(...raceCamera.start.offset));this.camera.lookAt(target);return;

@@ -1,9 +1,10 @@
 import {getCircuitTrack,type CircuitId} from '../data/circuit';
-export const raceIntroDuration=10;
+export const raceIntroTiming={overview:4,tour:11,grid:5};
+export const raceIntroDuration=raceIntroTiming.overview+raceIntroTiming.tour+raceIntroTiming.grid;
 export interface RaceIntro {age:number;stage:'overview'|'tour'|'grid'|'done'}
 export function raceIntroAt(age:number):RaceIntro{
  const safe=Math.min(raceIntroDuration,Math.max(0,Number.isFinite(age)?age:0));
- return {age:safe,stage:safe>=10?'done':safe>=7.5?'grid':safe>=2?'tour':'overview'};
+ return {age:safe,stage:safe>=raceIntroDuration?'done':safe>=raceIntroTiming.overview+raceIntroTiming.tour?'grid':safe>=raceIntroTiming.overview?'tour':'overview'};
 }
 export function stepRaceIntro(intro:RaceIntro,seconds:number,visible=true){
  return visible?raceIntroAt(intro.age+Math.max(0,Number.isFinite(seconds)?seconds:0)):intro;

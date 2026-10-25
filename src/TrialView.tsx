@@ -1,4 +1,4 @@
-import { raceIntroAt, courseIntroduction } from './game/raceIntro';
+import { raceIntroDuration, raceIntroAt, courseIntroduction } from './game/raceIntro';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useGame } from './game/store';
 import { TrialRenderer } from './game/TrialRenderer';
@@ -141,7 +141,7 @@ export default function TrialView(){
         <div className="race-intro-heading"><span>COURSE INTRODUCTION</span><p>{officialChallenge?raceName:shop.name}</p><h2>{introduction.name}</h2></div>
         <div className="race-intro-caption" key={intro.stage}><span>{intro.stage==='overview'?'コース全景':intro.stage==='tour'?'コースの見どころ':'スターティンググリッド'}</span><p>{intro.stage==='overview'?`${introduction.lanes}レーン・${introduction.laps}周 ／ 全長 約${introduction.distance}m`:intro.stage==='tour'?introduction.feature:introduction.advice}</p><small>{introduction.surface} ／ 1周 約{introduction.lapLength}m</small></div>
         <button className="race-intro-skip" onClick={skipIntro}>紹介をスキップ <small>Z / Enter / Space</small></button>
-        <div className="race-intro-progress" aria-hidden="true"><i style={{transform:`scaleX(${intro.age/10})`}}/></div>
+        <div className="race-intro-progress" aria-hidden="true"><i style={{transform:`scaleX(${intro.age/raceIntroDuration})`}}/></div>
       </section>}
       {!introducing&&!error&&!showTally&&!showResults&&<><div className="race-condition">電池 {batteryLabel(player.equipment.battery,player.performance.batterySeconds+driving.time)} ／ モーター {(motorFactor(player.performance.motorSeconds+driving.time,player.equipment.motor)*100).toFixed(1)}%</div>
         <div className="race-lane">{playerPath.changing?`${playerPath.from+1} → ${playerPath.to+1}`:playerPath.lane+1}コース <span>あなた・{playerPath.changing?'レーンチェンジ中':'入門マシン'}</span></div>
