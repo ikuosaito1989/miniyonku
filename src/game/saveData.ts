@@ -1,3 +1,4 @@
+import {emptyCup,legacyCup,decodeCup,cupProgression} from './cup';
 import type { RaceReview } from './raceAdvice';
 import { parts } from '../data/parts';
 import { createStarterInventory, equipmentSlots, type Equipment, type EquipmentSlot } from '../data/machine';
@@ -6,10 +7,10 @@ import type { GameState } from './store';
 import type { UnitInventory } from './condition';
 import { modelShops, type WorldLocation, type ShopId } from '../data/world';
 
-export type SavedGame=Pick<GameState,'townReturnVenue'|'officialQualified'|'officialWon'|'officialSpeedWon'|'officialDirtWon'|'money'|'inventory'|'equipment'|'units'|'selectedUnits'|'unitSerial'|'proficiencyPoints'|'unlockedRaces'|'hintBookIndex'|'legendEventSeen'|'cheatUsed'|'location'|'lastShop'|'legendRaceCompleted'|'aozoraWon'|'villainDefeated'|'lastRaceReview'|'doctorGiftReceived'>;
+export type SavedGame=Pick<GameState,'wakabaCup'|'technicalCup'|'gameOver'|'wakabaUnlocked'|'thirdOfficialQualified'|'townReturnVenue'|'officialQualified'|'officialWon'|'officialSpeedWon'|'officialDirtWon'|'money'|'inventory'|'equipment'|'units'|'selectedUnits'|'unitSerial'|'proficiencyPoints'|'unlockedRaces'|'hintBookIndex'|'legendEventSeen'|'cheatUsed'|'location'|'lastShop'|'legendRaceCompleted'|'aozoraWon'|'villainDefeated'|'lastRaceReview'|'doctorGiftReceived'>;
 export interface SaveData { version:1; savedAt:number; game:SavedGame }
 export function snapshotGame(state:SavedGame):SavedGame{
-  return structuredClone({townReturnVenue:state.townReturnVenue,officialSpeedWon:state.officialSpeedWon,officialDirtWon:state.officialDirtWon,officialQualified:state.officialQualified,officialWon:state.officialWon,doctorGiftReceived:state.doctorGiftReceived,lastRaceReview:state.lastRaceReview,money:state.money,inventory:state.inventory,equipment:state.equipment,units:state.units,selectedUnits:state.selectedUnits,unitSerial:state.unitSerial,proficiencyPoints:state.proficiencyPoints,unlockedRaces:state.unlockedRaces,hintBookIndex:state.hintBookIndex,legendEventSeen:state.legendEventSeen,cheatUsed:state.cheatUsed,location:state.location,lastShop:state.lastShop,legendRaceCompleted:state.legendRaceCompleted,aozoraWon:state.aozoraWon,villainDefeated:state.villainDefeated});
+  return structuredClone({wakabaCup:state.wakabaCup,technicalCup:state.technicalCup,gameOver:state.gameOver,wakabaUnlocked:state.wakabaUnlocked,thirdOfficialQualified:state.thirdOfficialQualified,townReturnVenue:state.townReturnVenue,officialSpeedWon:state.officialSpeedWon,officialDirtWon:state.officialDirtWon,officialQualified:state.officialQualified,officialWon:state.officialWon,doctorGiftReceived:state.doctorGiftReceived,lastRaceReview:state.lastRaceReview,money:state.money,inventory:state.inventory,equipment:state.equipment,units:state.units,selectedUnits:state.selectedUnits,unitSerial:state.unitSerial,proficiencyPoints:state.proficiencyPoints,unlockedRaces:state.unlockedRaces,hintBookIndex:state.hintBookIndex,legendEventSeen:state.legendEventSeen,cheatUsed:state.cheatUsed,location:state.location,lastShop:state.lastShop,legendRaceCompleted:state.legendRaceCompleted,aozoraWon:state.aozoraWon,villainDefeated:state.villainDefeated});
 }
 function object(value:unknown):Record<string,unknown>{
   if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('セーブデータの形式が不正です。');
@@ -78,26 +79,31 @@ export function decodeSave(value:unknown):SaveData{
   let lastRaceReview:RaceReview|null=null;
   if(game.lastRaceReview!==undefined&&game.lastRaceReview!==null){
     const review=object(game.lastRaceReview);
-    if(!['leaf','wind','sun','sprint'].includes(review.circuitId as string)||typeof review.text!=='string'||review.text.length>4000)throw new Error('レース相談の記録が不正です。');
+    if(!['leaf','wind','sun','sprint','grove','comet'].includes(review.circuitId as string)||typeof review.text!=='string'||review.text.length>4000)throw new Error('レース相談の記録が不正です。');
     lastRaceReview={circuitId:review.circuitId as RaceReview['circuitId'],text:review.text};
   }
   if(game.legendEventSeen!==undefined&&typeof game.legendEventSeen!=='boolean')throw new Error('イベント記録が不正です。');
   if(game.cheatUsed!==undefined&&typeof game.cheatUsed!=='boolean')throw new Error('裏技記録が不正です。');
   if(game.legendRaceCompleted!==undefined&&typeof game.legendRaceCompleted!=='boolean')throw new Error('兄弟レースの記録が不正です。');
   const location=game.location??'komorebi',lastShop=game.lastShop??'komorebi';
-  if(typeof location!=='string'||location!=='town'&&location!=='stadium-5'&&!Object.hasOwn(modelShops,location)||typeof lastShop!=='string'||!Object.hasOwn(modelShops,lastShop))throw new Error('現在地が不正です。');
+  if(typeof location!=='string'||location!=='town'&&location!=='stadium-5'&&location!=='stadium-9'&&!Object.hasOwn(modelShops,location)||typeof lastShop!=='string'||!Object.hasOwn(modelShops,lastShop))throw new Error('現在地が不正です。');
   const legendRaceCompleted=game.legendRaceCompleted===true;
   if(game.doctorGiftReceived!==undefined&&typeof game.doctorGiftReceived!=='boolean')throw new Error('博士の贈呈記録が不正です。');
   const doctorGiftReceived=game.doctorGiftReceived===true;
   if(doctorGiftReceived&&(!legendRaceCompleted||!(inventory['body-champion']>=1)))throw new Error('博士の贈呈条件を満たしていません。');
   if((legendRaceCompleted||(location!=='komorebi'&&location!=='town')||lastShop!=='komorebi')&&(!game.unlockedRaces.includes(nextShopRace.id)||!legendRaceCompleted))throw new Error('街の解放条件を満たしていません。');
-  for(const key of ['officialSpeedWon','officialDirtWon','officialQualified','officialWon','aozoraWon','villainDefeated'])if(game[key]!==undefined&&typeof game[key]!=='boolean')throw new Error('あおぞらのイベント記録が不正です。');
+  for(const key of ['gameOver','wakabaUnlocked','thirdOfficialQualified','officialSpeedWon','officialDirtWon','officialQualified','officialWon','aozoraWon','villainDefeated'])if(game[key]!==undefined&&typeof game[key]!=='boolean')throw new Error('あおぞらのイベント記録が不正です。');
   const aozoraWon=game.aozoraWon===true,villainDefeated=game.villainDefeated===true;
   if(aozoraWon&&!legendRaceCompleted||villainDefeated&&!aozoraWon||(location==='hinata'||lastShop==='hinata')&&!villainDefeated)throw new Error('ひなた模型店の解放条件を満たしていません。');
   if(game.officialQualified===true&&!villainDefeated||game.officialWon===true&&game.officialQualified!==true)throw new Error('公式レースの出場条件を満たしていません。');
+  const wakabaCup=decodeCup(game.wakabaCup,'wakaba',legacyCup(game.officialSpeedWon===true,game.officialDirtWon===true,game.officialWon===true));
+  const technicalCup=decodeCup(game.technicalCup,'technical',emptyCup());
+  const progression=cupProgression(wakabaCup,technicalCup,game.thirdOfficialQualified===true);
+  if((wakabaCup.entered||technicalCup.entered)&&game.officialQualified!==true)throw new Error('公式会場の入場条件を満たしていません。');
+  if(progression.thirdOfficialQualified&&!progression.wakabaUnlocked)throw new Error('第3公式大会の出場条件を満たしていません。');
+  if((location==='wakaba'||lastShop==='wakaba')&&!progression.wakabaUnlocked)throw new Error('わかば模型店の解放条件を満たしていません。');
   const townReturnVenue=game.townReturnVenue??null;
-  if(townReturnVenue!==null&&townReturnVenue!=='stadium-5'||(location==='stadium-5'||townReturnVenue==='stadium-5')&&game.officialQualified!==true)throw new Error('公式会場の入場条件を満たしていません。');
-  const officialSpeedWon=game.officialSpeedWon===true,officialDirtWon=game.officialDirtWon===true||(game.officialDirtWon===undefined&&game.officialWon===true);
-  if((officialSpeedWon||officialDirtWon)&&game.officialQualified!==true)throw new Error('公式戦の記録が不正です。');
-  return {version:1,savedAt,game:{townReturnVenue,officialSpeedWon,officialDirtWon,officialQualified:game.officialQualified===true,officialWon:game.officialWon===true&&game.officialSpeedWon!==undefined,doctorGiftReceived,lastRaceReview,money:number(game.money,true),inventory,equipment:{...equipment} as Equipment,units,selectedUnits,unitSerial,proficiencyPoints:number(game.proficiencyPoints),unlockedRaces:[...game.unlockedRaces] as string[],hintBookIndex,legendEventSeen:game.legendEventSeen===true,cheatUsed:game.cheatUsed===true,location:location as WorldLocation,lastShop:lastShop as ShopId,legendRaceCompleted,aozoraWon,villainDefeated}};
+  if(townReturnVenue!==null&&townReturnVenue!=='stadium-5'&&townReturnVenue!=='stadium-9'||(location==='stadium-5'||townReturnVenue==='stadium-5')&&game.officialQualified!==true||(location==='stadium-9'||townReturnVenue==='stadium-9')&&!progression.thirdOfficialQualified)throw new Error('公式会場の入場条件を満たしていません。');
+  const officialSpeedWon=progression.officialSpeedWon,officialDirtWon=progression.officialDirtWon;
+  return {version:1,savedAt,game:{...progression,townReturnVenue,officialSpeedWon,officialDirtWon,officialQualified:game.officialQualified===true,doctorGiftReceived,lastRaceReview,money:number(game.money,true),inventory,equipment:{...equipment} as Equipment,units,selectedUnits,unitSerial,proficiencyPoints:number(game.proficiencyPoints),unlockedRaces:[...game.unlockedRaces] as string[],hintBookIndex,legendEventSeen:game.legendEventSeen===true,cheatUsed:game.cheatUsed===true,location:location as WorldLocation,lastShop:lastShop as ShopId,legendRaceCompleted,aozoraWon,villainDefeated}};
 }

@@ -167,3 +167,4 @@
   .retro-race.retro-race{grid-template-rows:minmax(48px,auto) 82px minmax(180px,1fr) minmax(128px,auto);overflow-x:hidden;overflow-y:auto}
   .retro-race.retro-race[data-phase='introduction']{grid-template-rows:minmax(48px,auto) minmax(180px,1fr) minmax(128px,auto)}
 }
+.cup-score{margin-top:14px;border:1px solid #a5bddb;padding:10px;background:#0e2249}.cup-score h4{margin:0 0 6px;font-size:13px}.cup-score p{font-size:10px;line-height:1.6;color:#bdd1eb}.cup-score ol{list-style:none;margin:0;padding:0}.cup-score li{font-size:12px;padding:6px;border-top:1px solid #637d9d}.cup-score li strong{float:right}.cup-player{color:#ffe499;background:#3a4169}

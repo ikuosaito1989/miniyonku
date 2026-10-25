@@ -12,6 +12,8 @@ export function stepRaceIntro(intro:RaceIntro,seconds:number,visible=true){
 export function courseIntroduction(id:CircuitId){
  const {circuit,circuitLength}=getCircuitTrack(id);
  const details={
+  grove:{feature:'長いコースに切り返しと連続コーナーが続く。',advice:'低重心、スポンジタイヤ、4:1ギア、ローラーとウェイトを組み合わせよう。'},
+  comet:{feature:'全4大会の第3大会。約2分にわたり連続コーナーを走り抜く。',advice:'最高速だけでは勝てない。過去のパーツで旋回の安定と立ち上がりを整えよう。'},
   leaf:{feature:'大きなカーブとレーンチェンジの入門コース。',advice:'加速と安定性を整え、まずは5周の完走を目指そう。'},
   wind:{feature:'切り返しが続く連続コーナー。',advice:'低重心とグリップで姿勢を保ち、立ち上がりの加速を確保しよう。'},
   sun:{feature:'砂利・荒れたダート・砂地を巡るロングコース。',advice:'高トルクモーター、悪路用タイヤ、ダンパーで接地を保とう。'},

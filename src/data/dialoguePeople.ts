@@ -1,7 +1,8 @@
 import { doctor } from './doctor';
 import { story, shopVisitors } from './story';
-export type DialoguePersonId='owner'|'aozoraOwner'|'hinataOwner'|'villain'|'rival'|'guide'|'mechanic'|'legendRei'|'legendGaku'|'doctor'|'offroader'|'venueStaff';
+export type DialoguePersonId='owner'|'aozoraOwner'|'hinataOwner'|'villain'|'rival'|'guide'|'mechanic'|'legendRei'|'legendGaku'|'doctor'|'offroader'|'venueStaff'|'wakabaOwner';
 export const dialoguePeople:Record<DialoguePersonId,{name:string;role:string;expression:string;ageGroup:'adult'|'elementary';faceBase:string}>={
+  wakabaOwner:{name:'若松 修一',role:'わかば模型店 店主',expression:'頼もしい笑顔',ageGroup:'adult',faceBase:'owner'},
   venueStaff:{name:'大会受付係',role:'若葉公式レース会場・大会スタッフ',expression:'落ち着いた笑顔',ageGroup:'adult',faceBase:'owner'},
   offroader:{name:'森野 陸',role:'ダートが得意な小学生レーサー',expression:'茶色の髪と緑の服、自信のある笑顔',ageGroup:'elementary',faceBase:'child-common'},
   doctor:{name:doctor.name,role:doctor.role,expression:'眼鏡と白髪、穏やかな笑顔',ageGroup:'adult',faceBase:'doctor'},

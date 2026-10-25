@@ -1,4 +1,4 @@
-import { officialRivals, officialSpeedRivals } from '../data/officialRace';
+import { officialRivals, officialSpeedRivals, technicalRivals } from '../data/officialRace';
 import type { Equipment } from '../data/machine';
 import { rivals, aozoraRivals, hinataRivals, type Entrant } from '../data/rivals';
 import { createDrivingState, FIXED_STEP, machinePerformance, startDriving, stepDriving, type DrivingState, type Performance } from './driving';
@@ -25,7 +25,7 @@ export interface RaceState {
 export const RIVAL_DIFFICULTY=0.9;
 export const COUNTDOWN_TICKS=Math.round(3/FIXED_STEP);
 export function createRaceState(equipment:Equipment,seed=0x5eed,condition:MachineCondition=freshCondition,challenge:RaceChallenge=false,circuitId:CircuitId='leaf'):RaceState {
-  if(challenge==='official'&&circuitId!=='sprint')circuitId='sun';
+  if(challenge==='official'&&circuitId!=='sprint'&&circuitId!=='comet')circuitId='sun';
   const legendChallenge=challenge===true;
   let randomState=seed>>>0||1;
   const random=()=>{randomState^=randomState<<13;randomState^=randomState>>>17;randomState^=randomState<<5;return (randomState>>>0)/4294967296;};
@@ -33,7 +33,7 @@ export function createRaceState(equipment:Equipment,seed=0x5eed,condition:Machin
   for(let i=lanes.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[lanes[i],lanes[j]]=[lanes[j],lanes[i]];}
   const entrants:Entrant[]=legendChallenge
     ?[{id:'player',name:story.player,lane:2,color:0xd94232,equipment:{...equipment}},...legends.slice(0,2).map((legend,index)=>({id:legend.id,name:legend.name,lane:index,color:index?0xe5b839:0x477de0,motorSeconds:90,equipment:{...legend.equipment}})),...rivals.slice(0,2).map(r=>({...r,equipment:{...r.equipment}}))]
-    :[{id:'player',name:story.player,lane:2,color:0xd94232,equipment:{...equipment}},...(challenge==='official'?(circuitId==='sprint'?officialSpeedRivals:officialRivals):challenge==='villain'?[challenger,...aozoraRivals.slice(0,3)]:circuitId==='sun'?hinataRivals:circuitId==='wind'?aozoraRivals:rivals).map(r=>({...r,equipment:{...r.equipment}}))];
+    :[{id:'player',name:story.player,lane:2,color:0xd94232,equipment:{...equipment}},...(challenge==='official'?(circuitId==='comet'?technicalRivals:circuitId==='sprint'?officialSpeedRivals:officialRivals):challenge==='villain'?[challenger,...aozoraRivals.slice(0,3)]:circuitId==='grove'?technicalRivals:circuitId==='sun'?hinataRivals:circuitId==='wind'?aozoraRivals:rivals).map(r=>({...r,equipment:{...r.equipment}}))];
   return {event:challenge==='official'?'official':'shop',circuitId,phase:'ready',countdownTicks:COUNTDOWN_TICKS,time:0,seed,playerStartOffset:null,falseStartPenalty:0,racers:entrants.map((entry,index)=>{
     const entrant={...entry,lane:lanes[index]};
     const performance=machinePerformance(entrant.equipment,entrant.id==='player'?condition:{...freshCondition,motorSeconds:entrant.motorSeconds??0});

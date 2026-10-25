@@ -1,3 +1,4 @@
+import { GameOver } from './GameOver';
 import { keepScreenAwake } from './game/wakeLock';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { ShopWorld } from './ShopWorld';
@@ -51,6 +52,7 @@ export function App(){
         {game.overlay===null&&<AudioControls floating/>}
         <SaveWarning/>
         <TouchControls/>
+        {game.overlay==='game-over'&&<GameOver/>}
         {game.overlay==='dialogue'&&<DialogueView/>}
         {game.overlay==='proficiency'&&<ProficiencyBoard/>}
         {game.overlay==='legends'&&<LegendGallery/>}

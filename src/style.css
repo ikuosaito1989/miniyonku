@@ -149,3 +149,4 @@ kbd { font-family: inherit; font-size: 10px; padding: 2px 5px; border: 1px solid
 .audio-panel label{display:grid;gap:5px}.audio-panel input{width:100%;height:32px;touch-action:pan-y}
 .audio-panel small,.race-header .audio-panel small{display:block;color:#c1d2dc;font-size:10px;line-height:1.7;margin:0}
 .audio-panel a{display:block;color:#c6e5ed;text-decoration:underline;margin-top:6px}
+.cup-game-over{position:absolute;inset:0;z-index:80;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;background:#0d1632f5;color:#edf1ff;text-align:center}.cup-game-over h1{font:bold clamp(30px,8vw,62px) monospace;letter-spacing:5px;color:#efb978}.cup-game-over p{line-height:1.9;margin:0}.cup-game-over button{padding:14px 20px;border:2px solid #cfdaa7;background:#315768;color:#fff5cf}

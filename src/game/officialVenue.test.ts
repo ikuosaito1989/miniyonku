@@ -1,4 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
+import {legacyCup} from './cup';
 import {useGame} from './store';import {snapshotGame,decodeSave} from './saveData';import {loadSavedGame} from './autoSave';
 import {officialVenue,officialVenueFixtures,officialVenuePeople} from '../data/officialVenue';import {townSpawn,townVenues} from '../data/world';import {nextShopRace} from '../data/shopHints';import {findWalkingPath,canTravel} from './navigation';
 const initial=()=>({...useGame.getInitialState(),location:'town' as const,lastShop:'hinata' as const,legendRaceCompleted:true,aozoraWon:true,villainDefeated:true,officialQualified:true,unlockedRaces:[nextShopRace.id]});
@@ -15,7 +16,7 @@ test('公式戦は会場内からのみ開始。出場権で入場し、二戦�
 });
 test('会場の現在地と戦間の進行を保存し、再読込後も会場から復帰。未資格の会場セーブは拒否',async()=>{
  const original=useGame.getState();try{
-  useGame.setState({...initial(),location:'stadium-5',officialSpeedWon:true});const save=decodeSave({version:1,savedAt:100,game:snapshotGame(useGame.getState())});
+  useGame.setState({...initial(),location:'stadium-5',officialSpeedWon:true,wakabaCup:legacyCup(true,false)});const save=decodeSave({version:1,savedAt:100,game:snapshotGame(useGame.getState())});
   await loadSavedGame({read:async()=>save,write:async()=>{}});assert.equal(useGame.getState().location,'stadium-5');useGame.getState().openOfficialRace('dirt');useGame.getState().startOfficialRace();assert.equal(useGame.getState().officialRound,'dirt');
   assert.throws(()=>decodeSave({...save,game:{...save.game,officialQualified:false,officialSpeedWon:false}}),/公式会場/);
   useGame.getState().close();useGame.getState().close();useGame.getState().leaveShop();assert.equal(decodeSave({version:1,savedAt:101,game:snapshotGame(useGame.getState())}).game.townReturnVenue,'stadium-5');

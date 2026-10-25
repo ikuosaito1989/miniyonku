@@ -71,7 +71,7 @@ export function stepDriving(state: DrivingState, performance: Performance, laneO
   // distanceは全車共通の中心線上の進捗、speedは実際の走行速度。
   const laneScale=path?.pathScale??1+laneOffset*centerCurvature;
   const distance=state.distance+speed*FIXED_STEP/laneScale;
-  const lateral=speed**2*(path?.curvature??centerCurvature/laneScale);
+  const lateral=track.cornerLoad*speed**2*(path?.curvature??centerCurvature/laneScale);
   const stress=Math.max(0,state.stress+(lateral>road.lateralLimit?(lateral/Math.max(.001,road.lateralLimit)-1):-2)*FIXED_STEP);
   const finish=circuitLength*circuit.laps;
   const finished=distance>=finish;
