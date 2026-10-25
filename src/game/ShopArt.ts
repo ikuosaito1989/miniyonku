@@ -3,9 +3,10 @@ import type { Fixture } from '../data/shop';
 import { circuit } from '../data/circuit';
 import { story } from '../data/story';
 import { shopPalette as palette, tileSpeckles } from '../data/shopStyle';
-import { personDrawing, personSpriteSize, type Facing, type PersonKind } from './PeopleArt';
+import { personDrawing, type Facing, type PersonKind } from './PeopleArt';
 import { counterDrawing, counterSpriteSize } from './CounterArt';
 import { paintPixels } from './pixelDrawing';
+import { createPersonTexture } from './PersonTexture';
 import { drawIllustratedFixture, drawIllustratedRoom } from './ShopIllustrationArt';
 
 export type { Facing, PersonKind } from './PeopleArt';
@@ -140,8 +141,6 @@ export function createPeopleTextures(scene:Phaser.Scene){
   for(const kind of ['player','owner','rival','guide','mechanic'] as PersonKind[])for(const direction of ['down','up','left','right'] as Facing[])for(let frame=0;frame<4;frame++){
     const key=`person-${kind}-${direction}-${frame}`;
     if(scene.textures.exists(key))continue;
-    const texture=scene.textures.createCanvas(key,personSpriteSize.width,personSpriteSize.height)!;
-    paintPixels(texture.context,personDrawing(kind,direction,frame));
-    texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+    createPersonTexture(scene,key,personDrawing(kind,direction,frame));
   }
 }

@@ -138,6 +138,63 @@ export function personDrawing(kind:PersonKind,direction:Facing,frame:number):Pix
     r(40,17+bob,4,2,'#f1a9ba');r(43,22+bob,1,7,c.hairLight);
   }
   if(adult)r(side?32:18,30+bob,2,1,'#d49781');
+  // 半ドットの原画仕上げ。顔の輪郭を保ちながら瞳・布・髪へ素材ごとの光を描く。
+  // 全方向で同じ光源（左上）を使い、歩行時は衣服と一緒に上下させる。
+  const by=bob;
+  if(back){
+    p([[20,17+by],[23,13+by],[24,14+by],[22,22+by],[20,25+by]],c.hairLight,.65);
+    p([[32,13+by],[35,15+by],[38,24+by],[37,29+by],[35,27+by]],c.ink,.3);
+    r(25,30+by,3,.5,c.hairLight,.8);r(30,31+by,4,.5,c.hairLight,.55);
+    p([[24,42+by],[28,43+by],[27,53],[25,55]],c.light,.45);
+    r(26,55,9,.5,c.shade);r(25,57,3,.5,c.light);
+  }else{
+    // 瞳は白・虹彩・瞳孔・キャッチライトに分ける。
+    for(const x of side?[36]:[22,34]){
+      r(x,21.5+by,4,.5,c.ink,.65);r(x+.5,22+by,3,4.5,'#fff2dc');
+      r(x+1,23+by,2,3.5,c.hair);r(x+1.5,22.5+by,1,3,c.ink);
+      r(x+1,22.5+by,.75,1,'#fffdf0');r(x+1,26+by,1.5,.5,c.hairLight);
+    }
+    r(side?41:29,27+by,1,.5,'#ffe5c0');
+    p(side?[[37,30+by],[40,29.5+by],[41,30+by],[39,31+by]]:[[26,30+by],[29,30.5+by],[32,30+by],[32,31+by],[27,31+by]],'#9d6668');
+    r(side?38:28,31.5+by,2,.5,'#ffe7c4');
+    if(kind!=='owner'){
+      r(side?32:20,27.5+by,2.5,.5,'#e7ac98',.8);
+      if(!side)r(36,27.5+by,2.5,.5,'#e7ac98',.8);
+    }
+    if(kind!=='player'){
+      p([[22,10+by],[27,8+by],[31,8.5+by],[27,10+by],[24,13+by]],c.hairLight,.7);
+      r(21,13+by,2,.5,'#e2c1ab',.5);
+      p([[32,12+by],[34,12+by],[36,16+by],[34,17+by]],c.ink,.3);
+      r(19,18+by,.5,3,c.hairLight,.7);
+    }
+    // 襟、ステッチ、ポケット、ファスナーの金属光。
+    if(kind!=='owner'){
+      p([[25,36.5+by],[29,40+by],[28,41.5+by],[24,38+by]],c.light);
+      r(side?31:30,43+by,.5,13,'#e1dfc3',.7);
+      for(let i=0;i<4;i++)r(side?32:31,44+by+i*3,.5,.75,c.ink,.7);
+      r(side?33:34,50+by,3,.5,c.light);r(side?33:34,50+by,.5,4,c.shade);
+      p([[side?27:20,54],[side?30:25,55],[side?28:23,57]],c.light,.5);
+    }else{
+      r(24,44,.5,12,'#f7dbad');r(27,51,5,.5,'#d4b58b');r(33,51,.5,3,'#6f6460');
+      r(35,43,1,3,'#d4ac6b');r(35,43,1,.5,'#f8dfae');
+      // 眼鏡の光と口元の年齢差。
+      for(const x of side?[35]:[21,34])r(x,22+by,2,.5,'#e3ede2');
+      r(side?33:19,29+by,1.5,.5,'#bb867a');r(side?37:35,32+by,2,.5,'#bb867a');
+    }
+  }
+  if(kind==='player'){
+    // キャップのパネル、ツバ裏の影、青いジャケットのワッペン。
+    r(23,6+by,.5,4,'#a77c52');r(33,6+by,.5,4,'#bd955e');
+    p([[20,10+by],[23,11+by],[35,11+by],[38,10+by],[36,12+by],[21,12+by]],'#bc925a');
+    r(side?31:20,14+by,side?10:16,.5,'#a77c52');r(side?34:25,5+by,2,.5,'#fff0be');
+    if(!back){r(25,45+by,2.5,.5,'#fff4d3');r(25.5,46+by,1,.5,'#b58c5f');r(34,54+by,2,.5,c.light);}
+  }
+  // 靴底・靴紐・膝の反射。左右の足の前後と一緒に動く。
+  for(let leg=0;leg<2;leg++){
+    const x=side?25+leg*5:20+leg*12,offset=leg?step:-step;
+    r(x+2,66+offset,3,.5,c.light,.65);r(x+1,70+offset,4,.5,c.shade);
+    r(x,73+offset,6,.5,'#e3ddce');r(x+2,72+offset,3,.5,'#c8c5bb');r(x+1,74.5+offset,5,.5,'#7f91a5');
+  }
   if(direction==='left')return pen.shapes.map(shape=>shape.kind==='rect'?{...shape,x:60-shape.x-shape.w}:{...shape,points:shape.points.map(([x,y])=>[60-x,y] as const)});
   return pen.shapes;
 }

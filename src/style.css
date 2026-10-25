@@ -12,8 +12,8 @@ main { height: 100dvh; }
 button { font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 button:focus-visible { outline: 3px solid #d39a38; outline-offset: 3px; }
 .stage { position: relative; width: 100%; height: 100%; isolation: isolate; }
-.world { position: absolute; inset: 0; }
-.world canvas { display: block; image-rendering: auto; }
+.world { position: absolute; inset: 0; overflow: hidden; }
+.world canvas { display: block; width: 100% !important; height: 100% !important; image-rendering: auto; }
 .save-startup{display:grid;place-items:center;padding:24px;background:#172b31;color:#f3ead6;text-align:center}.save-startup section{max-width:640px}.save-startup button{margin:8px;padding:12px 18px;border:1px solid #9eb8ae;background:#315d56;color:#fff;border-radius:6px}.save-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:12px;margin-top:12px}.save-controls p{margin:0}.save-controls button{min-height:44px;padding:8px 14px}.save-warning{position:absolute;z-index:60;top:max(8px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);width:max-content;max-width:92%;padding:10px 14px;border:1px solid #e8bd73;background:#372e1feb;color:#fff0ca;font-size:12px;box-shadow:0 3px 12px #0006}.save-warning button{margin-left:10px;min-height:40px;padding:6px 10px}
 .touch-controls{display:none}
 .proficiency-ranks{margin-top:14px}.proficiency-ranks summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-size:12px;color:#ffe499}.proficiency-ranks summary::before{content:'＋ ';margin-right:6px}.proficiency-ranks[open] summary::before{content:'− '}

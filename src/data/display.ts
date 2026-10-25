@@ -8,3 +8,10 @@ export function raceRenderSize(compact:boolean,width:number,height:number,dpr=1)
   const scale=Math.min(dimension(dpr),raceRenderLimits.dpr,limits.edge/Math.max(w,h),Math.sqrt(limits.pixels/(w*h)));
   return {width:Math.max(1,Math.round(w*scale)),height:Math.max(1,Math.round(h*scale))};
 }
+
+// 2DもCSSサイズと描画サイズを分離し、Retina画面へ実ピクセルで描く。
+export function shopRenderScale(width:number,height:number,dpr=1){
+  const w=Number.isFinite(width)?Math.max(1,width):1,h=Number.isFinite(height)?Math.max(1,height):1;
+  const density=Number.isFinite(dpr)?Math.max(1,dpr):1;
+  return Math.min(density,2,2560/Math.max(w,h),Math.sqrt(4_000_000/(w*h)));
+}

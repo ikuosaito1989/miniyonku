@@ -27,7 +27,7 @@ import { shopCast } from '../data/shopCast';
 import { mirroredShop, shopLayout } from '../data/shopLayout';
 import { challenger, challengerSpot } from '../data/challenger';
 import { challengerDrawing, doctorDrawing } from './PeopleArt';
-import { paintPixels } from './pixelDrawing';
+import { createPersonTexture } from './PersonTexture';
 import { drawTown } from './TownArt';
 import { drawShopDetails, drawVenueDetails } from './WorldDetailArt';
 import { getCircuitTrack } from '../data/circuit';
@@ -35,6 +35,7 @@ import { getCircuitTrack } from '../data/circuit';
 interface ShopTarget {x:number;y:number;w:number;h:number;label:string;speaker:string;shopAfter:boolean;text:string;kind?:Fixture['kind']|'exit'|'venue'|'challenger'|'legend-challenger'|'official-speed'|'official-dirt'|'official-reception'|'official-technical';venueId?:string}
 export class ShopScene extends Phaser.Scene {
   private gesture=createShopGesture();
+  private screenPoint(pointer:Phaser.Input.Pointer){return {x:pointer.x*this.scale.displaySize.width/this.scale.width,y:pointer.y*this.scale.displaySize.height/this.scale.height};}
   private pendingTarget:ShopTarget|null=null;
   private player!: Phaser.GameObjects.Container;
   private keys!: Record<string, Phaser.Input.Keyboard.Key>;
@@ -84,8 +85,7 @@ export class ShopScene extends Phaser.Scene {
         if(npc.id==='go'||npc.id==='riku'){
           const key=`venue-${npc.id}-down`;
           if(!this.textures.exists(key)){
-            const texture=this.textures.createCanvas(key,personSpriteSize.width,personSpriteSize.height)!;
-            paintPixels(texture.context,npc.id==='go'?challengerDrawing('down'):offroaderDrawing('down'));texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+            createPersonTexture(this,key,npc.id==='go'?challengerDrawing('down'):offroaderDrawing('down'));
           }
           (person.list[1] as Phaser.GameObjects.Image).setTexture(key);
         }
@@ -109,8 +109,7 @@ export class ShopScene extends Phaser.Scene {
     if(useGame.getState().location==='hinata'){
       const key='person-offroader-down';
       if(!this.textures.exists(key)){
-        const texture=this.textures.createCanvas(key,personSpriteSize.width,personSpriteSize.height)!;
-        paintPixels(texture.context,offroaderDrawing('down'));texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+        createPersonTexture(this,key,offroaderDrawing('down'));
       }
       (rivalPerson.list[1] as Phaser.GameObjects.Image).setTexture(key);
     }
@@ -147,12 +146,14 @@ export class ShopScene extends Phaser.Scene {
     this.inputVersion=touchInput.version();
     let tap:{x:number;y:number;time:number;id:number}|null=null;
     this.input.on('pointerdown',(pointer:Phaser.Input.Pointer)=>{
+      const screen=this.screenPoint(pointer);
       if(useGame.getState().overlay)return;
-      if(compactDevice()){this.cancelRoute();this.pendingTarget=null;this.gesture.down(pointer.id,pointer.x,pointer.y,pointer.downTime);return;}
-      tap={x:pointer.x,y:pointer.y,time:pointer.downTime,id:pointer.id};
+      if(compactDevice()){this.cancelRoute();this.pendingTarget=null;this.gesture.down(pointer.id,screen.x,screen.y,pointer.downTime);return;}
+      tap={x:screen.x,y:screen.y,time:pointer.downTime,id:pointer.id};
     });
-    this.input.on('pointermove',(pointer:Phaser.Input.Pointer)=>{if(compactDevice())this.gesture.move(pointer.id,pointer.x,pointer.y);});
+    this.input.on('pointermove',(pointer:Phaser.Input.Pointer)=>{if(compactDevice())this.gesture.move(pointer.id,this.screenPoint(pointer).x,this.screenPoint(pointer).y);});
     this.input.on('pointerup',(pointer:Phaser.Input.Pointer)=>{
+      const screen=this.screenPoint(pointer);
       if(compactDevice()){
         if(useGame.getState().overlay){this.gesture.reset();return;}
         const point=this.cameras.main.getWorldPoint(pointer.x,pointer.y);
@@ -161,7 +162,7 @@ export class ShopScene extends Phaser.Scene {
         const owner=!this.isTown&&Math.abs(point.x-ownerPosition.x)<24&&point.y>ownerPosition.y-44&&point.y<ownerPosition.y+16;
         const target=owner?targets.find(t=>t.kind==='counter'):targets.find(t=>point.x>=t.x-5&&point.x<=t.x+t.w+5&&point.y>=t.y-5&&point.y<=t.y+t.h+5);
         const emptyFloor=!target&&point.x>=56&&point.x<=904&&point.y>=136&&point.y<=582&&!this.solids.some(r=>r.contains(point.x,point.y));
-        const action=this.gesture.up(pointer.id,pointer.x,pointer.y,pointer.upTime,emptyFloor);
+        const action=this.gesture.up(pointer.id,screen.x,screen.y,pointer.upTime,emptyFloor);
         if(action==='setting'){this.cancelRoute();this.pendingTarget=null;useGame.getState().openSetting();}
         else if(action==='tap'&&target){
           this.pendingTarget=target;
@@ -170,7 +171,7 @@ export class ShopScene extends Phaser.Scene {
         return;
       }
       const start=tap;tap=null;
-      if(!start||start.id!==pointer.id||useGame.getState().overlay||Math.hypot(pointer.x-start.x,pointer.y-start.y)>12||pointer.upTime-start.time>700)return;
+      if(!start||start.id!==pointer.id||useGame.getState().overlay||Math.hypot(screen.x-start.x,screen.y-start.y)>12||pointer.upTime-start.time>700)return;
       const target=this.cameras.main.getWorldPoint(pointer.x,pointer.y);
       this.route=findWalkingPath({x:this.player.x,y:this.player.y},target,this.solids);
       const end=this.route.at(-1);
@@ -216,8 +217,7 @@ export class ShopScene extends Phaser.Scene {
     if(visible&&!this.challengerPerson){
       const key='person-challenger-down';
       if(!this.textures.exists(key)){
-        const texture=this.textures.createCanvas(key,personSpriteSize.width,personSpriteSize.height)!;
-        paintPixels(texture.context,challengerDrawing('down'));texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+        createPersonTexture(this,key,challengerDrawing('down'));
       }
       this.challengerPerson=this.person(challengerSpot.x,challengerSpot.y,'rival');
       (this.challengerPerson.list[1] as Phaser.GameObjects.Image).setTexture(key);
@@ -256,8 +256,7 @@ export class ShopScene extends Phaser.Scene {
         const colors:Record<string,string>=kind==='rei'?{'#b14b67':'#42679f','#ec9aa2':'#9bbfe9','#7f3757':'#29456f'}:{'#b14b67':'#c49b3d','#ec9aa2':'#f3d98a','#7f3757':'#8b6529'};
         drawing=drawing.map(shape=>({...shape,color:colors[shape.color]??shape.color}));
       }
-      const texture=this.textures.createCanvas(key,personSpriteSize.width,personSpriteSize.height)!;
-      paintPixels(texture.context,drawing);texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+      createPersonTexture(this,key,drawing);
     }
     return key;
   }
