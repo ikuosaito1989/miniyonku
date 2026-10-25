@@ -29,6 +29,7 @@ import { challenger, challengerSpot } from '../data/challenger';
 import { challengerDrawing, doctorDrawing } from './PeopleArt';
 import { paintPixels } from './pixelDrawing';
 import { drawTown } from './TownArt';
+import { drawShopDetails, drawVenueDetails } from './WorldDetailArt';
 import { getCircuitTrack } from '../data/circuit';
 
 interface ShopTarget {x:number;y:number;w:number;h:number;label:string;speaker:string;shopAfter:boolean;text:string;kind?:Fixture['kind']|'exit'|'venue'|'challenger'|'legend-challenger'|'official-speed'|'official-dirt'|'official-reception'|'official-technical';venueId?:string}
@@ -76,6 +77,7 @@ export class ShopScene extends Phaser.Scene {
       this.solids=townVenues.map(v=>new Phaser.Geom.Rectangle(v.x,v.y,v.w,v.h));
     }else if(this.isOfficial){
       drawOfficialVenue(this,useGame.getState().location);
+      drawVenueDetails(this);
       this.solids=officialFixturesFor(useGame.getState().location).map(f=>new Phaser.Geom.Rectangle(f.x,f.y,f.w,f.h));
       for(const npc of officialVenuePeople){
         const person=this.person(npc.x,npc.y,npc.kind);
@@ -83,7 +85,7 @@ export class ShopScene extends Phaser.Scene {
           const key=`venue-${npc.id}-down`;
           if(!this.textures.exists(key)){
             const texture=this.textures.createCanvas(key,personSpriteSize.width,personSpriteSize.height)!;
-            paintPixels(texture.context,npc.id==='go'?challengerDrawing('down'):offroaderDrawing('down'));texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
+            paintPixels(texture.context,npc.id==='go'?challengerDrawing('down'):offroaderDrawing('down'));texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
           }
           (person.list[1] as Phaser.GameObjects.Image).setTexture(key);
         }
@@ -94,6 +96,7 @@ export class ShopScene extends Phaser.Scene {
     const shopId=currentShop(useGame.getState().location).id,layout=shopLayout(shopId),mirrored=mirroredShop(shopId);
     const fixtures=layout.map(f=>f.target);
     drawShopRoom(this,mirrored);
+    drawShopDetails(this,mirrored);
     for(const {source,target:fixture} of layout){
       drawShopFixture(this,fixture,source,mirrored);
       this.solids.push(new Phaser.Geom.Rectangle(fixture.x,fixture.y,fixture.w,fixture.h));
@@ -107,7 +110,7 @@ export class ShopScene extends Phaser.Scene {
       const key='person-offroader-down';
       if(!this.textures.exists(key)){
         const texture=this.textures.createCanvas(key,personSpriteSize.width,personSpriteSize.height)!;
-        paintPixels(texture.context,offroaderDrawing('down'));texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
+        paintPixels(texture.context,offroaderDrawing('down'));texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
       }
       (rivalPerson.list[1] as Phaser.GameObjects.Image).setTexture(key);
     }
@@ -214,7 +217,7 @@ export class ShopScene extends Phaser.Scene {
       const key='person-challenger-down';
       if(!this.textures.exists(key)){
         const texture=this.textures.createCanvas(key,personSpriteSize.width,personSpriteSize.height)!;
-        paintPixels(texture.context,challengerDrawing('down'));texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
+        paintPixels(texture.context,challengerDrawing('down'));texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
       }
       this.challengerPerson=this.person(challengerSpot.x,challengerSpot.y,'rival');
       (this.challengerPerson.list[1] as Phaser.GameObjects.Image).setTexture(key);
@@ -254,7 +257,7 @@ export class ShopScene extends Phaser.Scene {
         drawing=drawing.map(shape=>({...shape,color:colors[shape.color]??shape.color}));
       }
       const texture=this.textures.createCanvas(key,personSpriteSize.width,personSpriteSize.height)!;
-      paintPixels(texture.context,drawing);texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
+      paintPixels(texture.context,drawing);texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
     }
     return key;
   }

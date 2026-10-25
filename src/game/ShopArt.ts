@@ -78,7 +78,7 @@ export function drawShopFixture(scene:Phaser.Scene,f:Fixture,source:Fixture=f,mi
     const key='shop-counter-detailed';
     if(!scene.textures.exists(key)){
       const texture=scene.textures.createCanvas(key,counterSpriteSize.width*2,counterSpriteSize.height*2)!;
-      texture.context.scale(2,2);paintPixels(texture.context,counterDrawing());texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
+      texture.context.scale(2,2);paintPixels(texture.context,counterDrawing());texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
     }
     scene.add.image(x,y-counterSpriteSize.topOverhang,key).setOrigin(0).setDisplaySize(w,h+counterSpriteSize.topOverhang).setDepth(y+h);
     label(scene,x+168,y+42,'こもれび',6,'#456080',y+h+1);
@@ -142,6 +142,6 @@ export function createPeopleTextures(scene:Phaser.Scene){
     if(scene.textures.exists(key))continue;
     const texture=scene.textures.createCanvas(key,personSpriteSize.width,personSpriteSize.height)!;
     paintPixels(texture.context,personDrawing(kind,direction,frame));
-    texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
+    texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
   }
 }
