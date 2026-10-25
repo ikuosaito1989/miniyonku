@@ -11,7 +11,7 @@ test('公式戦は会場内からのみ開始。出場権で入場し、二戦�
   useGame.getState().openOfficialRace('dirt');assert.equal(useGame.getState().dialogueStage,'none');assert.match(useGame.getState().dialogue,/第1戦/);useGame.getState().close();
   useGame.getState().openOfficialRace('speed');assert.equal(useGame.getState().dialogueStage,'official-invite');useGame.getState().openSetting();useGame.getState().close();useGame.getState().openOfficialRace('speed');useGame.getState().startOfficialRace();assert.equal(useGame.getState().officialRound,'speed');
   useGame.getState().close();assert.equal(useGame.getState().location,'stadium-5');useGame.getState().close();useGame.getState().leaveShop();assert.equal(useGame.getState().location,'town');assert.equal(useGame.getState().townReturnVenue,'stadium-5');
-  const venue=townVenues.find(v=>v.id==='stadium-5')!;assert.ok(townSpawn('stadium-5').y<venue.y);
+  const venue=townVenues.find(v=>v.id==='stadium-5')!;assert.ok(townSpawn('stadium-5').y>venue.y+venue.h);
  }finally{useGame.setState(original,true);}
 });
 test('会場の現在地と戦間の進行を保存し、再読込後も会場から復帰。未資格の会場セーブは拒否',async()=>{

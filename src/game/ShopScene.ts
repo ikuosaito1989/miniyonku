@@ -18,18 +18,18 @@ import { equippedCondition } from './condition';
 import { shopAdvice } from './shopAdvice';
 import { touchInput } from './touchInput';
 import { compactDevice } from '../data/display';
-import { findWalkingPath, type Point } from './navigation';
+import { findWalkingPath, walkBounds, type Point } from './navigation';
 import { proficiencyStandings } from '../data/proficiency';
 import shopIllustration from '../assets/shop/interior-v1.webp';
 import { shopIllustrationKey } from '../data/shopIllustration';
-import { currentShop, isVenueOpen, shopExit, townSpawn, townVenues, venueMessage } from '../data/world';
+import { currentShop, isVenueOpen, shopExit, townSpawn, townVenues, venueMessage, townSize, townWalkBounds, townBlocks } from '../data/world';
 import { shopCast } from '../data/shopCast';
 import { mirroredShop, shopLayout } from '../data/shopLayout';
 import { challenger, challengerSpot } from '../data/challenger';
 import { challengerDrawing, doctorDrawing } from './PeopleArt';
 import { createPersonTexture } from './PersonTexture';
 import { drawTown } from './TownArt';
-import { drawShopDetails, drawVenueDetails } from './WorldDetailArt';
+import { drawShopDetails } from './WorldDetailArt';
 import { getCircuitTrack } from '../data/circuit';
 
 interface ShopTarget {x:number;y:number;w:number;h:number;label:string;speaker:string;shopAfter:boolean;text:string;kind?:Fixture['kind']|'exit'|'venue'|'challenger'|'legend-challenger'|'official-speed'|'official-dirt'|'official-reception'|'official-technical';venueId?:string}
@@ -43,6 +43,7 @@ export class ShopScene extends Phaser.Scene {
   private facing:Facing='down';
   private playerSprite!:Phaser.GameObjects.Image;
   private walkTime=0;
+  private mapTime=0;
   private interactionPending=false;
   private route:Point[]=[];
   private destination!:Phaser.GameObjects.Graphics;
@@ -53,6 +54,11 @@ export class ShopScene extends Phaser.Scene {
   private arriving:{state:ArrivalActor;container:Phaser.GameObjects.Container;kind:string;solid:Phaser.Geom.Rectangle|null}[]=[];
   private eventAudio=new EventAudio();
   private isTown=false;
+  private approach(target:ShopTarget){
+    if(this.isTown)return {x:target.x+target.w/2,y:target.y+target.h+28};
+    return {x:target.x+target.w/2,y:target.y+target.h/2};
+  }
+  private get bounds(){return this.isTown?townWalkBounds:walkBounds;}
   private isOfficial=false;
   private transitionArmed=true;
   private doctorPerson:Phaser.GameObjects.Container|null=null;
@@ -75,10 +81,9 @@ export class ShopScene extends Phaser.Scene {
     createPeopleTextures(this);
     if(this.isTown){
       drawTown(this,useGame.getState());
-      this.solids=townVenues.map(v=>new Phaser.Geom.Rectangle(v.x,v.y,v.w,v.h));
+      this.solids=[...townVenues,...townBlocks].map(v=>new Phaser.Geom.Rectangle(v.x,v.y,v.w,v.h));
     }else if(this.isOfficial){
       drawOfficialVenue(this,useGame.getState().location);
-      drawVenueDetails(this);
       this.solids=officialFixturesFor(useGame.getState().location).map(f=>new Phaser.Geom.Rectangle(f.x,f.y,f.w,f.h));
       for(const npc of officialVenuePeople){
         const person=this.person(npc.x,npc.y,npc.kind);
@@ -141,8 +146,22 @@ export class ShopScene extends Phaser.Scene {
     }
     const spawn=this.isTown?townSpawn(useGame.getState().townReturnVenue??useGame.getState().lastShop):this.isOfficial?officialVenue.spawn:room.spawn;
     this.player=this.person(spawn.x,spawn.y,'player');
+    if(this.isTown)window.dispatchEvent(new CustomEvent('town-position',{detail:spawn}));
     this.destination=this.add.graphics().setDepth(9999).setVisible(false);
     this.destination.lineStyle(2,0xffdf87).strokeCircle(0,0,8).lineBetween(-12,0,-5,0).lineBetween(5,0,12,0).lineBetween(0,-12,0,-5).lineBetween(0,5,0,12);
+    if(this.isTown){
+      const navigate=(event:Event)=>{
+        if(useGame.getState().overlay)return;
+        const id=(event as CustomEvent<string>).detail,target=this.getTargets().find(t=>t.venueId===id);
+        if(!target)return;
+        this.inputVersion=touchInput.version();
+        this.pendingTarget=target;
+        this.route=findWalkingPath({x:this.player.x,y:this.player.y},this.approach(target),this.solids,this.bounds);
+      };
+      window.addEventListener('town-navigate',navigate);
+      this.events.once(Phaser.Scenes.Events.SHUTDOWN,()=>window.removeEventListener('town-navigate',navigate));
+    }
+
     this.inputVersion=touchInput.version();
     let tap:{x:number;y:number;time:number;id:number}|null=null;
     this.input.on('pointerdown',(pointer:Phaser.Input.Pointer)=>{
@@ -161,19 +180,19 @@ export class ShopScene extends Phaser.Scene {
         const ownerPosition=this.cast.owner;
         const owner=!this.isTown&&Math.abs(point.x-ownerPosition.x)<24&&point.y>ownerPosition.y-44&&point.y<ownerPosition.y+16;
         const target=owner?targets.find(t=>t.kind==='counter'):targets.find(t=>point.x>=t.x-5&&point.x<=t.x+t.w+5&&point.y>=t.y-5&&point.y<=t.y+t.h+5);
-        const emptyFloor=!target&&point.x>=56&&point.x<=904&&point.y>=136&&point.y<=582&&!this.solids.some(r=>r.contains(point.x,point.y));
+        const emptyFloor=!target&&point.x>=this.bounds.left&&point.x<=this.bounds.right&&point.y>=this.bounds.top&&point.y<=this.bounds.bottom&&!this.solids.some(r=>r.contains(point.x,point.y));
         const action=this.gesture.up(pointer.id,screen.x,screen.y,pointer.upTime,emptyFloor);
         if(action==='setting'){this.cancelRoute();this.pendingTarget=null;useGame.getState().openSetting();}
         else if(action==='tap'&&target){
           this.pendingTarget=target;
-          this.route=findWalkingPath({x:this.player.x,y:this.player.y},{x:target.x+target.w/2,y:target.y+target.h/2},this.solids);
+          this.route=findWalkingPath({x:this.player.x,y:this.player.y},this.approach(target),this.solids,this.bounds);
         }
         return;
       }
       const start=tap;tap=null;
       if(!start||start.id!==pointer.id||useGame.getState().overlay||Math.hypot(screen.x-start.x,screen.y-start.y)>12||pointer.upTime-start.time>700)return;
       const target=this.cameras.main.getWorldPoint(pointer.x,pointer.y);
-      this.route=findWalkingPath({x:this.player.x,y:this.player.y},target,this.solids);
+      this.route=findWalkingPath({x:this.player.x,y:this.player.y},target,this.solids,this.bounds);
       const end=this.route.at(-1);
       this.destination.setVisible(!!end);if(end)this.destination.setPosition(end.x,end.y);
     });
@@ -196,6 +215,13 @@ export class ShopScene extends Phaser.Scene {
   private fitCamera(){
     this.gesture.reset();this.pendingTarget=null;this.cancelRoute();
     const {width,height}=this.scale;
+    if(this.isTown){
+      const camera=this.cameras.main,cssWidth=this.scale.displaySize.width;
+      camera.setZoom(width/Math.min(compactDevice()?470:850,cssWidth));
+      camera.setBounds(0,0,townSize.width,townSize.height);
+      if(this.player)camera.startFollow(this.player,false,.18,.18);
+      return;
+    }
     if(compactDevice()){
       const camera=this.cameras.main;
       camera.setZoom(Math.max(width/560,height/roomView.height));camera.setBounds(roomView.x,roomView.y,roomView.width,roomView.height);
@@ -328,14 +354,14 @@ export class ShopScene extends Phaser.Scene {
     if(dx)this.facing=dx<0?'left':'right';else if(dy)this.facing=dy<0?'up':'down';
     const manual=dx!==0||dy!==0;
     if(manual||action){this.cancelRoute();this.pendingTarget=null;}
-    const step=155*Math.min(delta,40)/1000;
+    const step=(this.isTown?235:155)*Math.min(delta,40)/1000;
     const waypoint=this.route[0];let travel=step;
     if(!manual&&waypoint){
       const xDistance=waypoint.x-this.player.x,yDistance=waypoint.y-this.player.y;
       if(Math.abs(xDistance)>.01){dx=Math.sign(xDistance);travel=Math.min(step,Math.abs(xDistance));this.facing=dx<0?'left':'right';}
       else if(Math.abs(yDistance)>.01){dy=Math.sign(yDistance);travel=Math.min(step,Math.abs(yDistance));this.facing=dy<0?'up':'down';}
     }
-    const x=Phaser.Math.Clamp(this.player.x+dx*travel,56,904), y=Phaser.Math.Clamp(this.player.y+dy*travel,136,582);
+    const x=Phaser.Math.Clamp(this.player.x+dx*travel,this.bounds.left,this.bounds.right), y=Phaser.Math.Clamp(this.player.y+dy*travel,this.bounds.top,this.bounds.bottom);
     const feet=new Phaser.Geom.Rectangle(x-11,y-3,22,17);
     const moving=(dx!==0||dy!==0)&&!this.solids.some(r=>Phaser.Geom.Intersects.RectangleToRectangle(feet,r))&&(x!==this.player.x||y!==this.player.y);
     if(moving){this.player.setPosition(x,y);this.walkTime+=delta;}else this.walkTime=0;
@@ -344,6 +370,7 @@ export class ShopScene extends Phaser.Scene {
     if(!this.route.length)this.destination.setVisible(false);
     this.playerSprite.setTexture(`person-player-${this.facing}-${moving?Math.floor(this.walkTime/130)%4:0}`);
     this.player.setDepth(this.player.y);
+    if(this.isTown&&(this.time.now-this.mapTime>350)){this.mapTime=this.time.now;window.dispatchEvent(new CustomEvent('town-position',{detail:{x:this.player.x,y:this.player.y}}));}
     const atExit=!this.isTown&&this.player.y>=567&&Math.abs(this.player.x-480)<32;
     if(!atExit)this.transitionArmed=true;
     else if(this.transitionArmed){this.transitionArmed=false;this.cancelRoute();useGame.getState().leaveShop();return;}
@@ -353,7 +380,7 @@ export class ShopScene extends Phaser.Scene {
     const target=nearest?.d<62?nearest.t:null;
     const nearby=target?.label??'';
     if(useGame.getState().nearby!==nearby)useGame.setState({nearby});
-    if(this.pendingTarget&&distance(this.pendingTarget)<62){const selected=this.pendingTarget;this.pendingTarget=null;this.cancelRoute();this.interactWith(selected);}
+    if(this.pendingTarget&&(this.isTown?Math.hypot(this.player.x-this.approach(this.pendingTarget).x,this.player.y-this.approach(this.pendingTarget).y)<22:distance(this.pendingTarget)<62)){const selected=this.pendingTarget;this.pendingTarget=null;this.cancelRoute();this.interactWith(selected);}
     else if(this.pendingTarget&&!this.route.length)this.pendingTarget=null;
     if(action&&target)this.interactWith(target);
   }

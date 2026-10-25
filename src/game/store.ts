@@ -47,7 +47,7 @@ export interface GameState extends Wallet {
   selectUnit:(slot:'motor'|'battery',id:string)=>void; breakIn:()=>void;
   raceAttempt: number; settledAttempt: number; lastPrize: number;
   settleRace: (attempt: number, race: RaceState) => void;
-  overlay: 'arrival' | 'dialogue' | 'shop' | 'race' | 'setting' | 'settings' | 'proficiency' | 'legends' | 'cheat' | 'game-over' | null; speaker: string; dialogue: string; shopAfter: boolean; notice: string; nearby: string;
+  overlay: 'town-map' | 'arrival' | 'dialogue' | 'shop' | 'race' | 'setting' | 'settings' | 'proficiency' | 'legends' | 'cheat' | 'game-over' | null; speaker: string; dialogue: string; shopAfter: boolean; notice: string; nearby: string;
   openSetting: () => void; equip: (id: string,slot?:EquipmentSlot) => void;
   openSettings:()=>void;
   startTrial: () => void;

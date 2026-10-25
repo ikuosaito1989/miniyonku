@@ -21,14 +21,3 @@ export function drawShopDetails(scene:Phaser.Scene,mirrored=false){
   const mat=scene.add.graphics().setDepth(0);mat.fillStyle(0x4e5665).fillRect(411,572,138,25);
   for(let y=574;y<595;y+=3)for(let x=414;x<546;x+=5)mat.fillStyle((x+y)%2?0x7b8b87:0x667b7a).fillRect(x,y,3,1);
 }
-
-export function drawVenueDetails(scene:Phaser.Scene){
-  const g=scene.add.graphics().setDepth(0);
-  // 競技会場の床目地と、木製パネルの壁。走行台の前景より後ろへ。
-  for(let y=120;y<558;y+=28)for(let x=46;x<916;x+=28){g.fillStyle(0xe0dcc1,.3).fillRect(x+2,y+1,23,1);g.fillStyle(0x718a85,.22).fillRect(x+24,y+2,1,23);}
-  for(const x of [48,889]){g.fillStyle(0x5e626b).fillRect(x,117,23,440);g.fillStyle(0xb0a58b).fillRect(x+3,117,17,440);for(let y=120;y<554;y+=11){g.fillStyle(0x8e8b7d).fillRect(x+4,y,15,1);g.fillStyle(0xd5c6a5).fillRect(x+5,y+1,1,8);}}
-  for(const x of [107,844]){
-    const b=scene.add.graphics().setDepth(140);b.fillStyle(0x595366).fillRect(x,110,9,34);b.fillStyle(0xb1a992).fillRect(x+2,112,5,28);b.fillStyle(0x343e50).fillRect(x-9,111,27,24);
-    for(const yy of [117,127]){b.fillStyle(0x73848b).fillCircle(x+4,yy,5);b.fillStyle(0x434e61).fillCircle(x+4,yy,3);b.fillStyle(0xa8b8ac).fillRect(x+2,yy-2,2,1);}
-  }
-}

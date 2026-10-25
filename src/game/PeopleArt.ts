@@ -1,7 +1,7 @@
 import { pixelPen, type PixelShape } from './pixelDrawing';
 export type Facing='down'|'up'|'left'|'right';
 export type PersonKind='player'|'owner'|'rival'|'guide'|'mechanic';
-export const personSpriteSize={width:60,height:80,displayWidth:39.6,displayHeight:52.8} as const;
+export const personSpriteSize={width:60,height:80,displayWidth:48,displayHeight:64} as const;
 const outfits={
   player:{ink:'#25334d',shirt:'#3868bd',light:'#89b7ed',shade:'#264782',hair:'#51404a',hairLight:'#98706b',pants:'#455d84'},
   owner:{ink:'#35374e',shirt:'#607ca0',light:'#b0c8de',shade:'#415674',hair:'#656176',hairLight:'#ada0ac',pants:'#414f67'},
@@ -93,35 +93,35 @@ export function personDrawing(kind:PersonKind,direction:Facing,frame:number):Pix
     p([[x+1,49+swing],[x+4,49+swing],[x+4,58+swing],[x+2,59+swing],[x+1,57+swing]],skin);
     r(x+1,54+swing,1,3,skinLight);r(x+3,59+swing,2,1,'#aa726a');
   }
-  // 頭と顎は服に少し重ね、首の切れ目を作らない。
+  // 大きな顔と明瞭な目を持つ、昔のRPG風の共通の頭部原画。
+  // 服の上まで顎を重ね、輪郭を黒い輪で囲わず、髪・肌それぞれの影で形を出す。
   r(26,32+bob,9,6,skinShadow);r(28,33+bob,6,4,skin);
-  p([[19,7+bob],[29,3+bob],[38,7+bob],[44,15+bob],[44,26+bob],[40,33+bob],[34,37+bob],[24,37+bob],[17,32+bob],[14,25+bob],[14,16+bob]],c.ink);
-  p([[19,13+bob],[32,9+bob],[40,14+bob],[42,25+bob],[37,32+bob],[32,35+bob],[24,34+bob],[18,29+bob],[16,22+bob]],skinShadow);
-  p([[20,13+bob],[32,11+bob],[39,15+bob],[40,25+bob],[35,31+bob],[29,33+bob],[23,31+bob],[18,26+bob],[17,21+bob]],skin);
-  p([[21,14+bob],[31,12+bob],[36,15+bob],[31,17+bob],[20,19+bob]],skinLight);
+  const headY=bob;
+  p([[19,5+headY],[24,2+headY],[35,2+headY],[42,6+headY],[47,14+headY],[47,28+headY],[43,34+headY],[36,38+headY],[23,38+headY],[16,34+headY],[12,27+headY],[12,14+headY]],c.ink);
   if(back){
-    p([[19,8+bob],[28,5+bob],[37,8+bob],[42,16+bob],[41,29+bob],[37,34+bob],[23,35+bob],[17,30+bob],[16,18+bob]],c.hair);
-    p([[19,13+bob],[27,8+bob],[34,9+bob],[27,11+bob],[22,15+bob],[18,22+bob]],c.hairLight);
-    r(23,32+bob,15,2,c.ink);
+    p([[19,7+bob],[26,4+bob],[35,4+bob],[42,9+bob],[45,17+bob],[44,29+bob],[38,35+bob],[23,35+bob],[16,29+bob],[15,16+bob]],c.hair);
+    p([[18,15+bob],[22,8+bob],[29,5+bob],[36,7+bob],[28,9+bob],[24,14+bob],[20,24+bob],[17,25+bob]],c.hairLight);
+    r(22,32+bob,17,2,c.ink);r(25,34+bob,11,1,skinShadow);
+  }else if(side){
+    p([[26,13+bob],[36,11+bob],[43,16+bob],[44,23+bob],[48,25+bob],[48,28+bob],[43,29+bob],[41,34+bob],[35,36+bob],[26,33+bob],[22,26+bob]],skinShadow);
+    p([[29,14+bob],[37,13+bob],[42,17+bob],[42,24+bob],[46,25+bob],[46,27+bob],[41,28+bob],[39,32+bob],[34,34+bob],[28,31+bob]],skin);
+    r(31,16+bob,8,2,skinLight);
+    p([[18,8+bob],[27,4+bob],[37,6+bob],[44,13+bob],[43,19+bob],[37,16+bob],[33,19+bob],[29,15+bob],[27,24+bob],[23,28+bob],[23,33+bob],[17,29+bob],[15,22+bob]],c.hair);
+    p([[19,14+bob],[23,8+bob],[30,6+bob],[35,8+bob],[27,10+bob],[23,16+bob],[20,22+bob]],c.hairLight);
+    r(36,20+bob,6,1,c.ink);r(36,22+bob,5,6,'#fff1d5');r(38,22+bob,3,6,c.ink);r(38,22+bob,1,2,'#fffaf0');
+    r(39,31+bob,4,1,'#9d6064');r(37,29+bob,3,1,'#e5a292');
+    r(24,24+bob,5,6,skinShadow);r(25,24+bob,3,4,skin);
   }else{
-    const fringe=kind==='rival'?[[16,18+bob],[15,10+bob],[21,9+bob],[21,4+bob],[28,7+bob],[34,2+bob],[36,8+bob],[42,10+bob],[43,20+bob],[36,15+bob],[33,20+bob],[28,14+bob],[22,18+bob],[18,24+bob]]:
-      [[16,20+bob],[16,12+bob],[21,7+bob],[31,5+bob],[39,10+bob],[42,19+bob],[36,16+bob],[33,19+bob],[28,13+bob],[23,17+bob],[19,24+bob]];
+    p([[19,13+bob],[29,10+bob],[39,13+bob],[44,20+bob],[43,29+bob],[38,34+bob],[32,36+bob],[25,35+bob],[18,31+bob],[15,23+bob]],skinShadow);
+    p([[20,14+bob],[29,12+bob],[38,14+bob],[41,20+bob],[41,28+bob],[36,32+bob],[30,34+bob],[23,32+bob],[18,28+bob],[17,21+bob]],skin);
+    p([[21,15+bob],[29,13+bob],[36,15+bob],[35,18+bob],[21,19+bob]],skinLight);
+    const fringe=kind==='rival'?[[14,19+bob],[14,11+bob],[20,9+bob],[20,4+bob],[28,6+bob],[34,1+bob],[38,6+bob],[44,10+bob],[46,19+bob],[40,17+bob],[37,20+bob],[32,15+bob],[27,19+bob],[23,16+bob],[18,22+bob]]:
+      [[14,22+bob],[14,13+bob],[19,7+bob],[27,4+bob],[37,6+bob],[44,13+bob],[45,21+bob],[39,17+bob],[35,19+bob],[29,14+bob],[24,17+bob],[20,19+bob],[17,26+bob]];
     p(fringe as [number,number][],c.hair);
-    p([[20,12+bob],[28,8+bob],[35,10+bob],[28,11+bob],[22,15+bob],[18,19+bob]],c.hairLight);
-    r(20,12+bob,3,1,'#c39792');
-    if(side){
-      p([[16,14+bob],[25,12+bob],[28,20+bob],[25,29+bob],[20,31+bob],[16,25+bob]],c.hair);
-      p([[40,23+bob],[45,25+bob],[44,27+bob],[39,27+bob]],skin);
-      r(35,20+bob,5,1,'#80576a');r(36,22+bob,3,5,'#fff1dc');r(38,22+bob,2,5,c.ink);r(38,22+bob,1,1,'#fffaf0');
-      r(39,30+bob,3,1,'#a76867');r(33,28+bob,3,1,'#e3a18c');
-      r(25,24+bob,4,5,skinShadow);r(26,24+bob,2,3,skin);
-    }else{
-      r(22,20+bob,5,1,'#84576b');r(34,20+bob,5,1,'#84576b');
-      for(const x of [22,34]){r(x,22+bob,4,5,'#fff0d8');r(x+1,22+bob,2,5,c.ink);r(x+1,22+bob,1,1,'#fffaf0');}
-      r(29,26+bob,2,3,'#d5987b');r(27,31+bob,6,1,'#a56765');r(28,32+bob,4,1,'#ffdeb0');
-      r(20,28+bob,3,1,'#e4a08b');r(36,28+bob,3,1,'#e4a08b');
-      p([[14,21+bob],[17,20+bob],[19,24+bob],[17,28+bob],[14,26+bob]],skinShadow);r(15,23+bob,2,3,skin);
-    }
+    p([[18,14+bob],[22,8+bob],[29,6+bob],[36,8+bob],[29,9+bob],[24,12+bob],[21,17+bob]],c.hairLight);
+    for(const x of [21,34]){r(x,21+bob,6,1,c.ink);r(x,23+bob,5,6,'#fff2d8');r(x+2,23+bob,3,6,c.ink);r(x+2,23+bob,1,2,'#fffdf2');}
+    r(29,27+bob,2,3,'#d39b80');r(27,32+bob,7,1,'#995f62');r(28,33+bob,5,1,'#ffe5b7');r(19,29+bob,4,1,'#e5a092');r(38,29+bob,3,1,'#e5a092');
+    r(14,23+bob,3,5,skinShadow);r(15,24+bob,2,3,skin);
   }
   if(kind==='player'){
     p([[17,12+bob],[19,5+bob],[23,2+bob],[34,2+bob],[39,6+bob],[40,12+bob]],'#a87a49');
@@ -148,12 +148,8 @@ export function personDrawing(kind:PersonKind,direction:Facing,frame:number):Pix
     p([[24,42+by],[28,43+by],[27,53],[25,55]],c.light,.45);
     r(26,55,9,.5,c.shade);r(25,57,3,.5,c.light);
   }else{
-    // 瞳は白・虹彩・瞳孔・キャッチライトに分ける。
-    for(const x of side?[36]:[22,34]){
-      r(x,21.5+by,4,.5,c.ink,.65);r(x+.5,22+by,3,4.5,'#fff2dc');
-      r(x+1,23+by,2,3.5,c.hair);r(x+1.5,22.5+by,1,3,c.ink);
-      r(x+1,22.5+by,.75,1,'#fffdf0');r(x+1,26+by,1.5,.5,c.hairLight);
-    }
+    // 白い反射を残し、虹彩の下端に暖色を入れる。
+    for(const x of side?[38]:[23,36]){r(x,28+bob,2,.5,c.hairLight);r(x,23+bob,1,1.5,'#fffdf0');}
     r(side?41:29,27+by,1,.5,'#ffe5c0');
     p(side?[[37,30+by],[40,29.5+by],[41,30+by],[39,31+by]]:[[26,30+by],[29,30.5+by],[32,30+by],[32,31+by],[27,31+by]],'#9d6668');
     r(side?38:28,31.5+by,2,.5,'#ffe7c4');

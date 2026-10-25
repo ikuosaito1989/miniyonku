@@ -20,7 +20,7 @@ test('全80人物スプライトは原画範囲内に収まり、服装・向き
     assert.notDeepEqual(personDrawing(kind,'right',0),personDrawing(kind,'left',0));
     assert.notDeepEqual(personDrawing(kind,'down',1),personDrawing(kind,'down',3));
   }
-  assert.equal(looks.size,5);assert.equal(personSpriteSize.displayWidth,39.6);assert.equal(personSpriteSize.displayHeight,52.8);
+  assert.equal(looks.size,5);assert.equal(personSpriteSize.displayWidth,48);assert.equal(personSpriteSize.displayHeight,64);
 });
 test('専用カウンターの面・小物・ガラスの透過レイヤーは原画内に収まる',()=>{
   const shapes=counterDrawing();inside(shapes,counterSpriteSize.width,counterSpriteSize.height);

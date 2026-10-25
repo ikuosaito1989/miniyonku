@@ -4,7 +4,7 @@ import { useGame } from './store';
 import { createRaceState, launchPlayer, startRace, stepRace, rankRacers, type RaceState } from './race';
 import { starterEquipment } from '../data/machine';
 import { nextShopRace } from '../data/shopHints';
-import { isVenueOpen, modelShops, townVenues, townSpawn, venueMessage } from '../data/world';
+import { isVenueOpen, modelShops, townVenues, townSpawn, venueMessage, townWalkBounds } from '../data/world';
 import { getCircuitTrack } from '../data/circuit';
 import { isStocked } from '../data/progression';
 import { parts } from '../data/parts';
@@ -92,8 +92,8 @@ test('街の7模型店・大会会場4か所は通路からすべて調べられ
   assert.deepEqual(townVenues.filter(v=>v.kind==='stadium').map(v=>v.stage),[5,7,9,10]);
   const obstacles=townVenues.map(v=>({x:v.x,y:v.y,width:v.w,height:v.h})),spawn=townSpawn('komorebi');
   for(const venue of townVenues){
-    const route=findWalkingPath(spawn,{x:venue.x+venue.w/2,y:venue.y+venue.h/2},obstacles);assert.ok(route.length>0);
-    let before=spawn;for(const p of route){assert.ok(canTravel(before,p,obstacles));before=p;}
+    const route=findWalkingPath(spawn,{x:venue.x+venue.w/2,y:venue.y+venue.h/2},obstacles,townWalkBounds);assert.ok(route.length>0);
+    let before=spawn;for(const p of route){assert.ok(canTravel(before,p,obstacles,townWalkBounds));before=p;}
     assert.ok(Math.hypot(before.x-Math.max(venue.x,Math.min(before.x,venue.x+venue.w)),before.y-Math.max(venue.y,Math.min(before.y,venue.y+venue.h)))<62);
     if(!venue.shopId&&venue.id!=='stadium-9'&&venue.id!=='stadium-5')assert.match(venueMessage(venue),/準備中/);
     if(venue.id==='stadium-9')assert.match(venueMessage(venue),/第3公式大会/);

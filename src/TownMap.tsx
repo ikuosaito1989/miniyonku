@@ -1,0 +1,13 @@
+import {useEffect,useState,useRef} from 'react';
+import {useGame} from './game/store';
+import {townVenues,townSize,townRoads,townSpawn,isVenueOpen} from './data/world';
+export function TownMap(){
+ const pending=useRef<string|null>(null);
+ const state=useGame(),[position,setPosition]=useState(()=>townSpawn(state.townReturnVenue??state.lastShop));
+ useEffect(()=>{const handler=(e:Event)=>setPosition((e as CustomEvent<{x:number;y:number}>).detail);window.addEventListener('town-position',handler);return()=>window.removeEventListener('town-position',handler);},[]);
+ useEffect(()=>{if(state.overlay!==null||!pending.current)return;const id=pending.current;const frame=requestAnimationFrame(()=>{pending.current=null;window.dispatchEvent(new CustomEvent('town-navigate',{detail:id}));});return()=>cancelAnimationFrame(frame);},[state.overlay]);
+ if(state.location!=='town'||state.overlay!==null&&state.overlay!=='town-map')return null;
+ const drawing=<svg viewBox={`0 0 ${townSize.width} ${townSize.height}`} aria-label="緑川町の全体地図" role="img"><rect width="3200" height="2400" fill="#80966d"/><path d="M2990 0H3200V2400H2990Z" fill="#6197ad"/>{townRoads.vertical.map(x=><path key={x} d={`M${x} 70V2330`} stroke="#c7c1a2" strokeWidth="85"/>)}{townRoads.horizontal.map(y=><path key={y} d={`M64 ${y}H2940`} stroke="#c7c1a2" strokeWidth="85"/>)}{townVenues.map(v=><g key={v.id}><rect x={v.x} y={v.y} width={v.w} height={v.h} fill={isVenueOpen(v,state)?v.kind==='stadium'?'#efd083':'#e6e4c9':'#596575'} stroke="#384758" strokeWidth="10"/><text x={v.x+v.w/2} y={v.y-24} textAnchor="middle" fontSize="65" fill="#fff4d3">{v.name}</text></g>)}<circle cx={position.x} cy={position.y} r="48" fill="#e77764" stroke="#fff2c3" strokeWidth="17"/></svg>;
+ if(state.overlay!=='town-map')return <button className="town-map-open" aria-label="街の地図" onClick={()=>useGame.setState({overlay:'town-map'})}>{drawing}<span>街の地図</span></button>;
+ return <div className="scrim town-map-scrim"><section className="town-map-panel" role="dialog" aria-modal="true" aria-labelledby="town-map-title"><header><div><small>MIDORIKAWA EXPLORER</small><h1 id="town-map-title">緑川町・広域マップ</h1></div><button autoFocus onClick={state.close}>閉じる</button></header>{drawing}<p>赤い印が現在地。行き先を選ぶと、入口まで自動で歩きます。移動操作で中断できます。</p><div className="town-map-places">{townVenues.map(v=><button key={v.id} onClick={()=>{pending.current=v.id;useGame.setState({overlay:null});}}><span>{v.kind==='stadium'?'🏆':'◆'} {v.name}</span><small>{isVenueOpen(v,state)?'入場可能 →':'未開放・場所を確認 →'}</small></button>)}</div></section></div>;
+}

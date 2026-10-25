@@ -16,7 +16,7 @@ export interface WorldProgress {legendRaceCompleted:boolean;villainDefeated:bool
 export function canEnterShop(id:ShopId,progress:WorldProgress){return id==='wakaba'?progress.wakabaUnlocked===true:id==='komorebi'||progress.legendRaceCompleted&&(id==='aozora'||progress.villainDefeated);}
 export function isVenueOpen(venue:TownVenue,progress:WorldProgress){return venue.id==='stadium-9'?progress.thirdOfficialQualified===true:venue.id==='stadium-5'?progress.officialQualified===true:!!venue.shopId&&canEnterShop(venue.shopId,progress);}
 export interface TownVenue {id:string;name:string;kind:'shop'|'stadium';stage:number;x:number;y:number;w:number;h:number;entrance:'north'|'south';color:number;shopId?:ShopId}
-export const townVenues:TownVenue[]=[
+const venueTemplates:TownVenue[]=[
   {id:'komorebi',name:'こもれび模型店',kind:'shop',stage:1,x:78,y:150,w:132,h:88,entrance:'south',color:0x528672,shopId:'komorebi'},
   {id:'aozora',name:'あおぞら模型店',kind:'shop',stage:2,x:246,y:150,w:132,h:88,entrance:'south',color:0x497eaf,shopId:'aozora'},
   {id:'hinata',name:'ひなた模型店',kind:'shop',stage:3,x:414,y:150,w:132,h:88,entrance:'south',color:0xb78e4f,shopId:'hinata'},
@@ -29,6 +29,28 @@ export const townVenues:TownVenue[]=[
   {id:'stadium-9',name:'星空レース場',kind:'stadium',stage:9,x:750,y:466,w:132,h:88,entrance:'north',color:0x9674a6},
   {id:'stadium-10',name:'緑川グランプリ',kind:'stadium',stage:10,x:750,y:316,w:132,h:88,entrance:'north',color:0xb59b52},
 ];
+// 広い街に種付き乱数で散らす。再読込で店が移動しない共通の街地図。
+export const townSize={width:3200,height:2400};
+export const townWalkBounds={left:64,right:2940,top:96,bottom:2336};
+export const townRoads={vertical:[460,1240,2080,2820],horizontal:[700,1500,2180]};
+export function generateTownVenues(seed=19890421):TownVenue[]{
+  let state=seed>>>0;const random=()=>{state=(Math.imul(state,1664525)+1013904223)>>>0;return state/4294967296;};
+  const plots=[{x:180,y:290},{x:780,y:380},{x:1560,y:270},{x:2380,y:360},{x:260,y:1070},{x:920,y:1110},{x:1670,y:1050},{x:2480,y:1120},{x:190,y:1780},{x:970,y:1850},{x:1680,y:1800}];
+  for(let i=plots.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[plots[i],plots[j]]=[plots[j],plots[i]];}
+  return venueTemplates.map((venue,index)=>{
+    const plot=plots[index],stadium=venue.kind==='stadium';
+    return {...venue,entrance:'south',x:plot.x+Math.floor(random()*40)-20,y:plot.y+Math.floor(random()*50)-25,w:stadium?350:190,h:stadium?250:140};
+  });
+}
+export const townVenues=generateTownVenues();
+// 住宅・商店街の背景棟。入口を持たない建物も歩行障害物として扱う。
+export const townBlocks:Array<{x:number;y:number;w:number;h:number}>=[];
+for(let y=130;y<2150;y+=345)for(let x=100;x<2800;x+=370){
+  const w=145+(x%3)*15,h=110;
+  if(townRoads.vertical.some(road=>road>x-100&&road<x+w+100)||townRoads.horizontal.some(road=>road>y-80&&road<y+h+80))continue;
+  if(townVenues.some(v=>x<v.x+v.w+90&&x+w>v.x-90&&y<v.y+v.h+90&&y+h>v.y-110))continue;
+  townBlocks.push({x,y,w,h});
+}
 export const shopExit={x:440,y:575,w:80,h:7};
 export function townSpawn(shop:ShopId|'stadium-5'|'stadium-9'){const venue=townVenues.find(v=>v.id===shop)!;return {x:venue.x+venue.w/2,y:venue.entrance==='north'?venue.y-42:venue.y+venue.h+42};}
 export function venueMessage(venue:TownVenue){

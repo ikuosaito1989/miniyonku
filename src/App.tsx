@@ -1,3 +1,4 @@
+import { TownMap } from './TownMap';
 import { GameOver } from './GameOver';
 import { keepScreenAwake } from './game/wakeLock';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
@@ -51,6 +52,7 @@ export function App(){
         {game.overlay===null&&<button className="game-settings-open" onClick={game.openSettings}>設定</button>}
         {game.overlay===null&&<AudioControls floating/>}
         <SaveWarning/>
+        <TownMap/>
         <TouchControls/>
         {game.overlay==='game-over'&&<GameOver/>}
         {game.overlay==='dialogue'&&<DialogueView/>}
