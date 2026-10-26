@@ -2,6 +2,8 @@ export const MAX_PART_LEVEL=10;
 import { bodies } from './bodies';
 // レベルは単純な速度倍率ではなく、入手段階の目安。
 export const partLevels:Record<string,number>={
+  'wheel-aero':3,'wheel-rally':4,'wheel-carbon':5,'wheel-diff':5,
+  'motor-turn':5,'chassis-turn':5,'tire-turn':5,'roller-turn':5,'accessory-stabilizer':5,
   'motor-trail':4,'motor-rally':4,'tire-trail':4,'tire-sand':4,'accessory-damper':4,'accessory-damper-light':4,'roller-double':4,'roller-trail':4,'chassis-trail':4,
   ...Object.fromEntries(bodies.map(body=>[body.id,body.grade])),
   'chassis-basic':1,'chassis-light':2,'chassis-low':3,

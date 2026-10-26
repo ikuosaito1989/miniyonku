@@ -1,6 +1,8 @@
 import type { Part } from './parts';
 export function partGuidance(part:Part):{use:string;tradeoff:string}{
  const s=part.specs;
+ if(part.id==='motor-turn')return {use:'わかば・星空杯の連続コーナーで、減速後の再加速を強化。4:1ギアと高グリップの足回りを合わせよう。',tradeoff:'出力が高いのでモーター単体の交換ではコースアウトする場合があります。約60秒の慣らしと安定性の強化を忘れずに。'};
+ if(part.id==='tire-turn')return {use:'舗装の連続コーナーで横滑りとコースアウトを抑えたいときに。K4シャーシ・スタビライザーと併用できます。',tradeoff:'悪路への追従性はブロックタイヤほど高くありません。ダートでは悪路用へ交換しよう。'};
  if(part.id==='accessory-none')return {use:'その枠の補助パーツを外します。',tradeoff:'軽くなりますが、そのパーツの安定性・制振・駆動補助は失われます。'};
  switch(part.category){
  case 'motor':return {use:s.torque>=2?'砂利・砂地で失速しにくい高トルク型。ひなたや公式杯第2戦向け。':s.rpm>=16000?'舗装の直線で速度を伸ばすタイプ。公式杯第1戦では高速ギアと組み合わせよう。':'立ち上がりを重視するなら大きいギア比、最高速を重視するなら小さいギア比と組み合わせよう。',tradeoff:s.wear===0?'慣らし不要で消耗しませんが出力は控えめです。':'新品は約60秒の慣らしで好調に。使いすぎによる摩耗や電池残量にも注意。'};

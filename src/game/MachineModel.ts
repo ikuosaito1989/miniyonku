@@ -255,6 +255,9 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
     }else if(accessoryId==='accessory-weight'){
       add(new THREE.BoxGeometry(.052,.007,.024),partMaterial(accessoryId,65),0,.034,.066).name='ballast-plate';
       add(new THREE.BoxGeometry(.04,.002,.003),partAccent(accessoryId),0,.039,.066).name='ballast-mark';
+    }else if(accessoryId==='accessory-stabilizer'){
+      add(new THREE.BoxGeometry(.13,.006,.018),partMaterial(accessoryId,70),0,.027,-.07).name='low-stabilizer-bar';
+      for(const side of [-1,1])add(new THREE.CylinderGeometry(.006,.006,.012,12),partAccent(accessoryId,80),side*.064,.034,-.07).name='low-stabilizer-end';
     }else if(accessoryId==='accessory-support'){
       for(const side of [-1,1])add(new THREE.BoxGeometry(.008,.012,.11),partMaterial(accessoryId,75),side*.07,.031,0).name='underbody-support';
     }
@@ -274,11 +277,11 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
       }
       const wheelColor=isChampion?0xf0c943:hex(look(equipment.wheel).color),wheelAccent=partAccent(equipment.wheel,80);
       const rim=add(new THREE.CylinderGeometry(.022,.022,.003,24),new THREE.MeshPhongMaterial({color:wheelColor,shininess:70}),side*.097,.033,z);rim.rotation.z=Math.PI/2;rim.name=`wheel-rim-${equipment.wheel}`;
-      const spokes=equipment.wheel==='wheel-light'?6:equipment.wheel==='wheel-oneway'?3:5;
+      const spokes=look(equipment.wheel).detail;
       for(let i=0;i<spokes;i++){
         const spoke=add(new THREE.CapsuleGeometry(equipment.wheel==='wheel-light'?.0015:.002,.032,3,6),wheelAccent,side*.099,.033,z);spoke.rotation.x=i*Math.PI/spokes;spoke.name=`wheel-spoke-${equipment.wheel}`;
       }
-      const hub=add(new THREE.CylinderGeometry(equipment.wheel==='wheel-oneway'?.009:.007,equipment.wheel==='wheel-oneway'?.009:.007,.005,16),partAccent(equipment.wheel,90),side*.101,.033,z);hub.rotation.z=Math.PI/2;hub.name='wheel-hub';
+      const hub=add(new THREE.CylinderGeometry((equipment.wheel==='wheel-oneway'||equipment.wheel==='wheel-diff')?.009:.007,(equipment.wheel==='wheel-oneway'||equipment.wheel==='wheel-diff')?.009:.007,.005,16),partAccent(equipment.wheel,90),side*.101,.033,z);hub.rotation.z=Math.PI/2;hub.name='wheel-hub';
     }
   }
   for(const x of [-.101,.101])for(const z of [-.13,0,.125]){

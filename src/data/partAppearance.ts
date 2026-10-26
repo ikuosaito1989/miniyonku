@@ -3,6 +3,15 @@ import { bodies } from './bodies';
 
 export interface PartAppearance { color:string; accent:string; detail:number; mark:string }
 export const partAppearances:Record<string,PartAppearance>={
+  'motor-turn':{color:'#92c7b5',accent:'#d5b56f',detail:5,mark:'SWIFT'},
+  'chassis-turn':{color:'#354a58',accent:'#83cfb2',detail:4,mark:'K4-T'},
+  'tire-turn':{color:'#35464b',accent:'#88c6ac',detail:6,mark:'SOFT PRO'},
+  'roller-turn':{color:'#477f73',accent:'#e3c77b',detail:8,mark:'TURN PRO'},
+  'accessory-stabilizer':{color:'#47576c',accent:'#b4d3bd',detail:4,mark:'LOW MOUNT'},
+  'wheel-aero':{color:'#99c6e3',accent:'#e5e4c2',detail:7,mark:'AERO 7'},
+  'wheel-rally':{color:'#c8a36d',accent:'#5b6655',detail:8,mark:'RALLY 8'},
+  'wheel-carbon':{color:'#404859',accent:'#d0ae78',detail:5,mark:'CARBON'},
+  'wheel-diff':{color:'#7cc6b1',accent:'#e6c97b',detail:3,mark:'DUAL PRO'},
   'motor-trail':{color:'#b58a4e',accent:'#f3ce62',detail:4,mark:'TRAIL'},
   'motor-rally':{color:'#b58a4e',accent:'#f3ce62',detail:4,mark:'TRAIL'},
   'tire-trail':{color:'#b58a4e',accent:'#f3ce62',detail:4,mark:'TRAIL'},
