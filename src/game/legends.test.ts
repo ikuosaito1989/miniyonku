@@ -1,3 +1,5 @@
+import { starterEquipment } from '../data/machine';
+import { createRaceState, startRace, stepRace, launchPlayer } from './race';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { legends } from '../data/legends';
@@ -32,4 +34,20 @@ test('展示を開閉しても所持金・装備・進行は変化しない',()=
     const before=snapshotGame(previous);useGame.getState().openLegends();assert.equal(useGame.getState().overlay,'legends');
     useGame.getState().close();assert.deepEqual(snapshotGame(useGame.getState()),before);
   }finally{useGame.setState(previous);}
+});
+
+test('最強兄弟は星皇装備相当の約24〜25秒で走り、同装備のプレイヤーを周回遅れにしない',()=>{
+  for(const seed of [1,42,999]){
+    let race=startRace(createRaceState({...starterEquipment,motor:'motor-sovereign',chassis:'chassis-sovereign'},seed,undefined,true));
+    while(race.phase==='countdown')race=stepRace(race);
+    race=launchPlayer(race);
+    for(let i=0;i<120*120&&race.phase!=='finished';i++)race=stepRace(race);
+    assert.equal(race.phase,'finished');
+    assert.equal(race.racers[0].driving.status,'finished');
+    for(const brother of race.racers.filter(r=>r.id.startsWith('legend-'))){
+      assert.equal(brother.driving.status,'finished');
+      assert.ok(brother.driving.time>=23&&brother.driving.time<=26,`${brother.id}: ${brother.driving.time}`);
+      assert.ok(Math.abs(brother.driving.time-race.racers[0].driving.time)<5);
+    }
+  }
 });
