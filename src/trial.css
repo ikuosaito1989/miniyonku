@@ -168,3 +168,17 @@
   .retro-race.retro-race[data-phase='introduction']{grid-template-rows:minmax(48px,auto) minmax(180px,1fr) minmax(128px,auto)}
 }
 .cup-score{margin-top:14px;border:1px solid #a5bddb;padding:10px;background:#0e2249}.cup-score h4{margin:0 0 6px;font-size:13px}.cup-score p{font-size:10px;line-height:1.6;color:#bdd1eb}.cup-score ol{list-style:none;margin:0;padding:0}.cup-score li{font-size:12px;padding:6px;border-top:1px solid #637d9d}.cup-score li strong{float:right}.cup-player{color:#ffe499;background:#3a4169}
+
+/* 全体を観戦中は案内を圧縮し、コースに高さを渡す。 */
+@media(min-height:481px){
+ .retro-race[data-phase='running'][data-camera='overview']{grid-template-rows:44px 82px minmax(0,1fr) 80px}
+ .retro-race[data-phase='running'][data-camera='overview'] .race-message{grid-template-columns:44px minmax(0,1fr);gap:8px;padding:6px 12px}
+ .retro-race[data-phase='running'][data-camera='overview'] .race-commands,.retro-race[data-phase='running'][data-camera='overview'] .race-commentary small{display:none}
+ .retro-race[data-phase='running'][data-camera='overview'] .race-speaker{grid-row:auto}
+ .retro-race[data-phase='running'][data-camera='overview'] .starter-portrait{width:35px;height:35px}
+ .retro-race[data-phase='running'][data-camera='overview'] .race-speaker span{font-size:8px}
+ .retro-race[data-phase='running'][data-camera='overview'] .race-commentary p{font-size:12px;line-height:1.5}
+}
+@media(max-width:600px) and (min-height:481px){.retro-race.retro-race[data-phase='running'][data-camera='overview']{grid-template-rows:48px 66px minmax(180px,1fr) 78px}.retro-race[data-phase='running'][data-camera='overview'] .race-message{grid-template-rows:auto}.retro-race[data-phase='running'][data-camera='overview'] .ranking-portrait{height:35px;width:29px}.retro-race[data-phase='running'][data-camera='overview'] .race-condition{bottom:52px;font-size:10px}}
+@media(min-height:481px){.retro-race[data-phase='running'][data-camera='overview'] .race-phase{font-size:9px;line-height:1.2;margin-bottom:2px}.retro-race[data-phase='running'][data-camera='overview'] .race-speaker span{display:block;line-height:1.1;letter-spacing:0}.retro-race[data-phase='running'][data-camera='overview'] .starter-portrait{margin-bottom:3px}}
+@media(min-height:481px){.retro-race[data-phase='running'][data-camera='overview'] .race-condition{top:12px;right:12px;left:auto;bottom:auto}}

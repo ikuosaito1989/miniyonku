@@ -50,7 +50,7 @@ export default function TrialView(){
   const [state,setState]=useState(()=>createRaceState(equipment,useGame.getState().raceSeed,undefined,challenge,circuitId));
   const [intro,setIntro]=useState(()=>raceIntroAt(0));
   const introducing=intro.stage!=='done';
-  const introduction=courseIntroduction(circuitId);
+  const introduction=courseIntroduction(circuitId,officialChallenge);
   const [finish,setFinish]=useState(createFinishPresentation);
   const [overview,setOverview]=useState(false);
   const [error,setError]=useState('');
@@ -125,7 +125,7 @@ export default function TrialView(){
     driving.status==='out'?(driving.stopReason==='lapped'?'先頭に1周差をつけられ、リタイア。ゴール集計画面へ進みます。':driving.stopReason==='battery'?'電池切れで停止！ 別の電池に交換しよう。':'コースアウト！ マシンを回収したよ。ほかのマシンは走行中。'):
     state.time<2?'スタート！ GOからの反応時間も記録に含まれるよ。':playerPath.changing?`レーンチェンジ！ ${playerPath.from+1}コースから ${playerPath.to+1}コースへ。５周で全レーンを走るよ。`:`あなたは現在 ${position}位！ 赤いマシンの上の黄色い印が目印だよ。`);
 
-  return <section className="trial retro-race" aria-label={legendChallenge?'レジェンド挑戦レース':villainChallenge?'黒岩 豪との挑戦レース':'5台の3Dレース'} data-phase={introducing?'introduction':state.phase} data-intro-stage={intro.stage} data-finish-stage={finish.stage} onClick={event=>{
+  return <section className="trial retro-race" data-camera={overview?'overview':'broadcast'} aria-label={legendChallenge?'レジェンド挑戦レース':villainChallenge?'黒岩 豪との挑戦レース':'5台の3Dレース'} data-phase={introducing?'introduction':state.phase} data-intro-stage={intro.stage} data-finish-stage={finish.stage} onClick={event=>{
     // 操作ボタン自身の処理と二重発火させない。カメラ・音・退出も発進しない。
     if(event.target instanceof Element&&event.target.closest('button,a,input,select,textarea,[data-audio-controls]'))return;
     if(canViewResults)showRaceResults();
@@ -142,7 +142,7 @@ export default function TrialView(){
       <div className="race-scanlines"/>
       {introducing&&!error&&<section className={`race-intro race-intro-${intro.stage}`} aria-label="レース場紹介">
         <div className="race-intro-heading"><span>COURSE INTRODUCTION</span><p>{officialChallenge?raceName:shop.name}</p><h2>{introduction.name}</h2></div>
-        <div className="race-intro-caption" key={intro.stage}><span>{intro.stage==='overview'?'コース全景':intro.stage==='tour'?'コースの見どころ':'スターティンググリッド'}</span><p>{intro.stage==='overview'?`${introduction.lanes}レーン・${introduction.laps}周 ／ 全長 約${introduction.distance}m`:intro.stage==='tour'?introduction.feature:introduction.advice}</p><small>{introduction.surface} ／ 1周 約{introduction.lapLength}m</small></div>
+        <div className="race-intro-caption" key={intro.stage}><span>{intro.stage==='overview'?'コース全景':intro.stage==='tour'?'コースの見どころ':'スターティンググリッド'}</span><p>{intro.stage==='overview'?`${introduction.lanes}レーン・${introduction.laps}周 ／ 全長 約${introduction.distance}m`:intro.stage==='tour'?introduction.feature:introduction.advice}</p><small>{introduction.surface} ／ 1周 約{introduction.lapLength}m ／ {legendChallenge?'特別レース・賞金なし':`1位賞金 ${introduction.winnerPrize.toLocaleString('ja-JP')}円`}</small></div>
         <button className="race-intro-skip" onClick={skipIntro}>紹介をスキップ <small>Z / Enter / Space</small></button>
         <div className="race-intro-progress" aria-hidden="true"><i style={{transform:`scaleX(${intro.age/raceIntroDuration})`}}/></div>
       </section>}

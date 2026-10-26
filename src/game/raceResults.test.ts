@@ -21,7 +21,7 @@ test('ゴール後の結果表示は残りCPUを通常と同じ計算で確定�
     assert.deepEqual(result,expected);assert.deepEqual(goal,snapshot);
     assert.deepEqual(result.racers[0].driving,goal.racers[0].driving);
     assert.equal(officialTime(result,result.racers[0]),officialTime(goal,goal.racers[0]));
-    assert.equal(rankRacers(result).at(-1)?.id,'player');assert.equal(racePrize(result),id==='leaf'?150:250);
+    assert.equal(rankRacers(result).at(-1)?.id,'player');assert.equal(racePrize(result),id==='leaf'?250:350);
     assert.equal(completeRaceAfterPlayerFinish(result),result);
   }
 });

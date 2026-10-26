@@ -1,3 +1,4 @@
+import {prizesForCircuit,OFFICIAL_PRIZES} from '../data/economy';
 import {getCircuitTrack,type CircuitId} from '../data/circuit';
 export const raceIntroTiming={overview:4,tour:11,grid:5};
 export const raceIntroDuration=raceIntroTiming.overview+raceIntroTiming.tour+raceIntroTiming.grid;
@@ -9,7 +10,7 @@ export function raceIntroAt(age:number):RaceIntro{
 export function stepRaceIntro(intro:RaceIntro,seconds:number,visible=true){
  return visible?raceIntroAt(intro.age+Math.max(0,Number.isFinite(seconds)?seconds:0)):intro;
 }
-export function courseIntroduction(id:CircuitId){
+export function courseIntroduction(id:CircuitId,official=false){
  const {circuit,circuitLength}=getCircuitTrack(id);
  const details={
   grove:{feature:'1周半の高架スパイラル、坂、ジャンプ台を巡る約500mの立体コース。',advice:'ライバルも上位装備。K4・高グリップタイヤ・新作ホイールを軸に、4:1ギアと着地の制振を整えよう。'},
@@ -19,5 +20,5 @@ export function courseIntroduction(id:CircuitId){
   sun:{feature:'砂利・荒れたダート・砂地を巡るロングコース。',advice:'高トルクモーター、悪路用タイヤ、ダンパーで接地を保とう。'},
   sprint:{feature:'長い直線をつないだ長距離の高速舗装コース。',advice:'高速ギアと舗装用タイヤ、長持ちする電池で速度を伸ばそう。'},
  }[id];
- return {...details,name:circuit.name,surface:circuit.surface.name,lapLength:Math.round(circuitLength),distance:Math.round(circuitLength*circuit.laps),laps:circuit.laps,lanes:circuit.lanes};
+ return {...details,winnerPrize:(official&&id!=='comet'?OFFICIAL_PRIZES:prizesForCircuit(id))[0],name:circuit.name,surface:circuit.surface.name,lapLength:Math.round(circuitLength),distance:Math.round(circuitLength*circuit.laps),laps:circuit.laps,lanes:circuit.lanes};
 }

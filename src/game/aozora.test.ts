@@ -22,13 +22,13 @@ function result(challenge=false):RaceState{
   const race=createRaceState(starterEquipment,123,undefined,challenge?'villain':false,'wind');
   return {...race,phase:'finished',playerStartOffset:0,racers:race.racers.map((r,i)=>({...r,driving:{...r.driving,status:'finished',time:40+i}}))};
 }
-test('あおぞらの完走賞は1000/600/450/350/250円。通常優勝で黒岩が現れ、次店はまだ開かない',()=>{
+test('あおぞらの完走賞は1200/750/550/450/350円。通常優勝で黒岩が現れ、次店はまだ開かない',()=>{
   const original=useGame.getState();
   try{
-    for(const [place,prize] of [1000,600,450,350,250].entries())assert.equal(racePrize({...result(),falseStartPenalty:place+.5}),prize);
+    for(const [place,prize] of [1200,750,550,450,350].entries())assert.equal(racePrize({...result(),falseStartPenalty:place+.5}),prize);
     useGame.setState(aozoraStart());useGame.getState().startTrial();const attempt=useGame.getState().raceAttempt;
     useGame.getState().settleRace(attempt,result());useGame.getState().settleRace(attempt,result());
-    assert.equal(useGame.getState().money,11000);assert.equal(useGame.getState().aozoraWon,true);assert.equal(useGame.getState().villainDefeated,false);
+    assert.equal(useGame.getState().money,11200);assert.equal(useGame.getState().aozoraWon,true);assert.equal(useGame.getState().villainDefeated,false);
     useGame.getState().close();assert.equal(useGame.getState().overlay,'arrival');useGame.getState().completeArrival();assert.equal(useGame.getState().dialogueStage,'villain-intro');assert.equal(useGame.getState().speaker,challenger.name);
     assert.deepEqual(dialogueChoices(false,false,'villain-intro').map(c=>c.action),['villainRace','close']);
     useGame.getState().close();useGame.getState().leaveShop();useGame.getState().enterShop('hinata');assert.equal(useGame.getState().location,'town');
@@ -48,7 +48,7 @@ test('黒岩への勝利だけで紹介状を獲得。途中退出・敗北・�
     useGame.getState().startVillainChallenge();const attempt=useGame.getState().raceAttempt,before=useGame.getState().money;
     useGame.getState().settleRace(attempt-1,result(true));assert.equal(useGame.getState().villainDefeated,false);
     useGame.getState().settleRace(attempt,result(true));useGame.getState().settleRace(attempt,result(true));
-    assert.equal(useGame.getState().villainDefeated,true);assert.equal(useGame.getState().thirdShopNotice,true);assert.equal(useGame.getState().money,before+1000);
+    assert.equal(useGame.getState().villainDefeated,true);assert.equal(useGame.getState().thirdShopNotice,true);assert.equal(useGame.getState().money,before+1200);
     useGame.getState().close();assert.equal(useGame.getState().dialogueStage,'villain-win');useGame.getState().close();useGame.getState().leaveShop();
     assert.equal(isVenueOpen(townVenues.find(v=>v.id==='hinata')!,useGame.getState()),true);
     useGame.getState().enterShop('hinata');assert.equal(useGame.getState().location,'hinata');
