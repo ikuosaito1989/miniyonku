@@ -1,3 +1,4 @@
+import { lappedPose, lappedPresentationSeconds } from './lappedPresentation';
 import { raceIntroDuration, raceIntroTiming, raceIntroAt, stepRaceIntro, type RaceIntro } from './raceIntro';
 import * as THREE from 'three';
 import { buildRaceMachineModel } from './MachineModel';
@@ -26,6 +27,7 @@ export class TrialRenderer {
   private lastTime = 0;
   private accumulator = 0;
   private lastReport = -1;
+  private lappedAges=new Map<string,number>();
   private introFrame:ReturnType<typeof overviewFrame>|null=null;
   private overviewFrame:ReturnType<typeof overviewFrame>|null=null;
   private overviewMarkers=new Map<string,THREE.Sprite>();
@@ -89,6 +91,8 @@ export class TrialRenderer {
   }
   setCamera(mode:TrialCamera){if(this.intro.stage==='done')this.cameraMode=mode;}
   showResults(){
+    const player=this.state.racers.find(r=>r.id==='player');
+    if(player?.driving.stopReason==='lapped'&&(this.lappedAges.get('player')??0)<lappedPresentationSeconds)return;
     if(this.finishPresentation.stage==='results'||!canViewRaceResults(this.state))return;
     this.state=completeRaceAfterPlayerFinish(this.state);
     this.finishPresentation={...stepFinishPresentation(this.finishPresentation,this.state,0),stage:'results',finalAge:finishSequence.holdSeconds+finishSequence.tallySeconds};
@@ -97,6 +101,7 @@ export class TrialRenderer {
   }
   setSound(enabled:boolean,volume=0.35){this.audio.setVolume(volume);this.audio.setEnabled(enabled);}
   restart(){
+    this.lappedAges.clear();
     this.state=createRaceState(this.equipment,this.seed,this.condition,this.challenge,this.circuitId);this.accumulator=0;this.lastTime=0;this.lastReport=-1;this.cameraMode='broadcast';this.startShotBlend=1;
     this.intro=raceIntroAt(0);this.introLastTime=0;this.reportIntro(this.intro);
     this.finishPresentation=createFinishPresentation();this.reportFinish(this.finishPresentation);
@@ -280,6 +285,9 @@ export class TrialRenderer {
       this.accumulator+=elapsed;
       while(this.accumulator>=FIXED_STEP){this.state=stepRace(this.state);this.accumulator-=FIXED_STEP;}
     }
+    for(const racer of this.state.racers){
+      if(racer.driving.status==='out'&&racer.driving.stopReason==='lapped')this.lappedAges.set(racer.id,(this.lappedAges.get(racer.id)??0)+(document.hidden?0:elapsed));
+    }
     const player=this.state.racers.find(r=>r.id==='player');
     if(player?.driving.status==='out'&&player.driving.stopReason==='lapped')this.showResults();
     // CPUだけが発進してもスタート画角を維持し、自分の発進後に切り替える。
@@ -309,6 +317,16 @@ export class TrialRenderer {
       const crashed=racer.driving.status==='out'&&(!racer.driving.stopReason||racer.driving.stopReason==='jump');
       car.position.set(p.x,(racer.driving.flightY??p.y)+(crashed?0.14:0.015),p.z);
       car.rotation.order='YXZ';car.rotation.set(racer.driving.flightY!==undefined?-Math.atan2(racer.driving.flightVelocity??0,Math.max(.1,racer.driving.speed)):-p.pitch,Math.atan2(p.tangentX,p.tangentZ),crashed?0.9:0);
+      if(racer.driving.stopReason==='lapped'){
+        const pose=lappedPose(this.lappedAges.get(racer.id)??0);
+        const side=racer.lane<this.track.circuit.lanes/2?-1:1;
+        car.position.x+=p.tangentZ*pose.outward*side+p.tangentX*pose.forward;
+        car.position.z+=-p.tangentX*pose.outward*side+p.tangentZ*pose.forward;
+        car.position.y+=pose.height;
+        car.rotation.x+=pose.pitch;car.rotation.z=pose.roll*side;
+        marker.position.x+=car.position.x-p.x;marker.position.z+=car.position.z-p.z;
+        marker.position.y+=pose.height;
+      }
       if(racer.id==='player'){
         this.playerMarker.position.copy(car.position).add(overview?new THREE.Vector3(frame.up.x,frame.up.y,frame.up.z).multiplyScalar(.16*carScale):new THREE.Vector3(0,.24,0));
         if(overview)this.playerMarker.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(-frame.up.x,-frame.up.y,-frame.up.z));else this.playerMarker.rotation.set(0,0,Math.PI);
