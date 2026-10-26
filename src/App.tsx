@@ -51,11 +51,10 @@ export function App(){
     <GameAudio/>
     {!started ? <TitleScreen onStart={()=>setStarted(true)}/> : <section className="game-shell" aria-label="ゲーム画面">
       <div className="stage"><ShopWorld/>
-        {game.overlay===null&&<button className="game-settings-open" onClick={game.openSettings}>設定</button>}
-        {game.overlay===null&&<AudioControls floating/>}
+        {game.overlay===null&&<div className="world-toolbar"><button className="game-settings-open" onClick={game.openSettings}>設定</button><MissionGuide/><AudioControls floating/></div>}
         <SaveWarning/>
         <TownMap/>
-        <MissionGuide/>
+        {game.overlay==='mission'&&<MissionGuide/>}
         <TouchControls/>
         {game.overlay==='game-over'&&<GameOver/>}
         {game.overlay==='dialogue'&&<DialogueView/>}
