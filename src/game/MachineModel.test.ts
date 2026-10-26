@@ -109,3 +109,16 @@ test('通常CPUは箱型軽ワゴンの外観。記念車と最強兄弟は従�
   ku.traverse(object=>{if(object instanceof THREE.Mesh){object.geometry.dispose();object.material.dispose();}});
   mob.traverse(object=>{if(object instanceof THREE.Mesh){object.geometry.dispose();object.material.dispose();}});
 });
+
+test('風見怜の愛機は展示・レースで共通の白青赤カウルと大型翼・白い5本スポークを持つ',()=>{
+  const legend=legends.find(l=>l.id==='legend-rei')!;
+  for(const model of [buildMachineModel(0xff0000,legend.equipment),buildRaceMachineModel({...legend,color:0xff0000})]){
+    for(const name of ['kazami-front-cowl','kazami-red-front-lightning','kazami-red-rear-lightning','kazami-blue-nose','kazami-front-canard','kazami-wing-endplate','kazami-wing-emblem','rear-wing'])assert.ok(model.getObjectByName(name),name);
+    const body=model.getObjectByName('body-shell') as THREE.Mesh<THREE.BufferGeometry,THREE.MeshStandardMaterial>;
+    assert.equal(body.material.color.getHex(),0xf1f1e9);
+    assert.equal((model.getObjectByName('rear-wing') as THREE.Mesh<THREE.BufferGeometry,THREE.MeshStandardMaterial>).material.color.getHex(),0x162b9c);
+    let spokes=0;model.traverse(o=>{if(o.name==='wheel-spoke-wheel-light')spokes++;});assert.equal(spokes,20);
+    const size=new THREE.Box3().setFromObject(model).getSize(new THREE.Vector3());assert.ok(size.x<.22&&size.z<.3&&size.y<.12);
+    model.traverse(o=>{if(o instanceof THREE.Mesh){o.geometry.dispose();o.material.dispose();}});
+  }
+});

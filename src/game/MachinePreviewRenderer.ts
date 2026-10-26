@@ -36,7 +36,7 @@ export class MachinePreviewRenderer {
     this.scene.add(new THREE.HemisphereLight(0xe9f5ff,0x536477,2));
     const key=new THREE.DirectionalLight(0xffffff,2.3);key.position.set(-1,2,1);key.castShadow=true;key.shadow.mapSize.set(1024,1024);Object.assign(key.shadow.camera,{left:-.3,right:.3,top:.3,bottom:-.3,near:.1,far:4});key.shadow.bias=-.00015;key.shadow.normalBias=.0003;this.scene.add(key);
     const rim=new THREE.DirectionalLight(0x86c8ff,1.2);rim.position.set(1,1,-1);this.scene.add(rim);
-    this.camera.position.set(-.45,.42,.55);this.camera.lookAt(0,.035,0);
+    this.camera.position.set(-.45,.42,.55);this.camera.lookAt(0,.05,0);
     this.observer=new ResizeObserver(this.resize);this.observer.observe(host);this.resize();
   }
   setEquipment(equipment:Equipment){

@@ -1,3 +1,4 @@
+import { buildKazamiBody } from './KazamiBody';
 import { buildSeiranBody } from './SeiranBody';
 import { challenger } from '../data/challenger';
 import * as THREE from 'three';
@@ -71,7 +72,7 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
   const isMob=(original.id==='body-stream'||appearance==='mob-kei')&&original.id!=='body-champion'&&!original.id.startsWith('body-legend-');
   const design=isMob?{...original,shape:'kei' as const,silhouette:undefined,width:.056,cabinHeight:.042,cabinFront:.041,cabinRear:-.092}:original;
   // 3Dプレビューはボディ固有色、レース中はレーサーごとの塗色を使う。
-  const isStarter=design.silhouette==='starter-wedge',isChampion=design.silhouette==='champion-aero';
+  const isStarter=design.silhouette==='starter-wedge',isChampion=design.silhouette==='champion-aero',isKazami=design.id==='body-legend-flow';
   const color=isChampion?Number.parseInt(design.color.slice(1),16):racerColor;
   const look=(id:string)=>partAppearances[id]??{color:'#8395a3',accent:'#dbe4e8',detail:0,mark:''};
   const hex=(value:string)=>Number.parseInt(value.replace('#',''),16);
@@ -81,7 +82,7 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
   const rubber=new THREE.MeshStandardMaterial({color:hex(look(equipment.tire).color),roughness:equipment.tire==='tire-2'?.65:.88,metalness:0});
   const metal=new THREE.MeshStandardMaterial({color:0xb9c4cb,metalness:.85,roughness:.25});
   const darkRubber=new THREE.MeshStandardMaterial({color:0x171c20,roughness:.91});
-  const frame=partMaterial(equipment.chassis,35),frameAccent=partAccent(equipment.chassis,55);
+  const frame=isKazami?new THREE.MeshStandardMaterial({color:0x1d2328,roughness:.6}):partMaterial(equipment.chassis,35),frameAccent=isKazami?new THREE.MeshStandardMaterial({color:0x343c42,roughness:.55}):partAccent(equipment.chassis,55);
   const accent=new THREE.MeshPhongMaterial({color:0xf4eedc,shininess:65});
   const add=(geometry:THREE.BufferGeometry,material:THREE.Material,x:number,y:number,z:number)=>{
     const mesh=new THREE.Mesh(geometry,material);mesh.position.set(x,y,z);car.add(mesh);return mesh;
@@ -97,7 +98,7 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
     :style==='muscle'
     ?[[-.128,w*.77,.015],[-.10,w*.97,.021],[-.07,w,.022],[0,w*.9,.021],[.08,w,.023],[.12,w*.87,.018],[.132,w*.74,.013]]
     :[[-.128,.035,.012],[-.116,w*.85,.016],[-.08,w,.02],[0,w,.021],[.08,w*.97,.018],[.117,w*.83,.014],[.132,.026,.009]];
-  if(!isChampion){
+  if(!isChampion&&!isKazami){
     const body=isMob
       ?new THREE.Mesh(new THREE.BoxGeometry(.112,.035,.24),new THREE.MeshPhongMaterial({color,shininess:12}))
       :isStarter
@@ -163,7 +164,7 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
       }
     }
     add(isStarter?new THREE.BoxGeometry(.036,.006,.003):new THREE.BoxGeometry(.045,.008,.003),isStarter?new THREE.MeshPhongMaterial({color:0x17212a,shininess:35}):frame,0,isStarter?.052:.051,isStarter?.137:.131).name='front-grille';
-  }else car.add(buildSeiranBody());
+  }else car.add(isKazami?buildKazamiBody():buildSeiranBody());
   // ミニ四駆機構は共通のまま、曲線バンパーを車体の前後に配置。
   if(!isChampion){
     for(const side of [-1,1]){
@@ -174,7 +175,7 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
     const rearRail=new THREE.CatmullRomCurve3([new THREE.Vector3(-.103,.04,-.13),new THREE.Vector3(-.065,.037,-.145),new THREE.Vector3(0,.037,-.15),new THREE.Vector3(.065,.037,-.145),new THREE.Vector3(.103,.04,-.13)]);
     car.add(new THREE.Mesh(new THREE.TubeGeometry(rearRail,32,.005,8,false),frame));
   }
-  if(!isChampion&&(['coupe','gt','prototype'].includes(design.shape)||design.id==='body-rally'||style==='starter-wedge')){
+  if(!isChampion&&!isKazami&&(['coupe','gt','prototype'].includes(design.shape)||design.id==='body-rally'||style==='starter-wedge')){
     const span=style==='starter-wedge'?.112:.074,wingMaterial=style==='starter-wedge'?new THREE.MeshPhongMaterial({color:color,shininess:100}):accent;
     add(new THREE.BoxGeometry(span,.008,style==='starter-wedge'?.026:design.shape==='prototype'?.024:.015),wingMaterial,0,style==='starter-wedge'?.12:.095,style==='starter-wedge'?-.124:-.113).name='rear-wing';
     if(style==='starter-wedge'){
@@ -261,14 +262,14 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
       if(equipment.tire==='tire-1')for(let pore=0;pore<10;pore++){
         const angle=pore*Math.PI/5,texture=add(new THREE.SphereGeometry(.0014,6,4),partAccent(equipment.tire,25),side*(.082+tireWidth/2+.001),.033+Math.cos(angle)*tireRadius*.58,z+Math.sin(angle)*tireRadius*.58);texture.name='sponge-pore';
       }
-      const wheelColor=hex(look(equipment.wheel).color),wheelAccent=new THREE.MeshStandardMaterial({color:hex(look(equipment.wheel).accent),metalness:.65,roughness:.34});
+      const wheelColor=isKazami?0xe9e8d6:hex(look(equipment.wheel).color),wheelAccent=new THREE.MeshStandardMaterial({color:isKazami?0xe9e8d6:hex(look(equipment.wheel).accent),metalness:isKazami?.12:.65,roughness:.34});
       const rim=add(new THREE.LatheGeometry([new THREE.Vector2(.019,-.0015),new THREE.Vector2(.022,-.0015),new THREE.Vector2(.022,.0015),new THREE.Vector2(.019,.0015),new THREE.Vector2(.019,-.0015)],32),new THREE.MeshStandardMaterial({color:wheelColor,metalness:.5,roughness:.4}),side*.097,.033,z);rim.rotation.z=Math.PI/2;rim.name=`wheel-rim-${equipment.wheel}`;
-      const spokes=look(equipment.wheel).detail;
+      const spokes=isKazami?5:look(equipment.wheel).detail;
       for(let i=0;i<spokes;i++){
         const angle=i*Math.PI*2/spokes;
         const spoke=add(new THREE.CapsuleGeometry(equipment.wheel==='wheel-light'?.0011:.0015,.014,3,6),wheelAccent,side*.099,.033+Math.cos(angle)*.011,z+Math.sin(angle)*.011);spoke.rotation.x=angle;spoke.name=`wheel-spoke-${equipment.wheel}`;
       }
-      const hub=add(new THREE.CylinderGeometry((equipment.wheel==='wheel-oneway'||equipment.wheel==='wheel-diff')?.009:.007,(equipment.wheel==='wheel-oneway'||equipment.wheel==='wheel-diff')?.009:.007,.005,16),partAccent(equipment.wheel,90),side*.101,.033,z);hub.rotation.z=Math.PI/2;hub.name='wheel-hub';
+      const hub=add(new THREE.CylinderGeometry((equipment.wheel==='wheel-oneway'||equipment.wheel==='wheel-diff')?.009:.007,(equipment.wheel==='wheel-oneway'||equipment.wheel==='wheel-diff')?.009:.007,.005,16),isKazami?wheelAccent:partAccent(equipment.wheel,90),side*.101,.033,z);hub.rotation.z=Math.PI/2;hub.name='wheel-hub';
     }
   }
   for(const x of [-.101,.101])for(const z of [-.13,0,.125]){
