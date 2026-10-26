@@ -1,3 +1,4 @@
+import { studioEnvironment } from './studioEnvironment';
 import { lappedPose, lappedPresentationSeconds } from './lappedPresentation';
 import { raceIntroDuration, raceIntroTiming, raceIntroAt, stepRaceIntro, type RaceIntro } from './raceIntro';
 import * as THREE from 'three';
@@ -17,6 +18,7 @@ export type TrialCamera = 'broadcast' | 'overview';
 
 export class TrialRenderer {
   private renderer: THREE.WebGLRenderer;
+  private environment:THREE.WebGLRenderTarget;
   private scene = new THREE.Scene();
   private camera = new THREE.OrthographicCamera(-2,2,1,-1,0.01,1000);
   private cars = new Map<string,THREE.Group>();
@@ -50,6 +52,7 @@ export class TrialRenderer {
     this.renderer.setPixelRatio(1);
     this.renderer.setClearColor(challenge==='official'?0x344d5b:0x315b2a);
     this.renderer.outputColorSpace=THREE.SRGBColorSpace;
+    this.environment=studioEnvironment(this.renderer);this.scene.environment=this.environment.texture;
     this.renderer.domElement.style.width='100%';
     this.renderer.domElement.style.height='100%';
     host.append(this.renderer.domElement);
@@ -346,6 +349,7 @@ export class TrialRenderer {
     cancelAnimationFrame(this.frame);this.observer.disconnect();
     this.scene.traverse(object=>{if(object instanceof THREE.Mesh){object.geometry.dispose();for(const material of Array.isArray(object.material)?object.material:[object.material])material.dispose();}});
     for(const texture of this.textures)texture.dispose();
+    this.environment.dispose();
     this.renderer.dispose();this.renderer.forceContextLoss();this.renderer.domElement.remove();
   }
 }

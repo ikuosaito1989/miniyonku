@@ -1,3 +1,4 @@
+import { buildSeiranBody } from './SeiranBody';
 import { challenger } from '../data/challenger';
 import * as THREE from 'three';
 import type { Equipment } from '../data/machine';
@@ -77,8 +78,9 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
   const partMaterial=(id:string,shininess=55)=>new THREE.MeshPhongMaterial({color:hex(look(id).color),shininess});
   const partAccent=(id:string,shininess=65)=>new THREE.MeshPhongMaterial({color:hex(look(id).accent),shininess});
   const car=new THREE.Group();car.name=design.id;
-  const rubber=partMaterial(equipment.tire,equipment.tire==='tire-1'?4:equipment.tire==='tire-2'?22:8);
-  const metal=new THREE.MeshPhongMaterial({color:0xc5d7e2,shininess:90});
+  const rubber=new THREE.MeshStandardMaterial({color:hex(look(equipment.tire).color),roughness:equipment.tire==='tire-2'?.65:.88,metalness:0});
+  const metal=new THREE.MeshStandardMaterial({color:0xb9c4cb,metalness:.85,roughness:.25});
+  const darkRubber=new THREE.MeshStandardMaterial({color:0x171c20,roughness:.91});
   const frame=partMaterial(equipment.chassis,35),frameAccent=partAccent(equipment.chassis,55);
   const accent=new THREE.MeshPhongMaterial({color:0xf4eedc,shininess:65});
   const add=(geometry:THREE.BufferGeometry,material:THREE.Material,x:number,y:number,z:number)=>{
@@ -95,115 +97,94 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
     :style==='muscle'
     ?[[-.128,w*.77,.015],[-.10,w*.97,.021],[-.07,w,.022],[0,w*.9,.021],[.08,w,.023],[.12,w*.87,.018],[.132,w*.74,.013]]
     :[[-.128,.035,.012],[-.116,w*.85,.016],[-.08,w,.02],[0,w,.021],[.08,w*.97,.018],[.117,w*.83,.014],[.132,.026,.009]];
-  const body=isMob
-    ?new THREE.Mesh(new THREE.BoxGeometry(.112,.035,.24),new THREE.MeshPhongMaterial({color,shininess:12}))
-    :isStarter
-    ?lowWedgeShell([[-.137,.043,.045,.053,.067],[-.119,.064,.045,.056,.071],[-.092,.074,.045,.057,.072],[-.065,.071,.045,.056,.07],[-.02,.064,.045,.054,.067],[.035,.061,.045,.053,.065],[.077,.057,.045,.052,.062],[.105,.047,.045,.051,.06],[.132,.027,.046,.05,.057],[.145,.004,.048,.05,.053]],color)
-    :isChampion
-    ?lowWedgeShell([[-.145,.025,.045,.054,.07],[-.12,.061,.045,.06,.078],[-.09,.078,.045,.061,.078],[-.05,.074,.045,.058,.073],[0,.064,.045,.055,.069],[.045,.065,.045,.054,.067],[.085,.058,.045,.052,.064],[.12,.043,.045,.05,.06],[.148,.018,.047,.05,.056],[.158,.002,.048,.05,.053]],color,105)
-    :shell(sections,color,boxy);
-  if(isMob)body.position.y=.06;
-  body.name='body-shell';car.add(body);
-  const rear=design.cabinRear,front=design.cabinFront,height=design.cabinHeight;
-  const canopy=isMob
-    ?new THREE.Mesh(new THREE.BoxGeometry(.099,.046,.142),new THREE.MeshPhongMaterial({color:0x35494e,shininess:18}))
-    :isStarter
-    ?lowWedgeShell([[-.091,.004,.067,.071,.072],[-.078,.026,.067,.078,.087],[-.054,.036,.067,.081,.091],[-.018,.037,.067,.081,.091],[.014,.031,.066,.078,.086],[.04,.019,.064,.071,.077],[.051,.002,.063,.066,.067]],0x193b52,52)
-    :isChampion
-    ?lowWedgeShell([[-.09,.003,.069,.073,.074],[-.073,.028,.069,.078,.087],[-.046,.036,.069,.082,.091],[-.012,.034,.069,.081,.09],[.022,.025,.067,.076,.083],[.043,.002,.064,.068,.069]],0x172c49,58)
-    :shell([[rear-.014,.002,.001],[rear,w*.68,height*.72],[rear+.02,w*.7,height],[front-.015,w*.65,height],[front+.022,w*.7,.002],[front+.028,.002,.001]],0x193b52,boxy);
-  if(isMob)canopy.position.set(0,.094,-.024);
-  else if(!isStarter&&!isChampion)canopy.position.y=.018;
-  canopy.name='cabin-glass';car.add(canopy);
-  if(!isStarter&&!isChampion){
-    const roof=isMob?new THREE.Mesh(new THREE.BoxGeometry(.108,.005,.152),new THREE.MeshPhongMaterial({color,shininess:12})):shell([[rear+.005,.003,.001],[rear+.02,w*.7,.002],[front-.017,w*.65,.002],[front-.012,.003,.001]],color,boxy);
-    if(isMob)roof.position.set(0,.12,-.024);else roof.position.y=.022+height;roof.name='roof';car.add(roof);
-  }else if(isStarter){
-    // 小さな赤いルーフパネルで、窓とボンネットをはっきり分ける。
-    const roof=lowWedgeShell([[-.039,.023,.088,.09,.091],[-.025,.026,.088,.091,.092],[.004,.026,.088,.091,.092],[.015,.018,.085,.087,.088]],color,95);roof.name='roof';car.add(roof);
-  }
-  const triangle=(points:number[][],material:THREE.Material,name:string)=>{
-    const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(points.flat(),3));geometry.setIndex([0,1,2]);geometry.computeVertexNormals();
-    const mesh=new THREE.Mesh(geometry,material);mesh.name=name;car.add(mesh);return mesh;
-  };
-  const white=new THREE.MeshPhongMaterial({color:0xf4f4eb,shininess:95,side:THREE.DoubleSide});
-  if(isMob){
-    const plastic=new THREE.MeshPhongMaterial({color:0x34393a,shininess:2});
-    for(const z of [-.124,.124])add(new THREE.BoxGeometry(.115,.012,.009),plastic,0,.05,z).name='mob-kei-plastic-bumper';
-    add(new THREE.BoxGeometry(.028,.012,.002),new THREE.MeshPhongMaterial({color:0xe9cd58,shininess:5}),0,.06,.13).name='mob-kei-yellow-plate';
+  if(!isChampion){
+    const body=isMob
+      ?new THREE.Mesh(new THREE.BoxGeometry(.112,.035,.24),new THREE.MeshPhongMaterial({color,shininess:12}))
+      :isStarter
+      ?lowWedgeShell([[-.137,.043,.045,.053,.067],[-.119,.064,.045,.056,.071],[-.092,.074,.045,.057,.072],[-.065,.071,.045,.056,.07],[-.02,.064,.045,.054,.067],[.035,.061,.045,.053,.065],[.077,.057,.045,.052,.062],[.105,.047,.045,.051,.06],[.132,.027,.046,.05,.057],[.145,.004,.048,.05,.053]],color)
+      :shell(sections,color,boxy);
+    if(isMob)body.position.y=.06;
+    body.name='body-shell';car.add(body);
+    const rear=design.cabinRear,front=design.cabinFront,height=design.cabinHeight;
+    const canopy=isMob
+      ?new THREE.Mesh(new THREE.BoxGeometry(.099,.046,.142),new THREE.MeshPhongMaterial({color:0x35494e,shininess:18}))
+      :isStarter
+      ?lowWedgeShell([[-.091,.004,.067,.071,.072],[-.078,.026,.067,.078,.087],[-.054,.036,.067,.081,.091],[-.018,.037,.067,.081,.091],[.014,.031,.066,.078,.086],[.04,.019,.064,.071,.077],[.051,.002,.063,.066,.067]],0x193b52,52)
+      :shell([[rear-.014,.002,.001],[rear,w*.68,height*.72],[rear+.02,w*.7,height],[front-.015,w*.65,height],[front+.022,w*.7,.002],[front+.028,.002,.001]],0x193b52,boxy);
+    if(isMob)canopy.position.set(0,.094,-.024);
+    else if(!isStarter&&!isChampion)canopy.position.y=.018;
+    canopy.name='cabin-glass';car.add(canopy);
+    if(!isStarter&&!isChampion){
+      const roof=isMob?new THREE.Mesh(new THREE.BoxGeometry(.108,.005,.152),new THREE.MeshPhongMaterial({color,shininess:12})):shell([[rear+.005,.003,.001],[rear+.02,w*.7,.002],[front-.017,w*.65,.002],[front-.012,.003,.001]],color,boxy);
+      if(isMob)roof.position.set(0,.12,-.024);else roof.position.y=.022+height;roof.name='roof';car.add(roof);
+    }else if(isStarter){
+      // 小さな赤いルーフパネルで、窓とボンネットをはっきり分ける。
+      const roof=lowWedgeShell([[-.039,.023,.088,.09,.091],[-.025,.026,.088,.091,.092],[.004,.026,.088,.091,.092],[.015,.018,.085,.087,.088]],color,95);roof.name='roof';car.add(roof);
+    }
+    if(isMob){
+      const plastic=new THREE.MeshPhongMaterial({color:0x34393a,shininess:2});
+      for(const z of [-.124,.124])add(new THREE.BoxGeometry(.115,.012,.009),plastic,0,.05,z).name='mob-kei-plastic-bumper';
+      add(new THREE.BoxGeometry(.028,.012,.002),new THREE.MeshPhongMaterial({color:0xe9cd58,shininess:5}),0,.06,.13).name='mob-kei-yellow-plate';
+      for(const side of [-1,1]){
+        add(new THREE.BoxGeometry(.003,.004,.015),plastic,side*.057,.074,-.008).name='mob-kei-door-handle';
+        add(new THREE.BoxGeometry(.025,.013,.004),accent,side*.036,.073,.123).name='mob-kei-square-headlight';
+        add(new THREE.BoxGeometry(.014,.016,.004),new THREE.MeshPhongMaterial({color:0xb74f43,shininess:8}),side*.043,.068,-.123).name='mob-kei-square-tail-light';
+        add(new THREE.BoxGeometry(.004,.04,.007),new THREE.MeshPhongMaterial({color,shininess:12}),side*.051,.094,-.02).name='mob-kei-window-pillar';
+      }
+    }
     for(const side of [-1,1]){
-      add(new THREE.BoxGeometry(.003,.004,.015),plastic,side*.057,.074,-.008).name='mob-kei-door-handle';
-      add(new THREE.BoxGeometry(.025,.013,.004),accent,side*.036,.073,.123).name='mob-kei-square-headlight';
-      add(new THREE.BoxGeometry(.014,.016,.004),new THREE.MeshPhongMaterial({color:0xb74f43,shininess:8}),side*.043,.068,-.123).name='mob-kei-square-tail-light';
-      add(new THREE.BoxGeometry(.004,.04,.007),new THREE.MeshPhongMaterial({color,shininess:12}),side*.051,.094,-.02).name='mob-kei-window-pillar';
+      // Bピラー、ドア下のプレスライン、前後灯。車種によってルーフ高さが変わる。
+      const pillar=add(new THREE.CapsuleGeometry(.0025,height*.7,3,8),frame,side*w*.69,.073+height*.45,(rear+front)/2);
+      pillar.rotation.z=side*.16;
+      add(new THREE.CapsuleGeometry(.0015,.1,3,8),accent,side*w,.056,-.006).rotation.x=Math.PI/2;
+      if(!isMob){
+        const lamp=add(isStarter?new THREE.BoxGeometry(.012,.004,.005):new THREE.SphereGeometry(1,16,8),isStarter?new THREE.MeshPhongMaterial({color:0xf6d45b,shininess:65}):accent,side*(isStarter?.036:w*.55),isStarter?.055:(style==='wedge'?.057:.061),isStarter?.128:.123);
+        if(!isStarter)lamp.scale.set(style==='muscle'?.018:.016,style==='wedge'?.002:.005,.003);
+        lamp.rotation.z=style==='flow'?side*.3:style==='wedge'?side*.14:0;
+      }
+      const red=new THREE.MeshPhongMaterial({color:0xe4554c});
+      if(style==='muscle'){
+        for(const offset of [0,.016]){const tail=add(new THREE.CylinderGeometry(.006,.006,.003,20),red,side*(.029+offset),.063,-.126);tail.rotation.x=Math.PI/2;tail.name='round-tail';}
+        add(new THREE.BoxGeometry(.009,.005,.06),frame,side*w,.039,-.008);
+      }else if(!isMob){
+        const tail=add(new THREE.SphereGeometry(1,16,8),red,side*w*.63,.061,-.12);tail.scale.set(.014,.004,.003);
+      }
+      if(style==='starter-wedge'){
+        const stripe=add(new THREE.BoxGeometry(.005,.002,.069),new THREE.MeshPhongMaterial({color:0xf1cf4f,shininess:85}),side*.015,.066,.084);stripe.rotation.x=-.08;stripe.name='starter-racing-stripe';
+        const intake=add(new THREE.BoxGeometry(.003,.016,.022),new THREE.MeshPhongMaterial({color:0x14222a,shininess:28}),side*.069,.055,-.025);intake.rotation.x=.16;intake.name='side-intake';
+        const sill=add(new THREE.BoxGeometry(.01,.005,.14),frame,side*.073,.038,-.006);sill.name='sport-sill';
+      }else if(style==='wedge'||style==='flow'){
+        const intake=add(new THREE.BoxGeometry(.004,style==='wedge'?.018:.012,.036),frame,side*w*.94,.057,-.035);intake.rotation.x=style==='wedge'?.25:-.2;intake.name='side-intake';
+        const sill=add(new THREE.BoxGeometry(.008,.005,.15),frame,side*w*.95,.035,0);sill.name='sport-sill';
+      }
+      if(design.shape==='suv'){
+        const rail=add(new THREE.CapsuleGeometry(.0025,.085,3,8),metal,side*w*.52,.078+height,-.025);rail.rotation.x=Math.PI/2;
+        add(new THREE.BoxGeometry(.008,.012,.12),frame,side*w*.97,.036,0);
+      }
     }
-  }
-  const teal=new THREE.MeshPhongMaterial({color:0x27b6a7,shininess:85,side:THREE.DoubleSide});
-  if(isChampion){
-    // 固有ロゴを使わない、赤白のノーズと青緑の流線アクセント。
-    const nose=lowWedgeShell([[.028,.003,.067,.068,.069],[.055,.009,.064,.065,.066],[.09,.013,.06,.061,.062],[.126,.008,.056,.057,.058],[.153,.001,.052,.053,.054]],0xf4f4eb,90);nose.name='champion-nose-inlay';car.add(nose);
-  }
-  for(const side of [-1,1]){
-    // Bピラー、ドア下のプレスライン、前後灯。車種によってルーフ高さが変わる。
-    const pillar=add(new THREE.CapsuleGeometry(.0025,height*.7,3,8),frame,side*w*.69,.073+height*.45,(rear+front)/2);
-    pillar.rotation.z=side*.16;
-    add(new THREE.CapsuleGeometry(.0015,.1,3,8),accent,side*w,.056,-.006).rotation.x=Math.PI/2;
-    if(!isMob){
-      const lamp=add(isStarter?new THREE.BoxGeometry(.012,.004,.005):new THREE.SphereGeometry(1,16,8),isStarter?new THREE.MeshPhongMaterial({color:0xf6d45b,shininess:65}):accent,side*(isStarter?.036:w*.55),isStarter?.055:(style==='wedge'?.057:.061),isStarter?.128:.123);
-      if(!isStarter)lamp.scale.set(style==='muscle'?.018:.016,style==='wedge'?.002:.005,.003);
-      lamp.rotation.z=style==='flow'?side*.3:style==='wedge'?side*.14:0;
-    }
-    const red=new THREE.MeshPhongMaterial({color:0xe4554c});
-    if(style==='muscle'){
-      for(const offset of [0,.016]){const tail=add(new THREE.CylinderGeometry(.006,.006,.003,20),red,side*(.029+offset),.063,-.126);tail.rotation.x=Math.PI/2;tail.name='round-tail';}
-      add(new THREE.BoxGeometry(.009,.005,.06),frame,side*w,.039,-.008);
-    }else if(!isMob){
-      const tail=add(new THREE.SphereGeometry(1,16,8),red,side*w*.63,.061,-.12);tail.scale.set(.014,.004,.003);
-    }
-    if(style==='starter-wedge'){
-      const stripe=add(new THREE.BoxGeometry(.005,.002,.069),new THREE.MeshPhongMaterial({color:0xf1cf4f,shininess:85}),side*.015,.066,.084);stripe.rotation.x=-.08;stripe.name='starter-racing-stripe';
-      const intake=add(new THREE.BoxGeometry(.003,.016,.022),new THREE.MeshPhongMaterial({color:0x14222a,shininess:28}),side*.069,.055,-.025);intake.rotation.x=.16;intake.name='side-intake';
-      const sill=add(new THREE.BoxGeometry(.01,.005,.14),frame,side*.073,.038,-.006);sill.name='sport-sill';
-    }else if(style==='wedge'||style==='flow'){
-      const intake=add(new THREE.BoxGeometry(.004,style==='wedge'?.018:.012,.036),frame,side*w*.94,.057,-.035);intake.rotation.x=style==='wedge'?.25:-.2;intake.name='side-intake';
-      const sill=add(new THREE.BoxGeometry(.008,.005,.15),frame,side*w*.95,.035,0);sill.name='sport-sill';
-    }
-    if(isChampion){
-      triangle([[side*.065,.056,-.082],[side*.073,.067,-.045],[side*.067,.057,.066]],white,'champion-side-sweep');
-      triangle([[side*.068,.056,-.075],[side*.075,.061,-.038],[side*.071,.054,.055]],teal,'champion-teal-stripe');
-      const intake=add(new THREE.BoxGeometry(.003,.018,.027),new THREE.MeshPhongMaterial({color:0x172632,shininess:35}),side*.074,.054,-.024);intake.rotation.x=.18;intake.name='champion-side-intake';
-      triangle([[side*.036,.072,-.105],[side*.036,.124,-.128],[side*.036,.083,-.045]],white,'champion-rear-fin');
-      triangle([[side*.045,.069,-.082],[side*.045,.107,-.11],[side*.045,.079,-.036]],teal,'champion-inner-fin');
-    }
-    if(design.shape==='suv'){
-      const rail=add(new THREE.CapsuleGeometry(.0025,.085,3,8),metal,side*w*.52,.078+height,-.025);rail.rotation.x=Math.PI/2;
-      add(new THREE.BoxGeometry(.008,.012,.12),frame,side*w*.97,.036,0);
-    }
-  }
-  add(isStarter?new THREE.BoxGeometry(.036,.006,.003):new THREE.BoxGeometry(.045,.008,.003),isStarter?new THREE.MeshPhongMaterial({color:0x17212a,shininess:35}):frame,0,isStarter?.052:.051,isStarter?.137:.131).name='front-grille';
+    add(isStarter?new THREE.BoxGeometry(.036,.006,.003):new THREE.BoxGeometry(.045,.008,.003),isStarter?new THREE.MeshPhongMaterial({color:0x17212a,shininess:35}):frame,0,isStarter?.052:.051,isStarter?.137:.131).name='front-grille';
+  }else car.add(buildSeiranBody());
   // ミニ四駆機構は共通のまま、曲線バンパーを車体の前後に配置。
-  for(const side of [-1,1]){
-    const rail=new THREE.CatmullRomCurve3([new THREE.Vector3(side*.101,.035,.123),new THREE.Vector3(side*.07,.037,.146),new THREE.Vector3(0,.04,.155),new THREE.Vector3(-side*.07,.037,.146),new THREE.Vector3(-side*.101,.035,.123)]);
-    // 前後のFRP風バンパーを曲線で成形。
-    if(side===1)car.add(new THREE.Mesh(new THREE.TubeGeometry(rail,24,.005,6,false),frame));
-  }
-  const rearRail=new THREE.CatmullRomCurve3([new THREE.Vector3(-.103,.04,-.13),new THREE.Vector3(-.065,.037,-.145),new THREE.Vector3(0,.037,-.15),new THREE.Vector3(.065,.037,-.145),new THREE.Vector3(.103,.04,-.13)]);
-  car.add(new THREE.Mesh(new THREE.TubeGeometry(rearRail,32,.005,8,false),frame));
-  if(['coupe','gt','prototype'].includes(design.shape)||design.id==='body-rally'||style==='starter-wedge'||isChampion){
-    const span=isChampion?.126:style==='starter-wedge'?.112:.074,wingMaterial=style==='starter-wedge'||isChampion?new THREE.MeshPhongMaterial({color:color,shininess:100}):accent;
-    add(new THREE.BoxGeometry(span,.008,isChampion?.03:style==='starter-wedge'?.026:design.shape==='prototype'?.024:.015),wingMaterial,0,isChampion?.128:style==='starter-wedge'?.12:.095,isChampion?-.132:style==='starter-wedge'?-.124:-.113).name='rear-wing';
-    if(isChampion){
-      add(new THREE.BoxGeometry(span*.78,.002,.004),white,0,.133,-.132).name='champion-wing-stripe';
-      for(const side of [-1,1])add(new THREE.BoxGeometry(.005,.028,.032),white,side*span*.45,.121,-.132).name='champion-wing-endplate';
+  if(!isChampion){
+    for(const side of [-1,1]){
+      const rail=new THREE.CatmullRomCurve3([new THREE.Vector3(side*.101,.035,.123),new THREE.Vector3(side*.07,.037,.146),new THREE.Vector3(0,.04,.155),new THREE.Vector3(-side*.07,.037,.146),new THREE.Vector3(-side*.101,.035,.123)]);
+      // 前後のFRP風バンパーを曲線で成形。
+      if(side===1)car.add(new THREE.Mesh(new THREE.TubeGeometry(rail,24,.005,6,false),frame));
     }
+    const rearRail=new THREE.CatmullRomCurve3([new THREE.Vector3(-.103,.04,-.13),new THREE.Vector3(-.065,.037,-.145),new THREE.Vector3(0,.037,-.15),new THREE.Vector3(.065,.037,-.145),new THREE.Vector3(.103,.04,-.13)]);
+    car.add(new THREE.Mesh(new THREE.TubeGeometry(rearRail,32,.005,8,false),frame));
+  }
+  if(!isChampion&&(['coupe','gt','prototype'].includes(design.shape)||design.id==='body-rally'||style==='starter-wedge')){
+    const span=style==='starter-wedge'?.112:.074,wingMaterial=style==='starter-wedge'?new THREE.MeshPhongMaterial({color:color,shininess:100}):accent;
+    add(new THREE.BoxGeometry(span,.008,style==='starter-wedge'?.026:design.shape==='prototype'?.024:.015),wingMaterial,0,style==='starter-wedge'?.12:.095,style==='starter-wedge'?-.124:-.113).name='rear-wing';
     if(style==='starter-wedge'){
       add(new THREE.BoxGeometry(span*.82,.002,.003),new THREE.MeshPhongMaterial({color:0xf1cf4f,shininess:75}),0,.124,-.124).name='wing-pinstripe';
       for(const side of [-1,1])add(new THREE.BoxGeometry(.004,.019,.025),wingMaterial,side*span*.45,.116,-.124).name='wing-endplate';
     }
     for(const side of [-1,1]){
       add(new THREE.BoxGeometry(.004,style==='starter-wedge'?.047:.024,.006),frame,side*.045,style==='starter-wedge'?.087:.078,-.116);
-      if(style==='starter-wedge'||isChampion){
-        const archColor=isChampion?0xf4f4eb:color;
+      if(style==='starter-wedge'){
+        const archColor=color;
         const arch=add(new THREE.TorusGeometry(.035,.004,8,28,Math.PI),new THREE.MeshPhongMaterial({color:archColor,shininess:88}),side*.069,.034,-.083);
         arch.rotation.y=Math.PI/2;arch.name='rear-fender-arch';
         const frontArch=add(new THREE.TorusGeometry(.035,.004,8,28,Math.PI),new THREE.MeshPhongMaterial({color:archColor,shininess:88}),side*.069,.034,.083);
@@ -249,7 +230,9 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
     if(accessoryId.startsWith('accessory-damper')){
       for(const side of [-1,1]){
         add(new THREE.CylinderGeometry(.003,.003,.05,12),metal,side*.065,.063,.025).name='damper-post';
-        add(new THREE.CylinderGeometry(.01,.01,.016,16),partMaterial(accessoryId,75),side*.065,.052,.025).name='damper-mass';
+        add(new THREE.CylinderGeometry(.01,.01,.016,32),new THREE.MeshStandardMaterial({color:hex(look(accessoryId).color),metalness:.8,roughness:.28}),side*.065,.052,.025).name='damper-mass';
+        for(let groove=0;groove<3;groove++){const ring=add(new THREE.TorusGeometry(.0101,.0005,4,20),partAccent(accessoryId,90),side*.065,.047+groove*.004,.025);ring.rotation.x=Math.PI/2;ring.name='damper-machining-groove';}
+        add(new THREE.SphereGeometry(.004,12,8),darkRubber,side*.065,.09,.025).name='damper-post-cap';
         for(let ring=0;ring<5;ring++){const spring=add(new THREE.TorusGeometry(.005,.001,4,12),metal,side*.065,.067+ring*.003,.025);spring.rotation.x=Math.PI/2;spring.name='damper-spring';}
       }
     }else if(accessoryId==='accessory-weight'){
@@ -271,15 +254,19 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
       const tireWidth=equipment.tire==='tire-1'?.034:equipment.tire==='tire-2'?.022:.028;
       const tire=add(new THREE.CylinderGeometry(tireRadius,tireRadius,tireWidth,40,1),rubber,side*.082,.033,z);tire.rotation.z=Math.PI/2;tire.name=`tire-${equipment.tire}`;
       if(trailTire)for(let lug=0;lug<16;lug++){const angle=lug*Math.PI/8;const block=add(new THREE.BoxGeometry(tireWidth+.003,.004,.01),rubber,side*.082,.033+Math.cos(angle)*tireRadius,z+Math.sin(angle)*tireRadius);block.rotation.x=angle;block.name='offroad-tread';}
-      const sidewall=add(new THREE.TorusGeometry(tireRadius*.81,.0014,5,32),partAccent(equipment.tire,60),side*(.082+tireWidth/2+.001),.033,z);sidewall.rotation.y=Math.PI/2;sidewall.name=`tire-sidewall-${equipment.tire}`;
+      for(const edge of [-1,1]){
+        const seam=add(new THREE.TorusGeometry(tireRadius*.98,.00045,4,40),darkRubber,side*.082+edge*tireWidth*.36,.033,z);seam.rotation.y=Math.PI/2;seam.name='tire-mould-seam';
+      }
+      const sidewall=add(new THREE.TorusGeometry(tireRadius*.81,.0014,5,32),new THREE.MeshStandardMaterial({color:new THREE.Color(look(equipment.tire).accent).lerp(new THREE.Color(0x24292e),.7),roughness:.8}),side*(.082+tireWidth/2+.001),.033,z);sidewall.rotation.y=Math.PI/2;sidewall.name=`tire-sidewall-${equipment.tire}`;
       if(equipment.tire==='tire-1')for(let pore=0;pore<10;pore++){
         const angle=pore*Math.PI/5,texture=add(new THREE.SphereGeometry(.0014,6,4),partAccent(equipment.tire,25),side*(.082+tireWidth/2+.001),.033+Math.cos(angle)*tireRadius*.58,z+Math.sin(angle)*tireRadius*.58);texture.name='sponge-pore';
       }
-      const wheelColor=isChampion?0xf0c943:hex(look(equipment.wheel).color),wheelAccent=partAccent(equipment.wheel,80);
-      const rim=add(new THREE.CylinderGeometry(.022,.022,.003,24),new THREE.MeshPhongMaterial({color:wheelColor,shininess:70}),side*.097,.033,z);rim.rotation.z=Math.PI/2;rim.name=`wheel-rim-${equipment.wheel}`;
+      const wheelColor=hex(look(equipment.wheel).color),wheelAccent=new THREE.MeshStandardMaterial({color:hex(look(equipment.wheel).accent),metalness:.65,roughness:.34});
+      const rim=add(new THREE.LatheGeometry([new THREE.Vector2(.019,-.0015),new THREE.Vector2(.022,-.0015),new THREE.Vector2(.022,.0015),new THREE.Vector2(.019,.0015),new THREE.Vector2(.019,-.0015)],32),new THREE.MeshStandardMaterial({color:wheelColor,metalness:.5,roughness:.4}),side*.097,.033,z);rim.rotation.z=Math.PI/2;rim.name=`wheel-rim-${equipment.wheel}`;
       const spokes=look(equipment.wheel).detail;
       for(let i=0;i<spokes;i++){
-        const spoke=add(new THREE.CapsuleGeometry(equipment.wheel==='wheel-light'?.0015:.002,.032,3,6),wheelAccent,side*.099,.033,z);spoke.rotation.x=i*Math.PI/spokes;spoke.name=`wheel-spoke-${equipment.wheel}`;
+        const angle=i*Math.PI*2/spokes;
+        const spoke=add(new THREE.CapsuleGeometry(equipment.wheel==='wheel-light'?.0011:.0015,.014,3,6),wheelAccent,side*.099,.033+Math.cos(angle)*.011,z+Math.sin(angle)*.011);spoke.rotation.x=angle;spoke.name=`wheel-spoke-${equipment.wheel}`;
       }
       const hub=add(new THREE.CylinderGeometry((equipment.wheel==='wheel-oneway'||equipment.wheel==='wheel-diff')?.009:.007,(equipment.wheel==='wheel-oneway'||equipment.wheel==='wheel-diff')?.009:.007,.005,16),partAccent(equipment.wheel,90),side*.101,.033,z);hub.rotation.z=Math.PI/2;hub.name='wheel-hub';
     }
@@ -291,12 +278,26 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
       add(new THREE.CylinderGeometry(.014,.014,.009,24),partMaterial(id,65),x,.083,z).name='double-roller-upper';
       const upperRing=add(new THREE.TorusGeometry(.01,.0015,6,24),partAccent(id,85),x,.088,z);upperRing.rotation.x=Math.PI/2;
     }
-    const base=add(new THREE.CylinderGeometry(.014,.014,.009,32),partMaterial(id,id==='roller-1'?12:60),x,.045,z);base.name=`roller-${slot}-${id}`;
+    const machined=id==='roller-2'||id==='roller-double'||id==='roller-turn';
+    const rollerMaterial=machined?metal:partMaterial(id,id==='roller-1'?12:60);
+    const profile=[new THREE.Vector2(.0105,-.0045),new THREE.Vector2(.0137,-.0045),new THREE.Vector2(.014,-.003),new THREE.Vector2(.014,.003),new THREE.Vector2(.0137,.0045),new THREE.Vector2(.0105,.0045),new THREE.Vector2(.0105,-.0045)];
+    const base=add(machined?new THREE.LatheGeometry(profile,32):new THREE.CylinderGeometry(.014,.014,.009,32),rollerMaterial,x,.045,z);base.name=`roller-${slot}-${id}`;
+    if(machined){
+      add(new THREE.CylinderGeometry(.0045,.0045,.007,20),metal,x,.045,z).name='roller-machined-hub';
+      for(let spoke=0;spoke<5;spoke++){
+        const angle=spoke*Math.PI*2/5;
+        const arm=add(new THREE.BoxGeometry(.002,.002,.009),metal,x+Math.sin(angle)*.007,.046,z+Math.cos(angle)*.007);arm.rotation.y=angle;arm.name='roller-open-spoke';
+      }
+      for(const y of [.042,.048]){const groove=add(new THREE.TorusGeometry(.0138,.0004,4,32),metal,x,y,z);groove.rotation.x=Math.PI/2;groove.name='roller-lathe-groove';}
+    }
     const ring=add(new THREE.TorusGeometry(id==='roller-2'?.010:.009,.0015,6,24),partAccent(id,85),x,.050,z);ring.rotation.x=Math.PI/2;ring.name=`roller-accent-${slot}`;
     if(id==='roller-2'){
       const inner=add(new THREE.TorusGeometry(.0045,.001,6,16),metal,x,.051,z);inner.rotation.x=Math.PI/2;inner.name=`roller-bearing-${slot}`;
     }
-    add(new THREE.CylinderGeometry(.004,.004,.013,12),metal,x,.051,z).name=`roller-axle-${slot}`;
+    add(new THREE.CylinderGeometry(.002,.002,.022,16),metal,x,.049,z).name=`roller-axle-${slot}`;
+    add(new THREE.CylinderGeometry(.004,.004,.001,24),metal,x,.053,z).name='roller-washer';
+    add(new THREE.CylinderGeometry(.003,.003,.003,6),metal,x,.055,z).name='roller-hex-nut';
+    const bore=add(new THREE.CylinderGeometry(.0011,.0011,.0004,12),darkRubber,x,.0566,z);bore.name='roller-nut-recess';
   }
   car.scale.setScalar(.85);return car;
 }

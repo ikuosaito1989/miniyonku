@@ -42,14 +42,17 @@ test('コハクK660はモブ車と同じ箱型軽ワゴンで、ウイングの�
   for(const car of [model,mob])car.traverse(object=>{if(object instanceof THREE.Mesh){object.geometry.dispose();object.material.dispose();}});
 });
 
-test('初優勝ボディは独自の赤白青緑リバリーと立体フィンを持つ最上位モデル',()=>{
+test('セイランは黒鉛色の分割カウル・貫通穴付きフィン・カーボンステーを持つ',()=>{
   const model=buildMachineModel(0x111111,{...starterEquipment,body:'body-champion'});
-  assert.ok(model.getObjectByName('champion-nose-inlay'));
-  assert.ok(model.getObjectByName('champion-rear-fin'));
-  assert.ok(model.getObjectByName('champion-inner-fin'));
-  assert.ok(model.getObjectByName('champion-wing-stripe'));
+  for(const name of ['seiran-split-nose','seiran-open-rear-fin','seiran-fin-brace','seiran-drilled-carbon-stay','seiran-hex-fastener','seiran-carbon-weave'])assert.ok(model.getObjectByName(name),name);
+  const fin=model.getObjectByName('seiran-open-rear-fin') as THREE.Mesh<THREE.ExtrudeGeometry>;
+  assert.ok((fin.geometry.parameters.shapes as THREE.Shape).holes.length>0);
+  assert.equal(model.getObjectByName('champion-wing-stripe'),undefined);
+  assert.equal(model.getObjectByName('rear-wing'),undefined);
   const body=model.getObjectByName('body-shell') as THREE.Mesh;
-  assert.equal((body.material as THREE.MeshPhongMaterial).color.getHex(),0xdf3b3a);
+  assert.ok(body.material instanceof THREE.MeshStandardMaterial);
+  assert.equal((body.material as THREE.MeshStandardMaterial).color.getHex(),0x252d30);
+  assert.ok((body.material as THREE.MeshStandardMaterial).roughness>.3);
   const size=new THREE.Box3().setFromObject(model).getSize(new THREE.Vector3());
   assert.ok(size.x<.22&&size.z<.3&&size.y<.12);
   model.traverse(object=>{if(object instanceof THREE.Mesh){object.geometry.dispose();object.material.dispose();}});
