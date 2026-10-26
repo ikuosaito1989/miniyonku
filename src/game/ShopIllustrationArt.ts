@@ -6,11 +6,11 @@ import { fixtureArtFrame, shopIllustrationKey, shopIllustrationSize } from '../d
 const text=(scene:Phaser.Scene,x:number,y:number,value:string,size:number,color:string,depth=1)=>
   scene.add.text(x,y,value,{fontFamily:'"Noto Sans JP",monospace',fontSize:`${size}px`,color,resolution:2}).setDepth(depth);
 
-export function drawIllustratedRoom(scene:Phaser.Scene,mirrored=false){
+export function drawIllustratedRoom(scene:Phaser.Scene,mirrored=false,exclusive=false){
   if(!scene.textures.exists(shopIllustrationKey))return false;
   scene.add.image(0,0,shopIllustrationKey).setOrigin(0).setDisplaySize(shopIllustrationSize.width,shopIllustrationSize.height).setFlipX(mirrored).setDepth(-100);
   if(!mirrored){text(scene,91,44,story.shop,23,'#fff4d7');text(scene,94,71,`${story.town}　小さな走り、大きな夢`,8,'#d0e5de');}
-  text(scene,mirrored?160:702,268,'作業台 ↑',10,'#41666a');text(scene,mirrored?155:657,508,'店内走行コース',11,'#41666a');
+  text(scene,mirrored?160:702,268,'作業台 ↑',10,'#41666a');text(scene,mirrored?155:657,508,exclusive?'究極パーツ展示':'店内走行コース',11,'#41666a');
   return true;
 }
 

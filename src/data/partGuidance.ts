@@ -1,6 +1,8 @@
 import type { Part } from './parts';
 export function partGuidance(part:Part):{use:string;tradeoff:string}{
  const s=part.specs;
+ if(part.id==='motor-sovereign')return {use:'星皇シャーシと組み合わせて圧倒的な加速と速度を得る特別なモーター。新品のまま最高状態で、慣らしも交換も不要です。',tradeoff:'価格は25万円。モーター単体では安定性を強化できません。電池は消耗するため残量を確認しよう。'};
+ if(part.id==='chassis-sovereign')return {use:'星皇モーターを支える究極級の土台。低重量・高い駆動効率に加え、旋回とジャンプ着地、悪路の制振を大幅に強化します。',tradeoff:'価格は25万円。2種類を揃えると50万円、わかばの優勝約200回分です。最終公式大会は準備中です。'};
  if(part.id==='motor-turn')return {use:'わかば・星空杯の連続コーナーで、減速後の再加速を強化。4:1ギアと高グリップの足回りを合わせよう。',tradeoff:'出力が高いのでモーター単体の交換ではコースアウトする場合があります。約60秒の慣らしと安定性の強化を忘れずに。'};
  if(part.id==='tire-turn')return {use:'舗装の連続コーナーで横滑りとコースアウトを抑えたいときに。K4シャーシ・スタビライザーと併用できます。',tradeoff:'悪路への追従性はブロックタイヤほど高くありません。ダートでは悪路用へ交換しよう。'};
  if(part.id==='accessory-none')return {use:'その枠の補助パーツを外します。',tradeoff:'軽くなりますが、そのパーツの安定性・制振・駆動補助は失われます。'};

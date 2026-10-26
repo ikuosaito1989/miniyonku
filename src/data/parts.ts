@@ -5,6 +5,8 @@ export const categories: Record<Category, string> = { body:'ボディ', chassis:
 export interface Part { id: string; level:number; category: Category; name: string; price: number; description: string; specs: Record<string, number>; performance: string }
 type PartDefinition=Omit<Part,'level'>;
 const definitions: PartDefinition[] = [
+  {id:'motor-sovereign',category:'motor',name:'星皇オーバードライブモーター',price:250000,description:'星霧模型工房限定。各25万円の究極級。高回転と圧倒的なトルクを両立し、慣らし不要・摩耗なし。星皇シャーシと組み合わせ、多くのレースを圧倒する。',specs:{rpm:22000,torque:4.5,weight:18,wear:0},performance:'22,000 rpm / 4.50 mN·m / 18 g / 慣らし不要・摩耗なし'},
+  {id:'chassis-sovereign',category:'chassis',name:'星皇ゼロリミットシャーシ',price:250000,description:'星霧模型工房限定。各25万円の究極級。軽量で高効率、圧倒的な旋回安定性と制振性能。星皇モーターの力を支え、舗装・悪路・立体コースに対応する。',specs:{weight:14,efficiency:1.2,stability:4.2,damping:0.85,roughGrip:1.8,roughResistance:0.35,compliance:2.1},performance:'14 g / 駆動効率 ×1.20 / 安定性 ×4.20 / 制振85% / 悪路接地 ×1.80'},
   {id:'motor-turn',category:'motor',name:'スイフトトルクモーター',price:1800,description:'わかばの連続コーナー向け上位型。回転数を上げすぎず、立ち上がりの力を強化。低重心シャーシとグリップタイヤを合わせよう。',specs:{rpm:16000,torque:1.65,weight:20},performance:'16,000 rpm / 1.65 mN·m / 20 g'},
   {id:'chassis-turn',category:'chassis',name:'K4 テクニカルローダウン',price:1900,description:'K2より軽く、低重心と高剛性を両立した上位シャーシ。連続コーナーで姿勢を保ち、駆動ロスも抑える。',specs:{weight:20,efficiency:1.03,stability:1.2},performance:'20 g / 駆動効率 ×1.03 / 安定性 ×1.20'},
   {id:'tire-turn',category:'tire',name:'ハイグリップ・ソフトスポンジ',price:1100,description:'スポンジタイヤを強化した舗装用。軽さを残しながら高いグリップで連続コーナーを支える。砂地専用タイヤではない。',specs:{diameter:26,grip:1.35,weight:8},performance:'径26 mm / グリップ1.35 / 8 g'},

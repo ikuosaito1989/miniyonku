@@ -81,6 +81,7 @@ function drawBuilding(scene:Phaser.Scene,v:TownVenue,index:number,open:boolean){
   label(cx,y+78,v.id==='stadium-10'?'緑川グランプリ・決勝会場':v.id==='stadium-9'?'第3公式大会・星空テクニカル杯':'公式ミニ四駆レース会場',11,'#34485c');
  }else{
   // 二階建ての模型店。軒・屋上機器・店名・ショーケース。
+  if(v.id==='atelier'){r(x-8,y-42,w+16,h+50,0x817099);r(x-6,y-40,w+12,h+46,0xdfc47f);r(x-4,y-38,w+8,h+42,0x4d4762);}
   r(x-6,y-28,w+12,35,ink);r(x-3,y-32,w+6,31,roof);r(x+3,y-35,w-6,4,0xa7b2b0);
   for(let yy=y-28;yy<y-2;yy+=7)for(let xx=x;xx<x+w;xx+=14){r(xx,yy,12,2,0xa1a9ac);r(xx+11,yy+2,2,4,0x4c566d);}
   r(x+16,y-55,34,24,0x656a76);r(x+19,y-53,28,16,0xc2c5bb);for(let i=0;i<4;i++)r(x+22+i*6,y-50,2,10,0x858e97);

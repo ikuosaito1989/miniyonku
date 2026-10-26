@@ -14,8 +14,8 @@ const ink=palette.outline;
 function rect(g:Phaser.GameObjects.Graphics,x:number,y:number,w:number,h:number,color:number){g.fillStyle(color).fillRect(Math.round(x),Math.round(y),w,h);}
 function label(scene:Phaser.Scene,x:number,y:number,text:string,size=10,color='#f5ead0',depth=0){return scene.add.text(x,y,text,{fontFamily:'"Noto Sans JP", monospace',fontSize:`${size}px`,color,resolution:2}).setDepth(depth);}
 
-export function drawShopRoom(scene:Phaser.Scene,mirrored=false){
-  if(drawIllustratedRoom(scene,mirrored))return;
+export function drawShopRoom(scene:Phaser.Scene,mirrored=false,exclusive=false){
+  if(drawIllustratedRoom(scene,mirrored,exclusive))return;
   const g=scene.add.graphics();
   rect(g,0,0,960,640,0x303e56);rect(g,40,35,880,85,palette.wall);
   for(let y=36;y<108;y+=4)for(let x=42;x<918;x+=5){
@@ -54,7 +54,7 @@ export function drawShopRoom(scene:Phaser.Scene,mirrored=false){
   for(let y=575;y<596;y+=3)rect(g,415,y,133,1,0x5f7c8e);
   rect(g,40,600,880,14,0x526580);rect(g,40,600,880,2,0xb6d5d6);label(scene,454,599,'いらっしゃいませ',7,'#eff3d8');
   // 通路の案内タイル。
-  label(scene,702,281,'作業台 ↑',10,'#4c737a');label(scene,657,508,'店内走行コース',11,'#4c737a');
+  label(scene,702,281,'作業台 ↑',10,'#4c737a');label(scene,657,508,exclusive?'究極パーツ展示':'店内走行コース',11,'#4c737a');
 }
 
 function kitBox(g:Phaser.GameObjects.Graphics,x:number,y:number,w:number,h:number,variant:number){

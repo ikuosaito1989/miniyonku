@@ -17,7 +17,7 @@ test('全パーツに1〜10のレベルがあり、初期装備はLv.1、入門�
 test('店頭と購入ロジックが共通の販売制限を使い、上位パーツは資金があっても買えない',()=>{
   const wallet={money:100000,inventory:{}};
   for(const part of parts){const result=purchase(wallet,part.id);assert.equal(result.success,isStocked(part));if(!isStocked(part))assert.equal(result.wallet,wallet);}
-  const top=parts.find(p=>p.level===10)!;
+  const top=parts.find(p=>p.id==='motor-apex')!;
   assert.equal(purchase(wallet,top.id).success,false);
   assert.equal(purchase(wallet,top.id,{name:'テスト上位店',maxPartLevel:10}).success,true);
 });

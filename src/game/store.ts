@@ -95,7 +95,7 @@ export const useGame = create<GameState>((set) => ({
   leaveShop:()=>set(s=>{
     if(s.gameOver)return s;
     if(s.location==='town'||s.overlay==='race'||s.overlay==='arrival')return s;
-    if(s.unlockedRaces.includes(nextShopRace.id)&&!s.legendRaceCompleted)return {overlay:'arrival',arrivalEvent:'legend',dialogueStage:'none',shopAfter:false,legendEventPending:true};
+    if(s.location==='komorebi'&&s.unlockedRaces.includes(nextShopRace.id)&&!s.legendRaceCompleted)return {overlay:'arrival',arrivalEvent:'legend',dialogueStage:'none',shopAfter:false,legendEventPending:true};
     if(s.location==='komorebi'&&s.legendRaceCompleted&&!s.doctorGiftReceived)return {overlay:'arrival',arrivalEvent:'doctor',dialogueStage:'none',shopAfter:false};
     return {location:'town',townReturnVenue:s.location==='stadium-5'||s.location==='stadium-9'?s.location:null,lastShop:s.location==='stadium-5'||s.location==='stadium-9'?s.lastShop:s.location,overlay:null,nearby:'',notice:'',shopAfter:false};
   }),
@@ -128,7 +128,7 @@ export const useGame = create<GameState>((set) => ({
     const practice=breakInPractice(motor?.seconds??0,duration);
     return {units,proficiencyPoints:s.proficiencyPoints+practice,notice:`${duration.toFixed(0)}秒の慣らし運転を行いました。${rechargeable?'充電電池の残量は減りません。':'電池も消耗します。'}${practice>0?' 整備の熟練度が上がりました。':''}`};
   }),
-  startTrial: () => set(s=>s.gameOver||s.location==='town'||s.location==='stadium-5'||s.location==='stadium-9'?s:({overlay:'race',officialChallengeActive:false,officialQualificationNotice:false,shopAfter:false,notice:'',legendChallengeActive:false,legendDebriefPending:false,villainChallengeActive:false,villainDebriefPending:false,thirdShopNotice:false,raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,qualificationNotice:false})),
+  startTrial: () => set(s=>s.gameOver||s.location==='atelier'||s.location==='town'||s.location==='stadium-5'||s.location==='stadium-9'?s:({overlay:'race',officialChallengeActive:false,officialQualificationNotice:false,shopAfter:false,notice:'',legendChallengeActive:false,legendDebriefPending:false,villainChallengeActive:false,villainDebriefPending:false,thirdShopNotice:false,raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,qualificationNotice:false})),
   settleRace: (attempt,race) => set(s=>{
     if(attempt!==s.raceAttempt)return s;
     const player=race.racers.find(r=>r.id==='player');

@@ -3,6 +3,8 @@ import { bodies } from './bodies';
 
 export interface PartAppearance { color:string; accent:string; detail:number; mark:string }
 export const partAppearances:Record<string,PartAppearance>={
+  'motor-sovereign':{color:'#73549e',accent:'#f5d87d',detail:8,mark:'SOVEREIGN'},
+  'chassis-sovereign':{color:'#343b52',accent:'#f5d87d',detail:5,mark:'ZERO LIMIT'},
   'motor-turn':{color:'#92c7b5',accent:'#d5b56f',detail:5,mark:'SWIFT'},
   'chassis-turn':{color:'#354a58',accent:'#83cfb2',detail:4,mark:'K4-T'},
   'tire-turn':{color:'#35464b',accent:'#88c6ac',detail:6,mark:'SOFT PRO'},

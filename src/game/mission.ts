@@ -18,7 +18,7 @@ export function currentMission(s:Progress):Mission{
  if(s.legendRaceCompleted&&!s.doctorGiftReceived)return {id:'doctor',title:'青葉博士からセイランを受け取る',destination:'komorebi',place:'こもれび模型店',steps:['こもれび模型店で博士の来店イベントを進める。','博士の話を聞き、セイランボディを受け取る。'],hint:'その後は店の下側の出口から街へ出て、あおぞら模型店へ向かおう。'};
  if(s.legendRaceCompleted)return {id:'aozora',title:'あおぞら模型店で優勝する',destination:'aozora',place:'あおぞら模型店',steps:['店の下側の出口から街へ出る。','街の地図であおぞら模型店を選んで向かう。','店内の連続コーナーコースで1位を取る。'],hint:'加速と旋回の安定を両立させよう。優勝すると黒岩 豪が訪ねてきます。'};
  if(s.unlockedRaces.includes(nextShopRace.id))return {id:'brothers',title:'最強兄弟に話しかけて特別レースへ',destination:'komorebi',place:'こもれび模型店',steps:['店内の風見 怜・火野 岳に話しかける。','「セッティングしてから」を選んだ場合は、もう一度兄弟に話しかける。','兄弟との特別レースを最後まで体験する。'],hint:'このイベントは勝利する必要がありません。周回遅れでの敗北でも進みます。途中で店へ戻った場合は、もう一度話しかけよう。'};
- return {id:'komorebi',title:'こもれび模型店で初優勝する',destination:'komorebi',place:'こもれび模型店',steps:['こもれび模型店に入り、店内コースを調べる。','通常レースで完走して賞金を貯める。','店主からパーツを買い、作業台で装着して1位を目指す。'],hint:'最初は負けても大丈夫。完走すれば賞金がもらえます。勝てないときは店内の佐伯 匠に話しかけると、今のマシンに合った具体的なアドバイスが聞けます。'};
+ return {id:'komorebi',title:'こもれび模型店で初優勝する',destination:'komorebi',place:'こもれび模型店',steps:['こもれび模型店に入り、店内コースを調べる。','通常レースで完走して賞金を貯める。','店主からパーツを買い、作業台で装着して1位を目指す。'],hint:'最初は負けても大丈夫。完走すれば賞金がもらえます。星霧模型工房も最初から入れますが、高額パーツはやり込み向けです。勝てないときは店内の佐伯 匠に話しかけると、今のマシンに合った具体的なアドバイスが聞けます。'};
 }
 export function missionNextAction(s:Progress,mission=currentMission(s)){
  if(!mission.destination)return mission.steps[0];

@@ -28,6 +28,7 @@ export function App(){
   useEffect(()=>{if(started)return keepScreenAwake();},[started]);
   const shop=currentShop(game.location);
   const [category,setCategory]=useState<Category>('motor');
+  useEffect(()=>setCategory('motor'),[shop.id]);
   const modal=useRef<HTMLDivElement>(null);
   useEffect(()=>{
     if(game.overlay)modal.current?.focus();
@@ -67,7 +68,7 @@ export function App(){
         {game.overlay==='shop'&&<div className="scrim"><div className="modal shop" role="dialog" aria-modal="true" aria-labelledby="modal-title" ref={modal} tabIndex={-1}>
             <div className="shop-head"><div><p className="eyebrow">{shop.name} / PARTS COUNTER</p><h2 id="modal-title">小さなパーツ、大きな可能性。</h2></div><button className="close" onClick={game.close} aria-label="ショップを閉じる">✕</button></div>
             <div className="shop-balance">所持金 <strong>¥ {yen(game.money)}</strong><span>所持パーツ {Object.values(game.inventory).reduce((a,b)=>a+b,0)} 点（初期装備含む）</span></div>
-            <p>モーター・電池は各種類1個。同じ種類の再購入は新品へ交換し、他の種類と消耗状態は保持します。その他のパーツはセッティングの①〜③に最大3個を同時装着できます。</p><div className="tabs" aria-label="パーツの分類">{Object.entries(categories).map(([key,label])=><button key={key} aria-pressed={category===key} className={category===key?'selected':''} onClick={()=>setCategory(key as Category)}>{label}</button>)}</div>
+            <p>モーター・電池は各種類1個。同じ種類の再購入は新品へ交換し、他の種類と消耗状態は保持します。その他のパーツはセッティングの①〜③に最大3個を同時装着できます。</p><div className="tabs" aria-label="パーツの分類">{Object.entries(categories).filter(([key])=>!shop.exclusiveParts||parts.some(p=>p.category===key&&isStocked(p,shop))).map(([key,label])=><button key={key} aria-pressed={category===key} className={category===key?'selected':''} onClick={()=>setCategory(key as Category)}>{label}</button>)}</div>
             <div className="parts">{parts.filter(p=>p.category===category&&isStocked(p,shop)).map(p=><article key={p.id}><div className={`part-icon ${p.category}`}><PartArtwork part={p}/></div><div className="part-info"><h3>{p.name}</h3><PartDescription part={p}/><span className="owned">所持 {game.inventory[p.id]??0}</span></div><div className="purchase"><strong>¥ {yen(p.price)}</strong><button disabled={game.money<p.price} onClick={()=>game.buy(p.id)}>{game.money<p.price?'所持金不足':p.category==='motor'||p.category==='battery'?(game.inventory[p.id]>0?'新品に交換':'購入して装着'):'購入する'}</button></div></article>)}</div>
             <p className="notice" role="status" aria-live="polite">{game.notice||`${shop.owner}「じっくり選んでね。モーター・電池は種類ごとに1個。新品は自動で装着するよ。」`}</p><SaveControls/>
         </div></div>}

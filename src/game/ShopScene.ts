@@ -100,7 +100,7 @@ export class ShopScene extends Phaser.Scene {
     }else{
     const shopId=currentShop(useGame.getState().location).id,layout=shopLayout(shopId),mirrored=mirroredShop(shopId);
     const fixtures=layout.map(f=>f.target);
-    drawShopRoom(this,mirrored);
+    drawShopRoom(this,mirrored,shopId==='atelier');
     drawShopDetails(this,mirrored);
     for(const {source,target:fixture} of layout){
       drawShopFixture(this,fixture,source,mirrored);
@@ -130,16 +130,36 @@ export class ShopScene extends Phaser.Scene {
       this.add.rectangle(480,320,880,570,shop.color,.09).setDepth(1);
       this.add.rectangle(signX,70,260,64,shop.id==='aozora'?0x284b6b:0x6a5234).setDepth(110);
       this.add.text(signX,49,shop.name,{fontFamily:'sans-serif',fontSize:'21px',fontStyle:'bold',color:'#f8edcc',resolution:2}).setOrigin(.5,0).setDepth(111);
-      this.add.text(signX,80,shop.id==='aozora'?'連続コーナーで磨く、次の走り':shop.id==='wakaba'?'坂・ジャンプ・高架スパイラルに挑もう':'砂利と砂地を走る、ダートの勝負',{fontFamily:'sans-serif',fontSize:'8px',color:'#c7e6e6',resolution:2}).setOrigin(.5,0).setDepth(111);
+      this.add.text(signX,80,shop.id==='atelier'?'究極パーツの販売専門店・各25万円':shop.id==='aozora'?'連続コーナーで磨く、次の走り':shop.id==='wakaba'?'坂・ジャンプ・高架スパイラルに挑もう':'砂利と砂地を走る、ダートの勝負',{fontFamily:'sans-serif',fontSize:'8px',color:'#c7e6e6',resolution:2}).setOrigin(.5,0).setDepth(111);
       const f=fixtures.find(f=>f.kind==='track')!,{circuit,circuitLength,sampleCircuit}=getCircuitTrack(shop.circuitId),g=this.add.graphics().setDepth(f.y+f.h+1);
       const plotX=(f.w-28)/(2*(circuit.radiusX+Math.abs(circuit.asymmetry))),plotY=(f.h-38)/(2*(circuit.radiusZ+Math.abs(circuit.chicane)));
       g.fillStyle(0x476d75).fillRoundedRect(f.x+3,f.y+3,f.w-6,f.h-6,9);
+      if(shop.id==='atelier'){
+        g.fillStyle(0x302f4b).fillRect(f.x+3,f.y+3,f.w-6,f.h-6);g.lineStyle(3,0xd5b779).strokeRect(f.x+8,f.y+8,f.w-16,f.h-16);
+        for(const [i,name] of ['星皇モーター','星皇シャーシ'].entries()){
+          const x=f.x+25+i*130;g.fillStyle(0x54456f).fillRect(x,f.y+30,105,75);g.lineStyle(2,0xe4c981).strokeRect(x,f.y+30,105,75);
+          if(i===0){
+            g.fillStyle(0xd8bd78).fillRect(x+23,f.y+52,55,27);g.fillStyle(0x8c72b1).fillRect(x+26,f.y+54,49,23);
+            g.fillStyle(0xf1d88e).fillEllipse(x+25,f.y+65,15,27).fillEllipse(x+78,f.y+65,15,27);
+            g.fillStyle(0x454158).fillEllipse(x+80,f.y+65,7,17);g.fillStyle(0xdce3df).fillRect(x+80,f.y+63,16,4);
+            for(let vent=0;vent<7;vent++)g.fillStyle(0x352d49).fillRect(x+31+vent*6,f.y+57,3,8);
+            g.fillStyle(0xe5b873).fillRect(x+14,f.y+59,6,4).fillRect(x+14,f.y+69,6,4);g.fillStyle(0xb9a1d1).fillRect(x+31,f.y+72,42,2);
+          }else{
+            g.fillStyle(0xe1c882).fillPoints([{x:x+12,y:f.y+70},{x:x+45,y:f.y+44},{x:x+93,y:f.y+57},{x:x+59,y:f.y+88}],true);
+            g.fillStyle(0x354055).fillPoints([{x:x+17,y:f.y+69},{x:x+45,y:f.y+49},{x:x+86,y:f.y+58},{x:x+57,y:f.y+82}],true);
+            g.lineStyle(3,0xc9b078).lineBetween(x+24,f.y+70,x+46,f.y+54).lineBetween(x+60,f.y+77,x+80,f.y+60);
+            g.fillStyle(0x7e62a3).fillRect(x+43,f.y+58,16,12);g.fillStyle(0xf5dfa1).fillRect(x+45,f.y+59,12,2);
+          }
+          this.add.text(x+52,f.y+112,`${name}\n各250,000円`,{fontFamily:'sans-serif',fontSize:'10px',align:'center',color:'#ffe5a5',resolution:2}).setOrigin(.5,0).setDepth(f.y+f.h+2);
+        }
+      }else{
       for(let lane=0;lane<6;lane++){
         g.lineStyle(2,0xe5e2c8);g.beginPath();
         for(let i=0;i<=160;i++){const p=sampleCircuit(i/160*circuitLength),scale=1-lane*.065,x=f.x+f.w/2+p.x*plotX*scale,y=f.y+f.h/2+p.z*plotY*scale;if(i===0)g.moveTo(x,y);else g.lineTo(x,y);}
         g.strokePath();
       }
       this.add.text(f.x+f.w/2,f.y+f.h-20,getCircuitTrack(shop.circuitId).circuit.name,{fontFamily:'sans-serif',fontSize:'9px',color:'#fff1bc',resolution:2}).setOrigin(.5,0).setDepth(f.y+f.h+2);
+      }
     }
     this.add.rectangle(480,580,84,15,0x34564e).setDepth(590);
     this.add.text(480,575,'▼ 緑川町へ',{fontFamily:'sans-serif',fontSize:'10px',color:'#fff1bd',resolution:2}).setOrigin(.5,0).setDepth(591);
@@ -396,7 +416,7 @@ export class ShopScene extends Phaser.Scene {
     const state=useGame.getState(),condition=equippedCondition(state.equipment,state.units,state.selectedUnits);
     const shop=currentShop(state.location);
     const counter=targets.find(t=>t.kind==='counter')!;counter.label=`店主 ${shop.owner}`;counter.speaker=shop.owner;counter.text=shop.welcome;
-    const track=targets.find(t=>t.kind==='track')!;track.label=getCircuitTrack(shop.circuitId).circuit.name;
+    const track=targets.find(t=>t.kind==='track')!;track.label=shop.id==='atelier'?'究極パーツ展示':getCircuitTrack(shop.circuitId).circuit.name;
     targets.push({...shopExit,label:'緑川町への出口',speaker:shop.name,shopAfter:false,text:'外の町へ出よう。',kind:'exit'});
     if(shop.id==='komorebi'&&!state.legendRaceCompleted){
       for(const actor of this.arriving.filter(actor=>actor.state.arrived&&(actor.kind==='rei'||actor.kind==='gaku'))){
@@ -408,7 +428,7 @@ export class ShopScene extends Phaser.Scene {
     }
     const visitors=cast.visitors.map(v=>({x:v.x-16,y:v.y-42,w:32,h:54,label:v.name,speaker:v.name,shopAfter:false,text:shopAdvice(v.kind,{money:state.money,inventory:state.inventory,equipment:state.equipment,motorSeconds:condition.motorSeconds,qualified:state.unlockedRaces.includes(nextShopRace.id)})}));
     if(shop.id==='aozora'){
-      for(const visitor of visitors)visitor.text=visitor.speaker==='三浦 結衣'?(state.villainDefeated?'黒岩くんに勝ったんだね！町へ出て、この店の右隣のひなた模型店へ行けるよ。':state.aozoraWon?'黒岩くんが店の中央で待っているよ。挑戦レースで1位になると、ひなた模型店への紹介状がもらえるんだって。':'ここは優勝1,000円、5位完走でも250円！まずは優勝しよう。町の黒岩くんが、速いレーサーを探しているみたい。'):'黒岩くんに勝つなら、記念ボディにブリーズモーターを約60秒ならして、4:1ギア・スパークセル・スポンジタイヤを試そう。低重心シャーシと軽量化も比べてね。';
+      for(const visitor of visitors)visitor.text=visitor.speaker==='三浦 結衣'?(state.villainDefeated?'黒岩くんに勝ったんだね！町へ出て、街の地図でひなた模型店を探してみよう。':state.aozoraWon?'黒岩くんが店の中央で待っているよ。挑戦レースで1位になると、ひなた模型店への紹介状がもらえるんだって。':'ここは優勝1,200円、5位完走でも350円！まずは優勝しよう。町の黒岩くんが、速いレーサーを探しているみたい。'):'黒岩くんに勝つなら、記念ボディにブリーズモーターを約60秒ならして、4:1ギア・スパークセル・スポンジタイヤを試そう。低重心シャーシと軽量化も比べてね。';
       if(state.aozoraWon)targets.push({x:(this.challengerPerson?.x??challengerSpot.x)-16,y:(this.challengerPerson?.y??challengerSpot.y)-42,w:32,h:54,label:challenger.name,speaker:challenger.name,shopAfter:false,text:'挑戦を受ける。',kind:'challenger'});
     }else if(shop.id==='hinata')for(const visitor of visitors)visitor.text=visitor.speaker==='三浦 結衣'?'ひなた模型店へようこそ！ここは砂利と砂地が続くロングダート。ここで優勝すると若葉公式ダート杯への出場権がもらえるよ。街の若葉レース場で森野くんや黒岩くんと勝負しよう。':'トレイルトルクモーター・ブロックタイヤ・ダンパーで接地と駆動力を確保しよう。ポール式ダブルローラーは前中後に装着できるよ。4:1ギアから試そう。';
     if(shop.id==='wakaba')for(const visitor of visitors)visitor.text=visitor.speaker==='三浦 結衣'?'長い連続コーナーの店へようこそ！ 公式杯の入賞者だけが来られるんだ。ここで優勝すると第3公式大会・星空テクニカル杯の出場権がもらえるよ。':'4:1ギア、スポンジタイヤ、低重心シャーシ、ゴムローラーとウェイト。昔のパーツも大切だよ。最高速だけ伸ばすと切り返しでコースアウトしやすいんだ。';
@@ -416,6 +436,7 @@ export class ShopScene extends Phaser.Scene {
       if(visitor.speaker==='佐伯 匠'){visitor.label='佐伯 匠（レース相談）';visitor.text='装備と前回のレースを見て、勝つための相談に乗るよ。';}
       else visitor.text+=' 負けた理由や、どのパーツを替えるとよいかは、整備役の佐伯 匠に相談してね。';
     }
+    if(shop.id==='atelier'){for(const visitor of visitors)visitor.text='星皇のモーターとシャーシは各25万円。2つで50万円、わかば優勝約200回分のごほうびだよ。レースはほかの模型店で挑戦してね。';for(const target of targets)if(target.speaker===cast.rival.name)target.text='ここは最初から入れる特別な工房。究極の2パーツはとても高いけど、2つ揃えると多くのコースで圧倒的な強さになるんだ。';}
     return [...targets,...visitors];
   }
   private interactWith(target:ShopTarget){
@@ -423,6 +444,7 @@ export class ShopScene extends Phaser.Scene {
       if(target.kind==='official-speed'||target.kind==='official-dirt'||target.kind==='official-technical')useGame.getState().openOfficialRace(target.kind==='official-technical'?'technical':target.kind==='official-speed'?'speed':'dirt');
       else if(target.kind==='official-reception'||this.isOfficial&&target.speaker==='大会受付係')useGame.getState().openOfficialRace();
       else if(target.speaker==='森野 陸'){if(this.isOfficial)useGame.getState().talk(target.speaker,target.text);else useGame.getState().openOfficialRace();}
+      else if(useGame.getState().location==='atelier'&&target.kind==='track')useGame.getState().talk('星霧模型工房','ここは販売専門店です。モーターとシャーシは店主から購入できます。レースはほかの模型店で楽しんでね。');
       else if(target.speaker==='佐伯 匠'){
         const state=useGame.getState();
         state.talk(target.speaker,raceAdvice({shopId:currentShop(state.location).id,equipment:state.equipment,inventory:state.inventory,money:state.money,...equippedCondition(state.equipment,state.units,state.selectedUnits),review:state.lastRaceReview,motorAges:Object.fromEntries(Object.entries(state.units).map(([id,list])=>[id,list[0]?.seconds??0])),batteryAges:Object.fromEntries(Object.entries(state.units).map(([id,list])=>[id,list[0]?.seconds??0]))}));

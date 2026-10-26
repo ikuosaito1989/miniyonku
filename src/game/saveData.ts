@@ -91,7 +91,7 @@ export function decodeSave(value:unknown):SaveData{
   if(game.doctorGiftReceived!==undefined&&typeof game.doctorGiftReceived!=='boolean')throw new Error('博士の贈呈記録が不正です。');
   const doctorGiftReceived=game.doctorGiftReceived===true;
   if(doctorGiftReceived&&(!legendRaceCompleted||!(inventory['body-champion']>=1)))throw new Error('博士の贈呈条件を満たしていません。');
-  if((legendRaceCompleted||(location!=='komorebi'&&location!=='town')||lastShop!=='komorebi')&&(!game.unlockedRaces.includes(nextShopRace.id)||!legendRaceCompleted))throw new Error('街の解放条件を満たしていません。');
+  if((legendRaceCompleted||(location!=='komorebi'&&location!=='atelier'&&location!=='town')||(lastShop!=='komorebi'&&lastShop!=='atelier'))&&(!game.unlockedRaces.includes(nextShopRace.id)||!legendRaceCompleted))throw new Error('街の解放条件を満たしていません。');
   for(const key of ['gameOver','wakabaUnlocked','thirdOfficialQualified','officialSpeedWon','officialDirtWon','officialQualified','officialWon','aozoraWon','villainDefeated'])if(game[key]!==undefined&&typeof game[key]!=='boolean')throw new Error('あおぞらのイベント記録が不正です。');
   const aozoraWon=game.aozoraWon===true,villainDefeated=game.villainDefeated===true;
   if(aozoraWon&&!legendRaceCompleted||villainDefeated&&!aozoraWon||(location==='hinata'||lastShop==='hinata')&&!villainDefeated)throw new Error('ひなた模型店の解放条件を満たしていません。');

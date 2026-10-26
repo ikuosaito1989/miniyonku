@@ -29,11 +29,11 @@ export function machinePerformance(equipment: Equipment, condition:MachineCondit
     batteryConsumption:battery.consumption??1,
     motorSeconds:condition.motorSeconds,batterySeconds:condition.batterySeconds,motorWearRate:motor.wear??1,
     lateralLimit: (9.81 * (1.2 + tire.grip) + rollerWeight * 0.2)*body.stability*chassis.stability*accessory.stability,
-    roughGrip:body.roughGrip,
-    roughResistance:body.roughResistance*(tire.roughResistance??1),
+    roughGrip:body.roughGrip*(chassis.roughGrip??1),
+    roughResistance:body.roughResistance*(tire.roughResistance??1)*(chassis.roughResistance??1),
     damping:Math.min(.9,(accessory.damping??0)+(chassis.damping??0)+(front.damping??0)*.45+(side.damping??0)*.35+(rear.damping??0)*.2),
     // 柔らかいスポンジは凹凸に追従し、ハードは舗装向け。
-    tireCompliance:tire.compliance??(equipment.tire==='tire-1'?1.2:equipment.tire==='tire-2'?.7:1),
+    tireCompliance:(tire.compliance??(equipment.tire==='tire-1'?1.2:equipment.tire==='tire-2'?.7:1))*(chassis.compliance??1),
   };
 }
 export type Performance = ReturnType<typeof machinePerformance>;
