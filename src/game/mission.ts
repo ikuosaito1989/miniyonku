@@ -8,7 +8,7 @@ export function currentMission(s:Progress):Mission{
  if(s.gameOver)return {id:'game-over',title:'ゲームオーバー',destination:null,place:'公式大会',steps:['大会の総合順位を確認する。'],hint:'公式大会は一度限りです。再出場はできません。'};
  if(s.technicalCup.results.length)return {id:'complete',title:'公開中のミッションをクリア！',destination:null,place:'星空公式レース会場',steps:['星空テクニカル杯の結果は記録済みです。','模型店でマシンの改造や通常レースを楽しめます。'],hint:'第2・第4公式会場と残る模型店3軒は準備中です。大会への再出場はできません。',complete:true};
  if(s.thirdOfficialQualified)return {id:'technical',title:'星空テクニカル杯で3位以内に入る',destination:'stadium-9',place:'星空レース場',steps:['街の星空レース場へ入る。','ピットで連続コーナー向けの装備に組み直す。','中央のテクニカルコースを調べ、公式戦に出場する。'],hint:'約2分の長距離戦。4:1ギア・スポンジタイヤ・低重心シャーシ・ローラー・ウェイトなど、過去のパーツを組み合わせよう。出場は一度限り、4位以下はゲームオーバー。'};
- if(s.wakabaUnlocked)return {id:'wakaba',title:'わかば模型店で優勝する',destination:'wakaba',place:'わかば模型店',steps:['街のわかば模型店へ入る。','作業台で最高速よりコーナリングを重視した装備にする。','店内コースの通常レースで1位を取る。'],hint:'優勝すると第3公式大会の出場権を獲得。K4シャーシ・ハイグリップタイヤ・新作ワンウェイで旋回を強化できます。4:1ギアや駆動サポートも組み合わせよう。'};
+ if(s.wakabaUnlocked)return {id:'wakaba',title:'わかば模型店で優勝する',destination:'wakaba',place:'わかば模型店',steps:['街のわかば模型店へ入る。','作業台で坂・スパイラル・ジャンプ向けに加速と旋回、着地の制振を整える。','店内コースの通常レースで1位を取る。'],hint:'優勝すると第3公式大会の出場権を獲得。ライバルも上位装備で走ります。K4シャーシ・ハイグリップタイヤ・新作ワンウェイで旋回を強化し、ジャンプの着地にはダンパーも検討しよう。4:1ギアや駆動サポートも組み合わせよう。'};
  if(s.officialQualified){
   const second=s.wakabaCup.results.length===1;
   return {id:second?'wakaba-dirt':'wakaba-speed',title:second?'若葉杯・第2戦のダートを走る':'若葉杯・第1戦の高速コースを走る',destination:'stadium-5',place:'若葉レース場',steps:second?['若葉レース場のピットでオフロード用に装備を変更する。','場内の右側のダートコースを調べ、第2戦に出場する。','2戦の総合3位以内を目指す。']:['街の若葉レース場へ入る。','ピットで高速舗装向けの装備と電池を確認する。','場内の左側の高速コースを調べ、第1戦に出場する。'],hint:second?'第1戦の順位は記録済み。悪路用タイヤ・モーター・ダンパーを検討しよう。総合3位以内で次の店、総合優勝で第3大会の出場権。':'高速戦とダート戦の2戦制。戦間に装備を変更できます。大会は一度限り、総合4位以下でゲームオーバー。途中退出・再読み込みはそのレースの棄権になります。'};

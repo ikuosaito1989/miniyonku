@@ -13,7 +13,8 @@ export function reviewRace(race:RaceState):RaceReview|null{
   if(!player||race.phase!=='finished')return null;
   const rank=rankRacers(race).findIndex(r=>r.id==='player')+1;
   const notes=[player.driving.status==='finished'?`前回は${rank}位、公式タイム${officialTime(race,player).toFixed(2)}秒。`:'前回はリタイア。'];
-  if(player.driving.stopReason==='battery')notes.push('電池切れで止まったのが直接の敗因だよ。');
+  if(player.driving.stopReason==='jump')notes.push('ジャンプの飛距離が足りず、着地点に届かなかったよ。電池・慣らし・トルクとギア比を確認しよう。');
+  else if(player.driving.stopReason==='battery')notes.push('電池切れで止まったのが直接の敗因だよ。');
   else if(player.driving.stopReason==='lapped')notes.push('周回遅れになったよ。加速・最高速とコーナーでの減速を改善しよう。');
   else if(player.driving.status==='out')notes.push('コースアウトしているね。速度だけでなく、タイヤのグリップとシャーシの安定性を見直そう。');
   else if(rank>1){
@@ -42,7 +43,10 @@ export function raceAdvice(state:RaceAdviceContext){
     const missing=['tire-trail','accessory-damper','motor-trail','roller-double'].map(id=>parts.find(p=>p.id===id)!).find(p=>!(state.inventory[p.id]>0));
     if(missing)lines.push(`ひなた模型店の「${missing.name}」は${missing.price}円。${state.money>=missing.price?'今の所持金で買えるよ。':`あと${missing.price-state.money}円、完走賞で貯めよう。`}単体では足りない場合もあるので、悪路用の組み合わせを揃えよう。`);
   }
-  if(state.shopId==='wakaba')lines.push('連続コーナーでは最高速だけを上げると姿勢が乱れる。新商品のK4 テクニカルローダウン、ハイグリップ・ソフトスポンジ、デュアルワンウェイ・プロで足回りを強化できるよ。スイフトトルクモーター、4:1ギア、ローマウント・スタビライザー、駆動サポートも組み合わせよう。第3公式大会は約2分なのでロングランセルも準備してね。');
+  if(state.shopId==='wakaba'){lines.push('連続コーナーでは最高速だけを上げると姿勢が乱れる。ライバルも上位装備で走るよ。坂の再加速、スパイラルの安定、ジャンプ着地の制振が必要だ。その他③にライトスプリングダンパーも検討しよう。新商品のK4 テクニカルローダウン、ハイグリップ・ソフトスポンジ、デュアルワンウェイ・プロで足回りを強化できるよ。スイフトトルクモーター、4:1ギア、ローマウント・スタビライザー、駆動サポートも組み合わせよう。第3公式大会は約2分なのでロングランセルも準備してね。');
+    const missing=['chassis-turn','tire-turn','wheel-diff','motor-turn','accessory-stabilizer'].map(id=>parts.find(p=>p.id===id)!).find(p=>!(state.inventory[p.id]>0));
+    if(missing)lines.push(`${shop.name}で不足している「${missing.name}」を${missing.price}円で購入できるよ。${state.money>=missing.price?'今の所持金で購入できるよ。':`あと${missing.price-state.money}円、完走賞で貯めよう。`}単品だけでなく、上位の旋回装備を組み合わせよう。`);
+  }
   const motor=parts.find(p=>p.id===state.equipment.motor)!;
   if(motor.specs.wear!==0&&state.motorSeconds<60)lines.push(`今の${motor.name}は使用${state.motorSeconds.toFixed(0)}秒。作業台であと約${Math.ceil(60-state.motorSeconds)}秒ならそう。慣らしでも電池は減るので残量に注意してね。`);
   else if(motor.specs.wear!==0&&state.motorSeconds>180)lines.push(`今の${motor.name}は使用${state.motorSeconds.toFixed(0)}秒で摩耗中。慣らしを増やしても回復しないので、新品への交換を優先しよう。`);

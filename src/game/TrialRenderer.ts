@@ -53,7 +53,7 @@ export class TrialRenderer {
     const ground=new THREE.Mesh(new THREE.PlaneGeometry(100,100),new THREE.MeshLambertMaterial(challenge==='official'?{color:0x7c928f}:{map:grass}));
     ground.rotation.x=-Math.PI/2;ground.position.y=-0.025;this.scene.add(ground);
     if(challenge==='official')this.buildOfficialArena();
-    this.buildTrack();this.buildStart();
+    this.buildTrack();this.buildObstacles();this.buildStart();
     for(const racer of this.state.racers){const car=buildRaceMachineModel(racer);this.cars.set(racer.id,car);this.scene.add(car);}
     this.playerMarker.rotation.z=Math.PI;this.scene.add(this.playerMarker);
     this.observer=new ResizeObserver(()=>this.resize());this.observer.observe(host);this.resize();
@@ -144,7 +144,7 @@ export class TrialRenderer {
           const color=new THREE.Color(surface.roughness>.9?0x8b7359:surface.grip<.7?0xd2b47a:0xad8d61);
           color.multiplyScalar(.88+.12*Math.sin(i*13.7+lane*4.1)**2);colors.push(color.r,color.g,color.b);
         }
-        if(i<circuit.samples){const a=i*2;indices.push(a,a+1,a+2,a+1,a+3,a+2);}
+        if(i<circuit.samples&&!this.track.isJumpGap((i+.5)/circuit.samples*circuitLength)){const a=i*2;indices.push(a,a+1,a+2,a+1,a+3,a+2);}
       }
       const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.setIndex(indices);geometry.computeVertexNormals();
       if(circuit.surface.roughness>0)geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
@@ -155,11 +155,25 @@ export class TrialRenderer {
       for(let i=0;i<=circuit.samples;i++){
         const p=sampleLanePath(i/circuit.samples*circuitLength,lane);
         for(const [delta,height] of [[-0.008,0],[0.008,0],[-0.008,0.055],[0.008,0.055]])vertices.push(p.x+p.tangentZ*(offset+delta),p.y+height,p.z-p.tangentX*(offset+delta));
-        if(i<circuit.samples){const a=i*4;indices.push(a,a+4,a+2,a+2,a+4,a+6,a+1,a+3,a+5,a+3,a+7,a+5,a+2,a+6,a+3,a+3,a+6,a+7);}
+        if(i<circuit.samples&&!this.track.isJumpGap((i+.5)/circuit.samples*circuitLength)){const a=i*4;indices.push(a,a+4,a+2,a+2,a+4,a+6,a+1,a+3,a+5,a+3,a+7,a+5,a+2,a+6,a+3,a+3,a+6,a+7);}
       }
       const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.setIndex(indices);geometry.computeVertexNormals();
       const rail=this.mesh(geometry,0xd7e5ed);rail.material.side=THREE.DoubleSide;this.scene.add(rail);
       }
+    }
+  }
+  private buildObstacles(){
+    const {obstacles,circuit,circuitLength,sampleLanePath}=this.track;if(!obstacles)return;
+    for(let d=0;d<circuitLength;d+=2.2)for(const lane of [0,4]){
+      if(this.track.isJumpGap(d))continue;
+      const p=sampleLanePath(d,lane);if(p.y<.18)continue;
+      const support=this.mesh(new THREE.BoxGeometry(.07,p.y,.07),0x5b7380);
+      support.position.set(p.x+p.tangentZ*(lane===0?-.15:.15),p.y/2,p.z-p.tangentX*(lane===0?-.15:.15));support.name='elevated-course-support';this.scene.add(support);
+    }
+    const jump=obstacles.jump;
+    for(let lane=0;lane<5;lane++)for(let i=0;i<4;i++){
+      const p=sampleLanePath(jump.takeoff-.3-i*.42,lane),mark=this.mesh(new THREE.BoxGeometry(circuit.laneWidth*.65,.018,.09),i%2?0xf3a34e:0xffe8a1);
+      mark.position.set(p.x,p.y+.012,p.z);mark.rotation.order='YXZ';mark.rotation.set(-p.pitch,Math.atan2(p.tangentX,p.tangentZ),0);mark.name='jump-ramp-chevron';this.scene.add(mark);
     }
   }
   private buildStart(){
@@ -258,9 +272,9 @@ export class TrialRenderer {
     for(const racer of this.state.racers){
       const p=sampleLanePath(racer.driving.distance+finishCoastDistance(racer,this.finishPresentation),racer.lane);
       const car=this.cars.get(racer.id)!;
-      const crashed=racer.driving.status==='out'&&!racer.driving.stopReason;
-      car.position.set(p.x,p.y+(crashed?0.14:0.015),p.z);
-      car.rotation.order='YXZ';car.rotation.set(-p.pitch,Math.atan2(p.tangentX,p.tangentZ),crashed?0.9:0);
+      const crashed=racer.driving.status==='out'&&(!racer.driving.stopReason||racer.driving.stopReason==='jump');
+      car.position.set(p.x,(racer.driving.flightY??p.y)+(crashed?0.14:0.015),p.z);
+      car.rotation.order='YXZ';car.rotation.set(racer.driving.flightY!==undefined?-Math.atan2(racer.driving.flightVelocity??0,Math.max(.1,racer.driving.speed)):-p.pitch,Math.atan2(p.tangentX,p.tangentZ),crashed?0.9:0);
       if(racer.id==='player')this.playerMarker.position.copy(car.position).add(new THREE.Vector3(0,0.24,0));
     }
     this.playerMarker.visible=this.intro.stage==='done';

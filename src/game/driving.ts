@@ -5,7 +5,7 @@ import { batteryCapacityMultiplier, freshCondition, motorFactor, remainingCharge
 import type { TrackSurface } from '../data/surfaces';
 
 export const FIXED_STEP = 1/120;
-export interface DrivingState { time: number; distance: number; speed: number; stress: number; status: 'ready'|'running'|'finished'|'out'; stopReason?:'battery'|'lapped'; }
+export interface DrivingState { time: number; distance: number; speed: number; stress: number; status: 'ready'|'running'|'finished'|'out'; stopReason?:'battery'|'lapped'|'jump'; flightY?:number;flightVelocity?:number;landings?:number; }
 export function machinePerformance(equipment: Equipment, condition:MachineCondition=freshCondition) {
   const get = (category: keyof Equipment) => {
     const part = parts.find(p => p.id === equipment[category] && p.category === equipmentSlots[category].category);
@@ -61,20 +61,41 @@ export function stepDriving(state: DrivingState, performance: Performance, laneO
   const charge=.55+.45*Math.sqrt(remaining);
   const motor=performance.motorWearRate===0?1:motorFactor(performance.motorSeconds+state.time);
   const road=surfacePerformance(performance,track.circuit.surface.roughness>0?track.surfaceAt(state.distance):surface);
-  const force=performance.stallForce*charge*motor*Math.max(0,1-state.speed/(performance.freeSpeed*charge*motor))*road.traction;
+  const path=initialLane===undefined?undefined:track.sampleLanePath(state.distance,initialLane);
+  const airborne=state.flightY!==undefined;
+  const force=(airborne?0:1)*performance.stallForce*charge*motor*Math.max(0,1-state.speed/(performance.freeSpeed*charge*motor))*road.traction;
   const resistance=performance.mass*9.81*0.025+(performance.drag+road.rollingDrag)*state.speed**2+road.resistance;
   const wheelResistance=state.speed**2*sampleCircuit(startDistance+state.distance).curvature*.002*performance.cornerDrag;
-  const speed=Math.max(0,state.speed+(force-resistance-wheelResistance)/performance.mass*FIXED_STEP);
-  const path=initialLane===undefined?undefined:sampleLanePath(state.distance,initialLane);
+  const slope=track.obstacles&&!airborne&&path?performance.mass*9.81*Math.sin(path.pitch):0;
+  let speed=Math.max(0,state.speed+(force-(airborne?performance.drag*state.speed**2*.25:resistance+wheelResistance)-slope)/performance.mass*FIXED_STEP);
   const centerCurvature=sampleCircuit(startDistance+state.distance).curvature;
   // 外側レーンは同じコーナーを通過するのに長い距離を走る。
   // distanceは全車共通の中心線上の進捗、speedは実際の走行速度。
-  const laneScale=path?.pathScale??1+laneOffset*centerCurvature;
+  const laneScale=path?(airborne?path.pathScale*Math.cos(path.pitch):path.pathScale):1+laneOffset*centerCurvature;
   const distance=state.distance+speed*FIXED_STEP/laneScale;
-  const lateral=track.cornerLoad*speed**2*(path?.curvature??centerCurvature/laneScale);
-  const stress=Math.max(0,state.stress+(lateral>road.lateralLimit?(lateral/Math.max(.001,road.lateralLimit)-1):-2)*FIXED_STEP);
+  const lateral=(airborne?0:1)*track.cornerLoad*speed**2*(path?.curvature??centerCurvature/laneScale);
+  let stress=Math.max(0,state.stress+(lateral>road.lateralLimit?(lateral/Math.max(.001,road.lateralLimit)-1):-2)*FIXED_STEP);
+  let flightY=state.flightY,flightVelocity=state.flightVelocity,landings=state.landings;
+  if(track.obstacles&&initialLane!==undefined){
+    const jump=track.obstacles.jump,from=track.courseProgress(state.distance),to=track.courseProgress(distance);
+    if(!airborne&&from<jump.takeoff&&to>=jump.takeoff&&to>=from){
+      flightY=sampleLanePath(Math.floor(state.distance/circuitLength)*circuitLength+jump.takeoff-.001,initialLane).y;
+      flightVelocity=speed*jump.height/jump.rise;
+    }
+    if(flightY!==undefined){
+      const velocity=(flightVelocity??0)-9.81*FIXED_STEP;
+      flightY+=((flightVelocity??0)+velocity)*.5*FIXED_STEP;flightVelocity=velocity;
+      const floor=track.isJumpGap(distance)?track.sampleCircuit(track.startDistance+distance).elevation:sampleLanePath(distance,initialLane).y;
+      if(flightY<=floor&&velocity<0){
+        if(track.isJumpGap(distance))return {...state,time:state.time+FIXED_STEP,distance,speed:0,status:'out',stopReason:'jump',flightY:undefined,flightVelocity:undefined};
+        const impact=Math.abs(velocity)*(1-performance.damping);
+        speed*=Math.max(.7,1-impact*.025);stress+=impact*.008;landings=(landings??0)+1;
+        flightY=undefined;flightVelocity=undefined;
+      }
+    }
+  }
   const finish=circuitLength*circuit.laps;
   const finished=distance>=finish;
   const fraction=finished?(finish-state.distance)/(distance-state.distance):1;
-  return {time:state.time+FIXED_STEP*fraction,distance:Math.min(distance,finish),speed,stress,status:stress>0.18?'out':finished?'finished':'running'};
+  return {...(track.obstacles?{flightY,flightVelocity,landings}:{}),time:state.time+FIXED_STEP*fraction,distance:Math.min(distance,finish),speed,stress,status:stress>0.18?'out':finished?'finished':'running'};
 }

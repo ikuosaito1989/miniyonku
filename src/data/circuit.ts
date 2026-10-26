@@ -1,7 +1,8 @@
+import {wakabaPoint} from './wakabaCircuit';
 import { pavedSurface, dirtSurface } from './surfaces';
 export type CircuitId='leaf'|'wind'|'sun'|'sprint'|'grove'|'comet';
 export const circuitDefinitions={
-  grove:{cornerLoad:4,surface:pavedSurface,name:'若葉ツイスト・ロング',laps:5,laneWidth:.22,lanes:5,radiusX:11.04,radiusZ:7.68,asymmetry:.36,chicane:.48,samples:1920},
+  grove:{cornerLoad:3,surface:pavedSurface,name:'若葉スパイラル・ジャンプ',laps:5,laneWidth:.22,lanes:5,radiusX:17,radiusZ:10,asymmetry:.36,chicane:.48,samples:1920},
   comet:{cornerLoad:3.3,surface:pavedSurface,name:'星空スパイラル・エンデューロ',laps:5,laneWidth:.22,lanes:5,radiusX:12.5,radiusZ:8.5,asymmetry:.3,chicane:.45,samples:2400},
   sprint:{surface:pavedSurface,name:'若葉ロングストレート',laps:5,laneWidth:.22,lanes:5,radiusX:18,radiusZ:4,asymmetry:0,chicane:0,samples:1440},
   leaf:{surface:pavedSurface,name:'リーフループ',laps:5,laneWidth:.22,lanes:5,radiusX:4.5,radiusZ:2.6,asymmetry:.45,chicane:0,samples:720},
@@ -20,7 +21,7 @@ function buildCircuit(id:CircuitId){
     if(d<straight)return {x:14-d,z:radius};d-=straight;
     const a=Math.PI/2+d/radius;return {x:-14+radius*Math.cos(a),z:radius*Math.sin(a)};
   };
-  const point=(t:number)=>id==='sprint'?stadiumPoint(t):({x:Math.cos(t)*circuit.radiusX+Math.cos(t*2)*circuit.asymmetry+Math.cos(t*4)*weave,z:Math.sin(t)*circuit.radiusZ+Math.sin(t*3)*circuit.chicane+Math.sin(t*7)*waves});
+  const point=(t:number)=>id==='grove'?wakabaPoint(t):id==='sprint'?stadiumPoint(t):({x:Math.cos(t)*circuit.radiusX+Math.cos(t*2)*circuit.asymmetry+Math.cos(t*4)*weave,z:Math.sin(t)*circuit.radiusZ+Math.sin(t*3)*circuit.chicane+Math.sin(t*7)*waves});
   const points=Array.from({length:circuit.samples+1},(_,i)=>point(i/circuit.samples*Math.PI*2)),lengths=[0];
   for(let i=1;i<points.length;i++)lengths.push(lengths[i-1]+Math.hypot(points[i].x-points[i-1].x,points[i].z-points[i-1].z));
   const circuitLength=lengths.at(-1)!;
@@ -31,13 +32,13 @@ function buildCircuit(id:CircuitId){
     let low=0,high=lengths.length-1;
     while(low+1<high){const mid=(low+high)>>>1;if(lengths[mid]<=wrapped)low=mid;else high=mid;}
     const f=(wrapped-lengths[low])/(lengths[high]-lengths[low]),t=(low+f)/circuit.samples*Math.PI*2;
-    if(id==='sprint'){
+    if(id==='sprint'||id==='grove'){
       const e=.0001,p=point(t),before=point(t-e),after=point(t+e),dx=(after.x-before.x)/(2*e),dz=(after.z-before.z)/(2*e),ddx=(after.x-2*p.x+before.x)/e**2,ddz=(after.z-2*p.z+before.z)/e**2,m=Math.hypot(dx,dz);
-      return {...p,tangentX:dx/m,tangentZ:dz/m,curvature:Math.abs(dx*ddz-dz*ddx)/m**3};
+      return {...p,elevation:'elevation' in p?Number(p.elevation):0,tangentX:dx/m,tangentZ:dz/m,curvature:Math.abs(dx*ddz-dz*ddx)/m**3};
     }
     const dx=-circuit.radiusX*Math.sin(t)-2*circuit.asymmetry*Math.sin(t*2)-4*weave*Math.sin(t*4),dz=circuit.radiusZ*Math.cos(t)+3*circuit.chicane*Math.cos(t*3)+7*waves*Math.cos(t*7);
     const ddx=-circuit.radiusX*Math.cos(t)-4*circuit.asymmetry*Math.cos(t*2)-16*weave*Math.cos(t*4),ddz=-circuit.radiusZ*Math.sin(t)-9*circuit.chicane*Math.sin(t*3)-49*waves*Math.sin(t*7),magnitude=Math.hypot(dx,dz);
-    return {...point(t),tangentX:dx/magnitude,tangentZ:dz/magnitude,curvature:Math.abs(dx*ddz-dz*ddx)/magnitude**3};
+    return {...point(t),elevation:0,tangentX:dx/magnitude,tangentZ:dz/magnitude,curvature:Math.abs(dx*ddz-dz*ddx)/magnitude**3};
   }
   const laneChange={start:circuitLength*.4,end:circuitLength*.6,bridgeHeight:.22};
   const smooth=(value:number)=>{const t=Math.max(0,Math.min(1,value));return t*t*(3-2*t);};
@@ -50,12 +51,23 @@ function buildCircuit(id:CircuitId){
     if(position<startRamp.descentStart)return startRamp.height;
     return startRamp.height*(1-smooth((position-startRamp.descentStart)/(startRamp.descentEnd-startRamp.descentStart)));
   }
+  const obstacles=id==='grove'?{hill:{start:circuitLength*.10,length:6,height:.65},jump:{takeoff:circuitLength*.64,rise:3.8,height:.46,gap:.65,landingLength:3}}:null;
+  const courseProgress=(distance:number)=>((distance%circuitLength)+circuitLength)%circuitLength;
+  function obstacleHeight(distance:number){
+    if(!obstacles)return 0;
+    const d=courseProgress(distance),hill=obstacles.hill,jump=obstacles.jump;
+    const hillHeight=d>=hill.start&&d<=hill.start+hill.length?hill.height*Math.sin(Math.PI*(d-hill.start)/hill.length)**2:0;
+    const ramp=d>=jump.takeoff-jump.rise&&d<jump.takeoff?jump.height*(d-jump.takeoff+jump.rise)/jump.rise:0;
+    const descent=d>=jump.takeoff&&d<jump.takeoff+jump.gap?jump.height*(1-smooth((d-jump.takeoff)/jump.gap)):0;
+    return hillHeight+ramp+descent;
+  }
+  const isJumpGap=(distance:number)=>!!obstacles&&courseProgress(distance)>=obstacles.jump.takeoff&&courseProgress(distance)<obstacles.jump.takeoff+obstacles.jump.gap;
   const wrapLane=(lane:number)=>((lane%circuit.lanes)+circuit.lanes)%circuit.lanes;
   function lanePoint(distance:number,initialLane:number){
     const lap=Math.floor(distance/circuitLength),progress=distance-lap*circuitLength,from=wrapLane(initialLane+lap),to=wrapLane(from+1);
     const u=Math.max(0,Math.min(1,(progress-laneChange.start)/(laneChange.end-laneChange.start))),offset=laneOffset(from)+(laneOffset(to)-laneOffset(from))*smooth(u),p=sampleCircuit(startDistance+distance);
     const height=from===circuit.lanes-1?laneChange.bridgeHeight*smooth(Math.min(u/.2,(1-u)/.2)):0;
-    return {x:p.x+p.tangentZ*offset,y:height+startRampHeight(distance),z:p.z-p.tangentX*offset,from,to,lane:u<.5?from:to,changing:u>0&&u<1};
+    return {x:p.x+p.tangentZ*offset,y:p.elevation+height+startRampHeight(distance)+obstacleHeight(distance),z:p.z-p.tangentX*offset,from,to,lane:u<.5?from:to,changing:u>0&&u<1};
   }
   function sampleLanePath(distance:number,initialLane:number){
     const epsilon=.002,p=lanePoint(distance,initialLane),before=lanePoint(distance-epsilon,initialLane),after=lanePoint(distance+epsilon,initialLane);
@@ -68,7 +80,7 @@ function buildCircuit(id:CircuitId){
     return progress<.18?{name:'締まった土',roughness:.45,grip:.9}:progress<.4?{name:'砂利ストレート',roughness:.95,grip:.72}:progress<.7?{name:'荒れたダート連続コーナー',roughness:1,grip:.76}:{name:'砂地のS字',roughness:.8,grip:.65};
   };
   // 連続した切り返しで姿勢を戻す余裕が少なく、旋回時の負荷が増す。
-  return {cornerLoad:'cornerLoad' in circuit?circuit.cornerLoad:1,surfaceAt,circuit,circuitLength,startDistance,laneOffset,sampleCircuit,laneChange,sampleLanePath,startRamp,startRampHeight};
+  return {obstacles,courseProgress,isJumpGap,obstacleHeight,cornerLoad:'cornerLoad' in circuit?circuit.cornerLoad:1,surfaceAt,circuit,circuitLength,startDistance,laneOffset,sampleCircuit,laneChange,sampleLanePath,startRamp,startRampHeight};
 }
 export type CircuitTrack=ReturnType<typeof buildCircuit>;
 const tracks:Record<CircuitId,CircuitTrack>={leaf:buildCircuit('leaf'),wind:buildCircuit('wind'),sun:buildCircuit('sun'),sprint:buildCircuit('sprint'),grove:buildCircuit('grove'),comet:buildCircuit('comet')};
