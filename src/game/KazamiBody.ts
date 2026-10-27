@@ -1,3 +1,4 @@
+import {addAeroPaint} from './AeroPaint';
 import * as THREE from 'three';
 
 /** 風見 怜の専用カウル。白い分割ノーズ、青いウイング、赤い稲妻ライン。 */
@@ -24,29 +25,7 @@ export function buildKazamiBody(){
     }
     const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));g.setIndex(indices);g.computeVertexNormals();return add(g,material,x,0,0,name);
   };
-  const stripe=(points:number[][],material:THREE.Material,name:string)=>{
-    const projected=name.includes('lightning')||name==='kazami-blue-nose';
-    const contour=points.map(([x,,z])=>new THREE.Vector2(x,z));
-    const triangles=THREE.ShapeUtils.triangulateShape(contour,[]),vertices:number[]=[],normals:number[]=[];
-    group.updateMatrixWorld(true);
-    const shells=group.children.filter(mesh=>['body-shell','kazami-front-cowl','kazami-rear-cowl'].includes(mesh.name));
-    const ray=new THREE.Raycaster();
-    const vertex=(p:number[])=>{
-      const [x,y,z]=p;
-      if(!projected){vertices.push(x,y,z);return;}
-      ray.set(new THREE.Vector3(x,1,z),new THREE.Vector3(0,-1,0));
-      const hit=ray.intersectObjects(shells,false)[0];vertices.push(x,hit?hit.point.y+.00055:y,z);
-      const normal=hit?.normal??new THREE.Vector3(0,1,0);normals.push(normal.x,normal.y,normal.z);
-    };
-    const midpoint=(a:number[],b:number[])=>a.map((v,i)=>(v+b[i])/2);
-    const subdivide=(a:number[],b:number[],c:number[],depth:number)=>{
-      if(!depth){vertex(a);vertex(b);vertex(c);return;}
-      const ab=midpoint(a,b),bc=midpoint(b,c),ca=midpoint(c,a);
-      subdivide(a,ab,ca,depth-1);subdivide(ab,b,bc,depth-1);subdivide(ca,bc,c,depth-1);subdivide(ab,bc,ca,depth-1);
-    };
-    for(const [a,b,c] of triangles)subdivide(points[a],points[b],points[c],projected?3:0);
-    const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));g.computeVertexNormals();if(projected)g.setAttribute('normal',new THREE.Float32BufferAttribute(normals,3));return add(g,material,0,0,0,name);
-  };
+  const stripe=(points:number[][],material:THREE.Material,name:string)=>addAeroPaint(group,points,material,name,name.includes('lightning')||name==='kazami-blue-nose'?['body-shell','kazami-front-cowl','kazami-rear-cowl']:[]);
   const plate=(points:number[][],material:THREE.Material,y:number,name:string,depth=.002)=>{
     const shape=new THREE.Shape(points.map(([x,z])=>new THREE.Vector2(x,-z)));
     const mesh=add(new THREE.ExtrudeGeometry(shape,{depth,bevelEnabled:true,bevelSize:.001,bevelThickness:.0007,bevelSegments:2,steps:1}),material,0,y,0,name);mesh.rotation.x=-Math.PI/2;return mesh;

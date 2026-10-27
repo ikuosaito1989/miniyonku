@@ -42,7 +42,7 @@ test('コハクK660はモブ車と同じ箱型軽ワゴンで、ウイングの�
   for(const car of [model,mob])car.traverse(object=>{if(object instanceof THREE.Mesh){object.geometry.dispose();object.material.dispose();}});
 });
 
-test('セイランは黒鉛色の分割カウル・貫通穴付きフィン・カーボンステーを持つ',()=>{
+test('セイランは分割カウルと貫通フィンを保ち、白青黄・黒いキャノピー・赤いホイールを配色する',()=>{
   const model=buildMachineModel(0x111111,{...starterEquipment,body:'body-champion'});
   for(const name of ['seiran-split-nose','seiran-open-rear-fin','seiran-fin-brace','seiran-drilled-carbon-stay','seiran-hex-fastener','seiran-carbon-weave'])assert.ok(model.getObjectByName(name),name);
   const fin=model.getObjectByName('seiran-open-rear-fin') as THREE.Mesh<THREE.ExtrudeGeometry>;
@@ -51,8 +51,10 @@ test('セイランは黒鉛色の分割カウル・貫通穴付きフィン・�
   assert.equal(model.getObjectByName('rear-wing'),undefined);
   const body=model.getObjectByName('body-shell') as THREE.Mesh;
   assert.ok(body.material instanceof THREE.MeshStandardMaterial);
-  assert.equal((body.material as THREE.MeshStandardMaterial).color.getHex(),0x252d30);
+  assert.equal((body.material as THREE.MeshStandardMaterial).color.getHex(),0xf2f3eb);
   assert.ok((body.material as THREE.MeshStandardMaterial).roughness>.3);
+  const paint=(name:string)=>(model.getObjectByName(name) as THREE.Mesh<THREE.BufferGeometry,THREE.MeshStandardMaterial>).material.color.getHex();
+  assert.equal(paint('seiran-blue-spine'),0x155fc1);assert.equal(paint('seiran-yellow-nose-pinstripe'),0xf2c83b);assert.equal(paint('cabin-glass'),0x11191e);assert.equal(paint('wheel-rim-wheel-basic'),0xb6293a);
   const size=new THREE.Box3().setFromObject(model).getSize(new THREE.Vector3());
   assert.ok(size.x<.22&&size.z<.3&&size.y<.12);
   model.traverse(object=>{if(object instanceof THREE.Mesh){object.geometry.dispose();object.material.dispose();}});
@@ -120,5 +122,18 @@ test('風見怜の愛機は展示・レースで共通の白青赤カウルと�
     let spokes=0;model.traverse(o=>{if(o.name==='wheel-spoke-wheel-light')spokes++;});assert.equal(spokes,20);
     const size=new THREE.Box3().setFromObject(model).getSize(new THREE.Vector3());assert.ok(size.x<.22&&size.z<.3&&size.y<.12);
     model.traverse(o=>{if(o instanceof THREE.Mesh){o.geometry.dispose();o.material.dispose();}});
+  }
+});
+
+test('火野岳の愛機は展示・レースで白赤金と黒いフレア、赤タイヤと金色ホイールを共有する',()=>{
+  const legend=legends.find(l=>l.id==='legend-gaku')!;
+  for(const model of [buildMachineModel(0xffff00,legend.equipment),buildRaceMachineModel({...legend,color:0xffff00})]){
+    const color=(name:string)=>(model.getObjectByName(name) as THREE.Mesh<THREE.BufferGeometry,THREE.MeshStandardMaterial>).material.color.getHex();
+    assert.equal(color('body-shell'),0xf1f1e9);assert.equal(color('rear-wing'),0xf1f1e9);
+    assert.equal(color('hino-front-cowl'),0xdf2936);assert.equal(color('hino-front-flame'),0x10191d);assert.equal(color('hino-gold-nose'),0xc5a452);
+    assert.equal((model.getObjectByName('hino-front-flame') as THREE.Mesh<THREE.BufferGeometry,THREE.MeshStandardMaterial>).material.side,THREE.DoubleSide);
+    assert.equal(color('tire-tire-2'),0xb92935);assert.equal(color('wheel-rim-wheel-light'),0xd6af3e);
+    assert.ok(model.getObjectByName('hino-wing-endplate'));assert.ok(model.getObjectByName('hino-carbon-side-panel'));
+    model.traverse(o=>{if(o instanceof THREE.Mesh){for(const attribute of ['position','normal'])for(const n of o.geometry.getAttribute(attribute).array)assert.ok(Number.isFinite(n));o.geometry.dispose();o.material.dispose();}});
   }
 });

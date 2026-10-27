@@ -1,9 +1,14 @@
+import {addAeroPaint} from './AeroPaint';
 import * as THREE from 'three';
 
 /** セイラン専用の分割カウル。開口部は黒い模様ではなく実際に抜いた形状。 */
 export function buildSeiranBody(){
   const group=new THREE.Group();group.name='seiran-aero-assembly';
-  const graphite=new THREE.MeshStandardMaterial({color:0x252d30,metalness:.28,roughness:.43,side:THREE.DoubleSide});
+  const white=new THREE.MeshStandardMaterial({color:0xf2f3eb,metalness:.12,roughness:.34,side:THREE.DoubleSide});
+  const blue=new THREE.MeshStandardMaterial({color:0x155fc1,metalness:.18,roughness:.29,side:THREE.DoubleSide});
+  const yellow=new THREE.MeshStandardMaterial({color:0xf2c83b,metalness:.12,roughness:.32,side:THREE.DoubleSide});
+  yellow.polygonOffset=true;yellow.polygonOffsetFactor=-2;yellow.polygonOffsetUnits=-2;
+  const glass=new THREE.MeshStandardMaterial({color:0x11191e,metalness:.28,roughness:.2});
   const edge=new THREE.MeshStandardMaterial({color:0x343e42,metalness:.4,roughness:.34});
   const carbon=new THREE.MeshStandardMaterial({color:0x141a1d,metalness:.18,roughness:.65});
   const steel=new THREE.MeshStandardMaterial({color:0xbac5c9,metalness:.85,roughness:.26});
@@ -41,22 +46,22 @@ export function buildSeiranBody(){
     }
   }
   const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geo.setIndex(indices);geo.computeVertexNormals();
-  add(geo,graphite,0,0,0,'body-shell');
-  // キャビンも黒い装甲カウル。既存の寸法比較・プレビューに共通の名前を使う。
-  const canopy=add(new THREE.SphereGeometry(1,24,12),graphite,0,.076,-.053,'cabin-glass');canopy.scale.set(.023,.013,.043);
+  add(geo,white,0,0,0,'body-shell');
+  // 白・青・黄のカウルに黒いキャノピー。分割形状は従来どおり。
+  const canopy=add(new THREE.SphereGeometry(1,24,12),glass,0,.076,-.053,'cabin-glass');canopy.scale.set(.023,.013,.043);
   for(const side of [-1,1]){
     const mirror=(p:number[][])=>p.map(([x,z])=>[x*side,z]);
-    panel(mirror([[.012,.137],[.034,.119],[.05,.075],[.044,.021],[.028,.008],[.024,.058]]),[mirror([[.031,.104],[.04,.079],[.034,.043],[.03,.061]])],.057,graphite,'seiran-split-nose');
+    panel(mirror([[.012,.137],[.034,.119],[.05,.075],[.044,.021],[.028,.008],[.024,.058]]),[mirror([[.031,.104],[.04,.079],[.034,.043],[.03,.061]])],.057,white,'seiran-split-nose');
     // 車輪上部の独立した鎌形フェンダー。タイヤは外から見える。
     for(const z of [-.083,.083]){
-      const arch=add(new THREE.TorusGeometry(.037,.004,8,32,Math.PI),graphite,side*.071,.033,z,'seiran-wheel-cowl');arch.rotation.y=Math.PI/2;
-      panel(mirror([[.045,z+.031],[.064,z+.041],[.075,z+.014],[.071,z-.026],[.058,z-.036],[.049,z-.016]]),[],.063,graphite,'seiran-fender-blade');
+      const arch=add(new THREE.TorusGeometry(.037,.004,8,32,Math.PI),white,side*.071,.033,z,'seiran-wheel-cowl');arch.rotation.y=Math.PI/2;
+      panel(mirror([[.045,z+.031],[.064,z+.041],[.075,z+.014],[.071,z-.026],[.058,z-.036],[.049,z-.016]]),[],.063,white,'seiran-fender-blade');
     }
     // 写真のような開いた三角フレーム。外板と三角の貫通穴を一体成形。
     const outline=mirror([[.04,-.018],[.069,-.041],[.076,-.112],[.056,-.133],[.043,-.087]]);
     const hole=mirror([[.048,-.048],[.065,-.059],[.064,-.108],[.053,-.111]]);
-    const fin=panel(outline,[hole],.067,graphite,'seiran-open-rear-fin',.003);fin.quaternion.premultiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),side*.65));
-    beam([side*.047,.053,-.02],[side*.068,.077,-.105],.0018,edge,'seiran-fin-brace');
+    const fin=panel(outline,[hole],.067,blue,'seiran-open-rear-fin',.003);fin.quaternion.premultiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,0,1),side*.65));
+    beam([side*.047,.053,-.02],[side*.068,.077,-.105],.0018,white,'seiran-fin-brace');
     beam([side*.042,.04,.06],[side*.063,.044,-.07],.002,carbon,'seiran-side-skeleton');
     for(const z of [.044,-.033,-.097])bolt(side*.023,z>.0?.071:.086,z);
     for(let i=0;i<4;i++){
@@ -74,6 +79,16 @@ export function buildSeiranBody(){
     // 織目の短いハイライト。テクスチャを増やさず成形材の層を見せる。
     for(let i=-8;i<=8;i++){
       const weave=add(new THREE.BoxGeometry(.007,.00025,.0007),edge,i*.011,.0399,z+.007,'seiran-carbon-weave');weave.rotation.y=(i%2?1:-1)*.65;
+    }
+  }
+  const paint=(points:number[][],material:THREE.Material,name:string,shells:string[])=>addAeroPaint(group,points,material,name,shells);
+  paint([[-.018,.06,.008],[.018,.06,.008],[.013,.055,.075],[.005,.05,.125],[0,.048,.14],[-.005,.05,.125],[-.013,.055,.075]],blue,'seiran-blue-spine',['body-shell']);
+  paint([[-.007,.06,.043],[0,.06,.035],[.007,.06,.043],[.003,.06,.055],[.005,.06,.064],[0,.06,.059],[-.004,.06,.08],[-.002,.06,.055]],yellow,'seiran-yellow-nose-mark',['body-shell']);
+  for(const side of [-1,1]){
+    paint([[side*.008,.05,.129],[side*.017,.06,.08],[side*.018,.07,.018],[side*.023,.07,.009],[side*.022,.06,.083]],yellow,'seiran-yellow-nose-pinstripe',['body-shell']);
+    for(const z of [-.083,.083]){
+      paint([[side*.058,.068,z+.023],[side*.064,.068,z+.027],[side*.07,.068,z+.011],[side*.064,.068,z+.007]],yellow,'seiran-yellow-fender-flash',['seiran-fender-blade']);
+      paint([[side*.052,.068,z+.03],[side*.064,.068,z+.038],[side*.074,.068,z+.012],[side*.07,.068,z-.024],[side*.06,.068,z-.03],[side*.057,.068,z+.004]],blue,'seiran-blue-fender-flash',['seiran-fender-blade']);
     }
   }
   bolt(0,.077,-.104);bolt(0,.054,.121);
