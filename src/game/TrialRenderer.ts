@@ -316,6 +316,9 @@ export class TrialRenderer {
       const p=sampleLanePath(racer.driving.distance+(this.track.open?Math.min(.3,finishCoastDistance(racer,this.finishPresentation)):finishCoastDistance(racer,this.finishPresentation)),racer.lane);
       const car=this.cars.get(racer.id)!;
       car.scale.setScalar(.85*carScale);
+      const turn=this.track.sampleCircuit(this.track.startDistance+racer.driving.distance+.1),sign=p.tangentX*turn.tangentZ-p.tangentZ*turn.tangentX;
+      const slideTarget=racer.driving.status==='running'?Math.min(.006,p.curvature*racer.driving.speed**2*.0006)*(sign<0?-1:1):0;
+      for(const slide of (car.userData.rearSlideCarriages??[]) as THREE.Group[])slide.position.x=THREE.MathUtils.lerp(slide.position.x,slideTarget,1-Math.exp(-elapsed*10));
       const marker=this.overviewMarkers.get(racer.id)!;marker.visible=overview;
       const labelHeight=18/Math.max(.01,pixelsPerUnit);marker.scale.set(labelHeight*144/54,labelHeight,1);
       marker.position.set(p.x,(racer.driving.flightY??p.y)+.06*carScale,p.z).add(new THREE.Vector3(frame.up.x,frame.up.y,frame.up.z).multiplyScalar(labelHeight));

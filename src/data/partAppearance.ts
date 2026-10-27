@@ -3,6 +3,13 @@ import { bodies } from './bodies';
 
 export interface PartAppearance { color:string; accent:string; detail:number; mark:string }
 export const partAppearances:Record<string,PartAppearance>={
+  'accessory-slide-rear':{color:'#3d4559',accent:'#c6a4f0',detail:6,mark:'REAR SLIDE'},
+  'roller-ceramic':{color:'#d1dce4',accent:'#9b7bd3',detail:6,mark:'CERAMIC'},
+  'roller-lowdouble':{color:'#5c597b',accent:'#c8cbe4',detail:8,mark:'LOW DOUBLE'},
+  'motor-surge':{color:'#775b9e',accent:'#e4d39a',detail:6,mark:'SURGE'},
+  'wheel-floating':{color:'#77709a',accent:'#dbe3ed',detail:6,mark:'FLOAT 6'},
+  'tire-landing':{color:'#282d37',accent:'#b3a4d1',detail:6,mark:'LOW REBOUND'},
+
   'motor-sovereign':{color:'#73549e',accent:'#f5d87d',detail:8,mark:'SOVEREIGN'},
   'chassis-sovereign':{color:'#343b52',accent:'#f5d87d',detail:5,mark:'ZERO LIMIT'},
   'motor-turn':{color:'#92c7b5',accent:'#d5b56f',detail:5,mark:'SWIFT'},

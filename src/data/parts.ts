@@ -5,6 +5,13 @@ export const categories: Record<Category, string> = { body:'ボディ', chassis:
 export interface Part { id: string; level:number; category: Category; name: string; price: number; description: string; specs: Record<string, number>; performance: string }
 type PartDefinition=Omit<Part,'level'>;
 const definitions: PartDefinition[] = [
+  {id:'accessory-slide-rear',category:'accessory',name:'リアウイング・スライドダンパー',price:2600,description:'ゆうなぎの新作。ウイング下の左右スライドステーへリヤローラーを取り付ける補助ユニット。横方向の衝撃と着地の揺れを逃がす。ローラーはリヤ欄で別に選択する。',specs:{weight:5,stability:1.2,efficiency:1,damping:.38,cornerDrag:.92},performance:'5 g / 安定性 ×1.20 / 制振38% / 旋回抵抗 ×0.92'},
+  {id:'roller-ceramic',category:'roller',name:'セラミック・エアロベアリングローラー',price:1900,description:'ゆうなぎの新作。軽量な低摩擦リングとセラミック軸受けで、スパイラルでも速度を残す。リヤへ装着すればスライドダンパーの両端にも取り付けられる。1セットで前・中・後へ設定可能。',specs:{friction:.035,weight:6,stability:1.08,damping:.04},performance:'摩擦0.035 / 6 g / 安定性 ×1.08 / 制振4%'},
+  {id:'roller-lowdouble',category:'roller',name:'ロープロファイル・二段ローラー',price:2300,description:'ゆうなぎの新作。低い二段リングで壁からの衝撃を分散し、ジャンプ着地後の横揺れを抑える。速さより安定性を重視するセット。前・中・後共用。',specs:{friction:.07,weight:7,stability:1.16,damping:.1},performance:'摩擦0.07 / 7 g / 安定性 ×1.16 / 制振10%'},
+  {id:'motor-surge',category:'motor',name:'サージ・スプリントトルクモーター',price:2600,description:'ゆうなぎの一本道向け上位型。スパイラルの出口やジャンプ後で素早く再加速する。新作のローラー・スライドダンパーと組み合わせよう。',specs:{rpm:16800,torque:1.8,weight:20},performance:'16,800 rpm / 1.80 mN·m / 20 g'},
+  {id:'wheel-floating',category:'wheel',name:'フローティング・ワンウェイ6',price:2100,description:'ゆうなぎの新作。内外輪の回転差を逃がす軽量フローティングハブ。スパイラルでの回転抵抗を低減し、立ち上がりにも強い。',specs:{weight:4,diameter:17,cornerDrag:.46},performance:'4本 4 g / リム径17 mm / コーナー抵抗 ×0.46'},
+  {id:'tire-landing',category:'tire',name:'リバウンドレス・ローハイトタイヤ',price:1700,description:'ゆうなぎの新作。舗装グリップを保ちながら、低反発の素材でジャンプ着地の跳ねを吸収。スライドダンパーと併用できる。悪路用ではない。',specs:{diameter:26,grip:1.45,weight:8,damping:.14},performance:'径26 mm / グリップ1.45 / 8 g / 制振14%'},
+
   {id:'motor-sovereign',category:'motor',name:'星皇オーバードライブモーター',price:250000,description:'星霧模型工房限定。各25万円の究極級。高回転と圧倒的なトルクを両立し、慣らし不要・摩耗なし。星皇シャーシと組み合わせ、多くのレースを圧倒する。',specs:{rpm:22000,torque:4.5,weight:18,wear:0},performance:'22,000 rpm / 4.50 mN·m / 18 g / 慣らし不要・摩耗なし'},
   {id:'chassis-sovereign',category:'chassis',name:'星皇ゼロリミットシャーシ',price:250000,description:'星霧模型工房限定。各25万円の究極級。軽量で高効率、圧倒的な旋回安定性と制振性能。星皇モーターの力を支え、舗装・悪路・立体コースに対応する。',specs:{weight:14,efficiency:1.2,stability:4.2,damping:0.85,roughGrip:1.8,roughResistance:0.35,compliance:2.1},performance:'14 g / 駆動効率 ×1.20 / 安定性 ×4.20 / 制振85% / 悪路接地 ×1.80'},
   {id:'motor-turn',category:'motor',name:'スイフトトルクモーター',price:1800,description:'わかばの連続コーナー向け上位型。回転数を上げすぎず、立ち上がりの力を強化。低重心シャーシとグリップタイヤを合わせよう。',specs:{rpm:16000,torque:1.65,weight:20},performance:'16,000 rpm / 1.65 mN·m / 20 g'},

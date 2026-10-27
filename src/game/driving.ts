@@ -14,9 +14,10 @@ export function machinePerformance(equipment: Equipment, condition:MachineCondit
   };
   const motor=get('motor'),gear=get('gear'),tire=get('tire'),terminal=get('terminal'),body=get('body'),chassis=get('chassis'),battery=get('battery'),wheel=get('wheel');
   const accessories=accessorySlots.map(get);
-  const accessory={efficiency:accessories.reduce((n,p)=>n*p.efficiency,1),stability:accessories.reduce((n,p)=>n*p.stability,1),damping:accessories.reduce((n,p)=>n+(p.damping??0),0)};
+  const accessory={efficiency:accessories.reduce((n,p)=>n*p.efficiency,1),stability:accessories.reduce((n,p)=>n*p.stability,1),damping:accessories.reduce((n,p)=>n+(p.damping??0),0),cornerDrag:accessories.reduce((n,p)=>n*(p.cornerDrag??1),1)};
   const front=get('rollerFront'),side=get('rollerSide'),rear=get('rollerRear');
   const friction=front.friction*.45+side.friction*.35+rear.friction*.2;
+  const rollerStability=(front.stability??1)*.45+(side.stability??1)*.35+(rear.stability??1)*.2;
   const rollerWeight=front.weight*.45+side.weight*.35+rear.weight*.2;
   const mass = (1 + Object.keys(equipment).reduce((sum,key) => sum + get(key as keyof Equipment).weight,0))/1000;
   const radius=tire.diameter/2000;
@@ -24,14 +25,14 @@ export function machinePerformance(equipment: Equipment, condition:MachineCondit
     freeSpeed: motor.rpm * terminal.efficiency * battery.power / 60 / gear.ratio * 2 * Math.PI * radius,
     stallForce: motor.torque/1000 * gear.ratio * terminal.efficiency * battery.power * chassis.efficiency * accessory.efficiency * 0.8 / radius,
     treadDrag:tire.pavedDrag??0,
-    mass, drag: (0.012 * body.drag + friction * 0.025), cornerDrag:wheel.cornerDrag,
+    mass, drag: (0.012 * body.drag + friction * 0.025), cornerDrag:wheel.cornerDrag*accessory.cornerDrag,
     batteryEndurance:battery.endurance,
     batteryConsumption:battery.consumption??1,
     motorSeconds:condition.motorSeconds,batterySeconds:condition.batterySeconds,motorWearRate:motor.wear??1,
-    lateralLimit: (9.81 * (1.2 + tire.grip) + rollerWeight * 0.2)*body.stability*chassis.stability*accessory.stability,
+    lateralLimit: (9.81 * (1.2 + tire.grip) + rollerWeight * 0.2)*body.stability*chassis.stability*accessory.stability*rollerStability,
     roughGrip:body.roughGrip*(chassis.roughGrip??1),
     roughResistance:body.roughResistance*(tire.roughResistance??1)*(chassis.roughResistance??1),
-    damping:Math.min(.9,(accessory.damping??0)+(chassis.damping??0)+(front.damping??0)*.45+(side.damping??0)*.35+(rear.damping??0)*.2),
+    damping:Math.min(.9,(tire.damping??0)+(accessory.damping??0)+(chassis.damping??0)+(front.damping??0)*.45+(side.damping??0)*.35+(rear.damping??0)*.2),
     // 柔らかいスポンジは凹凸に追従し、ハードは舗装向け。
     tireCompliance:(tire.compliance??(equipment.tire==='tire-1'?1.2:equipment.tire==='tire-2'?.7:1))*(chassis.compliance??1),
   };
