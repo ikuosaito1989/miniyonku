@@ -33,9 +33,9 @@ export function createRaceState(equipment:Equipment,seed=0x5eed,condition:Machin
   for(let i=lanes.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[lanes[i],lanes[j]]=[lanes[j],lanes[i]];}
   const entrants:Entrant[]=legendChallenge
     ?[{id:'player',name:story.player,lane:2,color:0xd94232,equipment:{...equipment}},...legends.slice(0,2).map((legend,index)=>({id:legend.id,name:legend.name,lane:index,color:index?0xe5b839:0x477de0,motorSeconds:90,equipment:{...legend.equipment}})),...rivals.slice(0,2).map(r=>({...r,equipment:{...r.equipment}}))]
-    :[{id:'player',name:story.player,lane:2,color:0xd94232,equipment:{...equipment}},...(challenge==='official'?(circuitId==='comet'?technicalRivals:circuitId==='sprint'?officialSpeedRivals:officialRivals):challenge==='villain'?[challenger,...aozoraRivals.slice(0,3)]:circuitId==='grove'?wakabaRivals:circuitId==='sun'?hinataRivals:circuitId==='wind'?aozoraRivals:rivals).map(r=>({...r,equipment:{...r.equipment}}))];
+    :[{id:'player',name:story.player,lane:2,color:0xd94232,equipment:{...equipment}},...(circuitId==='trail'?[]:challenge==='official'?(circuitId==='comet'?technicalRivals:circuitId==='sprint'?officialSpeedRivals:officialRivals):challenge==='villain'?[challenger,...aozoraRivals.slice(0,3)]:circuitId==='grove'?wakabaRivals:circuitId==='sun'?hinataRivals:circuitId==='wind'?aozoraRivals:rivals).map(r=>({...r,equipment:{...r.equipment}}))];
   return {event:challenge==='official'?'official':'shop',circuitId,phase:'ready',countdownTicks:COUNTDOWN_TICKS,time:0,seed,playerStartOffset:null,falseStartPenalty:0,racers:entrants.map((entry,index)=>{
-    const entrant={...entry,lane:lanes[index]};
+    const entrant={...entry,lane:circuitId==='trail'?2:lanes[index]};
     const legendary=legendChallenge&&entrant.id.startsWith('legend-');
     // 兄弟も星皇2部品＋入門装備を基準に走る。外観と専用ボディは維持する。
     const raceEquipment=legendary?{...starterEquipment,body:entrant.equipment.body,motor:'motor-sovereign',chassis:'chassis-sovereign',gear:'gear-4'}:entrant.equipment;

@@ -35,7 +35,7 @@ test('序盤でも特別店に入り、購入・装着・保存・再開でき�
 });
 test('究極の2部品は初期のほかの装備と新品のまま公開中の通常・公式戦で圧倒できる',()=>{
  const equipment={...starterEquipment,motor:ids[0],chassis:ids[1]};
- for(const circuit of ['leaf','wind','sun','sprint','grove','comet'] as const)for(const seed of [1,42,999]){
+ for(const circuit of ['leaf','wind','sun','sprint','grove','comet','trail'] as const)for(const seed of [1,42,999]){
   const challenge:RaceChallenge=circuit==='sprint'||circuit==='comet'?'official':false;
   let race=startRace(createRaceState(equipment,seed,{motorSeconds:0,batterySeconds:0},challenge,circuit));while(race.phase==='countdown')race=stepRace(race);race=launchPlayer(race);
   for(let i=0;i<120*240&&race.phase!=='finished';i++)race=stepRace(race);

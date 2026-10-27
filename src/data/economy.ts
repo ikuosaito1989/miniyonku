@@ -6,4 +6,5 @@ export const HINATA_PRIZES = [1800,1100,800,650,500] as const;
 export const WAKABA_PRIZES = [2500,1500,1100,900,700] as const;
 export const OFFICIAL_PRIZES = [3000,1800,1350,1050,800] as const;
 export const TECHNICAL_PRIZES = [4000,2400,1800,1400,1000] as const;
-export const prizesForCircuit=(id:string)=>id==='leaf'?RACE_PRIZES:id==='wind'?AOZORA_PRIZES:id==='sun'?HINATA_PRIZES:id==='grove'?WAKABA_PRIZES:id==='comet'?TECHNICAL_PRIZES:OFFICIAL_PRIZES;
+export const YUUNAGI_PRIZES=[3000,0,0,0,0] as const;
+export const prizesForCircuit=(id:string)=>id==='trail'?YUUNAGI_PRIZES:id==='leaf'?RACE_PRIZES:id==='wind'?AOZORA_PRIZES:id==='sun'?HINATA_PRIZES:id==='grove'?WAKABA_PRIZES:id==='comet'?TECHNICAL_PRIZES:OFFICIAL_PRIZES;

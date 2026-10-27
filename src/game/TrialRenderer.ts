@@ -225,10 +225,21 @@ export class TrialRenderer {
     }
     const canvas=document.createElement('canvas');canvas.width=160;canvas.height=32;
     const context=canvas.getContext('2d')!;context.font='bold 28px monospace';context.textAlign='center';
-    context.fillStyle='#463e23';context.fillText('G O A L',82,27);context.fillStyle='#f8dc65';context.fillText('G O A L',80,25);
+    context.fillStyle='#463e23';context.fillText(this.track.open?'START':'G O A L',82,27);context.fillStyle='#f8dc65';context.fillText(this.track.open?'START':'G O A L',80,25);
     const texture=new THREE.CanvasTexture(canvas);texture.magFilter=THREE.NearestFilter;texture.minFilter=THREE.NearestFilter;texture.colorSpace=THREE.SRGBColorSpace;this.textures.push(texture);
     const goalLabel=new THREE.Mesh(new THREE.PlaneGeometry(0.85,0.17),new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false}));
     goalLabel.rotation.x=-Math.PI/2-sampleLanePath(.4,2).pitch;goalLabel.position.set(0,startRampHeight(.4)-startRampHeight(0)+.02,.4);group.add(goalLabel);
+    if(this.track.open){
+      const finish=this.track.sampleLanePath(this.track.circuitLength,2),gate=new THREE.Group();
+      gate.name='oneway-finish-gate';gate.position.set(finish.x,finish.y,finish.z);gate.rotation.y=Math.atan2(finish.tangentX,finish.tangentZ);
+      for(const side of [-1,1]){const post=this.mesh(new THREE.BoxGeometry(.05,.65,.05),0xe0d7ac);post.position.set(side*.68,.325,0);gate.add(post);}
+      const beam=this.mesh(new THREE.BoxGeometry(1.4,.16,.05),0x9b7a44);beam.position.y=.65;gate.add(beam);
+      const labelCanvas=document.createElement('canvas');labelCanvas.width=256;labelCanvas.height=48;const ctx=labelCanvas.getContext('2d')!;
+      ctx.fillStyle='#f8e5ad';ctx.font='bold 38px monospace';ctx.textAlign='center';ctx.fillText('G O A L',128,38);
+      const labelTexture=new THREE.CanvasTexture(labelCanvas);this.textures.push(labelTexture);
+      const label=new THREE.Mesh(new THREE.PlaneGeometry(1.2,.15),new THREE.MeshBasicMaterial({map:labelTexture,transparent:true,side:THREE.DoubleSide}));label.position.set(0,.65,.028);gate.add(label);this.scene.add(gate);
+      for(let lane=0;lane<circuit.lanes;lane++)for(let row=0;row<2;row++)for(let i=0;i<4;i++)strip(lane,this.track.circuitLength-.12+row*.04,this.track.circuitLength-.08+row*.04,-circuit.laneWidth/2+i*circuit.laneWidth/4,-circuit.laneWidth/2+(i+1)*circuit.laneWidth/4,(i+row)%2?0x26354b:0xf5f1da);
+    }
     // 自作のスタート係。既存作品のキャラクターを使わない。
     const attendant=new THREE.Group();attendant.position.set(-circuit.laneWidth*circuit.lanes/2-0.23,0,-0.15);
     const block=(w:number,h:number,d:number,x:number,y:number,z:number,color:number)=>{
@@ -271,7 +282,7 @@ export class TrialRenderer {
     const viewHeight=overview?frame.height:goalShot?Math.max(raceCamera.finish.height,raceCamera.finish.minWidth/this.aspect):THREE.MathUtils.lerp(runningHeight,startHeight,blend);
     this.camera.left=-viewHeight*this.aspect/2;this.camera.right=viewHeight*this.aspect/2;
     this.camera.top=viewHeight/2;this.camera.bottom=-viewHeight/2;this.camera.updateProjectionMatrix();
-    const start=sampleLanePath(0,(circuit.lanes-1)/2);
+    const start=sampleLanePath(this.track.open&&goalShot?this.track.circuitLength:0,(circuit.lanes-1)/2);
     const target=overview?new THREE.Vector3(frame.target.x,frame.target.y,frame.target.z):goalShot?new THREE.Vector3(start.x-start.tangentX*raceCamera.finish.lookBehind,start.y,start.z-start.tangentZ*raceCamera.finish.lookBehind):new THREE.Vector3(p.x+p.tangentX*raceCamera.running.lookAhead,p.y,p.z+p.tangentZ*raceCamera.running.lookAhead)
       .lerp(new THREE.Vector3(start.x-start.tangentX*raceCamera.start.lookBehind,start.y,start.z-start.tangentZ*raceCamera.start.lookBehind),blend);
     const offset=new THREE.Vector3(...(goalShot?raceCamera.finish.offset:raceCamera.running.offset));
@@ -302,7 +313,7 @@ export class TrialRenderer {
     const carScale=overview?overviewCarScale(this.host.clientHeight,frame.height):1;
     const labelBoxes:Array<{x:number;y:number}>=[];
     for(const racer of this.state.racers){
-      const p=sampleLanePath(racer.driving.distance+finishCoastDistance(racer,this.finishPresentation),racer.lane);
+      const p=sampleLanePath(racer.driving.distance+(this.track.open?Math.min(.3,finishCoastDistance(racer,this.finishPresentation)):finishCoastDistance(racer,this.finishPresentation)),racer.lane);
       const car=this.cars.get(racer.id)!;
       car.scale.setScalar(.85*carScale);
       const marker=this.overviewMarkers.get(racer.id)!;marker.visible=overview;

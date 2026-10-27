@@ -1,3 +1,4 @@
+import {yuunagiTimeLimit} from '../data/yuunagiCircuit';
 import {emptyCup,cupComplete,cupPlayerPlace,cupProgression,enterCupHeat,finishCupHeat,forfeitCupHeat,raceCupHeat,type CupProgress} from './cup';
 import { officialRace, type OfficialRound } from '../data/officialRace';
 import { doctor, doctorGiftBody, doctorGiftMessage } from '../data/doctor';
@@ -10,7 +11,7 @@ import { purchase, type Wallet } from './purchase';
 import { createStarterInventory, starterEquipment, type Equipment, type EquipmentSlot } from '../data/machine';
 import { equipPart } from './equipment';
 import { racePrize } from './reward';
-import { rankRacers, type RaceState } from './race';
+import { officialTime, rankRacers, type RaceState } from './race';
 import { INITIAL_MONEY } from '../data/economy';
 import { nextRaceSeed } from './raceSeed';
 import { batteryCharge, batteryCapacity, batteryConsumption, createStarterUnits, type UnitInventory } from './condition';
@@ -20,6 +21,7 @@ import { canEnterShop, currentShop, type ShopId, type WorldLocation } from '../d
 import { challenger, challengerInvitation } from '../data/challenger';
 export type DialogueStage='none'|'legend-intro'|'legend-invite'|'legend-debrief'|'villain-intro'|'villain-win'|'villain-loss'|'doctor-gift'|'official-invite';
 export interface GameState extends Wallet {
+  yuunagiUnlocked:boolean;yuunagiBestTime:number|null;finalQualified:boolean;
   wakabaCup:CupProgress;technicalCup:CupProgress;gameOver:boolean;wakabaUnlocked:boolean;thirdOfficialQualified:boolean;
   enterOfficialVenue:(id?:'stadium-5'|'stadium-9')=>void;townReturnVenue:'stadium-5'|'stadium-9'|null;
   officialQualified:boolean;officialWon:boolean;officialSpeedWon:boolean;officialDirtWon:boolean;officialRound:OfficialRound;officialChallengeActive:boolean;officialQualificationNotice:boolean;
@@ -60,6 +62,7 @@ function updateCup(s:GameState,cup:CupProgress){
  return {...updated,gameOver:s.gameOver||updated.gameOver};
 }
 export const useGame = create<GameState>((set) => ({
+  yuunagiUnlocked:false,yuunagiBestTime:null,finalQualified:false,
   wakabaCup:emptyCup(),technicalCup:emptyCup(),gameOver:false,wakabaUnlocked:false,thirdOfficialQualified:false,
   townReturnVenue:null,enterOfficialVenue:(id='stadium-5')=>set(s=>s.gameOver||s.location!=='town'||!(id==='stadium-5'?s.officialQualified:s.thirdOfficialQualified)||s.overlay==='race'||s.overlay==='arrival'?s:{location:id,overlay:null,nearby:'',notice:'',shopAfter:false,townReturnVenue:null}),
   officialQualified:false,officialWon:false,officialSpeedWon:false,officialDirtWon:false,officialRound:'speed',officialChallengeActive:false,officialQualificationNotice:false,
@@ -147,10 +150,14 @@ export const useGame = create<GameState>((set) => ({
     const firstHinataWin=playerWon&&race.circuitId==='sun'&&s.location==='hinata'&&!s.officialChallengeActive&&race.event!=='official'&&!s.officialQualified;
     const cupUpdate=reward&&s.officialChallengeActive&&race.event==='official'?updateCup(s,finishCupHeat(activeCup(s),raceCupHeat(race))):{};
     const firstWakabaWin=playerWon&&s.location==='wakaba'&&!s.officialChallengeActive;
+    const trialFinished=reward&&s.location==='yuunagi'&&race.circuitId==='trail'&&race.event==='shop'&&!s.officialChallengeActive&&player?.driving.status==='finished';
+    const trialTime=trialFinished&&player?officialTime(race,player):Infinity;
+    const yuunagiBestTime=trialFinished?Math.min(s.yuunagiBestTime??Infinity,trialTime):s.yuunagiBestTime;
+    const finalQualified=s.finalQualified||s.yuunagiUnlocked&&trialFinished&&trialTime<=yuunagiTimeLimit;
     const inventory=s.inventory;
     if(!delta&&!reward)return s;
     const practice=reward&&player?(player.driving.status==='finished'?5+(rankRacers(race)[0]?.id==='player'?5:0):seconds>0?1:0):0;
-    return {...(firstHinataWin?{officialQualified:true,officialQualificationNotice:true}:{}),...cupUpdate,...(firstWakabaWin?{thirdOfficialQualified:true}:{}),...(reward?{lastRaceReview:reviewRace(race)}:{}),units,inventory,usageSeconds:Math.max(s.usageSeconds,seconds),money:s.money+prize,proficiencyPoints:s.proficiencyPoints+practice,...(firstWin?{unlockedRaces:[...s.unlockedRaces,nextShopRace.id],qualificationNotice:true,...(!s.legendRaceCompleted?{legendEventPending:true}:{})}:{}),...(firstAozoraWin?{aozoraWon:true,villainArrivalPending:true}:{}),...(defeatedVillain?{villainDefeated:true,thirdShopNotice:true}:{}),...(s.villainChallengeActive&&reward?{villainDebriefPending:true}:{}),...(completedLegend?{legendRaceCompleted:true}:{}),...(s.legendChallengeActive&&reward?{legendDebriefPending:true}:{}),...(reward?{lastPrize:prize,settledAttempt:attempt}:{})};
+    return {yuunagiBestTime,finalQualified,...(firstHinataWin?{officialQualified:true,officialQualificationNotice:true}:{}),...cupUpdate,...(firstWakabaWin?{thirdOfficialQualified:true}:{}),...(reward?{lastRaceReview:reviewRace(race)}:{}),units,inventory,usageSeconds:Math.max(s.usageSeconds,seconds),money:s.money+prize,proficiencyPoints:s.proficiencyPoints+practice,...(firstWin?{unlockedRaces:[...s.unlockedRaces,nextShopRace.id],qualificationNotice:true,...(!s.legendRaceCompleted?{legendEventPending:true}:{})}:{}),...(firstAozoraWin?{aozoraWon:true,villainArrivalPending:true}:{}),...(defeatedVillain?{villainDefeated:true,thirdShopNotice:true}:{}),...(s.villainChallengeActive&&reward?{villainDebriefPending:true}:{}),...(completedLegend?{legendRaceCompleted:true}:{}),...(s.legendChallengeActive&&reward?{legendDebriefPending:true}:{}),...(reward?{lastPrize:prize,settledAttempt:attempt}:{})};
   }),
   openSetting: () => set({overlay:'setting',shopAfter:false,notice:''}),
   openSettings:()=>set({overlay:'settings',shopAfter:false,notice:''}),
@@ -174,7 +181,7 @@ export const useGame = create<GameState>((set) => ({
     if(s.overlay==='race'&&s.officialChallengeActive){
       const updated=updateCup(s,forfeitCupHeat(activeCup(s))),cup=s.location==='stadium-9'?updated.technicalCup:updated.wakabaCup,done=cupComplete(cup,s.location==='stadium-9'?'technical':'wakaba');
       if(updated.gameOver)return {...updated,overlay:'game-over',officialChallengeActive:false,dialogueStage:'none',shopAfter:false};
-      return {...updated,overlay:'dialogue',speaker:'大会受付係',dialogue:done?s.location==='stadium-9'?`星空テクニカル杯・総合${cupPlayerPlace(cup)}位、おめでとうございます。長距離の連続コーナーを走り切りました。この大会は一度限りで、再出場はできません。`:`総合${cupPlayerPlace(cup)}位、おめでとうございます。${updated.officialWon?'第3公式大会・星空テクニカル杯の出場権を獲得！':''}${updated.wakabaUnlocked?'街のわかば模型店が開放されました。':''}この大会は再出場できません。`:'第1戦の結果を記録しました。ピットで装備を組み直し、第2戦へ進んでください。第1戦はやり直せません。',officialChallengeActive:false,dialogueStage:done?'none':'official-invite',shopAfter:false};
+      return {...updated,overlay:'dialogue',speaker:'大会受付係',dialogue:done?s.location==='stadium-9'?`星空テクニカル杯・総合${cupPlayerPlace(cup)}位、おめでとうございます。長距離の連続コーナーを走り切りました。街のゆうなぎ模型店が開放されました！ 次は一本道コースを40秒以内で完走して、第4公式大会の出場権を目指してください。この大会は再出場できません。`:`総合${cupPlayerPlace(cup)}位、おめでとうございます。${updated.officialWon?'第3公式大会・星空テクニカル杯の出場権を獲得！':''}${updated.wakabaUnlocked?'街のわかば模型店が開放されました。':''}この大会は再出場できません。`:'第1戦の結果を記録しました。ピットで装備を組み直し、第2戦へ進んでください。第1戦はやり直せません。',officialChallengeActive:false,dialogueStage:done?'none':'official-invite',shopAfter:false};
     }
     if(s.overlay==='race'&&s.officialQualificationNotice)return {overlay:'dialogue',speaker:'日向 誠二',dialogue:officialRace.invitation,dialogueStage:'none',officialQualificationNotice:false,shopAfter:false};
     if(s.overlay==='race'&&s.villainChallengeActive&&s.villainDebriefPending)return {overlay:'dialogue',speaker:challenger.name,dialogue:s.villainDefeated?'な、なんだと……俺が負けた？ ちっ、約束は守る。ひなた模型店への紹介状だ。町の、あおぞら模型店の右隣へ行け。次は負けないからな！':'ふん、まだその程度か。ギアと電池、それにモーターの慣らしを見直してこい。ここで待っている。勝てるまで何度でも相手をしてやる！',dialogueStage:s.villainDefeated?'villain-win':'villain-loss',villainChallengeActive:false,villainDebriefPending:false,shopAfter:false};

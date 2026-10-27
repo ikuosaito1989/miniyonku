@@ -1,6 +1,7 @@
 import { shopPeople, shopVisitors, story } from './story';
 import { modelShops, type ShopId } from './world';
 export const shopCasts={
+  yuunagi:{owner:{x:160,y:139},rival:{x:550,y:245},visitors:[{x:450,y:470,name:'三浦 結衣',kind:'guide' as const},{x:425,y:275,name:'佐伯 匠',kind:'mechanic' as const}]},
   atelier:{owner:{x:160,y:139},rival:{x:550,y:245},visitors:[{x:425,y:275,name:'佐伯 匠',kind:'mechanic' as const}]},
   wakaba:{owner:{x:160,y:139},rival:{x:550,y:245},visitors:[{x:450,y:470,name:'三浦 結衣',kind:'guide' as const},{x:425,y:275,name:'佐伯 匠',kind:'mechanic' as const}]},
   komorebi:{owner:shopPeople.owner,rival:shopPeople.rival,visitors:shopVisitors},

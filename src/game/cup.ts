@@ -30,7 +30,7 @@ export function forfeitCupHeat(cup:CupProgress):CupProgress{
 }
 export function cupProgression(wakabaCup:CupProgress,technicalCup:CupProgress,qualified=false){
  const place=cupPlayerPlace(wakabaCup),completed=cupComplete(wakabaCup,'wakaba'),technicalComplete=cupComplete(technicalCup,'technical');
- return {wakabaCup,technicalCup,officialWon:completed&&place===1,wakabaUnlocked:completed&&place>0&&place<=3,thirdOfficialQualified:qualified||completed&&place===1,gameOver:completed&&place>3||technicalComplete&&cupPlayerPlace(technicalCup)>3,
+ return {wakabaCup,technicalCup,yuunagiUnlocked:technicalComplete&&cupPlayerPlace(technicalCup)>0&&cupPlayerPlace(technicalCup)<=3,officialWon:completed&&place===1,wakabaUnlocked:completed&&place>0&&place<=3,thirdOfficialQualified:qualified||completed&&place===1,gameOver:completed&&place>3||technicalComplete&&cupPlayerPlace(technicalCup)>3,
  officialSpeedWon:wakabaCup.results.some(h=>h.circuitId==='sprint'&&h.entries.some(e=>e.id==='player'&&e.finished&&e.place===1)),officialDirtWon:wakabaCup.results.some(h=>h.circuitId==='sun'&&h.entries.some(e=>e.id==='player'&&e.finished&&e.place===1))};
 }
 export function legacyCup(speed:boolean,dirt:boolean,won=false):CupProgress{

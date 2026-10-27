@@ -20,7 +20,8 @@ test('初優勝・兄弟・博士・各模型店・黒岩・公式二戦を進�
  s={...s,wakabaCup:legacyCup(true,false)};expect('wakaba-dirt');assert.match(currentMission(s).steps[0],/オフロード/);
  s={...s,wakabaCup:legacyCup(true,true),wakabaUnlocked:true};expect('wakaba');
  s={...s,thirdOfficialQualified:true};expect('technical');
- s={...s,technicalCup:forfeitCupHeat(enterCupHeat(emptyCup(),'comet','technical'))};expect('complete');assert.equal(currentMission(s).destination,null);assert.match(currentMission(s).hint,/準備中/);
+ s={...s,yuunagiUnlocked:true};expect('yuunagi');
+ s={...s,finalQualified:true,yuunagiBestTime:39};expect('complete');assert.equal(currentMission(s).destination,null);assert.match(currentMission(s).hint,/準備中/);
  s={...s,gameOver:true};expect('game-over');assert.equal(currentMission(s).destination,null);
 });
 test('総合優勝で得た第3公式大会の権利を優先し、再読み込みしても同じミッションを表示する',()=>{

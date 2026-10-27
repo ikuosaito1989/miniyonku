@@ -164,3 +164,5 @@ kbd { font-family: inherit; font-size: 10px; padding: 2px 5px; border: 1px solid
 .world-toolbar .mission-hud strong{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;font-size:12px;line-height:1.4}
 .world-toolbar .mission-hud>span{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 @media(max-width:600px){.world-toolbar .mission-hud>span{display:none}.world-toolbar .mission-hud strong{font-size:11px}.world-toolbar .game-settings-open{padding:0 10px}.world-toolbar .mission-hud small{font-size:8px;letter-spacing:.5px}}
+
+.time-trial-target{display:flex;flex-wrap:wrap;gap:2px 12px;padding:10px 12px;background:#1d334a;color:#f6e5ab;font-size:12px;line-height:1.7;border-bottom:2px solid #91a5b6}.time-trial-target>span{white-space:nowrap}.time-trial-target strong{color:#ffe177}
