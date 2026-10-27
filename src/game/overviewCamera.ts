@@ -20,7 +20,7 @@ export function overviewFrame(track:CircuitTrack,aspect:number,allowPortraitRota
   [left,rightEdge,bottom,top]=[bottom,top,-rightEdge,-left];
  }
  const centerX=(left+rightEdge)/2,centerY=(bottom+top)/2;
- return {height:Math.max(top-bottom+.35,(rightEdge-left+.35)/safeAspect)*1.08,target:{x:right.x*centerX+up.x*centerY,y:up.y*centerY,z:right.z*centerX+up.z*centerY},rotated,bounds:{left,right:rightEdge,bottom,top},right,up};
+ return {height:Math.max(top-bottom+.35,(rightEdge-left+.35)/safeAspect)*1.08,target:{x:right.x*centerX+up.x*centerY,y:right.y*centerX+up.y*centerY,z:right.z*centerX+up.z*centerY},rotated,bounds:{left,right:rightEdge,bottom,top},right,up};
 }
 export function overviewCarScale(cssHeight:number,viewHeight:number){return Math.max(1,Math.min(8,18*viewHeight/(Math.max(1,cssHeight)*.24*.85)));}
 
