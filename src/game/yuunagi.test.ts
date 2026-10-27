@@ -37,9 +37,9 @@ test('規定タイムは40秒以内の完走。反応・フライング加算、
   const forged={...snapshotGame(advanced()),finalQualified:true,yuunagiUnlocked:true};assert.equal(decodeSave({version:1,savedAt:123,game:forged}).game.finalQualified,false);
  }finally{useGame.setState(previous,true);}
 });
-test('一本道は別のゴールへ1回だけ走り、スパイラルと物理ジャンプを備え、実装済み装備で約40秒',()=>{
+test('一本道は別のゴールへ1回だけ走り、スパイラルと物理ジャンプを備え、旧装備では40秒を超えるロングコース',()=>{
  const track=getCircuitTrack('trail'),start=track.sampleLanePath(0,2),end=track.sampleLanePath(track.circuitLength,2);
- assert.ok(track.open);assert.equal(track.circuit.laps,1);assert.ok(Math.hypot(end.x-start.x,end.z-start.z)>25);assert.equal(end.y,0);
+ assert.ok(track.circuitLength>170&&track.circuitLength<175);assert.ok(track.open);assert.equal(track.circuit.laps,1);assert.ok(Math.hypot(end.x-start.x,end.z-start.z)>25);assert.equal(end.y,0);
  assert.equal(track.sampleLanePath(track.circuitLength*.5,2).changing,false);
  for(const lane of [0,1,2,3,4])for(let i=0;i<=1200;i++){const p=track.sampleLanePath(i/1200*track.circuitLength,lane);for(const value of [p.x,p.y,p.z,p.tangentX,p.tangentZ,p.curvature,p.pathScale])assert.ok(Number.isFinite(value));assert.ok(p.pathScale>.1);}
  assert.ok(track.obstacles);assert.ok(track.isJumpGap(track.obstacles.jump.takeoff+.1));
@@ -47,6 +47,6 @@ test('一本道は別のゴールへ1回だけ走り、スパイラルと物理�
  for(const seed of [1,42,999]){
   let race=startRace(createRaceState(equipment,seed,{motorSeconds:60,batterySeconds:0},false,'trail'));assert.equal(race.racers.length,1);assert.equal(race.racers[0].lane,2);
   while(race.phase==='countdown')race=stepRace(race);race=launchPlayer(race);for(let i=0;i<120*100&&race.phase!=='finished';i++)race=stepRace(race);
-  const player=race.racers[0];assert.equal(player.driving.status,'finished');assert.equal(player.driving.landings,1);assert.ok(player.driving.time>38&&player.driving.time<=40);
+  const player=race.racers[0];assert.equal(player.driving.status,'finished');assert.equal(player.driving.landings,1);assert.ok(player.driving.time>40);
  }
 });

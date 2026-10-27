@@ -18,7 +18,8 @@ import {createRaceState,startRace,stepRace,launchPlayer} from './race';
 import {buildMachineModel} from './MachineModel';
 const ids=['accessory-slide-rear','roller-ceramic','roller-lowdouble','motor-surge','wheel-floating','tire-landing'];
 const old:Equipment={...starterEquipment,body:'body-arrow',motor:'motor-torque',gear:'gear-4',tire:'tire-1',chassis:'chassis-low',wheel:'wheel-light',rollerFront:'roller-1',rollerRear:'roller-1',accessory:'accessory-weight',accessory2:'accessory-support',accessory3:'accessory-damper-light',battery:'battery-endurance',terminal:'terminal-1'};
-const upgraded:Equipment={...old,accessory:'accessory-slide-rear',rollerFront:'roller-ceramic',rollerSide:'roller-ceramic',rollerRear:'roller-lowdouble'};
+const wakaba:Equipment={...old,body:'body-champion',motor:'motor-rally',tire:'tire-turn',chassis:'chassis-turn',wheel:'wheel-diff',rollerFront:'roller-2',rollerSide:'roller-2',rollerRear:'roller-2',accessory:'accessory-stabilizer',shaft:'shaft-1'};
+const upgraded:Equipment={...wakaba,motor:'motor-surge',tire:'tire-landing',wheel:'wheel-floating',accessory3:'accessory-slide-rear',rollerFront:'roller-ceramic',rollerSide:'roller-ceramic',rollerRear:'roller-lowdouble'};
 function run(e:Equipment,seed=42,condition:MachineCondition={motorSeconds:60,batterySeconds:0}){let race=startRace(createRaceState(e,seed,condition,false,'trail'));while(race.phase==='countdown')race=stepRace(race);race=launchPlayer(race);for(let i=0;i<120*100&&race.phase!=='finished';i++)race=stepRace(race);return race;}
 test('新作6種類はLv6のゆうなぎで購入でき、説明・注意点があり、旧店舗には並ばない',()=>{
  let wallet={money:20000,inventory:{} as Record<string,number>};
@@ -28,10 +29,10 @@ test('新作6種類はLv6のゆうなぎで購入でき、説明・注意点が�
  equipment=equipPart(equipment,wallet.inventory,'accessory-slide-rear','accessory3');assert.equal(equipment.accessory3,'accessory-slide-rear');assert.equal(equipPart(equipment,wallet.inventory,'accessory-slide-rear','accessory2').accessory2,'accessory-none');
 });
 test('スライドと新作ローラーは制振・安定・抵抗に効き、過去の市販装備を生かして40秒を切れる',()=>{
- const before=machinePerformance(old),after=machinePerformance(upgraded);assert.ok(after.damping>before.damping);assert.ok(after.lateralLimit>before.lateralLimit);assert.ok(after.drag<before.drag);assert.ok(after.cornerDrag<before.cornerDrag);
- const previous=run(old);assert.equal(previous.racers[0].driving.status,'finished');assert.ok(previous.racers[0].driving.time>40);
- for(const seed of [1,42,999]){const race=run(upgraded,seed),player=race.racers[0];assert.equal(player.driving.status,'finished');assert.equal(player.driving.landings,1);assert.ok(player.driving.time>36&&player.driving.time<39);}
- const full=run({...upgraded,motor:'motor-surge',tire:'tire-landing',wheel:'wheel-floating',accessory3:'accessory-stabilizer'});assert.equal(full.racers[0].driving.status,'finished');assert.ok(full.racers[0].driving.time<36);
+ const before=machinePerformance(wakaba),after=machinePerformance(upgraded);assert.ok(after.damping>before.damping);assert.ok(after.lateralLimit>before.lateralLimit);assert.ok(after.drag<before.drag);assert.ok(after.cornerDrag<before.cornerDrag);
+ const previous=run(wakaba);assert.equal(previous.racers[0].driving.status,'finished');assert.ok(previous.racers[0].driving.time>40);
+ for(const seed of [1,42,999]){const race=run(upgraded,seed),player=race.racers[0];assert.equal(player.driving.status,'finished');assert.equal(player.driving.landings,1);assert.ok(player.driving.time>38&&player.driving.time<40);}
+ for(const slot of ['motor','tire','wheel','rollerFront','rollerSide','rollerRear','accessory3'] as const){const race=run({...wakaba,[slot]:upgraded[slot]});assert.equal(race.racers[0].driving.status,'finished');assert.ok(race.racers[0].driving.time<=previous.racers[0].driving.time,slot+' must not slow the same setup');}
 });
 test('スライドはウイング下に付き、リヤ欄で選んだローラーを可動ステーへ取り付ける',()=>{
  for(const slot of ['accessory','accessory2','accessory3'] as const){const e={...old,body:'body-champion',[slot]:'accessory-slide-rear',rollerRear:'roller-lowdouble'},model=buildMachineModel(0xffffff,e);
@@ -45,7 +46,7 @@ test('スライドはウイング下に付き、リヤ欄で選んだローラ�
 test('新作を実際に購入・装着してタイムアタックをクリアし、装備と出場権を保存・再開できる',async()=>{
  const previous=useGame.getState();try{
   const wk=legacyCup(true,true),technical={entered:true,pending:null,results:[{...wk.results[0],circuitId:'comet' as const}]};
-  useGame.setState({...useGame.getInitialState(),...cupProgression(wk,technical,true),legendRaceCompleted:true,aozoraWon:true,villainDefeated:true,officialQualified:true,unlockedRaces:['aozora-entry'],location:'yuunagi',lastShop:'yuunagi',money:40000});
+  useGame.setState({...useGame.getInitialState(),...cupProgression(wk,technical,true),legendRaceCompleted:true,aozoraWon:true,villainDefeated:true,officialQualified:true,unlockedRaces:['aozora-entry'],location:'yuunagi',lastShop:'yuunagi',doctorGiftReceived:true,inventory:{...useGame.getInitialState().inventory,'body-champion':1},money:40000});
   for(const id of new Set([...ids,...Object.values(upgraded)]))if(id!=='accessory-none')useGame.getState().buy(id);
   for(const [slot,id] of Object.entries(upgraded))useGame.getState().equip(id,slot as keyof Equipment);
   assert.deepEqual(useGame.getState().equipment,upgraded);

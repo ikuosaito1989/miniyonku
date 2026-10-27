@@ -41,7 +41,7 @@ export function raceAdvice(state:RaceAdviceContext){
   const shop=modelShops[state.shopId],lines=['レース相談は僕に任せて。'];
   if(state.review?.circuitId===shop.circuitId)lines.push(state.review.text);
   else lines.push('この店のレース記録はまだないね。今の装備で改善できる点を見てみよう。');
-  if(state.shopId==='yuunagi')lines.push('ゆうなぎは順位ではなく公式タイム40秒以内の完走が条件。スパイラルの旋回安定とジャンプの着地を両立しよう。新作のリアウイング・スライドダンパーをその他欄に付け、前中をセラミック、リヤをロープロファイル二段ローラーにすると、ウイング下の可動ステーにリヤローラーが付くよ。4:1ギアと過去の低重心シャーシ・スポンジタイヤも生かせる。さらに詰めるならサージモーター・リバウンドレスタイヤ・フローティングホイールを試そう。反応時間・フライング加算も判定に含まれるよ。');
+  if(state.shopId==='yuunagi')lines.push('ゆうなぎは順位ではなく公式タイム40秒以内の完走が条件。スパイラルの旋回安定とジャンプの着地を両立しよう。新作のリアウイング・スライドダンパーをその他欄に付け、前中をセラミック、リヤをロープロファイル二段ローラーにすると、ウイング下の可動ステーにリヤローラーが付くよ。延長された終盤の直線では再加速と伸びも必要。4:1ギアとK4シャーシ・駆動サポートを生かし、サージモーター・リバウンドレスタイヤ・フローティングホイールも組み合わせよう。反応時間・フライング加算も判定に含まれるよ。');
   if(state.shopId==='hinata'){lines.push('ひなたはロングダート。舗装用のままでは砂利で失速するよ。トレイルトルクモーター、ブロックトレッドタイヤ、ツインマスダンパー、前中後のポール式ダブルローラーを組み合わせ、4:1ギアから試そう。特にタイヤの接地とダンパーの振動吸収が大切だよ。');
     const missing=['tire-trail','accessory-damper','motor-trail','roller-double'].map(id=>parts.find(p=>p.id===id)!).find(p=>!(state.inventory[p.id]>0));
     if(missing)lines.push(`ひなた模型店の「${missing.name}」は${missing.price}円。${state.money>=missing.price?'今の所持金で買えるよ。':`あと${missing.price-state.money}円、完走賞で貯めよう。`}単体では足りない場合もあるので、悪路用の組み合わせを揃えよう。`);

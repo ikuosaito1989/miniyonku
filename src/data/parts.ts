@@ -7,8 +7,8 @@ type PartDefinition=Omit<Part,'level'>;
 const definitions: PartDefinition[] = [
   {id:'accessory-slide-rear',category:'accessory',name:'リアウイング・スライドダンパー',price:2600,description:'ゆうなぎの新作。ウイング下の左右スライドステーへリヤローラーを取り付ける補助ユニット。横方向の衝撃と着地の揺れを逃がす。ローラーはリヤ欄で別に選択する。',specs:{weight:5,stability:1.2,efficiency:1,damping:.38,cornerDrag:.92},performance:'5 g / 安定性 ×1.20 / 制振38% / 旋回抵抗 ×0.92'},
   {id:'roller-ceramic',category:'roller',name:'セラミック・エアロベアリングローラー',price:1900,description:'ゆうなぎの新作。軽量な低摩擦リングとセラミック軸受けで、スパイラルでも速度を残す。リヤへ装着すればスライドダンパーの両端にも取り付けられる。1セットで前・中・後へ設定可能。',specs:{friction:.035,weight:6,stability:1.08,damping:.04},performance:'摩擦0.035 / 6 g / 安定性 ×1.08 / 制振4%'},
-  {id:'roller-lowdouble',category:'roller',name:'ロープロファイル・二段ローラー',price:2300,description:'ゆうなぎの新作。低い二段リングで壁からの衝撃を分散し、ジャンプ着地後の横揺れを抑える。速さより安定性を重視するセット。前・中・後共用。',specs:{friction:.07,weight:7,stability:1.16,damping:.1},performance:'摩擦0.07 / 7 g / 安定性 ×1.16 / 制振10%'},
-  {id:'motor-surge',category:'motor',name:'サージ・スプリントトルクモーター',price:2600,description:'ゆうなぎの一本道向け上位型。スパイラルの出口やジャンプ後で素早く再加速する。新作のローラー・スライドダンパーと組み合わせよう。',specs:{rpm:16800,torque:1.8,weight:20},performance:'16,800 rpm / 1.80 mN·m / 20 g'},
+  {id:'roller-lowdouble',category:'roller',name:'ロープロファイル・二段ローラー',price:2300,description:'ゆうなぎの新作。低い二段リングで壁からの衝撃を分散し、ジャンプ着地後の横揺れを抑える。速さより安定性を重視するセット。前・中・後共用。',specs:{friction:.045,weight:7,stability:1.16,damping:.1},performance:'摩擦0.045 / 7 g / 安定性 ×1.16 / 制振10%'},
+  {id:'motor-surge',category:'motor',name:'サージ・スプリントトルクモーター',price:2600,description:'ゆうなぎの一本道向け上位型。スパイラルの出口やジャンプ後で素早く再加速する。新作のローラー・スライドダンパーと組み合わせよう。',specs:{rpm:18500,torque:2.5,weight:20},performance:'18,500 rpm / 2.50 mN·m / 20 g'},
   {id:'wheel-floating',category:'wheel',name:'フローティング・ワンウェイ6',price:2100,description:'ゆうなぎの新作。内外輪の回転差を逃がす軽量フローティングハブ。スパイラルでの回転抵抗を低減し、立ち上がりにも強い。',specs:{weight:4,diameter:17,cornerDrag:.46},performance:'4本 4 g / リム径17 mm / コーナー抵抗 ×0.46'},
   {id:'tire-landing',category:'tire',name:'リバウンドレス・ローハイトタイヤ',price:1700,description:'ゆうなぎの新作。舗装グリップを保ちながら、低反発の素材でジャンプ着地の跳ねを吸収。スライドダンパーと併用できる。悪路用ではない。',specs:{diameter:26,grip:1.45,weight:8,damping:.14},performance:'径26 mm / グリップ1.45 / 8 g / 制振14%'},
 
