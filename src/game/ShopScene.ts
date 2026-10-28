@@ -1,3 +1,4 @@
+import {drawShopTrack} from './ShopTrackArt';
 import { officialVenue, officialFixturesFor, officialVenueFor, officialVenuePeople, officialPeopleFor } from '../data/officialVenue';
 import { drawOfficialVenue } from './OfficialVenueArt';
 import { doctor, doctorSpot, doctorAdvice } from '../data/doctor';
@@ -131,8 +132,7 @@ export class ShopScene extends Phaser.Scene {
       this.add.rectangle(signX,70,260,64,shop.id==='aozora'?0x284b6b:0x6a5234).setDepth(110);
       this.add.text(signX,49,shop.name,{fontFamily:'sans-serif',fontSize:'21px',fontStyle:'bold',color:'#f8edcc',resolution:2}).setOrigin(.5,0).setDepth(111);
       this.add.text(signX,80,shop.id==='atelier'?'究極パーツの販売専門店・各25万円':shop.id==='aozora'?'連続コーナーで磨く、次の走り':shop.id==='yuunagi'?'一本道40秒チャレンジ・第4公式大会出場権へ':shop.id==='wakaba'?'坂・ジャンプ・高架スパイラルに挑もう':'砂利と砂地を走る、ダートの勝負',{fontFamily:'sans-serif',fontSize:'8px',color:'#c7e6e6',resolution:2}).setOrigin(.5,0).setDepth(111);
-      const f=fixtures.find(f=>f.kind==='track')!,{circuit,circuitLength,sampleCircuit}=getCircuitTrack(shop.circuitId),g=this.add.graphics().setDepth(f.y+f.h+1);
-      const plotX=(f.w-28)/(2*(circuit.radiusX+Math.abs(circuit.asymmetry))),plotY=(f.h-38)/(2*(circuit.radiusZ+Math.abs(circuit.chicane)));
+      const f=fixtures.find(f=>f.kind==='track')!,g=this.add.graphics().setDepth(f.y+f.h+1);
       g.fillStyle(0x476d75).fillRoundedRect(f.x+3,f.y+3,f.w-6,f.h-6,9);
       if(shop.id==='atelier'){
         g.fillStyle(0x302f4b).fillRect(f.x+3,f.y+3,f.w-6,f.h-6);g.lineStyle(3,0xd5b779).strokeRect(f.x+8,f.y+8,f.w-16,f.h-16);
@@ -153,12 +153,7 @@ export class ShopScene extends Phaser.Scene {
           this.add.text(x+52,f.y+112,`${name}\n各250,000円`,{fontFamily:'sans-serif',fontSize:'10px',align:'center',color:'#ffe5a5',resolution:2}).setOrigin(.5,0).setDepth(f.y+f.h+2);
         }
       }else{
-      for(let lane=0;lane<6;lane++){
-        g.lineStyle(2,0xe5e2c8);g.beginPath();
-        for(let i=0;i<=160;i++){const p=sampleCircuit(i/160*circuitLength),scale=1-lane*.065,x=f.x+f.w/2+(p.x-(shop.id==='yuunagi'?3.76:0))*plotX*scale,y=f.y+f.h/2+(p.z-(shop.id==='yuunagi'?2.8:0))*plotY*scale;if(i===0)g.moveTo(x,y);else g.lineTo(x,y);}
-        g.strokePath();
-      }
-      this.add.text(f.x+f.w/2,f.y+f.h-20,getCircuitTrack(shop.circuitId).circuit.name,{fontFamily:'sans-serif',fontSize:'9px',color:'#fff1bc',resolution:2}).setOrigin(.5,0).setDepth(f.y+f.h+2);
+      drawShopTrack(this,f,getCircuitTrack(shop.circuitId));
       }
     }
     this.add.rectangle(480,580,84,15,0x34564e).setDepth(590);
