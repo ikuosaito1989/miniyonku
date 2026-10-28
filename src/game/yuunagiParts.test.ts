@@ -59,6 +59,7 @@ test('新作を実際に購入・装着してタイムアタックをクリア�
  }finally{useGame.setState(previous,true);}
 });
 
-test('43秒なら新作装備で1秒の発進遅れと新品・軽い摩耗・電池80%をそれぞれ許容する',()=>{
- for(const condition of [{motorSeconds:0,batterySeconds:0},{motorSeconds:300,batterySeconds:0},{motorSeconds:60,batterySeconds:288}]){const race=run(upgraded,42,condition,1);assert.equal(race.racers[0].driving.status,'finished');assert.ok(officialTime(race,race.racers[0])<=43,JSON.stringify(condition));}
+test('40秒の規定は慣らし済み・新品電池なら発進1秒遅れでもクリアでき、消耗した条件は超過する',()=>{
+ const ready=run(upgraded,42,{motorSeconds:60,batterySeconds:0},1);assert.equal(ready.racers[0].driving.status,'finished');assert.ok(officialTime(ready,ready.racers[0])<=40);
+ for(const condition of [{motorSeconds:0,batterySeconds:0},{motorSeconds:300,batterySeconds:0},{motorSeconds:60,batterySeconds:288}]){const race=run(upgraded,42,condition,1);assert.equal(race.racers[0].driving.status,'finished');assert.ok(officialTime(race,race.racers[0])>40,JSON.stringify(condition));}
 });

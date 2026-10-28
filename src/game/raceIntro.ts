@@ -13,7 +13,7 @@ export function stepRaceIntro(intro:RaceIntro,seconds:number,visible=true){
 export function courseIntroduction(id:CircuitId,official=false){
  const {circuit,circuitLength}=getCircuitTrack(id);
  const details={
-  trail:{feature:'スタートと別のゴールへ進む一本道。1周半の高架スパイラル、ジャンプ台、終盤のロングストレートを越え、規定43秒以内の完走で第4公式大会出場権を獲得。',advice:'一台ずつ走るタイムアタック。4:1ギアとK4に、新作サージ・スライド・ローラーを組み合わせ、直線の伸びと旋回・着地を両立させよう。失敗しても再挑戦できる。'},
+  trail:{feature:'スタートと別のゴールへ進む一本道。1周半の高架スパイラル、ジャンプ台、終盤のロングストレートを越え、規定40秒以内の完走で第4公式大会出場権を獲得。',advice:'一台ずつ走るタイムアタック。4:1ギアとK4に、新作サージ・スライド・ローラーを組み合わせ、直線の伸びと旋回・着地を両立させよう。失敗しても再挑戦できる。'},
   grove:{feature:'1周半の高架スパイラル、坂、ジャンプ台を巡る約500mの立体コース。',advice:'ライバルも上位装備。K4・高グリップタイヤ・新作ホイールを軸に、4:1ギアと着地の制振を整えよう。'},
   comet:{feature:'全4大会の第3大会。約2分にわたり連続コーナーを走り抜く。',advice:'最高速だけでは勝てない。過去のパーツで旋回の安定と立ち上がりを整えよう。'},
   leaf:{feature:'大きなカーブとレーンチェンジの入門コース。',advice:'加速と安定性を整え、まずは5周の完走を目指そう。'},

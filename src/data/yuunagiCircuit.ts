@@ -12,4 +12,4 @@ export function yuunagiPoint(t:number){
  const curve=(axis:number)=>.5*(2*b[axis]+(-a[axis]+c[axis])*f+(2*a[axis]-5*b[axis]+4*c[axis]-d[axis])*f*f+(-a[axis]+3*b[axis]-3*c[axis]+d[axis])*f*f*f);
  return {x:curve(0)*.94,z:curve(1)*.94,elevation:Math.max(0,curve(2))};
 }
-export const yuunagiTimeLimit=43;
+export const yuunagiTimeLimit=40;
