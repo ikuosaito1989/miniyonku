@@ -1,3 +1,4 @@
+import {yuunagiTimeLimit} from '../data/yuunagiCircuit';
 import { parts } from '../data/parts';
 import { equipmentSlots, type Equipment, type EquipmentSlot } from '../data/machine';
 import { isStocked } from '../data/progression';
@@ -21,7 +22,7 @@ export function reviewRace(race:RaceState):RaceReview|null{
     const winner=rankRacers(race)[0];
     if(winner.driving.status==='finished')notes.push(`先頭との差は${Math.max(0,officialTime(race,player)-officialTime(race,winner)).toFixed(2)}秒だったよ。`);
   }
-  if(race.circuitId==='trail'&&player.driving.status==='finished'){const time=officialTime(race,player);notes.push(time<=40?'規定40秒をクリアして大会出場権を獲得したよ。':`規定40秒まであと${(Math.ceil((time-40)*100)/100).toFixed(2)}秒の短縮が必要だよ。旋回中の減速、ジャンプ後の再加速、GOの反応を見直そう。`);}
+  if(race.circuitId==='trail'&&player.driving.status==='finished'){const time=officialTime(race,player);notes.push(time<=yuunagiTimeLimit?'規定43秒をクリアして大会出場権を獲得したよ。':`規定43秒まであと${(Math.ceil((time-yuunagiTimeLimit)*100)/100).toFixed(2)}秒の短縮が必要だよ。旋回中の減速、ジャンプ後の再加速、GOの反応を見直そう。`);}
   if(race.falseStartPenalty>0)notes.push(`フライングで${race.falseStartPenalty.toFixed(2)}秒加算されたよ。GOを見てから発進しよう。`);
   if((race.playerStartOffset??0)>.2)notes.push(`GOから発進まで${race.playerStartOffset!.toFixed(2)}秒。発進待ちも公式タイムに入るよ。`);
   if(player.performance.motorWearRate!==0&&player.performance.motorSeconds<60)notes.push(`出走時のモーター使用は${player.performance.motorSeconds.toFixed(0)}秒。約60秒までの慣らしが足りなかったね。`);
@@ -41,7 +42,7 @@ export function raceAdvice(state:RaceAdviceContext){
   const shop=modelShops[state.shopId],lines=['レース相談は僕に任せて。'];
   if(state.review?.circuitId===shop.circuitId)lines.push(state.review.text);
   else lines.push('この店のレース記録はまだないね。今の装備で改善できる点を見てみよう。');
-  if(state.shopId==='yuunagi')lines.push('ゆうなぎは順位ではなく公式タイム40秒以内の完走が条件。スパイラルの旋回安定とジャンプの着地を両立しよう。新作のリアウイング・スライドダンパーをその他欄に付け、前中をセラミック、リヤをロープロファイル二段ローラーにすると、ウイング下の可動ステーにリヤローラーが付くよ。延長された終盤の直線では再加速と伸びも必要。4:1ギアとK4シャーシ・駆動サポートを生かし、サージモーター・リバウンドレスタイヤ・フローティングホイールも組み合わせよう。反応時間・フライング加算も判定に含まれるよ。');
+  if(state.shopId==='yuunagi')lines.push('ゆうなぎは順位ではなく公式タイム43秒以内の完走が条件。スパイラルの旋回安定とジャンプの着地を両立しよう。新作のリアウイング・スライドダンパーをその他欄に付け、前中をセラミック、リヤをロープロファイル二段ローラーにすると、ウイング下の可動ステーにリヤローラーが付くよ。延長された終盤の直線では再加速と伸びも必要。4:1ギアとK4シャーシ・駆動サポートを生かし、サージモーター・リバウンドレスタイヤ・フローティングホイールも組み合わせよう。反応時間・フライング加算も判定に含まれるよ。');
   if(state.shopId==='hinata'){lines.push('ひなたはロングダート。舗装用のままでは砂利で失速するよ。トレイルトルクモーター、ブロックトレッドタイヤ、ツインマスダンパー、前中後のポール式ダブルローラーを組み合わせ、4:1ギアから試そう。特にタイヤの接地とダンパーの振動吸収が大切だよ。');
     const missing=['tire-trail','accessory-damper','motor-trail','roller-double'].map(id=>parts.find(p=>p.id===id)!).find(p=>!(state.inventory[p.id]>0));
     if(missing)lines.push(`ひなた模型店の「${missing.name}」は${missing.price}円。${state.money>=missing.price?'今の所持金で買えるよ。':`あと${missing.price-state.money}円、完走賞で貯めよう。`}単体では足りない場合もあるので、悪路用の組み合わせを揃えよう。`);

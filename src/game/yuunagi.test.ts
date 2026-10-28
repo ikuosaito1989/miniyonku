@@ -22,18 +22,18 @@ test('第3公式大会を3位以内でクリアしたときだけ次の模型店
   assert.equal(useGame.getState().yuunagiUnlocked,true);useGame.getState().enterShop('yuunagi');assert.equal(useGame.getState().location,'yuunagi');
  }finally{useGame.setState(previous,true);}
 });
-test('規定タイムは40秒以内の完走。反応・フライング加算、再挑戦、ベスト、保存を一貫して判定',async()=>{
+test('規定タイムは43秒以内の完走。反応・フライング加算、再挑戦、ベスト、保存を一貫して判定',async()=>{
  const previous=useGame.getState();try{
   useGame.setState({...advanced(),location:'yuunagi',lastShop:'yuunagi'});
-  for(const race of [result(40.001),result(39,1.1),result(39,0,1.1),result(30,0,0,false)]){
+  for(const race of [result(43.001),result(42,1.1),result(42,0,1.1),result(30,0,0,false)]){
    useGame.getState().startTrial();useGame.getState().settleRace(useGame.getState().raceAttempt,race);assert.equal(useGame.getState().finalQualified,false);useGame.getState().close();
   }
-  useGame.getState().startTrial();const attempt=useGame.getState().raceAttempt;useGame.getState().settleRace(attempt,result(40));
-  assert.equal(useGame.getState().finalQualified,true);assert.equal(useGame.getState().yuunagiBestTime,40);assert.equal(currentMission(useGame.getState()).id,'complete');
-  const money=useGame.getState().money;useGame.getState().settleRace(attempt,result(40));assert.equal(useGame.getState().money,money);
-  useGame.getState().close();useGame.getState().startTrial();useGame.getState().settleRace(useGame.getState().raceAttempt,result(50));assert.equal(useGame.getState().yuunagiBestTime,40);assert.equal(useGame.getState().finalQualified,true);
+  useGame.getState().startTrial();const attempt=useGame.getState().raceAttempt;useGame.getState().settleRace(attempt,result(43));
+  assert.equal(useGame.getState().finalQualified,true);assert.equal(useGame.getState().yuunagiBestTime,43);assert.equal(currentMission(useGame.getState()).id,'complete');
+  const money=useGame.getState().money;useGame.getState().settleRace(attempt,result(43));assert.equal(useGame.getState().money,money);
+  useGame.getState().close();useGame.getState().startTrial();useGame.getState().settleRace(useGame.getState().raceAttempt,result(50));assert.equal(useGame.getState().yuunagiBestTime,43);assert.equal(useGame.getState().finalQualified,true);
   const save=decodeSave({version:1,savedAt:123,game:snapshotGame(useGame.getState())});await loadSavedGame({read:async()=>save,write:async()=>{}});
-  assert.equal(useGame.getState().location,'yuunagi');assert.equal(useGame.getState().finalQualified,true);assert.equal(useGame.getState().yuunagiBestTime,40);
+  assert.equal(useGame.getState().location,'yuunagi');assert.equal(useGame.getState().finalQualified,true);assert.equal(useGame.getState().yuunagiBestTime,43);
   const forged={...snapshotGame(advanced()),finalQualified:true,yuunagiUnlocked:true};assert.equal(decodeSave({version:1,savedAt:123,game:forged}).game.finalQualified,false);
  }finally{useGame.setState(previous,true);}
 });

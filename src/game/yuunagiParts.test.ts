@@ -14,13 +14,13 @@ import {partGuidance} from '../data/partGuidance';
 import {purchase} from './purchase';
 import {equipPart} from './equipment';
 import {machinePerformance} from './driving';
-import {createRaceState,startRace,stepRace,launchPlayer} from './race';
+import {createRaceState,startRace,stepRace,launchPlayer,officialTime} from './race';
 import {buildMachineModel} from './MachineModel';
 const ids=['accessory-slide-rear','roller-ceramic','roller-lowdouble','motor-surge','wheel-floating','tire-landing'];
 const old:Equipment={...starterEquipment,body:'body-arrow',motor:'motor-torque',gear:'gear-4',tire:'tire-1',chassis:'chassis-low',wheel:'wheel-light',rollerFront:'roller-1',rollerRear:'roller-1',accessory:'accessory-weight',accessory2:'accessory-support',accessory3:'accessory-damper-light',battery:'battery-endurance',terminal:'terminal-1'};
 const wakaba:Equipment={...old,body:'body-champion',motor:'motor-rally',tire:'tire-turn',chassis:'chassis-turn',wheel:'wheel-diff',rollerFront:'roller-2',rollerSide:'roller-2',rollerRear:'roller-2',accessory:'accessory-stabilizer',shaft:'shaft-1'};
 const upgraded:Equipment={...wakaba,motor:'motor-surge',tire:'tire-landing',wheel:'wheel-floating',accessory3:'accessory-slide-rear',rollerFront:'roller-ceramic',rollerSide:'roller-ceramic',rollerRear:'roller-lowdouble'};
-function run(e:Equipment,seed=42,condition:MachineCondition={motorSeconds:60,batterySeconds:0}){let race=startRace(createRaceState(e,seed,condition,false,'trail'));while(race.phase==='countdown')race=stepRace(race);race=launchPlayer(race);for(let i=0;i<120*100&&race.phase!=='finished';i++)race=stepRace(race);return race;}
+function run(e:Equipment,seed=42,condition:MachineCondition={motorSeconds:60,batterySeconds:0},delay=0){let race=startRace(createRaceState(e,seed,condition,false,'trail'));while(race.phase==='countdown')race=stepRace(race);for(let i=0;i<delay*120;i++)race=stepRace(race);race=launchPlayer(race);for(let i=0;i<120*100&&race.phase!=='finished';i++)race=stepRace(race);return race;}
 test('新作6種類はLv6のゆうなぎで購入でき、説明・注意点があり、旧店舗には並ばない',()=>{
  let wallet={money:20000,inventory:{} as Record<string,number>};
  for(const id of ids){const part=parts.find(p=>p.id===id)!;assert.equal(part.level,6);for(const shop of Object.values(modelShops))assert.equal(isStocked(part,shop),shop.id==='yuunagi');const result=purchase(wallet,id,modelShops.yuunagi);assert.ok(result.success);wallet=result.wallet;assert.ok(partGuidance(part).use.length>20);assert.ok(partGuidance(part).tradeoff.length>20);}
@@ -57,4 +57,8 @@ test('新作を実際に購入・装着してタイムアタックをクリア�
   assert.deepEqual(useGame.getState().equipment,upgraded);assert.equal(useGame.getState().finalQualified,true);
   for(const id of ids)assert.equal(useGame.getState().inventory[id],1);
  }finally{useGame.setState(previous,true);}
+});
+
+test('43秒なら新作装備で1秒の発進遅れと新品・軽い摩耗・電池80%をそれぞれ許容する',()=>{
+ for(const condition of [{motorSeconds:0,batterySeconds:0},{motorSeconds:300,batterySeconds:0},{motorSeconds:60,batterySeconds:288}]){const race=run(upgraded,42,condition,1);assert.equal(race.racers[0].driving.status,'finished');assert.ok(officialTime(race,race.racers[0])<=43,JSON.stringify(condition));}
 });

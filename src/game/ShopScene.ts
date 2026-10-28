@@ -131,7 +131,7 @@ export class ShopScene extends Phaser.Scene {
       this.add.rectangle(480,320,880,570,shop.color,.09).setDepth(1);
       this.add.rectangle(signX,70,260,64,shop.id==='aozora'?0x284b6b:0x6a5234).setDepth(110);
       this.add.text(signX,49,shop.name,{fontFamily:'sans-serif',fontSize:'21px',fontStyle:'bold',color:'#f8edcc',resolution:2}).setOrigin(.5,0).setDepth(111);
-      this.add.text(signX,80,shop.id==='atelier'?'究極パーツの販売専門店・各25万円':shop.id==='aozora'?'連続コーナーで磨く、次の走り':shop.id==='yuunagi'?'一本道40秒チャレンジ・第4公式大会出場権へ':shop.id==='wakaba'?'坂・ジャンプ・高架スパイラルに挑もう':'砂利と砂地を走る、ダートの勝負',{fontFamily:'sans-serif',fontSize:'8px',color:'#c7e6e6',resolution:2}).setOrigin(.5,0).setDepth(111);
+      this.add.text(signX,80,shop.id==='atelier'?'究極パーツの販売専門店・各25万円':shop.id==='aozora'?'連続コーナーで磨く、次の走り':shop.id==='yuunagi'?'一本道43秒チャレンジ・第4公式大会出場権へ':shop.id==='wakaba'?'坂・ジャンプ・高架スパイラルに挑もう':'砂利と砂地を走る、ダートの勝負',{fontFamily:'sans-serif',fontSize:'8px',color:'#c7e6e6',resolution:2}).setOrigin(.5,0).setDepth(111);
       const f=fixtures.find(f=>f.kind==='track')!,g=this.add.graphics().setDepth(f.y+f.h+1);
       g.fillStyle(0x476d75).fillRoundedRect(f.x+3,f.y+3,f.w-6,f.h-6,9);
       if(shop.id==='atelier'){
@@ -426,7 +426,7 @@ export class ShopScene extends Phaser.Scene {
       for(const visitor of visitors)visitor.text=visitor.speaker==='三浦 結衣'?(state.villainDefeated?'黒岩くんに勝ったんだね！町へ出て、街の地図でひなた模型店を探してみよう。':state.aozoraWon?'黒岩くんが店の中央で待っているよ。挑戦レースで1位になると、ひなた模型店への紹介状がもらえるんだって。':'ここは優勝1,200円、5位完走でも350円！まずは優勝しよう。町の黒岩くんが、速いレーサーを探しているみたい。'):'黒岩くんに勝つなら、記念ボディにブリーズモーターを約60秒ならして、4:1ギア・スパークセル・スポンジタイヤを試そう。低重心シャーシと軽量化も比べてね。';
       if(state.aozoraWon)targets.push({x:(this.challengerPerson?.x??challengerSpot.x)-16,y:(this.challengerPerson?.y??challengerSpot.y)-42,w:32,h:54,label:challenger.name,speaker:challenger.name,shopAfter:false,text:'挑戦を受ける。',kind:'challenger'});
     }else if(shop.id==='hinata')for(const visitor of visitors)visitor.text=visitor.speaker==='三浦 結衣'?'ひなた模型店へようこそ！ここは砂利と砂地が続くロングダート。ここで優勝すると若葉公式ダート杯への出場権がもらえるよ。街の若葉レース場で森野くんや黒岩くんと勝負しよう。':'トレイルトルクモーター・ブロックタイヤ・ダンパーで接地と駆動力を確保しよう。ポール式ダブルローラーは前中後に装着できるよ。4:1ギアから試そう。';
-    if(shop.id==='yuunagi')for(const visitor of visitors)visitor.text=visitor.speaker==='三浦 結衣'?'ここは一台ずつ、別のゴールまで走る一本道のタイムアタック。40秒以内で完走すれば第4公式大会・緑川グランプリの出場権だよ。何度でも挑戦できるよ！':'新作のスライドダンパーはその他欄、そこに付けるローラーはリヤ欄で選べるよ。前中はセラミック、リヤは二段にして、スパイラルと着地を両立させよう。';
+    if(shop.id==='yuunagi')for(const visitor of visitors)visitor.text=visitor.speaker==='三浦 結衣'?'ここは一台ずつ、別のゴールまで走る一本道のタイムアタック。43秒以内で完走すれば第4公式大会・緑川グランプリの出場権だよ。何度でも挑戦できるよ！':'新作のスライドダンパーはその他欄、そこに付けるローラーはリヤ欄で選べるよ。前中はセラミック、リヤは二段にして、スパイラルと着地を両立させよう。';
     if(shop.id==='wakaba')for(const visitor of visitors)visitor.text=visitor.speaker==='三浦 結衣'?'長い連続コーナーの店へようこそ！ 公式杯の入賞者だけが来られるんだ。ここで優勝すると第3公式大会・星空テクニカル杯の出場権がもらえるよ。':'4:1ギア、スポンジタイヤ、低重心シャーシ、ゴムローラーとウェイト。昔のパーツも大切だよ。最高速だけ伸ばすと切り返しでコースアウトしやすいんだ。';
     for(const visitor of visitors){
       if(visitor.speaker==='佐伯 匠'){visitor.label='佐伯 匠（レース相談）';visitor.text='装備と前回のレースを見て、勝つための相談に乗るよ。';}
