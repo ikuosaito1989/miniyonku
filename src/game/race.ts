@@ -1,4 +1,4 @@
-import { officialRivals, officialSpeedRivals, technicalRivals, wakabaRivals } from '../data/officialRace';
+import { grandprixRivals, officialRivals, officialSpeedRivals, technicalRivals, wakabaRivals } from '../data/officialRace';
 import { starterEquipment, type Equipment } from '../data/machine';
 import { rivals, aozoraRivals, hinataRivals, type Entrant } from '../data/rivals';
 import { createDrivingState, FIXED_STEP, machinePerformance, startDriving, stepDriving, type DrivingState, type Performance } from './driving';
@@ -25,7 +25,7 @@ export interface RaceState {
 export const RIVAL_DIFFICULTY=0.9;
 export const COUNTDOWN_TICKS=Math.round(3/FIXED_STEP);
 export function createRaceState(equipment:Equipment,seed=0x5eed,condition:MachineCondition=freshCondition,challenge:RaceChallenge=false,circuitId:CircuitId='leaf'):RaceState {
-  if(challenge==='official'&&circuitId!=='sprint'&&circuitId!=='comet')circuitId='sun';
+  if(challenge==='official'&&circuitId!=='sprint'&&circuitId!=='comet'&&circuitId!=='grandprix')circuitId='sun';
   const legendChallenge=challenge===true;
   let randomState=seed>>>0||1;
   const random=()=>{randomState^=randomState<<13;randomState^=randomState>>>17;randomState^=randomState<<5;return (randomState>>>0)/4294967296;};
@@ -33,7 +33,7 @@ export function createRaceState(equipment:Equipment,seed=0x5eed,condition:Machin
   for(let i=lanes.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[lanes[i],lanes[j]]=[lanes[j],lanes[i]];}
   const entrants:Entrant[]=legendChallenge
     ?[{id:'player',name:story.player,lane:2,color:0xd94232,equipment:{...equipment}},...legends.slice(0,2).map((legend,index)=>({id:legend.id,name:legend.name,lane:index,color:index?0xe5b839:0x477de0,motorSeconds:90,equipment:{...legend.equipment}})),...rivals.slice(0,2).map(r=>({...r,equipment:{...r.equipment}}))]
-    :[{id:'player',name:story.player,lane:2,color:0xd94232,equipment:{...equipment}},...(circuitId==='trail'?[]:challenge==='official'?(circuitId==='comet'?technicalRivals:circuitId==='sprint'?officialSpeedRivals:officialRivals):challenge==='villain'?[challenger,...aozoraRivals.slice(0,3)]:circuitId==='grove'?wakabaRivals:circuitId==='sun'?hinataRivals:circuitId==='wind'?aozoraRivals:rivals).map(r=>({...r,equipment:{...r.equipment}}))];
+    :[{id:'player',name:story.player,lane:2,color:0xd94232,equipment:{...equipment}},...(circuitId==='trail'?[]:challenge==='official'?(circuitId==='grandprix'?grandprixRivals:circuitId==='comet'?technicalRivals:circuitId==='sprint'?officialSpeedRivals:officialRivals):challenge==='villain'?[challenger,...aozoraRivals.slice(0,3)]:circuitId==='grove'?wakabaRivals:circuitId==='sun'?hinataRivals:circuitId==='wind'?aozoraRivals:rivals).map(r=>({...r,equipment:{...r.equipment}}))];
   return {event:challenge==='official'?'official':'shop',circuitId,phase:'ready',countdownTicks:COUNTDOWN_TICKS,time:0,seed,playerStartOffset:null,falseStartPenalty:0,racers:entrants.map((entry,index)=>{
     const entrant={...entry,lane:circuitId==='trail'?2:lanes[index]};
     const legendary=legendChallenge&&entrant.id.startsWith('legend-');
@@ -41,8 +41,8 @@ export function createRaceState(equipment:Equipment,seed=0x5eed,condition:Machin
     const raceEquipment=legendary?{...starterEquipment,body:entrant.equipment.body,motor:'motor-sovereign',chassis:'chassis-sovereign',gear:'gear-4'}:entrant.equipment;
     const performance=machinePerformance(raceEquipment,entrant.id==='player'?condition:{...freshCondition,motorSeconds:entrant.motorSeconds??0});
     // CPUの個体差もシードから決定する。毎フレームの乱数は使わない。
-    const variation=entrant.id==='player'?1:circuitId==='grove'?.999+random()*.002:0.97+random()*0.06;
-    const difficulty=circuitId==='grove'?1:circuitId!=='leaf'?.96:RIVAL_DIFFICULTY;
+    const variation=entrant.id==='player'?1:(circuitId==='grove'||circuitId==='grandprix')?.999+random()*.002:0.97+random()*0.06;
+    const difficulty=(circuitId==='grove'||circuitId==='grandprix')?1:circuitId!=='leaf'?.96:RIVAL_DIFFICULTY;
     const racePace=legendary?1:entrant.id==='player'||entrant.id===challenger.id&&challenge!=='official'?1:difficulty;
     return {...entrant,performance:{...performance,freeSpeed:performance.freeSpeed*variation*racePace,stallForce:performance.stallForce*variation*racePace,lateralLimit:performance.lateralLimit},driving:createDrivingState()};
   })};

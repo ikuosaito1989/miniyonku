@@ -1,8 +1,9 @@
 import {yuunagiPoint} from './yuunagiCircuit';
 import {wakabaPoint} from './wakabaCircuit';
 import { pavedSurface, dirtSurface } from './surfaces';
-export type CircuitId='leaf'|'wind'|'sun'|'sprint'|'grove'|'comet'|'trail';
+export type CircuitId='leaf'|'wind'|'sun'|'sprint'|'grove'|'comet'|'trail'|'grandprix';
 export const circuitDefinitions={
+  grandprix:{cornerLoad:1.9,surface:pavedSurface,name:'緑川ツイスト・スパイラル',laps:1,laneWidth:.22,lanes:5,radiusX:38,radiusZ:18,asymmetry:0,chicane:0,samples:3600},
   trail:{cornerLoad:1.8,surface:pavedSurface,name:'夕凪ワンウェイ・スパイラル',laps:1,laneWidth:.22,lanes:5,radiusX:22,radiusZ:15,asymmetry:0,chicane:0,samples:2400},
   grove:{cornerLoad:3,surface:pavedSurface,name:'若葉スパイラル・ジャンプ',laps:5,laneWidth:.22,lanes:5,radiusX:17,radiusZ:10,asymmetry:.36,chicane:.48,samples:1920},
   comet:{cornerLoad:3.3,surface:pavedSurface,name:'星空スパイラル・エンデューロ',laps:5,laneWidth:.22,lanes:5,radiusX:12.5,radiusZ:8.5,asymmetry:.3,chicane:.45,samples:2400},
@@ -12,7 +13,7 @@ export const circuitDefinitions={
   sun:{surface:dirtSurface,name:'サンリッジ・ダートエンデューロ',laps:5,laneWidth:.22,lanes:5,radiusX:9.8,radiusZ:6.4,asymmetry:1.1,chicane:1.5,samples:1440},
 };
 function buildCircuit(id:CircuitId){
-  const circuit=circuitDefinitions[id],open=id==='trail';
+  const circuit=circuitDefinitions[id],open=id==='trail'||id==='grandprix';
   const weave=id==='sun'?.48:0;
   const waves=id==='grove'?.696:id==='comet'?.95:0;
   const stadiumPoint=(t:number)=>{
@@ -23,7 +24,7 @@ function buildCircuit(id:CircuitId){
     if(d<straight)return {x:14-d,z:radius};d-=straight;
     const a=Math.PI/2+d/radius;return {x:-14+radius*Math.cos(a),z:radius*Math.sin(a)};
   };
-  const point=(t:number)=>open?yuunagiPoint(t):id==='grove'?wakabaPoint(t):id==='sprint'?stadiumPoint(t):({x:Math.cos(t)*circuit.radiusX+Math.cos(t*2)*circuit.asymmetry+Math.cos(t*4)*weave,z:Math.sin(t)*circuit.radiusZ+Math.sin(t*3)*circuit.chicane+Math.sin(t*7)*waves});
+  const point=(t:number)=>open?yuunagiPoint(t,id==='grandprix'):id==='grove'?wakabaPoint(t):id==='sprint'?stadiumPoint(t):({x:Math.cos(t)*circuit.radiusX+Math.cos(t*2)*circuit.asymmetry+Math.cos(t*4)*weave,z:Math.sin(t)*circuit.radiusZ+Math.sin(t*3)*circuit.chicane+Math.sin(t*7)*waves});
   const points=Array.from({length:circuit.samples+1},(_,i)=>point(i/circuit.samples*Math.PI*2)),lengths=[0];
   for(let i=1;i<points.length;i++)lengths.push(lengths[i-1]+Math.hypot(points[i].x-points[i-1].x,points[i].z-points[i-1].z));
   const circuitLength=lengths.at(-1)!;
@@ -86,7 +87,7 @@ function buildCircuit(id:CircuitId){
   return {open,obstacles,courseProgress,isJumpGap,obstacleHeight,cornerLoad:'cornerLoad' in circuit?circuit.cornerLoad:1,surfaceAt,circuit,circuitLength,startDistance,laneOffset,sampleCircuit,laneChange,sampleLanePath,startRamp,startRampHeight};
 }
 export type CircuitTrack=ReturnType<typeof buildCircuit>;
-const tracks:Record<CircuitId,CircuitTrack>={leaf:buildCircuit('leaf'),wind:buildCircuit('wind'),sun:buildCircuit('sun'),sprint:buildCircuit('sprint'),grove:buildCircuit('grove'),comet:buildCircuit('comet'),trail:buildCircuit('trail')};
+const tracks:Record<CircuitId,CircuitTrack>={leaf:buildCircuit('leaf'),wind:buildCircuit('wind'),sun:buildCircuit('sun'),sprint:buildCircuit('sprint'),grove:buildCircuit('grove'),comet:buildCircuit('comet'),trail:buildCircuit('trail'),grandprix:buildCircuit('grandprix')};
 export const getCircuitTrack=(id:CircuitId='leaf')=>tracks[id];
 // 既存の計算・テストのデフォルトは入門コースのまま。
 export const {circuit,circuitLength,startDistance,laneOffset,sampleCircuit,laneChange,sampleLanePath}=tracks.leaf;

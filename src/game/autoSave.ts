@@ -10,7 +10,7 @@ export async function loadSavedGame(storage:SaveStorage,store:StoreApi<GameState
   const raw=await storage.read();
   if(raw===undefined){store.setState({...store.getInitialState(),location:'town',lastShop:'komorebi'});return null;}
   const data=decodeSave(raw);
-  const progression=cupProgression(forfeitCupHeat(data.game.wakabaCup),forfeitCupHeat(data.game.technicalCup),data.game.thirdOfficialQualified);
+  const progression=cupProgression(forfeitCupHeat(data.game.wakabaCup),forfeitCupHeat(data.game.technicalCup),data.game.thirdOfficialQualified,forfeitCupHeat(data.game.finalCup));
   // UIや途中レースは再開せず、保存した店の入口／街の店前から復帰する。
   store.setState({...store.getInitialState(),...data.game,...progression,...(progression.gameOver?{overlay:'game-over' as const}:{}),legendEventPending:data.game.unlockedRaces.includes(nextShopRace.id)&&!data.game.legendRaceCompleted,villainArrivalPending:data.game.aozoraWon&&!data.game.villainDefeated});
   return data.savedAt;
@@ -50,7 +50,7 @@ export function startAutoSave(storage:SaveStorage,status:(status:SaveStatus)=>vo
     const leavingRace=previous.overlay==='race'&&state.overlay!=='race';
     if(signature===lastSignature&&!leavingRace)return;
     lastSignature=signature;
-    const officialEntry=state.wakabaCup.pending!==previous.wakabaCup.pending||state.technicalCup.pending!==previous.technicalCup.pending;
+    const officialEntry=state.wakabaCup.pending!==previous.wakabaCup.pending||state.technicalCup.pending!==previous.technicalCup.pending||state.finalCup.pending!==previous.finalCup.pending;
     if(officialEntry){void flush().catch(()=>{});return;}
     if(state.overlay==='race'&&state.settledAttempt!==state.raceAttempt){
       // 毎フレーム書かず、走行中の消耗だけは1秒ごとにチェックポイント保存。

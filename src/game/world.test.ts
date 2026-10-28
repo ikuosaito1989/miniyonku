@@ -95,7 +95,7 @@ test('街の8模型店・大会会場4か所は通路からすべて調べられ
     const route=findWalkingPath(spawn,{x:venue.x+venue.w/2,y:venue.y+venue.h/2},obstacles,townWalkBounds);assert.ok(route.length>0);
     let before=spawn;for(const p of route){assert.ok(canTravel(before,p,obstacles,townWalkBounds));before=p;}
     assert.ok(Math.hypot(before.x-Math.max(venue.x,Math.min(before.x,venue.x+venue.w)),before.y-Math.max(venue.y,Math.min(before.y,venue.y+venue.h)))<62);
-    if(!venue.shopId&&venue.id!=='stadium-9'&&venue.id!=='stadium-5')assert.match(venueMessage(venue),/準備中/);
+    if(!venue.shopId&&venue.id!=='stadium-9'&&venue.id!=='stadium-5'&&venue.id!=='stadium-10')assert.match(venueMessage(venue),/準備中/);
     if(venue.id==='stadium-9')assert.match(venueMessage(venue),/第3公式大会/);
   }
 });

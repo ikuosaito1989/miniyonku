@@ -1,9 +1,10 @@
+import {drawShopTrack} from './ShopTrackArt';
 import Phaser from 'phaser';
 import {officialVenueFor,officialFixturesFor} from '../data/officialVenue';
 import {getCircuitTrack} from '../data/circuit';
 /** 入場した瞬間に公式大会と分かる、大理石・金縁・観客席のアリーナ。 */
 export function drawOfficialVenue(scene:Phaser.Scene,id='stadium-5'){
- const venue=officialVenueFor(id),fixtures=officialFixturesFor(id),technical=id==='stadium-9';
+ const venue=officialVenueFor(id),fixtures=officialFixturesFor(id),technical=id==='stadium-9',final=id==='stadium-10';
  let g=scene.add.graphics().setDepth(-20);
  const r=(x:number,y:number,w:number,h:number,c:number,a=1)=>g.fillStyle(c,a).fillRect(x,y,w,h);
  const text=(x:number,y:number,s:string,size=13,color='#f8edcb',depth=1)=>scene.add.text(x,y,s,{fontFamily:'"Noto Sans JP",sans-serif',fontSize:`${size}px`,fontStyle:'bold',color,resolution:3}).setDepth(depth);
@@ -15,7 +16,7 @@ export function drawOfficialVenue(scene:Phaser.Scene,id='stadium-5'){
  // 正面の巨大看板。中央にトロフィー、両側に大会旗。
  r(40,35,880,80,0x334459);r(40,109,880,6,0xcfb779);r(40,110,880,1,0xffe5a0);
  r(132,40,696,65,0x17283e);r(136,43,688,59,0xd4bd85);r(139,46,682,53,technical?0x3d4d70:0x305a60);r(143,49,674,2,0x839e9e);
- text(480,48,venue.name,24,'#ffedb6').setOrigin(.5,0);text(480,83,technical?'第3公式大会 / 星空テクニカル杯':'第1公式大会 / 若葉公式ダート杯',10,'#c6d8ce').setOrigin(.5,0);
+ text(480,48,venue.name,24,'#ffedb6').setOrigin(.5,0);text(480,83,final?'第4公式大会 / 緑川グランプリ決勝':technical?'第3公式大会 / 星空テクニカル杯':'第1公式大会 / 若葉公式ダート杯',10,'#c6d8ce').setOrigin(.5,0);
  for(const x of [64,858]){
   r(x,40,39,68,0x1d2d46);r(x+3,43,33,59,0xb5505d);r(x+6,44,27,3,0xe1c786);r(x+16,52,7,22,0xe3c87d);r(x+10,50,19,10,0xf6dfa1);r(x+11,81,17,3,0xd1b378);r(x+18,69,3,12,0xd1b378);
   for(let i=0;i<3;i++)r(x+4+i*10,103,9,4-i%2*2,0xd5b981);
@@ -31,13 +32,16 @@ export function drawOfficialVenue(scene:Phaser.Scene,id='stadium-5'){
   const {x,y,w,h}=f;g=scene.add.graphics().setDepth(y+h);
   r(x+7,y+9,w,h,0x3d4b61,.3);r(x,y,w,h,0x293e56);r(x+2,y+2,w-4,h-4,0xa4b0b3);r(x+4,y+4,w-8,h-8,0x426477);r(x+5,y+5,w-10,2,0xe6d6a8);
   text(x+w/2,y+10,f.label,f.id.startsWith('stand')?11:12,'#fff0ba',y+h+2).setOrigin(.5,0);
-  if(f.id==='speed'||f.id==='dirt'||f.id==='technical'){
+  if(f.id==='speed'||f.id==='dirt'||f.id==='technical'||f.id==='final'){
    // 銀のレールと木縁を備えた公式コース台。
    r(x+8,y+32,w-16,h-63,0xc1a479);r(x+11,y+35,w-22,h-69,0x283d51);r(x+14,y+38,w-28,h-75,f.id!=='dirt'?0x557b6b:0x9a855d);
+   if(f.id==='final')drawShopTrack(scene,{x:x+14,y:y+38,w:w-28,h:h-75,kind:'track',label:f.label,text:''},getCircuitTrack('grandprix'),y+h+1);
+   else {
    const track=getCircuitTrack(f.id==='technical'?'comet':f.id!=='dirt'?'sprint':'sun'),sx=(w-44)/(2*(track.circuit.radiusX+2)),sy=(h-90)/(2*(track.circuit.radiusZ+2));
    for(let lane=0;lane<6;lane++){
     const scale=1-lane*.05;g.lineStyle(1.5,0xd8dfcf);g.beginPath();
     for(let i=0;i<=240;i++){const p=track.sampleCircuit(i/240*track.circuitLength),px=x+w/2+p.x*sx*scale,py=y+h/2+p.z*sy*scale;if(i===0)g.moveTo(px,py);else g.lineTo(px,py);}g.strokePath();
+   }
    }
    for(let i=0;i<6;i++)for(let j=0;j<2;j++)r(x+w/2+i*4,y+41+j*4,4,4,(i+j)%2?0xe4e2ca:0x2d3c52);
    r(x+24,y+h-22,w-48,17,0x253c56);text(x+w/2,y+h-21,'▼ コース前で出場登録',10,'#ffdfa0',y+h+2).setOrigin(.5,0);
@@ -61,5 +65,5 @@ export function drawOfficialVenue(scene:Phaser.Scene,id='stadium-5'){
   r(x,y,17,24,0x7e6c5e);r(x-2,y-2,21,5,0xc7a879);for(let i=0;i<5;i++){r(x-4+i*5,y-15-i%2*4,6,15,0x3e6e5b);r(x-2+i*5,y-17-i%2*4,4,5,0x86a777);}
  }
  r(437,564,86,29,0x263e54);r(440,566,80,1,0xc6b881);text(480,572,'▼ 緑川町へ',11,'#fff0bc',600).setOrigin(.5,0);
- text(480,459,technical?'旋回と立ち上がりが勝敗を決める':'総合3位以内で次のステージへ',10,'#e7dfbf',1).setOrigin(.5,0);
+ text(480,459,final?'2位以内の完走でゲームクリア / 3位以下はゲームオーバー':technical?'旋回と立ち上がりが勝敗を決める':'総合3位以内で次のステージへ',10,'#e7dfbf',1).setOrigin(.5,0);
 }

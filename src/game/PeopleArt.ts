@@ -217,3 +217,13 @@ export function offroaderDrawing(direction:Facing,frame=0):PixelShape[]{
   const colors:Record<string,string>={'#317d91':'#58784b','#9bd3cc':'#c0d398','#24536f':'#3a5136','#333e54':'#5c4635','#728091':'#a08156'};
   return personDrawing('mechanic',direction,frame).map(shape=>({...shape,color:colors[shape.color]??shape.color}));
 }
+
+/** 共通の小学生原画を黒赤の服・鋭い眉・片側の笑みにした黒岩の先輩。 */
+export function seniorDrawing(direction:Facing,frame=0):PixelShape[]{
+ const colors:Record<string,string>={'#b14b67':'#322b3c','#ec9aa2':'#ae5266','#7f3757':'#1e2130','#39304b':'#222433','#89637c':'#626174','#4c4e70':'#343442'};
+ const drawing=personDrawing('rival',direction,frame).map(shape=>({...shape,color:colors[shape.color]??shape.color}));
+ const p=pixelPen(),bob=frame===1||frame===3?1:0;
+ if(direction==='down'){p.polygon([[21,18+bob],[28,21+bob],[28,23+bob],[21,21+bob]],'#222433');p.polygon([[32,21+bob],[39,18+bob],[39,21+bob],[32,23+bob]],'#222433');p.rect(31,31+bob,6,1,'#713d50');p.rect(25,41+bob,4,19,'#a44858');}
+ else if(direction!=='up'){const x=direction==='left'?19:36;p.rect(x,20+bob,7,2,'#222433');p.rect(x+1,31+bob,5,1,'#713d50');}
+ return [...drawing,...p.shapes];
+}

@@ -1,3 +1,4 @@
+import {seniorDrawing} from './PeopleArt';
 import {drawShopTrack} from './ShopTrackArt';
 import { officialVenue, officialFixturesFor, officialVenueFor, officialVenuePeople, officialPeopleFor } from '../data/officialVenue';
 import { drawOfficialVenue } from './OfficialVenueArt';
@@ -33,7 +34,7 @@ import { drawTown } from './TownArt';
 import { drawShopDetails } from './WorldDetailArt';
 import { getCircuitTrack } from '../data/circuit';
 
-interface ShopTarget {x:number;y:number;w:number;h:number;label:string;speaker:string;shopAfter:boolean;text:string;kind?:Fixture['kind']|'exit'|'venue'|'challenger'|'legend-challenger'|'official-speed'|'official-dirt'|'official-reception'|'official-technical';venueId?:string}
+interface ShopTarget {x:number;y:number;w:number;h:number;label:string;speaker:string;shopAfter:boolean;text:string;kind?:Fixture['kind']|'exit'|'venue'|'challenger'|'legend-challenger'|'official-speed'|'official-dirt'|'official-reception'|'official-technical'|'official-final';venueId?:string}
 export class ShopScene extends Phaser.Scene {
   private gesture=createShopGesture();
   private screenPoint(pointer:Phaser.Input.Pointer){return {x:pointer.x*this.scale.displaySize.width/this.scale.width,y:pointer.y*this.scale.displaySize.height/this.scale.height};}
@@ -78,7 +79,7 @@ export class ShopScene extends Phaser.Scene {
     this.scale.on(Phaser.Scale.Events.RESIZE,this.fitCamera,this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN,()=>this.scale.off(Phaser.Scale.Events.RESIZE,this.fitCamera,this));
     this.solids=[];
-    this.isTown=useGame.getState().location==='town';this.isOfficial=['stadium-5','stadium-9'].includes(useGame.getState().location);
+    this.isTown=useGame.getState().location==='town';this.isOfficial=['stadium-5','stadium-9','stadium-10'].includes(useGame.getState().location);
     createPeopleTextures(this);
     if(this.isTown){
       drawTown(this,useGame.getState());
@@ -86,12 +87,13 @@ export class ShopScene extends Phaser.Scene {
     }else if(this.isOfficial){
       drawOfficialVenue(this,useGame.getState().location);
       this.solids=officialFixturesFor(useGame.getState().location).map(f=>new Phaser.Geom.Rectangle(f.x,f.y,f.w,f.h));
-      for(const npc of officialVenuePeople){
+      for(const npc of officialPeopleFor(useGame.getState().location)){
         const person=this.person(npc.x,npc.y,npc.kind);
-        if(npc.id==='go'||npc.id==='riku'){
+        if(npc.id==='rei'||npc.id==='gaku'){(person.list[1] as Phaser.GameObjects.Image).setTexture(this.arrivalTexture(npc.id,'down',0));}
+        if(npc.id==='go'||npc.id==='riku'||npc.id==='jin'){
           const key=`venue-${npc.id}-down`;
           if(!this.textures.exists(key)){
-            createPersonTexture(this,key,npc.id==='go'?challengerDrawing('down'):offroaderDrawing('down'));
+            createPersonTexture(this,key,npc.id==='jin'?seniorDrawing('down'):npc.id==='go'?challengerDrawing('down'):offroaderDrawing('down'));
           }
           (person.list[1] as Phaser.GameObjects.Image).setTexture(key);
         }
@@ -403,7 +405,7 @@ export class ShopScene extends Phaser.Scene {
     if(this.isTown)return townVenues.map(v=>({x:v.x,y:v.y,w:v.w,h:v.h,label:v.name,speaker:v.name,shopAfter:false,text:venueMessage(v),kind:'venue',venueId:v.id}));
     if(this.isOfficial)return [
       ...officialFixturesFor(useGame.getState().location).filter(f=>f.kind!=='decoration').map(f=>({...f,speaker:f.label,shopAfter:false,text:f.kind==='bench'?'ここでマシンを組み直そう。':'コースに出場する。',kind:f.kind as ShopTarget['kind']})),
-      ...officialPeopleFor(useGame.getState().location).map(p=>({x:p.x-16,y:p.y-42,w:32,h:54,label:p.name,speaker:p.name,shopAfter:false,text:p.text})),
+      ...officialPeopleFor(useGame.getState().location).map(p=>({x:p.x-16,y:p.y-42,w:32,h:54,label:p.name,speaker:p.name,shopAfter:false,text:useGame.getState().grandprixCleared&&p.id==='rei'?'おめでとう、湊くん！ 決勝で2位以内に入った君の走り、しっかり見届けたよ。セイランと一緒に、ここまで来たんだね。':useGame.getState().grandprixCleared&&p.id==='gaku'?'よくやった！ 最後まで走り切ったな。今日は君が主役だ。これからも自分だけのセッティングで、速さを追いかけようぜ！':p.text})),
       {...officialVenue.exit,label:'緑川町への出口',speaker:officialVenue.name,shopAfter:false,text:'町へ戻る。',kind:'exit' as const},
     ];
     const cast=this.cast;
@@ -437,7 +439,7 @@ export class ShopScene extends Phaser.Scene {
   }
   private interactWith(target:ShopTarget){
       this.gesture.reset();
-      if(target.kind==='official-speed'||target.kind==='official-dirt'||target.kind==='official-technical')useGame.getState().openOfficialRace(target.kind==='official-technical'?'technical':target.kind==='official-speed'?'speed':'dirt');
+      if(target.kind==='official-speed'||target.kind==='official-dirt'||target.kind==='official-technical'||target.kind==='official-final')useGame.getState().openOfficialRace(target.kind==='official-final'?'final':target.kind==='official-technical'?'technical':target.kind==='official-speed'?'speed':'dirt');
       else if(target.kind==='official-reception'||this.isOfficial&&target.speaker==='大会受付係')useGame.getState().openOfficialRace();
       else if(target.speaker==='森野 陸'){if(this.isOfficial)useGame.getState().talk(target.speaker,target.text);else useGame.getState().openOfficialRace();}
       else if(useGame.getState().location==='atelier'&&target.kind==='track')useGame.getState().talk('星霧模型工房','ここは販売専門店です。モーターとシャーシは店主から購入できます。レースはほかの模型店で楽しんでね。');
@@ -450,7 +452,7 @@ export class ShopScene extends Phaser.Scene {
       else if(target.kind==='challenger')useGame.getState().openVillainChallenge();
       else if(target.kind==='venue'){
         const venue=townVenues.find(v=>v.id===target.venueId)!;
-        if(venue.id==='stadium-5'||venue.id==='stadium-9'){if(venue.id==='stadium-9'?useGame.getState().thirdOfficialQualified:useGame.getState().officialQualified)useGame.getState().enterOfficialVenue(venue.id);else useGame.getState().talk(venue.name,venueMessage(venue));}
+        if(venue.id==='stadium-5'||venue.id==='stadium-9'||venue.id==='stadium-10'){if(venue.id==='stadium-10'?useGame.getState().finalQualified:venue.id==='stadium-9'?useGame.getState().thirdOfficialQualified:useGame.getState().officialQualified)useGame.getState().enterOfficialVenue(venue.id);else useGame.getState().talk(venue.name,venueMessage(venue));}
         else if(venue.shopId&&isVenueOpen(venue,useGame.getState()))useGame.getState().enterShop(venue.shopId);
         else useGame.getState().talk(venue.name,venueMessage(venue));
       }

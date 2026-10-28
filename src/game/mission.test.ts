@@ -21,7 +21,8 @@ test('初優勝・兄弟・博士・各模型店・黒岩・公式二戦を進�
  s={...s,wakabaCup:legacyCup(true,true),wakabaUnlocked:true};expect('wakaba');
  s={...s,thirdOfficialQualified:true};expect('technical');
  s={...s,yuunagiUnlocked:true};expect('yuunagi');
- s={...s,finalQualified:true,yuunagiBestTime:39};expect('complete');assert.equal(currentMission(s).destination,null);assert.match(currentMission(s).hint,/準備中/);
+ s={...s,finalQualified:true,yuunagiBestTime:39};expect('grandprix');assert.equal(currentMission(s).destination,'stadium-10');assert.match(currentMission(s).hint,/2位以内/);
+ s={...s,grandprixCleared:true};expect('complete');assert.equal(currentMission(s).destination,null);
  s={...s,gameOver:true};expect('game-over');assert.equal(currentMission(s).destination,null);
 });
 test('総合優勝で得た第3公式大会の権利を優先し、再読み込みしても同じミッションを表示する',()=>{

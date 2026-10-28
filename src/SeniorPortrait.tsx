@@ -1,0 +1,2 @@
+import {seniorDrawing} from './game/PeopleArt';
+export function SeniorPortrait(){return <svg viewBox="0 0 60 44" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" shapeRendering="crispEdges" aria-hidden="true"><rect width="60" height="44" fill="#3b2e3b"/>{seniorDrawing('down').map((s,i)=>s.kind==='rect'?<rect key={i} x={s.x} y={s.y} width={s.w} height={s.h} fill={s.color} opacity={s.alpha}/>:<polygon key={i} points={s.points.map(p=>p.join(',')).join(' ')} fill={s.color} opacity={s.alpha}/>)}</svg>;}

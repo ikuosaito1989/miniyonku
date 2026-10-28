@@ -22,8 +22,8 @@ import { challenger, challengerInvitation } from '../data/challenger';
 export type DialogueStage='none'|'legend-intro'|'legend-invite'|'legend-debrief'|'villain-intro'|'villain-win'|'villain-loss'|'doctor-gift'|'official-invite';
 export interface GameState extends Wallet {
   yuunagiUnlocked:boolean;yuunagiBestTime:number|null;finalQualified:boolean;
-  wakabaCup:CupProgress;technicalCup:CupProgress;gameOver:boolean;wakabaUnlocked:boolean;thirdOfficialQualified:boolean;
-  enterOfficialVenue:(id?:'stadium-5'|'stadium-9')=>void;townReturnVenue:'stadium-5'|'stadium-9'|null;
+  wakabaCup:CupProgress;technicalCup:CupProgress;finalCup:CupProgress;grandprixCleared:boolean;gameOver:boolean;wakabaUnlocked:boolean;thirdOfficialQualified:boolean;
+  enterOfficialVenue:(id?:'stadium-5'|'stadium-9'|'stadium-10')=>void;townReturnVenue:'stadium-5'|'stadium-9'|'stadium-10'|null;
   officialQualified:boolean;officialWon:boolean;officialSpeedWon:boolean;officialDirtWon:boolean;officialRound:OfficialRound;officialChallengeActive:boolean;officialQualificationNotice:boolean;
   openOfficialRace:(round?:OfficialRound)=>void;startOfficialRace:()=>void;
   doctorGiftReceived:boolean;openLegendChallenge:()=>void;
@@ -55,31 +55,32 @@ export interface GameState extends Wallet {
   startTrial: () => void;
   talk: (speaker: string, text: string, shopAfter?: boolean) => void; advance: () => void; close: () => void; buy: (id: string) => void;
 }
-function activeCup(s:GameState){return s.location==='stadium-9'?s.technicalCup:s.wakabaCup;}
-function activeRound(s:GameState):OfficialRound{return s.location==='stadium-9'?'technical':s.wakabaCup.results.length?'dirt':'speed';}
+function cupKind(s:GameState){return s.location==='stadium-10'?'final' as const:s.location==='stadium-9'?'technical' as const:'wakaba' as const;}
+function activeCup(s:GameState){return s.location==='stadium-10'?s.finalCup:s.location==='stadium-9'?s.technicalCup:s.wakabaCup;}
+function activeRound(s:GameState):OfficialRound{return s.location==='stadium-10'?'final':s.location==='stadium-9'?'technical':s.wakabaCup.results.length?'dirt':'speed';}
 function updateCup(s:GameState,cup:CupProgress){
- const updated=cupProgression(s.location==='stadium-9'?s.wakabaCup:cup,s.location==='stadium-9'?cup:s.technicalCup,s.thirdOfficialQualified);
+ const updated=cupProgression(s.location==='stadium-5'?cup:s.wakabaCup,s.location==='stadium-9'?cup:s.technicalCup,s.thirdOfficialQualified,s.location==='stadium-10'?cup:s.finalCup);
  return {...updated,gameOver:s.gameOver||updated.gameOver};
 }
 export const useGame = create<GameState>((set) => ({
   yuunagiUnlocked:false,yuunagiBestTime:null,finalQualified:false,
-  wakabaCup:emptyCup(),technicalCup:emptyCup(),gameOver:false,wakabaUnlocked:false,thirdOfficialQualified:false,
-  townReturnVenue:null,enterOfficialVenue:(id='stadium-5')=>set(s=>s.gameOver||s.location!=='town'||!(id==='stadium-5'?s.officialQualified:s.thirdOfficialQualified)||s.overlay==='race'||s.overlay==='arrival'?s:{location:id,overlay:null,nearby:'',notice:'',shopAfter:false,townReturnVenue:null}),
+  wakabaCup:emptyCup(),technicalCup:emptyCup(),finalCup:emptyCup(),grandprixCleared:false,gameOver:false,wakabaUnlocked:false,thirdOfficialQualified:false,
+  townReturnVenue:null,enterOfficialVenue:(id='stadium-5')=>set(s=>s.gameOver||s.location!=='town'||!(id==='stadium-10'?s.finalQualified:id==='stadium-5'?s.officialQualified:s.thirdOfficialQualified)||s.overlay==='race'||s.overlay==='arrival'?s:{location:id,overlay:null,nearby:'',notice:'',shopAfter:false,townReturnVenue:null}),
   officialQualified:false,officialWon:false,officialSpeedWon:false,officialDirtWon:false,officialRound:'speed',officialChallengeActive:false,officialQualificationNotice:false,
   openOfficialRace:round=>set(s=>{
     if(s.gameOver||s.overlay==='race'||s.overlay==='arrival')return s;
-    if(s.location!=='stadium-5'&&s.location!=='stadium-9')return {overlay:'dialogue',speaker:'森野 陸',dialogue:'公式戦は各公式会場のコースで開催するよ。若葉杯の総合入賞でわかば模型店、優勝で第3公式大会への出場権が得られる。一度限りの勝負に向けて準備しよう。',dialogueStage:'none',shopAfter:false};
-    const cup=activeCup(s),kind=s.location==='stadium-9'?'technical':'wakaba',next=activeRound(s);
+    if(s.location!=='stadium-5'&&s.location!=='stadium-9'&&s.location!=='stadium-10')return {overlay:'dialogue',speaker:'森野 陸',dialogue:'公式戦は各公式会場のコースで開催するよ。若葉杯の総合入賞でわかば模型店、優勝で第3公式大会への出場権が得られる。一度限りの勝負に向けて準備しよう。',dialogueStage:'none',shopAfter:false};
+    const cup=activeCup(s),kind=cupKind(s),next=activeRound(s);
     if(cupComplete(cup,kind))return {overlay:'dialogue',speaker:'大会受付係',dialogue:`この大会は出場済みです。総合${cupPlayerPlace(cup)}位。公式大会は一度限りで、再出場はできません。`,dialogueStage:'none',shopAfter:false};
     if(round&&round!==next)return {overlay:'dialogue',speaker:'大会受付係',dialogue:next==='speed'?'まずは第1戦の高速コースから出場してください。':'第1戦は終了しました。ピットで装備を組み直し、第2戦のダートへ進んでください。',dialogueStage:'none',shopAfter:false};
-    return {overlay:'dialogue',speaker:'大会受付係',dialogue:(kind==='technical'?'全4大会の第3公式大会・星空テクニカル杯。連続コーナーを約2分走る一発勝負です。':officialRace.briefing)+`\n\n大会への出場は一度だけです。途中退出・再読み込みはそのレースの棄権になります。総合3位以内で次へ進み、4位以下はゲームオーバー。${kind==='wakaba'?'2レースの得点合計（同点は完走数・合計タイム）で総合順位を決めます。現在'+cup.results.length+'/2戦終了。次は'+(next==='speed'?'第1戦・高速舗装':'第2戦・ダート')+'です。':''}`,dialogueStage:'official-invite',shopAfter:false};
+    return {overlay:'dialogue',speaker:'大会受付係',dialogue:(kind==='final'?'第4公式大会・緑川グランプリ。高架スパイラル、ジャンプ、連続S字の一本道決勝です。黒岩 豪、先輩の黒瀬 迅、石川 蒼、高橋 蓮と勝負します。風見 怜と火野 岳も応援に来ています。':kind==='technical'?'全4大会の第3公式大会・星空テクニカル杯。連続コーナーを約2分走る一発勝負です。':officialRace.briefing)+`\n\n大会への出場は一度だけです。途中退出・再読み込みはそのレースの棄権になります。${kind==='final'?'2位以内の完走でゲームクリア、3位以下・リタイアはゲームオーバー。':'総合3位以内で次へ進み、4位以下はゲームオーバー。'}${kind==='wakaba'?'2レースの得点合計（同点は完走数・合計タイム）で総合順位を決めます。現在'+cup.results.length+'/2戦終了。次は'+(next==='speed'?'第1戦・高速舗装':'第2戦・ダート')+'です。':''}`,dialogueStage:'official-invite',shopAfter:false};
   }),
   startOfficialRace:()=>set(s=>{
-    if(s.gameOver||s.overlay==='race'||s.overlay==='arrival'||s.location!=='stadium-5'&&s.location!=='stadium-9')return s;
-    if(!(s.location==='stadium-9'?s.thirdOfficialQualified:s.officialQualified))return s;
-    const round=activeRound(s),id=round==='technical'?'comet':round==='speed'?'sprint':'sun',old=activeCup(s),cup=enterCupHeat(old,id,s.location==='stadium-9'?'technical':'wakaba');
+    if(s.gameOver||s.overlay==='race'||s.overlay==='arrival'||s.location!=='stadium-5'&&s.location!=='stadium-9'&&s.location!=='stadium-10')return s;
+    if(!(s.location==='stadium-10'?s.finalQualified:s.location==='stadium-9'?s.thirdOfficialQualified:s.officialQualified))return s;
+    const round=activeRound(s),id=round==='final'?'grandprix':round==='technical'?'comet':round==='speed'?'sprint':'sun',old=activeCup(s),cup=enterCupHeat(old,id,cupKind(s));
     if(cup===old)return s;
-    return {...(s.location==='stadium-9'?{technicalCup:cup}:{wakabaCup:cup}),overlay:'race',officialChallengeActive:true,officialRound:round,legendChallengeActive:false,villainChallengeActive:false,legendDebriefPending:false,villainDebriefPending:false,shopAfter:false,dialogueStage:'none',notice:'',raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,officialQualificationNotice:false,qualificationNotice:false,thirdShopNotice:false};
+    return {...(s.location==='stadium-10'?{finalCup:cup}:s.location==='stadium-9'?{technicalCup:cup}:{wakabaCup:cup}),overlay:'race',officialChallengeActive:true,officialRound:round,legendChallengeActive:false,villainChallengeActive:false,legendDebriefPending:false,villainDebriefPending:false,shopAfter:false,dialogueStage:'none',notice:'',raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,officialQualificationNotice:false,qualificationNotice:false,thirdShopNotice:false};
   }),
   arrivalEvent:null,doctorGiftReceived:false,
   beginArrival:kind=>set(s=>s.overlay||kind==='legend'&&(s.location!=='komorebi'||!s.unlockedRaces.includes(nextShopRace.id)||s.legendRaceCompleted)||kind==='villain'&&(s.location!=='aozora'||!s.aozoraWon||s.villainDefeated)||kind==='doctor'&&(s.location!=='komorebi'||!s.legendRaceCompleted||s.doctorGiftReceived)?s:{overlay:'arrival',arrivalEvent:kind,dialogueStage:'none',shopAfter:false}),
@@ -100,7 +101,7 @@ export const useGame = create<GameState>((set) => ({
     if(s.location==='town'||s.overlay==='race'||s.overlay==='arrival')return s;
     if(s.location==='komorebi'&&s.unlockedRaces.includes(nextShopRace.id)&&!s.legendRaceCompleted)return {overlay:'arrival',arrivalEvent:'legend',dialogueStage:'none',shopAfter:false,legendEventPending:true};
     if(s.location==='komorebi'&&s.legendRaceCompleted&&!s.doctorGiftReceived)return {overlay:'arrival',arrivalEvent:'doctor',dialogueStage:'none',shopAfter:false};
-    return {location:'town',townReturnVenue:s.location==='stadium-5'||s.location==='stadium-9'?s.location:null,lastShop:s.location==='stadium-5'||s.location==='stadium-9'?s.lastShop:s.location,overlay:null,nearby:'',notice:'',shopAfter:false};
+    return {location:'town',townReturnVenue:s.location==='stadium-5'||s.location==='stadium-9'||s.location==='stadium-10'?s.location:null,lastShop:s.location==='stadium-5'||s.location==='stadium-9'||s.location==='stadium-10'?s.lastShop:s.location,overlay:null,nearby:'',notice:'',shopAfter:false};
   }),
   enterShop:id=>set(s=>s.gameOver||s.location!=='town'||!canEnterShop(id,s)?s:{location:id,lastShop:id,townReturnVenue:null,overlay:null,nearby:'',notice:'',shopAfter:false}),
   hintBookIndex:0,unlockedRaces:[],qualificationNotice:false,legendEventSeen:false,legendEventPending:false,legendDebriefPending:false,legendChallengeActive:false,dialogueStage:'none',cheatUsed:false,cheatReturnToSettings:false,
@@ -131,7 +132,7 @@ export const useGame = create<GameState>((set) => ({
     const practice=breakInPractice(motor?.seconds??0,duration);
     return {units,proficiencyPoints:s.proficiencyPoints+practice,notice:`${duration.toFixed(0)}秒の慣らし運転を行いました。${rechargeable?'充電電池の残量は減りません。':'電池も消耗します。'}${practice>0?' 整備の熟練度が上がりました。':''}`};
   }),
-  startTrial: () => set(s=>s.gameOver||s.location==='atelier'||s.location==='town'||s.location==='stadium-5'||s.location==='stadium-9'?s:({overlay:'race',officialChallengeActive:false,officialQualificationNotice:false,shopAfter:false,notice:'',legendChallengeActive:false,legendDebriefPending:false,villainChallengeActive:false,villainDebriefPending:false,thirdShopNotice:false,raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,qualificationNotice:false})),
+  startTrial: () => set(s=>s.gameOver||s.location==='atelier'||s.location==='town'||s.location==='stadium-5'||s.location==='stadium-9'||s.location==='stadium-10'?s:({overlay:'race',officialChallengeActive:false,officialQualificationNotice:false,shopAfter:false,notice:'',legendChallengeActive:false,legendDebriefPending:false,villainChallengeActive:false,villainDebriefPending:false,thirdShopNotice:false,raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,qualificationNotice:false})),
   settleRace: (attempt,race) => set(s=>{
     if(attempt!==s.raceAttempt)return s;
     const player=race.racers.find(r=>r.id==='player');
@@ -179,9 +180,9 @@ export const useGame = create<GameState>((set) => ({
     if(s.overlay==='dialogue'&&s.dialogueStage==='legend-debrief'&&s.legendRaceCompleted&&!s.doctorGiftReceived)return {overlay:'arrival',arrivalEvent:'doctor',dialogueStage:'none',shopAfter:false};
     if(s.overlay==='cheat')return {overlay:s.cheatReturnToSettings?'settings':null,cheatReturnToSettings:false,shopAfter:false,notice:''};
     if(s.overlay==='race'&&s.officialChallengeActive){
-      const updated=updateCup(s,forfeitCupHeat(activeCup(s))),cup=s.location==='stadium-9'?updated.technicalCup:updated.wakabaCup,done=cupComplete(cup,s.location==='stadium-9'?'technical':'wakaba');
+      const updated=updateCup(s,forfeitCupHeat(activeCup(s))),cup=s.location==='stadium-10'?updated.finalCup:s.location==='stadium-9'?updated.technicalCup:updated.wakabaCup,done=cupComplete(cup,cupKind(s));
       if(updated.gameOver)return {...updated,overlay:'game-over',officialChallengeActive:false,dialogueStage:'none',shopAfter:false};
-      return {...updated,overlay:'dialogue',speaker:'大会受付係',dialogue:done?s.location==='stadium-9'?`星空テクニカル杯・総合${cupPlayerPlace(cup)}位、おめでとうございます。長距離の連続コーナーを走り切りました。街のゆうなぎ模型店が開放されました！ 次は一本道コースを40秒以内で完走して、第4公式大会の出場権を目指してください。この大会は再出場できません。`:`総合${cupPlayerPlace(cup)}位、おめでとうございます。${updated.officialWon?'第3公式大会・星空テクニカル杯の出場権を獲得！':''}${updated.wakabaUnlocked?'街のわかば模型店が開放されました。':''}この大会は再出場できません。`:'第1戦の結果を記録しました。ピットで装備を組み直し、第2戦へ進んでください。第1戦はやり直せません。',officialChallengeActive:false,dialogueStage:done?'none':'official-invite',shopAfter:false};
+      return {...updated,overlay:'dialogue',speaker:'大会受付係',dialogue:done?s.location==='stadium-10'?`緑川グランプリ・${cupPlayerPlace(cup)}位！ おめでとう、決勝を走り切ってゲームクリアです！ 風見 怜と火野 岳も君の走りを讃えています。`:s.location==='stadium-9'?`星空テクニカル杯・総合${cupPlayerPlace(cup)}位、おめでとうございます。長距離の連続コーナーを走り切りました。街のゆうなぎ模型店が開放されました！ 次は一本道コースを40秒以内で完走して、第4公式大会の出場権を目指してください。この大会は再出場できません。`:`総合${cupPlayerPlace(cup)}位、おめでとうございます。${updated.officialWon?'第3公式大会・星空テクニカル杯の出場権を獲得！':''}${updated.wakabaUnlocked?'街のわかば模型店が開放されました。':''}この大会は再出場できません。`:'第1戦の結果を記録しました。ピットで装備を組み直し、第2戦へ進んでください。第1戦はやり直せません。',officialChallengeActive:false,dialogueStage:done?'none':'official-invite',shopAfter:false};
     }
     if(s.overlay==='race'&&s.officialQualificationNotice)return {overlay:'dialogue',speaker:'日向 誠二',dialogue:officialRace.invitation,dialogueStage:'none',officialQualificationNotice:false,shopAfter:false};
     if(s.overlay==='race'&&s.villainChallengeActive&&s.villainDebriefPending)return {overlay:'dialogue',speaker:challenger.name,dialogue:s.villainDefeated?'な、なんだと……俺が負けた？ ちっ、約束は守る。ひなた模型店への紹介状だ。町の、あおぞら模型店の右隣へ行け。次は負けないからな！':'ふん、まだその程度か。ギアと電池、それにモーターの慣らしを見直してこい。ここで待っている。勝てるまで何度でも相手をしてやる！',dialogueStage:s.villainDefeated?'villain-win':'villain-loss',villainChallengeActive:false,villainDebriefPending:false,shopAfter:false};
@@ -192,7 +193,7 @@ export const useGame = create<GameState>((set) => ({
   }),
   buy: id => set(s => {
     if(s.overlay==='race'||s.overlay==='arrival')return s;
-    if(s.location==='town'||s.location==='stadium-5'||s.location==='stadium-9')return {notice:'パーツは模型店の店主から購入できます。'};
+    if(s.location==='town'||s.location==='stadium-5'||s.location==='stadium-9'||s.location==='stadium-10')return {notice:'パーツは模型店の店主から購入できます。'};
     const result=purchase(s,id,currentShop(s.location));
     if(!result.success)return {notice:result.message};
     const consumable=id.startsWith('motor-')||id.startsWith('battery-');

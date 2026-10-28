@@ -13,6 +13,7 @@ export function stepRaceIntro(intro:RaceIntro,seconds:number,visible=true){
 export function courseIntroduction(id:CircuitId,official=false){
  const {circuit,circuitLength}=getCircuitTrack(id);
  const details={
+  grandprix:{feature:'全4大会の決勝。夕凪を発展させた高架スパイラル・ジャンプ・連続S字を5台で駆け抜ける一本道。',advice:'黒瀬 迅、黒岩 豪、石川 蒼、高橋 蓮と勝負。2位以内の完走でゲームクリア、3位以下はゲームオーバー。一度限りの決勝だ。'},
   trail:{feature:'スタートと別のゴールへ進む一本道。1周半の高架スパイラル、ジャンプ台、終盤のロングストレートを越え、規定40秒以内の完走で第4公式大会出場権を獲得。',advice:'一台ずつ走るタイムアタック。4:1ギアとK4に、新作サージ・スライド・ローラーを組み合わせ、直線の伸びと旋回・着地を両立させよう。失敗しても再挑戦できる。'},
   grove:{feature:'1周半の高架スパイラル、坂、ジャンプ台を巡る約500mの立体コース。',advice:'ライバルも上位装備。K4・高グリップタイヤ・新作ホイールを軸に、4:1ギアと着地の制振を整えよう。'},
   comet:{feature:'全4大会の第3大会。約2分にわたり連続コーナーを走り抜く。',advice:'最高速だけでは勝てない。過去のパーツで旋回の安定と立ち上がりを整えよう。'},
@@ -21,5 +22,5 @@ export function courseIntroduction(id:CircuitId,official=false){
   sun:{feature:'砂利・荒れたダート・砂地を巡るロングコース。',advice:'高トルクモーター、悪路用タイヤ、ダンパーで接地を保とう。'},
   sprint:{feature:'長い直線をつないだ長距離の高速舗装コース。',advice:'高速ギアと舗装用タイヤ、長持ちする電池で速度を伸ばそう。'},
  }[id];
- return {...details,winnerPrize:(official&&id!=='comet'?OFFICIAL_PRIZES:prizesForCircuit(id))[0],name:circuit.name,surface:circuit.surface.name,lapLength:Math.round(circuitLength),distance:Math.round(circuitLength*circuit.laps),laps:circuit.laps,lanes:circuit.lanes};
+ return {...details,winnerPrize:(official&&id!=='comet'&&id!=='grandprix'?OFFICIAL_PRIZES:prizesForCircuit(id))[0],name:circuit.name,surface:circuit.surface.name,lapLength:Math.round(circuitLength),distance:Math.round(circuitLength*circuit.laps),laps:circuit.laps,lanes:circuit.lanes};
 }

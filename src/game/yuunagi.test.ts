@@ -29,7 +29,7 @@ test('規定タイムは40秒以内の完走。反応・フライング加算、
    useGame.getState().startTrial();useGame.getState().settleRace(useGame.getState().raceAttempt,race);assert.equal(useGame.getState().finalQualified,false);useGame.getState().close();
   }
   useGame.getState().startTrial();const attempt=useGame.getState().raceAttempt;useGame.getState().settleRace(attempt,result(40));
-  assert.equal(useGame.getState().finalQualified,true);assert.equal(useGame.getState().yuunagiBestTime,40);assert.equal(currentMission(useGame.getState()).id,'complete');
+  assert.equal(useGame.getState().finalQualified,true);assert.equal(useGame.getState().yuunagiBestTime,40);assert.equal(currentMission(useGame.getState()).id,'grandprix');
   const money=useGame.getState().money;useGame.getState().settleRace(attempt,result(40));assert.equal(useGame.getState().money,money);
   useGame.getState().close();useGame.getState().startTrial();useGame.getState().settleRace(useGame.getState().raceAttempt,result(50));assert.equal(useGame.getState().yuunagiBestTime,40);assert.equal(useGame.getState().finalQualified,true);
   const save=decodeSave({version:1,savedAt:123,game:snapshotGame(useGame.getState())});await loadSavedGame({read:async()=>save,write:async()=>{}});

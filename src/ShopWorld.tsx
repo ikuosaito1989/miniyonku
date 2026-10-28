@@ -23,5 +23,5 @@ export function ShopWorld(){
     window.addEventListener('resize',resize);
     return ()=>{observer.disconnect();window.removeEventListener('resize',resize);game.destroy(true);};
   },[location]);
-  return <div className="world" ref={host} role="img" aria-label={`${location==='town'?'緑川町':location==='stadium-9'?'星空公式レース会場':location==='stadium-5'?'若葉公式レース会場':currentShop(location).name}。スマホは指を滑らせて移動、人物・入口・設備をタップで調査、床をダブルタップでセッティング。PCは方向キー・WASD・クリックで移動、Z・Enterで調査。`}/>;
+  return <div className="world" ref={host} role="img" aria-label={`${location==='town'?'緑川町':location==='stadium-10'?'緑川グランプリ決勝会場':location==='stadium-9'?'星空公式レース会場':location==='stadium-5'?'若葉公式レース会場':currentShop(location).name}。スマホは指を滑らせて移動、人物・入口・設備をタップで調査、床をダブルタップでセッティング。PCは方向キー・WASD・クリックで移動、Z・Enterで調査。`}/>;
 }

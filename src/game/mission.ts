@@ -2,11 +2,12 @@ import type {GameState} from './store';
 import {nextShopRace} from '../data/shopHints';
 import type {WorldLocation} from '../data/world';
 export interface Mission {id:string;title:string;destination:Exclude<WorldLocation,'town'>|null;place:string;steps:string[];hint:string;complete?:boolean}
-type Progress=Pick<GameState,'location'|'gameOver'|'unlockedRaces'|'legendRaceCompleted'|'doctorGiftReceived'|'aozoraWon'|'villainDefeated'|'officialQualified'|'wakabaUnlocked'|'thirdOfficialQualified'|'wakabaCup'|'technicalCup'|'yuunagiUnlocked'|'finalQualified'|'yuunagiBestTime'>;
+type Progress=Pick<GameState,'location'|'gameOver'|'unlockedRaces'|'legendRaceCompleted'|'doctorGiftReceived'|'aozoraWon'|'villainDefeated'|'officialQualified'|'wakabaUnlocked'|'thirdOfficialQualified'|'wakabaCup'|'technicalCup'|'finalCup'|'grandprixCleared'|'yuunagiUnlocked'|'finalQualified'|'yuunagiBestTime'>;
 /** セーブされた進行から現在の一件を導く。表示のために進行を変更しない。 */
 export function currentMission(s:Progress):Mission{
  if(s.gameOver)return {id:'game-over',title:'ゲームオーバー',destination:null,place:'公式大会',steps:['大会の総合順位を確認する。'],hint:'公式大会は一度限りです。再出場はできません。'};
- if(s.finalQualified)return {id:'complete',title:'緑川グランプリの出場権を獲得！',destination:null,place:'ゆうなぎ模型店',steps:['夕凪の規定タイム40秒をクリアしました。','第4公式大会・緑川グランプリの出場権はセーブ済みです。'],hint:'第4公式大会は開催準備中です。ゆうなぎのタイムアタックや、模型店での改造を楽しめます。',complete:true};
+ if(s.grandprixCleared)return {id:'complete',title:'緑川グランプリ・ゲームクリア！',destination:null,place:'緑川グランプリ決勝会場',steps:['決勝を2位以内で完走しました。','会場の風見 怜・火野 岳に話しかけよう。'],hint:'最後まで走り切った記録はセーブ済みです。模型店で改造や通常レースを楽しめます。',complete:true};
+ if(s.finalQualified)return {id:'grandprix',title:'緑川グランプリで2位以内に入る',destination:'stadium-10',place:'緑川グランプリ',steps:['街の緑川グランプリ決勝会場へ入る。','ピットで新品電池・慣らし済みモーター・旋回と着地の装備を確認する。','中央の決勝コースを調べ、黒岩・黒瀬 迅・モブ2人と勝負する。'],hint:'伝説の兄弟も応援に来ています。夕凪を発展させた一本道。2位以内の完走でゲームクリア、3位以下・リタイアはゲームオーバー。出場は一度だけ、途中退出・再読み込みは棄権です。'};
  if(s.yuunagiUnlocked)return {id:'yuunagi',title:'ゆうなぎの一本道を40秒以内で完走',destination:'yuunagi',place:'ゆうなぎ模型店',steps:['街のゆうなぎ模型店へ向かう。','店内コースで、スタートから別のゴールまで一度だけ走る。','高架スパイラルとジャンプ台を越え、公式タイム40秒以内で完走する。'],hint:`規定タイムをクリアすると第4公式大会の出場権を獲得。何度でも再挑戦できます。タイムにはGO後の反応時間・早出の加算も含まれます。${s.yuunagiBestTime!==null?' 自己ベスト：'+s.yuunagiBestTime.toFixed(2)+'秒。':''}店主の新作スライドダンパーとローラーで旋回・着地を整えよう。その他欄にスライド、リヤ欄にローラーを装着できます。`};
  if(s.thirdOfficialQualified)return {id:'technical',title:'星空テクニカル杯で3位以内に入る',destination:'stadium-9',place:'星空レース場',steps:['街の星空レース場へ入る。','ピットで連続コーナー向けの装備に組み直す。','中央のテクニカルコースを調べ、公式戦に出場する。'],hint:'約2分の長距離戦。4:1ギア・スポンジタイヤ・低重心シャーシ・ローラー・ウェイトなど、過去のパーツを組み合わせよう。出場は一度限り、4位以下はゲームオーバー。'};
  if(s.wakabaUnlocked)return {id:'wakaba',title:'わかば模型店で優勝する',destination:'wakaba',place:'わかば模型店',steps:['街のわかば模型店へ入る。','作業台で坂・スパイラル・ジャンプ向けに加速と旋回、着地の制振を整える。','店内コースの通常レースで1位を取る。'],hint:'優勝すると第3公式大会の出場権を獲得。ライバルも上位装備で走ります。K4シャーシ・ハイグリップタイヤ・新作ワンウェイで旋回を強化し、ジャンプの着地にはダンパーも検討しよう。4:1ギアや駆動サポートも組み合わせよう。'};

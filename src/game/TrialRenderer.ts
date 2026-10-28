@@ -59,7 +59,7 @@ export class TrialRenderer {
     this.scene.add(new THREE.HemisphereLight(0xe4efff,0x45653b,2));
     const sun=new THREE.DirectionalLight(0xffffff,1.3);sun.position.set(-3,8,4);this.scene.add(sun);
     const grass=this.grassTexture();
-    const ground=new THREE.Mesh(new THREE.PlaneGeometry(100,100),new THREE.MeshLambertMaterial(challenge==='official'?{color:0x7c928f}:{map:grass}));
+    const ground=new THREE.Mesh(new THREE.PlaneGeometry(this.track.open?130:100,this.track.open?130:100),new THREE.MeshLambertMaterial(challenge==='official'?{color:0x7c928f}:{map:grass}));
     ground.rotation.x=-Math.PI/2;ground.position.y=-0.025;this.scene.add(ground);
     if(challenge==='official')this.buildOfficialArena();
     this.buildTrack();this.buildObstacles();this.buildStart();
@@ -137,17 +137,20 @@ export class TrialRenderer {
   }
   private buildOfficialArena(){
     const {circuit}=this.track;
+    const points=this.track.open?Array.from({length:1201},(_,i)=>this.track.sampleCircuit(i/1200*this.track.circuitLength)):[];
+    const xs=points.map(p=>p.x),zs=points.map(p=>p.z),cx=points.length?(Math.min(...xs)+Math.max(...xs))/2:0,cz=points.length?(Math.min(...zs)+Math.max(...zs))/2:0;
+    const rx=points.length?(Math.max(...xs)-Math.min(...xs))/2+1:circuit.radiusX,rz=points.length?(Math.max(...zs)-Math.min(...zs))/2+1:circuit.radiusZ;
     // 公式戦は模型店の芝生会場と分け、観客席と照明を持つ競技フロアにする。
     for(const side of [-1,1])for(let row=0;row<3;row++){
-      const stand=this.mesh(new THREE.BoxGeometry(circuit.radiusX*1.8,.22,.35),row%2?0x8aa8bc:0x466b82);
-      stand.position.set(0,.12+row*.15,side*(circuit.radiusZ+1.7+row*.4));this.scene.add(stand);
+      const stand=this.mesh(new THREE.BoxGeometry(rx*1.8,.22,.35),row%2?0x8aa8bc:0x466b82);
+      stand.position.set(cx,.12+row*.15,cz+side*(rz+1.7+row*.4));this.scene.add(stand);
       for(let i=-5;i<=5;i++){
         const seat=this.mesh(new THREE.BoxGeometry(.22,.12,.16),[0xb2d3c4,0xd0b16c,0x87acb9][(i+5)%3]);
-        seat.position.set(i*circuit.radiusX*.13,.32+row*.15,stand.position.z);this.scene.add(seat);
+        seat.position.set(cx+i*rx*.13,.32+row*.15,stand.position.z);this.scene.add(seat);
       }
     }
     for(const x of [-1,1])for(const z of [-1,1]){
-      const pole=this.mesh(new THREE.CylinderGeometry(.035,.05,2.8,8),0x355263);pole.position.set(x*(circuit.radiusX+1.3),1.4,z*(circuit.radiusZ+1));this.scene.add(pole);
+      const pole=this.mesh(new THREE.CylinderGeometry(.035,.05,2.8,8),0x355263);pole.position.set(cx+x*(rx+1.3),1.4,cz+z*(rz+1));this.scene.add(pole);
       const lamp=this.mesh(new THREE.BoxGeometry(.38,.14,.12),0xf3ecc3);lamp.position.set(pole.position.x,2.8,pole.position.z);this.scene.add(lamp);
     }
   }
