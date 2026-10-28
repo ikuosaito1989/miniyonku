@@ -77,6 +77,10 @@ export function decodeSave(value:unknown):SaveData{
       inventory[part.id]=1;units[part.id]=[retained];
     }
   }
+  // 旧セーブの重複所持を1個へ統一し、補助パーツの重複装備は先の枠を残す。
+  for(const id of Object.keys(inventory))if(inventory[id]>0)inventory[id]=1;
+  const accessories=new Set<string>();
+  for(const slot of ['accessory','accessory2','accessory3'] as const){const id=equipment[slot] as string;if(id==='accessory-none')continue;if(accessories.has(id))equipment[slot]='accessory-none';else accessories.add(id);}
   let lastRaceReview:RaceReview|null=null;
   if(game.lastRaceReview!==undefined&&game.lastRaceReview!==null){
     const review=object(game.lastRaceReview);

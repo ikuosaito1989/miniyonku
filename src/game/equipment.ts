@@ -10,6 +10,6 @@ export function equipPart(equipment: Equipment, inventory: Record<string, number
   if(part.id==='accessory-none')return {...equipment,[slot]:id};
   if(part.category==='roller')return {...equipment,[slot]:id};
   const used=Object.entries(equipment).filter(([key,value])=>key!==slot&&value===id).length;
-  if(used>=inventory[id])return equipment;
+  if(used>=1)return equipment;
   return { ...equipment, [slot]: id };
 }

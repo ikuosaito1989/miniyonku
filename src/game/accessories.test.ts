@@ -5,7 +5,7 @@ const equipment={...starterEquipment,accessory:'accessory-weight',accessory2:'ac
 test('その他3枠に別パーツを同時装着し、所有数を超える重複装備を拒否。空枠に戻しても他枠は保持',()=>{
  let e=starterEquipment;for(const [slot,id] of [['accessory','accessory-weight'],['accessory2','accessory-support'],['accessory3','accessory-damper']] as const)e=equipPart(e,inventory,id,slot);
  assert.deepEqual(e,equipment);assert.equal(equipPart(e,inventory,'accessory-weight','accessory2'),e);
- const duplicate=equipPart(e,{...inventory,'accessory-weight':2},'accessory-weight','accessory2');assert.equal(duplicate.accessory2,'accessory-weight');
+ const duplicate=equipPart(e,{...inventory,'accessory-weight':2},'accessory-weight','accessory2');assert.equal(duplicate,e);
  const cleared=equipPart(e,inventory,'accessory-none','accessory2');assert.equal(cleared.accessory2,'accessory-none');assert.equal(cleared.accessory,'accessory-weight');assert.equal(cleared.accessory3,'accessory-damper');
 });
 test('合計重量・安定・駆動補助・制振を走行性能へ反映し、複数の補助パーツを描画',()=>{
@@ -19,4 +19,12 @@ test('複数枠をセーブ復元し、旧1枠セーブは装着済みパーツ�
  const legacy={...equipment} as Record<string,string>;delete legacy.accessory2;delete legacy.accessory3;const restored=decodeSave({...data,game:{...game,equipment:legacy}}).game;
  assert.equal(restored.equipment.accessory,'accessory-weight');assert.equal(restored.equipment.accessory2,'accessory-none');assert.equal(restored.equipment.accessory3,'accessory-none');assert.deepEqual(restored.inventory,inventory);
  assert.throws(()=>decodeSave({...data,game:{...game,equipment:{...equipment,accessory2:'accessory-weight'}}}),/未所持/);
+});
+
+test('旧セーブの重複パーツは各1個へ統一し、補助パーツは最初の枠を残して再保存できる',()=>{
+ const game=snapshotGame({...useGame.getInitialState(),money:1234,equipment:{...equipment,accessory2:'accessory-weight'},inventory:{...inventory,'chassis-basic':4,'accessory-weight':2,'roller-0':3}});
+ const restored=decodeSave({version:1,savedAt:123,game}).game;
+ assert.equal(restored.money,1234);assert.equal(restored.inventory['chassis-basic'],1);assert.equal(restored.inventory['accessory-weight'],1);assert.equal(restored.inventory['roller-0'],1);
+ assert.equal(restored.equipment.accessory,'accessory-weight');assert.equal(restored.equipment.accessory2,'accessory-none');assert.equal(restored.equipment.accessory3,'accessory-damper');
+ assert.deepEqual(decodeSave({version:1,savedAt:123,game:restored}).game,restored);
 });
