@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { challengerDrawing, personDrawing, personSpriteSize, type Facing, type PersonKind } from './PeopleArt';
+import { seniorDrawing, challengerDrawing, personDrawing, personSpriteSize, type Facing, type PersonKind } from './PeopleArt';
 import { counterDrawing, counterSpriteSize } from './CounterArt';
 import type { PixelShape } from './pixelDrawing';
 function inside(shapes:PixelShape[],width:number,height:number){
@@ -28,9 +28,15 @@ test('専用カウンターの面・小物・ガラスの透過レイヤーは�
   assert.deepEqual(shapes,counterDrawing());
 });
 
-test('黒岩は共通顔を元に長髪・表情を描き分け、全方向・歩行が原画内に収まる',()=>{
+test('黒岩は元の短髪と体格・表情を保ち、全方向・歩行が原画内に収まる',()=>{
   for(const facing of ['down','up','left','right'] as const)for(let frame=0;frame<4;frame++)inside(challengerDrawing(facing,frame),60,80);
-  assert.ok(challengerDrawing('down').some(s=>s.kind==='polygon'&&s.color==='#242532'&&s.points.some(([,y])=>y>=43)));
+  const xs=challengerDrawing('down').flatMap(s=>s.kind==='rect'?[s.x,s.x+s.w]:s.points.map(p=>p[0]));assert.ok(Math.max(...xs)-Math.min(...xs)>40);
   assert.notDeepEqual(challengerDrawing('down'),personDrawing('rival','down',0));
   assert.notDeepEqual(challengerDrawing('left'),challengerDrawing('right'));
+});
+
+test('迅が肩までの長髪で、全方向・歩行フレームが原画に収まる',()=>{
+ for(const facing of ['down','up','left','right'] as const)for(let frame=0;frame<4;frame++)inside(seniorDrawing(facing,frame),60,80);
+ assert.ok(seniorDrawing('down').some(s=>s.kind==='polygon'&&s.color==='#242532'&&s.points.some(([,y])=>y>=43)));
+ assert.notDeepEqual(seniorDrawing('down'),challengerDrawing('down'));
 });
