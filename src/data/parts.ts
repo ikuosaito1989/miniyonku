@@ -1,3 +1,4 @@
+import {zenithParts} from './zenithParts';
 import { partLevels } from './progression';
 import { bodies } from './bodies';
 export type Category = 'body' | 'chassis' | 'battery' | 'accessory' | 'wheel' | 'motor' | 'gear' | 'tire' | 'roller' | 'shaft' | 'terminal';
@@ -5,6 +6,7 @@ export const categories: Record<Category, string> = { body:'ボディ', chassis:
 export interface Part { id: string; level:number; category: Category; name: string; price: number; description: string; specs: Record<string, number>; performance: string }
 type PartDefinition=Omit<Part,'level'>;
 const definitions: PartDefinition[] = [
+  ...zenithParts,
   {id:'accessory-slide-rear',category:'accessory',name:'リアウイング・スライドダンパー',price:2600,description:'ゆうなぎの新作。ウイング下の左右スライドステーへリヤローラーを取り付ける補助ユニット。横方向の衝撃と着地の揺れを逃がす。ローラーはリヤ欄で別に選択する。',specs:{weight:5,stability:1.2,efficiency:1,damping:.38,cornerDrag:.92},performance:'5 g / 安定性 ×1.20 / 制振38% / 旋回抵抗 ×0.92'},
   {id:'roller-ceramic',category:'roller',name:'セラミック・エアロベアリングローラー',price:1900,description:'ゆうなぎの新作。軽量な低摩擦リングとセラミック軸受けで、スパイラルでも速度を残す。リヤへ装着すればスライドダンパーの両端にも取り付けられる。1セットで前・中・後へ設定可能。',specs:{friction:.035,weight:6,stability:1.08,damping:.04},performance:'摩擦0.035 / 6 g / 安定性 ×1.08 / 制振4%'},
   {id:'roller-lowdouble',category:'roller',name:'ロープロファイル・二段ローラー',price:2300,description:'ゆうなぎの新作。低い二段リングで壁からの衝撃を分散し、ジャンプ着地後の横揺れを抑える。速さより安定性を重視するセット。前・中・後共用。',specs:{friction:.045,weight:7,stability:1.16,damping:.1},performance:'摩擦0.045 / 7 g / 安定性 ×1.16 / 制振10%'},
@@ -38,7 +40,7 @@ const definitions: PartDefinition[] = [
   {id:'battery-entry',category:'battery',name:'プラスセル',price:250,description:'初めての強化に適したバランス型電池2本。',specs:{weight:42,power:1.04,endurance:110},performance:'2本 42 g / 出力 ×1.04 / 持続係数110秒'},
   {id:'shaft-entry',category:'shaft',name:'ライトスチールシャフト',price:250,description:'標準シャフトより少し軽い入門用。',specs:{weight:5},performance:'重量 5 g'},
   {id:'terminal-entry',category:'terminal',name:'高接触ターミナル',price:300,description:'接触を改善した入門用端子。',specs:{weight:2,efficiency:0.91},performance:'伝達効率 91% / 2 g'},
-  {id:'motor-apex',category:'motor',name:'アペックス・プロト',price:8000,description:'将来の上位店向け、最高段階の試作モーター。',specs:{rpm:28000,torque:1.8,weight:19},performance:'28,000 rpm / トルク 1.8 mN·m / 19 g'},
+  {id:'motor-apex',category:'motor',name:'アペックス・プロト',price:8000,description:'旧型の高回転試作モーター。舗装の高速向け。縦ループと砂地では新作の高トルク型を選ぼう。',specs:{rpm:28000,torque:1.8,weight:19},performance:'28,000 rpm / トルク 1.8 mN·m / 19 g'},
   {id:'chassis-basic',category:'chassis',name:'K1 ベーシック',price:450,description:'扱いやすい標準シャーシ。',specs:{weight:20,efficiency:1,stability:1},performance:'20 g / 駆動効率 ×1.00 / 安定性 ×1.00'},
   {id:'chassis-light',category:'chassis',name:'K1 ライト',price:1000,description:'肉抜きで軽量化。加速重視の設計。',specs:{weight:16,efficiency:1.02,stability:0.97},performance:'16 g / 駆動効率 ×1.02 / 安定性 ×0.97'},
   {id:'chassis-low',category:'chassis',name:'K2 ローセンター',price:1100,description:'低重心でコーナーの安定性を高める。',specs:{weight:23,efficiency:0.98,stability:1.08},performance:'23 g / 駆動効率 ×0.98 / 安定性 ×1.08'},

@@ -7,8 +7,8 @@ export const officialRivals:Entrant[]=[
  ...hinataRivals.slice(2,4),
 ];
 
-export type OfficialRound='speed'|'dirt'|'technical'|'final';
-export const officialRounds={final:{name:'第4公式大会・緑川グランプリ',circuitId:'grandprix' as const},technical:{name:'第3公式大会・星空テクニカル杯',circuitId:'comet' as const},speed:{name:'第1戦・高速ロングレース',circuitId:'sprint' as const},dirt:{name:'第2戦・オフロードレース',circuitId:'sun' as const}};
+export type OfficialRound='speed'|'dirt'|'technical'|'final'|'zenith';
+export const officialRounds={zenith:{name:'最終大会・天頂決戦ゼニス・クラウン',circuitId:'zenith' as const},final:{name:'第4公式大会・緑川グランプリ',circuitId:'grandprix' as const},technical:{name:'第3公式大会・星空テクニカル杯',circuitId:'comet' as const},speed:{name:'第1戦・高速ロングレース',circuitId:'sprint' as const},dirt:{name:'第2戦・オフロードレース',circuitId:'sun' as const}};
 export const officialSpeedRivals:Entrant[]=officialRivals.map(r=>({...r,equipment:{...r.equipment,body:r.id==='go'?'body-sport':'body-champion',motor:'motor-wind',gear:'gear-3.5',tire:'tire-1',chassis:'chassis-low',accessory:'accessory-support',rollerFront:'roller-0',rollerSide:'roller-0',rollerRear:'roller-0'}}));
 
 export const technicalRivals:Entrant[]=officialRivals.map(r=>({...r,equipment:{...r.equipment,body:r.id==='go'?'body-sport':'body-champion',motor:'motor-torque',gear:'gear-4',tire:'tire-1',chassis:'chassis-low',accessory:'accessory-weight',accessory2:'accessory-support',accessory3:'accessory-none',rollerFront:'roller-1',rollerSide:'roller-0',rollerRear:'roller-1',wheel:'wheel-light',battery:'battery-endurance'}}));

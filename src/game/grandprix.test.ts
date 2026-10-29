@@ -36,7 +36,7 @@ test('2位以内でクリア、3位以下とリタイアはゲームオーバー
  useGame.setState(qualified());useGame.getState().enterOfficialVenue('stadium-10');useGame.getState().startOfficialRace();assert.equal(useGame.getState().finalCup.pending,'grandprix');
  const attempt=useGame.getState().raceAttempt;useGame.getState().settleRace(attempt,result(place));assert.equal(cupPlayerPlace(useGame.getState().finalCup),place);assert.equal(useGame.getState().grandprixCleared,place<=2);assert.equal(useGame.getState().gameOver,place>2);
  const money=useGame.getState().money;useGame.getState().settleRace(attempt,result(place));assert.equal(useGame.getState().money,money);
- useGame.getState().close();assert.equal(useGame.getState().overlay,place>2?'game-over':'dialogue');assert.equal(currentMission(useGame.getState()).id,place>2?'game-over':'complete');
+ useGame.getState().close();assert.equal(useGame.getState().overlay,place>2?'game-over':'dialogue');assert.equal(currentMission(useGame.getState()).id,place>2?'game-over':'akatsuki');
  const saved=decodeSave({version:1,savedAt:123,game:snapshotGame(useGame.getState())});await loadSavedGame({read:async()=>saved,write:async()=>{}});assert.equal(useGame.getState().grandprixCleared,place<=2);assert.equal(useGame.getState().gameOver,place>2);useGame.getState().startOfficialRace();assert.notEqual(useGame.getState().overlay,'race');
  }
  useGame.setState(qualified());useGame.getState().enterOfficialVenue('stadium-10');useGame.getState().startOfficialRace();useGame.getState().settleRace(useGame.getState().raceAttempt,result(1,false));assert.equal(useGame.getState().gameOver,true);

@@ -42,6 +42,16 @@ export function raceAdvice(state:RaceAdviceContext){
   const shop=modelShops[state.shopId],lines=['レース相談は僕に任せて。'];
   if(state.review?.circuitId===shop.circuitId)lines.push(state.review.text);
   else lines.push('この店のレース記録はまだないね。今の装備で改善できる点を見てみよう。');
+  if(state.shopId==='akatsuki'){
+    lines.push('あかつき模型店の最上位パーツを組み合わせよう。縦ループの失速はトルク不足。ゼニス＋4.2:1、テンペスト＋5.2:1、タイタン＋4:1などを軸に、砂地への追従とジャンプ着地の制振を両立しよう。最高速だけを上げても勝てないよ。');
+    lines.push('万能型：ホライゾン・ハイブリッドシャーシ＋マイクロトレッド。高速型：テンペスト＋5.2:1＋デューンシャーシ＋アペックスタイヤ。高トルク型：タイタン＋4:1＋エクリプスシャーシ＋マイクロトレッド。補助枠はジャイロ・駆動PRO・クラウンスライドなど異なる3種を組もう。');
+    const missing=['motor-zenith','chassis-horizon','tire-hybrid','battery-zenith','accessory-slide-pro'].map(id=>parts.find(p=>p.id===id)!).filter(p=>!(state.inventory[p.id]>0));
+    for(const p of missing.slice(0,3))lines.push(`万能型で不足する「${p.name}」は${p.price}円。${state.money>=p.price?'今なら購入できるよ。':'あと'+(p.price-state.money)+'円、他店の完走賞で貯めよう。'}`);
+    if(state.motorSeconds<60&&parts.find(p=>p.id===state.equipment.motor)?.specs.wear!==0)lines.push(`モーターは作業台であと約${Math.ceil(60-state.motorSeconds)}秒ならそう。慣らし後に電池を新品に交換すると長距離で有利だよ。`);
+    if(state.motorSeconds>180)lines.push('長いレースでモーターも摩耗するよ。同じ種類を新品交換し、慣らしてから再挑戦しよう。');
+    if(batteryCharge(state.equipment.battery,state.batterySeconds)<.8)lines.push('電池が減っているね。ゼニス・マラソンセルの新品で最後まで出力を保とう。');
+    return lines.join('\n');
+  }
   if(state.shopId==='yuunagi')lines.push('ゆうなぎは順位ではなく公式タイム40秒以内の完走が条件。スパイラルの旋回安定とジャンプの着地を両立しよう。新作のリアウイング・スライドダンパーをその他欄に付け、前中をセラミック、リヤをロープロファイル二段ローラーにすると、ウイング下の可動ステーにリヤローラーが付くよ。延長された終盤の直線では再加速と伸びも必要。4:1ギアとK4シャーシ・駆動サポートを生かし、サージモーター・リバウンドレスタイヤ・フローティングホイールも組み合わせよう。反応時間・フライング加算も判定に含まれるよ。');
   if(state.shopId==='hinata'){lines.push('ひなたはロングダート。舗装用のままでは砂利で失速するよ。トレイルトルクモーター、ブロックトレッドタイヤ、ツインマスダンパー、前中後のポール式ダブルローラーを組み合わせ、4:1ギアから試そう。特にタイヤの接地とダンパーの振動吸収が大切だよ。');
     const missing=['tire-trail','accessory-damper','motor-trail','roller-double'].map(id=>parts.find(p=>p.id===id)!).find(p=>!(state.inventory[p.id]>0));

@@ -5,7 +5,7 @@ import { batteryCapacityMultiplier, freshCondition, motorFactor, remainingCharge
 import type { TrackSurface } from '../data/surfaces';
 
 export const FIXED_STEP = 1/120;
-export interface DrivingState { time: number; distance: number; speed: number; stress: number; status: 'ready'|'running'|'finished'|'out'; stopReason?:'battery'|'lapped'|'jump'; flightY?:number;flightVelocity?:number;landings?:number; }
+export interface DrivingState { time: number; distance: number; speed: number; stress: number; status: 'ready'|'running'|'finished'|'out'; stopReason?:'battery'|'lapped'|'jump'|'loop'; flightY?:number;flightVelocity?:number;landings?:number; }
 export function machinePerformance(equipment: Equipment, condition:MachineCondition=freshCondition) {
   const get = (category: keyof Equipment) => {
     const part = parts.find(p => p.id === equipment[category] && p.category === equipmentSlots[category].category);
@@ -57,6 +57,7 @@ export function surfacePerformance(performance:Performance,surface:TrackSurface)
 export function stepDriving(state: DrivingState, performance: Performance, laneOffset=0, initialLane?:number, surface:TrackSurface=circuit.surface, track:CircuitTrack=getCircuitTrack()): DrivingState {
   if(state.status!=='running')return state;
   const {circuit,circuitLength,sampleCircuit,sampleLanePath,startDistance}=track;
+  if(track.fairLanes&&initialLane!==undefined)initialLane=2;
   const remaining=remainingCharge(performance.batterySeconds+state.time,performance.batteryEndurance*batteryCapacityMultiplier,performance.batteryConsumption);
   if(remaining<=0)return {...state,speed:0,status:'out',stopReason:'battery'};
   const charge=.55+.45*Math.sqrt(remaining);
@@ -78,7 +79,7 @@ export function stepDriving(state: DrivingState, performance: Performance, laneO
   let stress=Math.max(0,state.stress+(lateral>road.lateralLimit?(lateral/Math.max(.001,road.lateralLimit)-1):-2)*FIXED_STEP);
   let flightY=state.flightY,flightVelocity=state.flightVelocity,landings=state.landings;
   if(track.obstacles&&initialLane!==undefined){
-    const jump=track.obstacles.jump,from=track.courseProgress(state.distance),to=track.courseProgress(distance);
+    const from=track.courseProgress(state.distance),to=track.courseProgress(distance),jump=track.jumps.find(j=>from<j.takeoff&&to>=j.takeoff)??track.obstacles.jump;
     if(!airborne&&from<jump.takeoff&&to>=jump.takeoff&&to>=from){
       flightY=sampleLanePath(Math.floor(state.distance/circuitLength)*circuitLength+jump.takeoff-.001,initialLane).y;
       flightVelocity=speed*jump.height/jump.rise;
@@ -95,6 +96,9 @@ export function stepDriving(state: DrivingState, performance: Performance, laneO
       }
     }
   }
+  if(path?.loopRadius&&path.loopAngle>.3&&speed<.5)return {...state,time:state.time+FIXED_STEP,distance,speed:0,status:'out',stopReason:'loop'};
+  if(path?.loopRadius&&Math.cos(path.loopAngle)<-.25&&speed**2/path.loopRadius<9.81*.92)stress+=FIXED_STEP*2;
+  if(path&&!path.loopRadius&&Math.cos(path.bank)<-.5&&speed<2.5)stress+=FIXED_STEP*2;
   const finish=circuitLength*circuit.laps;
   const finished=distance>=finish;
   const fraction=finished?(finish-state.distance)/(distance-state.distance):1;

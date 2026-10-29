@@ -7,7 +7,7 @@ function RacerPortrait({id,color}:{id:string;color:number}){
   const jacket=`#${color.toString(16).padStart(6,'0')}`;
   return <svg className="ranking-portrait" viewBox="0 0 60 82" aria-hidden="true">
     <ellipse cx="30" cy="79" rx="18" ry="2" fill="#050b17" opacity=".35"/>
-    {(id==='jin'?seniorDrawing('right'):id===challenger.id?challengerDrawing('right'):id==='riku'?offroaderDrawing('right'):personDrawing(kind,'right',0)).map((shape,i)=>{
+    {(id==='jin'?seniorDrawing('right'):id===challenger.id?challengerDrawing('right'):id==='riku'?offroaderDrawing('right'):personDrawing(id.startsWith('legend-')?'rival':kind,'right',0).map(s=>{const colors:Record<string,string>=id==='legend-rei'?{'#b14b67':'#42679f','#ec9aa2':'#9bbfe9','#7f3757':'#29456f'}:id==='legend-gaku'?{'#b14b67':'#c49b3d','#ec9aa2':'#f3d98a','#7f3757':'#8b6529'}:{};return {...s,color:colors[s.color]??s.color};})).map((shape,i)=>{
       const fill=kind==='mechanic'&&shape.color==='#317d91'?jacket:shape.color;
       return shape.kind==='rect'
         ?<rect key={i} x={shape.x} y={shape.y} width={shape.w} height={shape.h} fill={fill} opacity={shape.alpha}/>

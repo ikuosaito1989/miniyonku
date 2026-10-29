@@ -22,7 +22,7 @@ export function overviewFrame(track:CircuitTrack,aspect:number,allowPortraitRota
  const centerX=(left+rightEdge)/2,centerY=(bottom+top)/2;
  return {height:Math.max(top-bottom+.35,(rightEdge-left+.35)/safeAspect)*1.08,target:{x:right.x*centerX+up.x*centerY,y:right.y*centerX+up.y*centerY,z:right.z*centerX+up.z*centerY},rotated,bounds:{left,right:rightEdge,bottom,top},right,up};
 }
-export function overviewCarScale(cssHeight:number,viewHeight:number){return Math.max(1,Math.min(8,18*viewHeight/(Math.max(1,cssHeight)*.24*.85)));}
+export function overviewCarScale(cssHeight:number,viewHeight:number,maxScale=8){return Math.max(1,Math.min(maxScale,18*viewHeight/(Math.max(1,cssHeight)*.24*.85)));}
 
 /** 上の案内と下のタイム表示を避けた領域へコースを収める。 */
 export function overviewViewportFrame(track:CircuitTrack,width:number,height:number){

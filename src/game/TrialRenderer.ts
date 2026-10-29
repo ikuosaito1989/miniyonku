@@ -59,7 +59,7 @@ export class TrialRenderer {
     this.scene.add(new THREE.HemisphereLight(0xe4efff,0x45653b,2));
     const sun=new THREE.DirectionalLight(0xffffff,1.3);sun.position.set(-3,8,4);this.scene.add(sun);
     const grass=this.grassTexture();
-    const ground=new THREE.Mesh(new THREE.PlaneGeometry(this.track.open?130:100,this.track.open?130:100),new THREE.MeshLambertMaterial(challenge==='official'?{color:0x7c928f}:{map:grass}));
+    const ground=new THREE.Mesh(new THREE.PlaneGeometry(this.track.open?600:100,this.track.open?600:100),new THREE.MeshLambertMaterial(challenge==='official'?{color:0x7c928f}:{map:grass}));
     ground.rotation.x=-Math.PI/2;ground.position.y=-0.025;this.scene.add(ground);
     if(challenge==='official')this.buildOfficialArena();
     this.buildTrack();this.buildObstacles();this.buildStart();
@@ -161,9 +161,9 @@ export class TrialRenderer {
       for(let i=0;i<=circuit.samples;i++){
         const p=sampleLanePath(i/circuit.samples*circuitLength,lane);
         for(const offset of [-circuit.laneWidth/2,circuit.laneWidth/2]){
-          vertices.push(p.x+p.tangentZ*offset,p.y,p.z-p.tangentX*offset);
+          vertices.push(p.x+p.sideX*offset,p.y+p.sideY*offset,p.z+p.sideZ*offset);
           const surface=this.track.surfaceAt(i/circuit.samples*circuitLength);
-          const color=new THREE.Color(surface.roughness>.9?0x8b7359:surface.grip<.7?0xd2b47a:0xad8d61);
+          const color=new THREE.Color(surface.roughness===0?(lane%2?0x8d91bb:0xaaaed0):surface.roughness>.8?0xd2b47a:0xad8d61);
           color.multiplyScalar(.88+.12*Math.sin(i*13.7+lane*4.1)**2);colors.push(color.r,color.g,color.b);
         }
         if(i<circuit.samples&&!this.track.isJumpGap((i+.5)/circuit.samples*circuitLength)){const a=i*2;indices.push(a,a+1,a+2,a+1,a+3,a+2);}
@@ -176,7 +176,7 @@ export class TrialRenderer {
       const vertices:number[]=[],indices:number[]=[];
       for(let i=0;i<=circuit.samples;i++){
         const p=sampleLanePath(i/circuit.samples*circuitLength,lane);
-        for(const [delta,height] of [[-0.008,0],[0.008,0],[-0.008,0.055],[0.008,0.055]])vertices.push(p.x+p.tangentZ*(offset+delta),p.y+height,p.z-p.tangentX*(offset+delta));
+        for(const [delta,height] of [[-0.008,0],[0.008,0],[-0.008,0.055],[0.008,0.055]])vertices.push(p.x+p.sideX*(offset+delta)+p.upX*height,p.y+p.sideY*(offset+delta)+p.upY*height,p.z+p.sideZ*(offset+delta)+p.upZ*height);
         if(i<circuit.samples&&!this.track.isJumpGap((i+.5)/circuit.samples*circuitLength)){const a=i*4;indices.push(a,a+4,a+2,a+2,a+4,a+6,a+1,a+3,a+5,a+3,a+7,a+5,a+2,a+6,a+3,a+3,a+6,a+7);}
       }
       const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.setIndex(indices);geometry.computeVertexNormals();
@@ -186,16 +186,17 @@ export class TrialRenderer {
   }
   private buildObstacles(){
     const {obstacles,circuit,circuitLength,sampleLanePath}=this.track;if(!obstacles)return;
-    for(let d=0;d<circuitLength;d+=2.2)for(const lane of [0,4]){
+    for(let d=0;d<circuitLength;d+=(this.circuitId==='forge'||this.circuitId==='zenith'?6:2.2))for(const lane of [0,4]){
       if(this.track.isJumpGap(d))continue;
       const p=sampleLanePath(d,lane);if(p.y<.18)continue;
       const support=this.mesh(new THREE.BoxGeometry(.07,p.y,.07),0x5b7380);
       support.position.set(p.x+p.tangentZ*(lane===0?-.15:.15),p.y/2,p.z-p.tangentX*(lane===0?-.15:.15));support.name='elevated-course-support';this.scene.add(support);
     }
-    const jump=obstacles.jump;
+    for(const jump of this.track.jumps){
     for(let lane=0;lane<5;lane++)for(let i=0;i<4;i++){
       const p=sampleLanePath(jump.takeoff-.3-i*.42,lane),mark=this.mesh(new THREE.BoxGeometry(circuit.laneWidth*.65,.018,.09),i%2?0xf3a34e:0xffe8a1);
       mark.position.set(p.x,p.y+.012,p.z);mark.rotation.order='YXZ';mark.rotation.set(-p.pitch,Math.atan2(p.tangentX,p.tangentZ),0);mark.name='jump-ramp-chevron';this.scene.add(mark);
+    }
     }
   }
   private buildStart(){
@@ -268,7 +269,10 @@ export class TrialRenderer {
       const smooth=(v:number)=>{const t=THREE.MathUtils.clamp(v,0,1);return t*t*(3-2*t);};
       let target=new THREE.Vector3(frame.target.x,frame.target.y,frame.target.z),height=wide;
       if(this.intro.stage==='tour'&&!this.reducedMotion){
-        const progress=(age-raceIntroTiming.overview)/raceIntroTiming.tour,p=sampleLanePath(progress*this.track.circuitLength,(circuit.lanes-1)/2),zoom=smooth((age-raceIntroTiming.overview)/1.6);
+        const progress=(age-raceIntroTiming.overview)/raceIntroTiming.tour;
+        const landmarks=[55,135,this.track.circuitLength*.34,this.track.jumps[0]?.takeoff??0,this.track.circuitLength*.65,this.track.jumps[1]?.takeoff??0];
+        const distance=this.circuitId==='forge'||this.circuitId==='zenith'?landmarks[Math.min(5,Math.floor(progress*6))]:progress*this.track.circuitLength;
+        const p=sampleLanePath(distance,(circuit.lanes-1)/2),zoom=smooth((age-raceIntroTiming.overview)/1.6);
         target.lerp(new THREE.Vector3(p.x,p.y,p.z),zoom);height=THREE.MathUtils.lerp(wide,tourHeight,zoom);
       }else if(this.intro.stage==='grid'&&!this.reducedMotion){
         const zoom=smooth((age-raceIntroTiming.overview-raceIntroTiming.tour)/raceIntroTiming.grid);target=new THREE.Vector3(start.x-start.tangentX*raceCamera.start.lookBehind*zoom,start.y,start.z-start.tangentZ*raceCamera.start.lookBehind*zoom);height=THREE.MathUtils.lerp(tourHeight,gridHeight,zoom);
@@ -313,7 +317,7 @@ export class TrialRenderer {
     const overview=this.cameraMode==='overview'&&this.intro.stage==='done';
     const frame=this.overviewFrame??(this.overviewFrame=overviewViewportFrame(this.track,this.host.clientWidth,this.host.clientHeight));
     const pixelsPerUnit=this.host.clientHeight/frame.height;
-    const carScale=overview?overviewCarScale(this.host.clientHeight,frame.height):1;
+    const carScale=overview?overviewCarScale(this.host.clientHeight,frame.height,this.track.circuitLength>1000?64:8):1;
     const labelBoxes:Array<{x:number;y:number}>=[];
     for(const racer of this.state.racers){
       const p=sampleLanePath(racer.driving.distance+(this.track.open?Math.min(.3,finishCoastDistance(racer,this.finishPresentation)):finishCoastDistance(racer,this.finishPresentation)),racer.lane);
@@ -334,9 +338,10 @@ export class TrialRenderer {
         }
         const q=marker.position.clone().project(this.camera);labelBoxes.push({x:q.x,y:q.y});
       }
-      const crashed=racer.driving.status==='out'&&(!racer.driving.stopReason||racer.driving.stopReason==='jump');
-      car.position.set(p.x,(racer.driving.flightY??p.y)+(crashed?0.14:0.015),p.z);
+      const crashed=racer.driving.status==='out'&&(!racer.driving.stopReason||racer.driving.stopReason==='jump'||racer.driving.stopReason==='loop');
+      car.position.set(p.x+p.upX*.015,(racer.driving.flightY??p.y)+(crashed?0.14:p.upY*.015),p.z+p.upZ*.015);
       car.rotation.order='YXZ';car.rotation.set(racer.driving.flightY!==undefined?-Math.atan2(racer.driving.flightVelocity??0,Math.max(.1,racer.driving.speed)):-p.pitch,Math.atan2(p.tangentX,p.tangentZ),crashed?0.9:0);
+      if((this.circuitId==='forge'||this.circuitId==='zenith')&&racer.driving.flightY===undefined&&!crashed)car.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(new THREE.Vector3(p.sideX,p.sideY,p.sideZ),new THREE.Vector3(p.upX,p.upY,p.upZ),new THREE.Vector3(p.forwardX,p.forwardY,p.forwardZ)));
       if(racer.driving.stopReason==='lapped'){
         const pose=lappedPose(this.lappedAges.get(racer.id)??0);
         const side=racer.lane<this.track.circuit.lanes/2?-1:1;

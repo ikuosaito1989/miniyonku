@@ -1,3 +1,4 @@
+import {shopTrackLayout} from './shopTrackLayout';
 import {seniorDrawing} from './PeopleArt';
 import {drawShopTrack} from './ShopTrackArt';
 import { officialVenue, officialFixturesFor, officialVenueFor, officialVenuePeople, officialPeopleFor } from '../data/officialVenue';
@@ -34,7 +35,7 @@ import { drawTown } from './TownArt';
 import { drawShopDetails } from './WorldDetailArt';
 import { getCircuitTrack } from '../data/circuit';
 
-interface ShopTarget {x:number;y:number;w:number;h:number;label:string;speaker:string;shopAfter:boolean;text:string;kind?:Fixture['kind']|'exit'|'venue'|'challenger'|'legend-challenger'|'official-speed'|'official-dirt'|'official-reception'|'official-technical'|'official-final';venueId?:string}
+interface ShopTarget {x:number;y:number;w:number;h:number;label:string;speaker:string;shopAfter:boolean;text:string;kind?:Fixture['kind']|'exit'|'venue'|'challenger'|'legend-challenger'|'official-speed'|'official-dirt'|'official-reception'|'official-technical'|'official-final'|'official-zenith';venueId?:string}
 export class ShopScene extends Phaser.Scene {
   private gesture=createShopGesture();
   private screenPoint(pointer:Phaser.Input.Pointer){return {x:pointer.x*this.scale.displaySize.width/this.scale.width,y:pointer.y*this.scale.displaySize.height/this.scale.height};}
@@ -79,7 +80,7 @@ export class ShopScene extends Phaser.Scene {
     this.scale.on(Phaser.Scale.Events.RESIZE,this.fitCamera,this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN,()=>this.scale.off(Phaser.Scale.Events.RESIZE,this.fitCamera,this));
     this.solids=[];
-    this.isTown=useGame.getState().location==='town';this.isOfficial=['stadium-5','stadium-9','stadium-10'].includes(useGame.getState().location);
+    this.isTown=useGame.getState().location==='town';this.isOfficial=['stadium-5','stadium-9','stadium-10','stadium-7'].includes(useGame.getState().location);
     createPeopleTextures(this);
     if(this.isTown){
       drawTown(this,useGame.getState());
@@ -121,8 +122,10 @@ export class ShopScene extends Phaser.Scene {
       }
       (rivalPerson.list[1] as Phaser.GameObjects.Image).setTexture(key);
     }
+    if(shopId==='akatsuki'){const key='akatsuki-go';if(!this.textures.exists(key))createPersonTexture(this,key,challengerDrawing('down'));(rivalPerson.list[1] as Phaser.GameObjects.Image).setTexture(key);}
     for(const visitor of cast.visitors){
-      this.person(visitor.x,visitor.y,visitor.kind);
+      const npc=this.person(visitor.x,visitor.y,visitor.kind);
+      if(shopId==='akatsuki'){if(visitor.name==='風見 怜'||visitor.name==='火野 岳')(npc.list[1] as Phaser.GameObjects.Image).setTexture(this.arrivalTexture(visitor.name==='風見 怜'?'rei':'gaku','down',0));if(visitor.name==='黒瀬 迅'){const key='akatsuki-jin';if(!this.textures.exists(key))createPersonTexture(this,key,seniorDrawing('down'));(npc.list[1] as Phaser.GameObjects.Image).setTexture(key);}this.add.text(visitor.x,visitor.y+17,visitor.name,{fontFamily:'sans-serif',fontSize:'8px',color:'#234844',resolution:2}).setOrigin(.5,0).setDepth(visitor.y+1);}
       this.solids.push(new Phaser.Geom.Rectangle(visitor.x-12,visitor.y-9,24,21));
     }
     this.solids.push(new Phaser.Geom.Rectangle(cast.rival.x-12,cast.rival.y-9,24,21));
@@ -133,7 +136,7 @@ export class ShopScene extends Phaser.Scene {
       this.add.rectangle(480,320,880,570,shop.color,.09).setDepth(1);
       this.add.rectangle(signX,70,260,64,shop.id==='aozora'?0x284b6b:0x6a5234).setDepth(110);
       this.add.text(signX,49,shop.name,{fontFamily:'sans-serif',fontSize:'21px',fontStyle:'bold',color:'#f8edcc',resolution:2}).setOrigin(.5,0).setDepth(111);
-      this.add.text(signX,80,shop.id==='atelier'?'究極パーツの販売専門店・各25万円':shop.id==='aozora'?'連続コーナーで磨く、次の走り':shop.id==='yuunagi'?'一本道40秒チャレンジ・第4公式大会出場権へ':shop.id==='wakaba'?'坂・ジャンプ・高架スパイラルに挑もう':'砂利と砂地を走る、ダートの勝負',{fontFamily:'sans-serif',fontSize:'8px',color:'#c7e6e6',resolution:2}).setOrigin(.5,0).setDepth(111);
+      this.add.text(signX,80,shop.id==='atelier'?'究極パーツの販売専門店・各25万円':shop.id==='aozora'?'連続コーナーで磨く、次の走り':shop.id==='akatsuki'?'縦横回転・砂地・ジャンプ・最強たちとの試走':shop.id==='yuunagi'?'一本道40秒チャレンジ・第4公式大会出場権へ':shop.id==='wakaba'?'坂・ジャンプ・高架スパイラルに挑もう':'砂利と砂地を走る、ダートの勝負',{fontFamily:'sans-serif',fontSize:'8px',color:'#c7e6e6',resolution:2}).setOrigin(.5,0).setDepth(111);
       const f=fixtures.find(f=>f.kind==='track')!,g=this.add.graphics().setDepth(f.y+f.h+1);
       g.fillStyle(0x476d75).fillRoundedRect(f.x+3,f.y+3,f.w-6,f.h-6,9);
       if(shop.id==='atelier'){
@@ -156,6 +159,7 @@ export class ShopScene extends Phaser.Scene {
         }
       }else{
       drawShopTrack(this,f,getCircuitTrack(shop.circuitId));
+      if(shop.id==='akatsuki'){const layout=shopTrackLayout(getCircuitTrack('forge'),f.w,f.h).centerline,cars=[0x477de0,0xe5b839,0x15191f,0x612b3e].map(c=>this.add.rectangle(0,0,4,2,c).setDepth(f.y+f.h+3));this.time.addEvent({delay:90,loop:true,callback:()=>cars.forEach((car,i)=>{const j=(Math.floor(this.time.now/65)+i*280)%1200,p=layout[j],q=layout[(j+1)%1200];car.setPosition(f.x+p.x,f.y+p.y).setRotation(Math.atan2(q.y-p.y,q.x-p.x));})});}
       }
     }
     this.add.rectangle(480,580,84,15,0x34564e).setDepth(590);
@@ -405,7 +409,7 @@ export class ShopScene extends Phaser.Scene {
     if(this.isTown)return townVenues.map(v=>({x:v.x,y:v.y,w:v.w,h:v.h,label:v.name,speaker:v.name,shopAfter:false,text:venueMessage(v),kind:'venue',venueId:v.id}));
     if(this.isOfficial)return [
       ...officialFixturesFor(useGame.getState().location).filter(f=>f.kind!=='decoration').map(f=>({...f,speaker:f.label,shopAfter:false,text:f.kind==='bench'?'ここでマシンを組み直そう。':'コースに出場する。',kind:f.kind as ShopTarget['kind']})),
-      ...officialPeopleFor(useGame.getState().location).map(p=>({x:p.x-16,y:p.y-42,w:32,h:54,label:p.name,speaker:p.name,shopAfter:false,text:useGame.getState().grandprixCleared&&p.id==='rei'?'おめでとう、湊くん！ 決勝で2位以内に入った君の走り、しっかり見届けたよ。セイランと一緒に、ここまで来たんだね。':useGame.getState().grandprixCleared&&p.id==='gaku'?'よくやった！ 最後まで走り切ったな。今日は君が主役だ。これからも自分だけのセッティングで、速さを追いかけようぜ！':p.text})),
+      ...officialPeopleFor(useGame.getState().location).map(p=>({x:p.x-16,y:p.y-42,w:32,h:54,label:p.name,speaker:p.name,shopAfter:false,text:(useGame.getState().location==='stadium-10'&&useGame.getState().grandprixCleared||useGame.getState().zenithCleared)&&p.id==='rei'?'おめでとう、湊くん！ 決勝で2位以内に入った君の走り、しっかり見届けたよ。セイランと一緒に、ここまで来たんだね。':(useGame.getState().location==='stadium-10'&&useGame.getState().grandprixCleared||useGame.getState().zenithCleared)&&p.id==='gaku'?'よくやった！ 最後まで走り切ったな。今日は君が主役だ。これからも自分だけのセッティングで、速さを追いかけようぜ！':p.text})),
       {...officialVenue.exit,label:'緑川町への出口',speaker:officialVenue.name,shopAfter:false,text:'町へ戻る。',kind:'exit' as const},
     ];
     const cast=this.cast;
@@ -423,11 +427,12 @@ export class ShopScene extends Phaser.Scene {
     if(shop.id==='komorebi'&&state.doctorGiftReceived&&this.doctorPerson){
       targets.push({x:this.doctorPerson.x-16,y:this.doctorPerson.y-42,w:32,h:54,label:doctor.name,speaker:doctor.name,shopAfter:false,text:doctorAdvice(state.equipment.body)});
     }
-    const visitors=cast.visitors.map(v=>({x:v.x-16,y:v.y-42,w:32,h:54,label:v.name,speaker:v.name,shopAfter:false,text:shopAdvice(v.kind,{money:state.money,inventory:state.inventory,equipment:state.equipment,motorSeconds:condition.motorSeconds,qualified:state.unlockedRaces.includes(nextShopRace.id)})}));
+    const visitors=cast.visitors.map(v=>({x:v.x-16,y:v.y-42,w:32,h:54,label:v.name,speaker:v.name,shopAfter:false,text:v.kind==='rival'?'ここで本気の試走を続けているよ。':shopAdvice(v.kind,{money:state.money,inventory:state.inventory,equipment:state.equipment,motorSeconds:condition.motorSeconds,qualified:state.unlockedRaces.includes(nextShopRace.id)})}));
     if(shop.id==='aozora'){
       for(const visitor of visitors)visitor.text=visitor.speaker==='三浦 結衣'?(state.villainDefeated?'黒岩くんに勝ったんだね！町へ出て、街の地図でひなた模型店を探してみよう。':state.aozoraWon?'黒岩くんが店の中央で待っているよ。挑戦レースで1位になると、ひなた模型店への紹介状がもらえるんだって。':'ここは優勝1,200円、5位完走でも350円！まずは優勝しよう。町の黒岩くんが、速いレーサーを探しているみたい。'):'黒岩くんに勝つなら、記念ボディにブリーズモーターを約60秒ならして、4:1ギア・スパークセル・スポンジタイヤを試そう。低重心シャーシと軽量化も比べてね。';
       if(state.aozoraWon)targets.push({x:(this.challengerPerson?.x??challengerSpot.x)-16,y:(this.challengerPerson?.y??challengerSpot.y)-42,w:32,h:54,label:challenger.name,speaker:challenger.name,shopAfter:false,text:'挑戦を受ける。',kind:'challenger'});
     }else if(shop.id==='hinata')for(const visitor of visitors)visitor.text=visitor.speaker==='三浦 結衣'?'ひなた模型店へようこそ！ここは砂利と砂地が続くロングダート。ここで優勝すると若葉公式ダート杯への出場権がもらえるよ。街の若葉レース場で森野くんや黒岩くんと勝負しよう。':'トレイルトルクモーター・ブロックタイヤ・ダンパーで接地と駆動力を確保しよう。ポール式ダブルローラーは前中後に装着できるよ。4:1ギアから試そう。';
+    if(shop.id==='akatsuki')for(const visitor of visitors)visitor.text=visitor.speaker==='佐伯 匠'?'縦ループはモーターとギア、砂地は追従と抵抗、ジャンプは制振だ。別の種類を組み合わせて試そう。':`ここでは最強兄弟、黒岩、黒瀬と本気の試走だ。現在${state.akatsukiRaceCount}/5回。途中退出せず結果まで5回走れば、天頂決戦の出場権がもらえる。`;
     if(shop.id==='yuunagi')for(const visitor of visitors)visitor.text=visitor.speaker==='三浦 結衣'?'ここは一台ずつ、別のゴールまで走る一本道のタイムアタック。40秒以内で完走すれば第4公式大会・緑川グランプリの出場権だよ。何度でも挑戦できるよ！':'新作のスライドダンパーはその他欄、そこに付けるローラーはリヤ欄で選べるよ。前中はセラミック、リヤは二段にして、スパイラルと着地を両立させよう。';
     if(shop.id==='wakaba')for(const visitor of visitors)visitor.text=visitor.speaker==='三浦 結衣'?'長い連続コーナーの店へようこそ！ 公式杯の入賞者だけが来られるんだ。ここで優勝すると第3公式大会・星空テクニカル杯の出場権がもらえるよ。':'4:1ギア、スポンジタイヤ、低重心シャーシ、ゴムローラーとウェイト。昔のパーツも大切だよ。最高速だけ伸ばすと切り返しでコースアウトしやすいんだ。';
     for(const visitor of visitors){
@@ -439,7 +444,7 @@ export class ShopScene extends Phaser.Scene {
   }
   private interactWith(target:ShopTarget){
       this.gesture.reset();
-      if(target.kind==='official-speed'||target.kind==='official-dirt'||target.kind==='official-technical'||target.kind==='official-final')useGame.getState().openOfficialRace(target.kind==='official-final'?'final':target.kind==='official-technical'?'technical':target.kind==='official-speed'?'speed':'dirt');
+      if(target.kind==='official-speed'||target.kind==='official-dirt'||target.kind==='official-technical'||target.kind==='official-final'||target.kind==='official-zenith')useGame.getState().openOfficialRace(target.kind==='official-zenith'?'zenith':target.kind==='official-final'?'final':target.kind==='official-technical'?'technical':target.kind==='official-speed'?'speed':'dirt');
       else if(target.kind==='official-reception'||this.isOfficial&&target.speaker==='大会受付係')useGame.getState().openOfficialRace();
       else if(target.speaker==='森野 陸'){if(this.isOfficial)useGame.getState().talk(target.speaker,target.text);else useGame.getState().openOfficialRace();}
       else if(useGame.getState().location==='atelier'&&target.kind==='track')useGame.getState().talk('星霧模型工房','ここは販売専門店です。モーターとシャーシは店主から購入できます。レースはほかの模型店で楽しんでね。');
@@ -452,7 +457,7 @@ export class ShopScene extends Phaser.Scene {
       else if(target.kind==='challenger')useGame.getState().openVillainChallenge();
       else if(target.kind==='venue'){
         const venue=townVenues.find(v=>v.id===target.venueId)!;
-        if(venue.id==='stadium-5'||venue.id==='stadium-9'||venue.id==='stadium-10'){if(venue.id==='stadium-10'?useGame.getState().finalQualified:venue.id==='stadium-9'?useGame.getState().thirdOfficialQualified:useGame.getState().officialQualified)useGame.getState().enterOfficialVenue(venue.id);else useGame.getState().talk(venue.name,venueMessage(venue));}
+        if(venue.id==='stadium-5'||venue.id==='stadium-9'||venue.id==='stadium-10'||venue.id==='stadium-7'){if(venue.id==='stadium-7'?useGame.getState().zenithQualified:venue.id==='stadium-10'?useGame.getState().finalQualified:venue.id==='stadium-9'?useGame.getState().thirdOfficialQualified:useGame.getState().officialQualified)useGame.getState().enterOfficialVenue(venue.id);else useGame.getState().talk(venue.name,venueMessage(venue));}
         else if(venue.shopId&&isVenueOpen(venue,useGame.getState()))useGame.getState().enterShop(venue.shopId);
         else useGame.getState().talk(venue.name,venueMessage(venue));
       }

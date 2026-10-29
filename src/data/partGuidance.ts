@@ -1,6 +1,13 @@
+import {zenithParts} from './zenithParts';
 import type { Part } from './parts';
 export function partGuidance(part:Part):{use:string;tradeoff:string}{
  const s=part.specs;
+ if(zenithParts.some(p=>p.id===part.id)){
+ const use=part.category==='motor'?(part.id==='motor-tempest'?'あかつきと天頂決戦の高速型。5.2:1ギア・デューンシャーシ・アペックスタイヤで縦ループの力と砂地の接地を補います。':part.id==='motor-titan'?'あかつきと天頂決戦の高トルク型。4:1ギア・エクリプスシャーシ・ハイブリッドタイヤなどで高速も両立できます。':'あかつきと天頂決戦の万能型。4.2:1ギア・ホライゾンシャーシ・ハイブリッドタイヤを軸に、縦横ループ・砂地・着地を両立します。'):part.category==='roller'?'前・中・後へ1セットで設定できます。クラウンスライドのローラーはリヤ欄で選び、速度を残す前中と姿勢を支える後を使い分けます。':part.category==='accessory'?'その他①〜③の異なる種類を組み合わせ、縦横回転後の姿勢・砂地の接地・ジャンプの着地を支えます。スライドのローラーはリヤ欄で選びます。':'あかつきの試走と最長の天頂決戦向け。'+part.description;
+ const tradeoff=part.category==='motor'?'新品は約60秒の慣らしが必要。長距離レースでは摩耗も進みます。単品の出力だけでなく、ギア・砂地の追従・着地の制振も整えましょう。':part.category==='battery'?'走行と慣らしで消耗します。同じ種類を再購入すると1個の新品へ交換します。':part.category==='accessory'?'同じ種類は1個まで、重複装着できません。重量も加算されるので3枠の配分を考えましょう。':'単品で全難所を解決するものではありません。高速型・トルク型・悪路型の役割と重量を比べ、他のパーツと組み合わせましょう。';
+ return {use,tradeoff};
+ }
+
  if(part.id==='accessory-slide-rear')return {use:'その他①〜③に装着すると、リアウイング下にスライド機構が付き、リヤ欄で選んだローラーが両端に付きます。旋回の衝撃とジャンプ着地を吸収し、ゆうなぎ40秒切りを助けます。',tradeoff:'ローラーは別売り。リヤ欄でセラミックや二段ローラーを選ぼう。重量は5g増えます。同じ補助パーツは1個まで所持でき、複数枠には装着できません。'};
  if(part.id==='roller-ceramic')return {use:'ゆうなぎのスパイラルで速度を残したいときに。前・中・後で使え、リヤはスライドダンパーにも取り付けられます。',tradeoff:'安定・制振はロープロファイル二段の方が高めです。単体で飛距離不足を解決するパーツではありません。'};
  if(part.id==='roller-lowdouble')return {use:'ジャンプ着地や高速スパイラルの安定を優先。リヤのスライドダンパーと併用できます。1セットで前・中・後へ設定できます。',tradeoff:'セラミックより1g重く、摩擦も増えます。前中はセラミック、リヤは二段の使い分けもできます。'};

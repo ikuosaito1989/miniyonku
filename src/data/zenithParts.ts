@@ -1,0 +1,26 @@
+import type {Category} from './parts';
+const part=(id:string,category:Category,name:string,price:number,description:string,specs:Record<string,number>,performance:string)=>({id,category,name,price,description,specs,performance});
+export const zenithParts=[
+ part('motor-zenith','motor','ゼニス・ハイブリッドモーター',4200,'高速と登坂を両立する最上位バランス型。縦ループと砂地の両方へ対応。', {rpm:24500,torque:8,weight:21},'24,500 rpm / トルク8.0 / 21 g'),
+ part('motor-tempest','motor','テンペスト・スプリント',4500,'最高速を優先する最上位型。縦ループでは高トルクギアと組み、砂地の接地も補おう。',{rpm:28500,torque:6.5,weight:19},'28,500 rpm / トルク6.5 / 19 g'),
+ part('motor-titan','motor','タイタン・クライム',4300,'登坂・砂地・縦ループで力を発揮する最上位高トルク型。最高速はテンペストに譲る。',{rpm:22000,torque:11,weight:23},'22,000 rpm / トルク11.0 / 23 g'),
+ part('chassis-horizon','chassis','K7 ホライゾン・ハイブリッド',4600,'軽量・制振・悪路追従を両立。舗装と砂地が交互に現れる長距離向け。',{weight:17,efficiency:1.17,stability:1.65,damping:.22,roughGrip:1.6,roughResistance:.4,compliance:1.8},'17 g / 効率1.17 / 安定1.65 / 制振22%'),
+ part('chassis-dune','chassis','K7 デューン・フレックス',4400,'砂地の抵抗と着地の跳ねを抑える強化シャーシ。舗装加速はエアロ型より控えめ。',{weight:19,efficiency:1.12,stability:1.55,damping:.35,roughGrip:2,roughResistance:.2,compliance:2.5},'19 g / 悪路抵抗×0.20 / 追従×2.50'),
+ part('chassis-eclipse','chassis','K7 エクリプス・エアロ',4900,'軽量・高効率・高い旋回安定を持つ舗装寄りの最上位型。砂地はタイヤとダンパーで補う。',{weight:14,efficiency:1.23,stability:1.8,damping:.12,roughGrip:1.25,roughResistance:.55,compliance:1.25},'14 g / 効率1.23 / 安定1.80'),
+ part('tire-hybrid','tire','ハイブリッド・マイクロトレッド',2400,'薄いトレッドで砂をつかみ、舗装でも転がりを残す万能タイヤ。',{diameter:26,grip:1.6,weight:9,pavedDrag:.004,compliance:2,roughResistance:.35,damping:.1},'径26 mm / グリップ1.60 / 悪路抵抗×0.35'),
+ part('tire-dunepro','tire','デューン・ソフトプロ',2500,'深い砂とジャンプ着地を重視する最上位悪路タイヤ。舗装では軽量型より抵抗が増す。',{diameter:27,grip:1.5,weight:11,pavedDrag:.012,compliance:2.8,roughResistance:.2,damping:.18},'径27 mm / 追従×2.80 / 制振18%'),
+ part('tire-apex','tire','アペックス・ハイグリップ',2600,'連続旋回に強い軽量タイヤ。砂地はフレックスシャーシや制振パーツと組み合わせる。',{diameter:26,grip:1.85,weight:7,compliance:1.6,roughResistance:.55,damping:.08},'径26 mm / グリップ1.85 / 7 g'),
+ part('wheel-zenith','wheel','ゼニス・フローティング8',2800,'内外輪の回転差を逃がす最軽量クラスの上位ホイール。舗装旋回と再加速向け。',{weight:3,diameter:17,cornerDrag:.3},'3 g / 旋回抵抗×0.30'),
+ part('wheel-tough','wheel','タフリム・クロス10',2600,'着地を支える軽量強化リム。砂用タイヤとの組み合わせに適する。',{weight:4,diameter:17,cornerDrag:.42},'4 g / 旋回抵抗×0.42'),
+ part('roller-zenith','roller','ゼニス・セラミックガイド',2900,'低摩擦と軽さを両立した最上位ローラー。前中後を1セットで装着可能。',{friction:.022,weight:5,stability:1.2,damping:.08},'摩擦0.022 / 安定1.20 / 5 g'),
+ part('roller-crown','roller','クラウン・ツインガイド',3200,'上下のガイドで高速旋回と着地を支える。軽量ローラーより重いが安定性が高い。',{friction:.04,weight:7,stability:1.35,damping:.18},'摩擦0.040 / 安定1.35 / 制振18%'),
+ part('accessory-gyro','accessory','アクティブ・ジャイロステー',2700,'縦横の切り返し後の姿勢を安定させる補助ステー。制振パーツと併用可能。',{weight:5,stability:1.35,efficiency:1,damping:.2},'5 g / 安定×1.35 / 制振20%'),
+ part('accessory-active','accessory','アクティブ・ツインダンパー',2800,'大きなジャンプと砂地の振動を吸収。軽量構成では重量とのバランスを考えよう。',{weight:7,stability:1.18,efficiency:1,damping:.5},'7 g / 安定×1.18 / 制振50%'),
+ part('accessory-drivepro','accessory','カーボン駆動サポートPRO',2400,'軽さを保って駆動効率を改善。ループの登りや着地後の加速を支える。',{weight:2,stability:1.04,efficiency:1.1},'2 g / 駆動効率×1.10'),
+ part('accessory-slide-pro','accessory','クラウン・リヤスライド',3100,'最上位の軽量スライドステー。その他欄に装着し、ローラーはリヤ欄で選択する。',{weight:4,stability:1.28,efficiency:1,damping:.42,cornerDrag:.82},'4 g / 安定×1.28 / 制振42%'),
+ part('battery-zenith','battery','ゼニス・マラソンセル',1700,'最長コースへ向けた高容量・高出力の最上位電池。種類ごとに1個、再購入で新品交換。',{weight:40,power:1.08,endurance:520},'2本40 g / 出力×1.08 / 持続係数520秒'),
+ part('gear-4.2','gear','チタン精密ギア 4.2:1',1800,'高速と縦ループでの駆動力を両立する中間比。バランス型・トルク型向け。',{ratio:4.2,weight:3},'減速比4.2:1 / 3 g'),
+ part('gear-5.2','gear','ループトルクギア 5.2:1',1800,'縦ループや急坂の駆動力を優先。高速モーターと組み、低い最高速を補う。',{ratio:5.2,weight:3},'減速比5.2:1 / 3 g'),
+ part('shaft-titan','shaft','チタン中空シャフト',2000,'最上位の軽量シャフト。加速の負担を減らし、重い悪路パーツの重量を補う。',{weight:2},'2 g / 軽量シャフト'),
+ part('terminal-platinum','terminal','プラチナ接点ターミナル',2200,'接点損失を減らす上位端子。長いコースでモーターと電池の力を引き出す。',{weight:1.5,efficiency:.99},'1.5 g / 伝達効率99%'),
+];

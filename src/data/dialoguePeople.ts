@@ -1,6 +1,6 @@
 import { doctor } from './doctor';
 import { story, shopVisitors } from './story';
-export type DialoguePersonId='senior'|'yuunagiOwner'|'atelierOwner'|'owner'|'aozoraOwner'|'hinataOwner'|'villain'|'rival'|'guide'|'mechanic'|'legendRei'|'legendGaku'|'doctor'|'offroader'|'venueStaff'|'wakabaOwner';
+export type DialoguePersonId='akatsukiOwner'|'senior'|'yuunagiOwner'|'atelierOwner'|'owner'|'aozoraOwner'|'hinataOwner'|'villain'|'rival'|'guide'|'mechanic'|'legendRei'|'legendGaku'|'doctor'|'offroader'|'venueStaff'|'wakabaOwner';
 export const dialoguePeople:Record<DialoguePersonId,{name:string;role:string;expression:string;ageGroup:'adult'|'elementary';faceBase:string}>={
   yuunagiOwner:{name:'夕凪 慎吾',role:'ゆうなぎ模型店 店主',expression:'落ち着いた笑顔',ageGroup:'adult',faceBase:'owner'},
   atelierOwner:{name:'星野 玄一',role:'星霧模型工房 店主',expression:'落ち着いた笑顔',ageGroup:'adult',faceBase:'owner'},
@@ -11,6 +11,7 @@ export const dialoguePeople:Record<DialoguePersonId,{name:string;role:string;exp
   owner:{name:story.owner,role:'こもれび模型店 店主',expression:'明るい笑顔',ageGroup:'adult',faceBase:'owner'},
   aozoraOwner:{name:'青井 晴彦',role:'あおぞら模型店 店主',expression:'気さくな笑顔',ageGroup:'adult',faceBase:'owner'},
   hinataOwner:{name:'日向 誠二',role:'ひなた模型店 店主',expression:'頼もしい笑顔',ageGroup:'adult',faceBase:'owner'},
+  akatsukiOwner:{name:'暁堂 司',role:'あかつき模型店 店主',expression:'頼もしい笑顔',ageGroup:'adult',faceBase:'owner'},
   senior:{name:'黒瀬 迅',role:'黒岩の先輩・決勝の強敵',expression:'肩までの黒髪とクールな目元',ageGroup:'elementary',faceBase:'child-common'},
   villain:{name:'黒岩 豪',role:'あおぞら模型店の挑戦者・小学生',expression:'太い眉と不敵な笑み',ageGroup:'elementary',faceBase:'rival'},
   rival:{name:story.rival,role:'ライバル・小学生',expression:'自信のある笑顔',ageGroup:'elementary',faceBase:'rival'},

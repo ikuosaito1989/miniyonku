@@ -6,5 +6,5 @@ export function racePrize(race: RaceState): number {
   if (race.phase !== 'finished') return 0;
   const ranked = rankRacers(race);
   const place = ranked.findIndex(r => r.id === 'player');
-  return place >= 0 && ranked[place].driving.status === 'finished' ? (race.event==='official'&&race.circuitId!=='comet'&&race.circuitId!=='grandprix'?OFFICIAL_PRIZES:prizesForCircuit(race.circuitId))[place] ?? 0 : 0;
+  return place >= 0 && ranked[place].driving.status === 'finished' ? (race.event==='official'&&race.circuitId!=='comet'&&race.circuitId!=='grandprix'&&race.circuitId!=='zenith'?OFFICIAL_PRIZES:prizesForCircuit(race.circuitId))[place] ?? 0 : 0;
 }

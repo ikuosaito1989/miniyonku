@@ -1,7 +1,9 @@
+import {zenithParts} from './zenithParts';
 export const MAX_PART_LEVEL=10;
 import { bodies } from './bodies';
 // レベルは単純な速度倍率ではなく、入手段階の目安。
 export const partLevels:Record<string,number>={
+  ...Object.fromEntries(zenithParts.map(p=>[p.id,9])),
   'accessory-slide-rear':6,'roller-ceramic':6,'roller-lowdouble':6,'motor-surge':6,'wheel-floating':6,'tire-landing':6,
   'motor-sovereign':10,'chassis-sovereign':10,
   'wheel-aero':3,'wheel-rally':4,'wheel-carbon':5,'wheel-diff':5,

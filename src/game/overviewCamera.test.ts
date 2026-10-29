@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {getCircuitTrack,type CircuitId} from '../data/circuit';
 import {overviewFrame,overviewViewportFrame,overviewCarScale} from './overviewCamera';
 test('全体カメラは全コースの立体レーンを画角内に保ち、縦長・横長とも中央に収める',()=>{
- for(const id of ['leaf','wind','sun','sprint','grove','comet','trail','grandprix'] as CircuitId[])for(const aspect of [.45,.8,1,1.7,2.8]){
+ for(const id of ['leaf','wind','sun','sprint','grove','comet','trail','grandprix','forge','zenith'] as CircuitId[])for(const aspect of [.45,.8,1,1.7,2.8]){
   const track=getCircuitTrack(id),frame=overviewFrame(track,aspect),center=frame.target;
   for(const lane of [0,4])for(let i=0;i<=1500;i++){
    const p=track.sampleLanePath(i*track.circuitLength/1500,lane),x=(p.x-center.x)*frame.right.x+(p.y-center.y)*frame.right.y+(p.z-center.z)*frame.right.z,y=(p.x-center.x)*frame.up.x+(p.y-center.y)*frame.up.y+(p.z-center.z)*frame.up.z;

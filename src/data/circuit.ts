@@ -1,7 +1,8 @@
+import {buildZenithTrack} from './zenithCircuit';
 import {yuunagiPoint} from './yuunagiCircuit';
 import {wakabaPoint} from './wakabaCircuit';
 import { pavedSurface, dirtSurface } from './surfaces';
-export type CircuitId='leaf'|'wind'|'sun'|'sprint'|'grove'|'comet'|'trail'|'grandprix';
+export type CircuitId='leaf'|'wind'|'sun'|'sprint'|'grove'|'comet'|'trail'|'grandprix'|'forge'|'zenith';
 export const circuitDefinitions={
   grandprix:{cornerLoad:1.9,surface:pavedSurface,name:'緑川ツイスト・スパイラル',laps:1,laneWidth:.22,lanes:5,radiusX:38,radiusZ:18,asymmetry:0,chicane:0,samples:3600},
   trail:{cornerLoad:1.8,surface:pavedSurface,name:'夕凪ワンウェイ・スパイラル',laps:1,laneWidth:.22,lanes:5,radiusX:22,radiusZ:15,asymmetry:0,chicane:0,samples:2400},
@@ -12,7 +13,7 @@ export const circuitDefinitions={
   wind:{surface:pavedSurface,name:'そよかぜテクニカル',laps:5,laneWidth:.22,lanes:5,radiusX:5.2,radiusZ:3.2,asymmetry:.35,chicane:1,samples:960},
   sun:{surface:dirtSurface,name:'サンリッジ・ダートエンデューロ',laps:5,laneWidth:.22,lanes:5,radiusX:9.8,radiusZ:6.4,asymmetry:1.1,chicane:1.5,samples:1440},
 };
-function buildCircuit(id:CircuitId){
+function buildCircuit(id:Exclude<CircuitId,'forge'|'zenith'>){
   const circuit=circuitDefinitions[id],open=id==='trail'||id==='grandprix';
   const weave=id==='sun'?.48:0;
   const waves=id==='grove'?.696:id==='comet'?.95:0;
@@ -76,7 +77,7 @@ function buildCircuit(id:CircuitId){
   function sampleLanePath(distance:number,initialLane:number){
     const epsilon=.002,p=lanePoint(distance,initialLane),before=lanePoint(distance-epsilon,initialLane),after=lanePoint(distance+epsilon,initialLane);
     const dx=(after.x-before.x)/(2*epsilon),dy=(after.y-before.y)/(2*epsilon),dz=(after.z-before.z)/(2*epsilon),ddx=(after.x-2*p.x+before.x)/epsilon**2,ddz=(after.z-2*p.z+before.z)/epsilon**2,horizontal=Math.hypot(dx,dz);
-    return {...p,tangentX:dx/horizontal,tangentZ:dz/horizontal,pitch:Math.atan2(dy,horizontal),pathScale:Math.hypot(dx,dy,dz),curvature:Math.abs(dx*ddz-dz*ddx)/horizontal**3};
+    return {...p,bank:0,loopAngle:0,loopRadius:0,sideX:dz/horizontal,sideY:0,sideZ:-dx/horizontal,upX:0,upY:1,upZ:0,forwardX:dx/Math.hypot(dx,dy,dz),forwardY:dy/Math.hypot(dx,dy,dz),forwardZ:dz/Math.hypot(dx,dy,dz),tangentX:dx/horizontal,tangentZ:dz/horizontal,pitch:Math.atan2(dy,horizontal),pathScale:Math.hypot(dx,dy,dz),curvature:Math.abs(dx*ddz-dz*ddx)/horizontal**3};
   }
   const surfaceAt=(distance:number)=>{
     if(id!=='sun')return circuit.surface;
@@ -84,10 +85,10 @@ function buildCircuit(id:CircuitId){
     return progress<.18?{name:'締まった土',roughness:.45,grip:.9}:progress<.4?{name:'砂利ストレート',roughness:.95,grip:.72}:progress<.7?{name:'荒れたダート連続コーナー',roughness:1,grip:.76}:{name:'砂地のS字',roughness:.8,grip:.65};
   };
   // 連続した切り返しで姿勢を戻す余裕が少なく、旋回時の負荷が増す。
-  return {open,obstacles,courseProgress,isJumpGap,obstacleHeight,cornerLoad:'cornerLoad' in circuit?circuit.cornerLoad:1,surfaceAt,circuit,circuitLength,startDistance,laneOffset,sampleCircuit,laneChange,sampleLanePath,startRamp,startRampHeight};
+  return {fairLanes:id==='grandprix',jumps:obstacles?[obstacles.jump]:[],open,obstacles,courseProgress,isJumpGap,obstacleHeight,cornerLoad:'cornerLoad' in circuit?circuit.cornerLoad:1,surfaceAt,circuit,circuitLength,startDistance,laneOffset,sampleCircuit,laneChange,sampleLanePath,startRamp,startRampHeight};
 }
 export type CircuitTrack=ReturnType<typeof buildCircuit>;
-const tracks:Record<CircuitId,CircuitTrack>={leaf:buildCircuit('leaf'),wind:buildCircuit('wind'),sun:buildCircuit('sun'),sprint:buildCircuit('sprint'),grove:buildCircuit('grove'),comet:buildCircuit('comet'),trail:buildCircuit('trail'),grandprix:buildCircuit('grandprix')};
+const tracks:Record<CircuitId,CircuitTrack>={leaf:buildCircuit('leaf'),wind:buildCircuit('wind'),sun:buildCircuit('sun'),sprint:buildCircuit('sprint'),grove:buildCircuit('grove'),comet:buildCircuit('comet'),trail:buildCircuit('trail'),grandprix:buildCircuit('grandprix'),forge:buildZenithTrack(buildCircuit('trail'),true),zenith:buildZenithTrack(buildCircuit('trail'))};
 export const getCircuitTrack=(id:CircuitId='leaf')=>tracks[id];
 // 既存の計算・テストのデフォルトは入門コースのまま。
 export const {circuit,circuitLength,startDistance,laneOffset,sampleCircuit,laneChange,sampleLanePath}=tracks.leaf;

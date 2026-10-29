@@ -53,7 +53,7 @@ function lowWedgeShell(sections:number[][],color:number,shininess=85){
 }
 
 export function buildRaceMachineModel(racer:Pick<Entrant,'id'|'color'|'equipment'>){
- return buildMachineModel(racer.color,racer.equipment,racer.id===challenger.id?'kuroiwa':racer.id!=='player'&&racer.id!=='riku'&&!racer.id.startsWith('legend-')?'mob-kei':'stock');
+ return buildMachineModel(racer.color,racer.equipment,racer.id===challenger.id?'kuroiwa':racer.id!=='player'&&racer.id!=='riku'&&racer.id!=='jin'&&!racer.id.startsWith('legend-')?'mob-kei':'stock');
 }
 
 export function buildMachineModel(racerColor:number,equipment:Equipment,appearance:'stock'|'mob-kei'|'kuroiwa'='stock'){
@@ -221,7 +221,7 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
   const slideCarriages:THREE.Group[]=[];
   for(const [accessoryIndex,accessoryId] of [equipment.accessory,equipment.accessory2,equipment.accessory3].entries()){
     const accessoryStart=car.children.length;
-    if(accessoryId==='accessory-slide-rear'){
+    if((accessoryId==='accessory-slide-rear'||accessoryId==='accessory-slide-pro')){
       const {housing,carriage}=buildRearSlide(accessoryIndex);car.add(housing,carriage);rearSlide??=carriage;slideCarriages.push(carriage);
     }else if(accessoryId.startsWith('accessory-damper')){
       for(const side of [-1,1]){
@@ -240,7 +240,7 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
     }else if(accessoryId==='accessory-support'){
       for(const side of [-1,1])add(new THREE.BoxGeometry(.008,.012,.11),partMaterial(accessoryId,75),side*.07,.031,0).name='underbody-support';
     }
-    if(accessoryId!=='accessory-slide-rear')for(const item of car.children.slice(accessoryStart))item.position.z+=accessoryIndex*.022;
+    if(accessoryId!=='accessory-slide-rear'&&accessoryId!=='accessory-slide-pro')for(const item of car.children.slice(accessoryStart))item.position.z+=accessoryIndex*.022;
   }
   for(const z of [-.083,.083]){
     const axle=add(new THREE.CylinderGeometry(equipment.shaft==='shaft-1'?.002:.003,equipment.shaft==='shaft-1'?.002:.003,.179,12),partMaterial(equipment.shaft,85),0,.033,z);axle.rotation.z=Math.PI/2;axle.name='drive-shaft';
@@ -270,12 +270,12 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
   for(const x of [-.101,.101])for(const z of [-.13,0,.125]){
     const rollerStart=car.children.length;
     const slot=z<0?'rollerRear':z>0?'rollerFront':'rollerSide',id=equipment[slot];
-    if(id==='roller-double'||id==='roller-lowdouble'){
+    if(id==='roller-double'||id==='roller-lowdouble'||id==='roller-crown'){
       add(new THREE.CylinderGeometry(.0025,.0025,id==='roller-lowdouble'?.034:.055,12),metal,x,id==='roller-lowdouble'?.058:.065,z).name='double-roller-pole';
       add(new THREE.CylinderGeometry(.014,.014,.009,24),partMaterial(id,65),x,id==='roller-lowdouble'?.063:.083,z).name='double-roller-upper';
       const upperRing=add(new THREE.TorusGeometry(.01,.0015,6,24),partAccent(id,85),x,id==='roller-lowdouble'?.068:.088,z);upperRing.rotation.x=Math.PI/2;
     }
-    const machined=id==='roller-2'||id==='roller-double'||id==='roller-turn'||id==='roller-ceramic'||id==='roller-lowdouble';
+    const machined=id==='roller-2'||id==='roller-double'||id==='roller-turn'||id==='roller-ceramic'||id==='roller-lowdouble'||id==='roller-zenith'||id==='roller-crown';
     const rollerMaterial=machined?metal:partMaterial(id,id==='roller-1'?12:60);
     const profile=[new THREE.Vector2(.0105,-.0045),new THREE.Vector2(.0137,-.0045),new THREE.Vector2(.014,-.003),new THREE.Vector2(.014,.003),new THREE.Vector2(.0137,.0045),new THREE.Vector2(.0105,.0045),new THREE.Vector2(.0105,-.0045)];
     const base=add(machined?new THREE.LatheGeometry(profile,32):new THREE.CylinderGeometry(.014,.014,.009,32),rollerMaterial,x,.045,z);base.name=`roller-${slot}-${id}`;

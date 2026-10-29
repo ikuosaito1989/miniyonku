@@ -15,10 +15,10 @@ export const officialVenuePeople=[
  {id:'ren',x:600,y:180,name:'高橋 蓮',kind:'guide' as const,text:'2つのコースは別のセッティングが必要。電池もピットで確認しておこう。'},
 ];
 export function officialVenueFor(id:string){
- return id==='stadium-10'?{...officialVenue,id:'stadium-10' as const,name:'緑川グランプリ決勝会場'}:id==='stadium-9'?{...officialVenue,id:'stadium-9' as const,name:'星空公式レース会場'}:officialVenue;
+ return id==='stadium-7'?{...officialVenue,id:'stadium-7' as const,name:'天頂決戦・ゼニス・クラウン'}:id==='stadium-10'?{...officialVenue,id:'stadium-10' as const,name:'緑川グランプリ決勝会場'}:id==='stadium-9'?{...officialVenue,id:'stadium-9' as const,name:'星空公式レース会場'}:officialVenue;
 }
 export function officialFixturesFor(id:string){
- return id==='stadium-10'?[
+ return id==='stadium-7'?[{id:'zenith',x:220,y:230,w:520,h:210,label:'天頂決戦・アルティメットコース',kind:'official-zenith' as const},...officialVenueFixtures.filter(f=>f.id!=='speed'&&f.id!=='dirt')]:id==='stadium-10'?[
   {id:'final',x:220,y:230,w:520,h:210,label:'緑川グランプリ・一本道決勝',kind:'official-final' as const},
   ...officialVenueFixtures.filter(f=>f.id!=='speed'&&f.id!=='dirt'),
  ]:id==='stadium-9'?[
@@ -28,12 +28,19 @@ export function officialFixturesFor(id:string){
 }
 
 export function officialPeopleFor(id:string){
+ if(id==='stadium-7')return [
+ {id:'staff',x:815,y:362,name:'大会受付係',kind:'owner' as const,text:'天頂決戦・ゼニス・クラウン。今度こそ最後の舞台です。2位以内の完走でゲームクリア。3位以下・リタイアはゲームオーバー。一度限り、登録前にピットで整備してください。'},
+ {id:'rei',x:285,y:180,name:'風見 怜',kind:'rival' as const,text:'今度は僕たちも相手だ。あかつきで磨いた装備で、すべての難所を越えてこよう。最後まで本気で走るよ。'},
+ {id:'gaku',x:655,y:180,name:'火野 岳',kind:'rival' as const,text:'縦ループで失速しないトルクとギア、砂で止まらない足まわり。最高速だけじゃ、この最後のコースは勝てないぜ！'},
+ {id:'go',x:270,y:480,name:'黒岩 豪',kind:'rival' as const,text:'最強のパーツを組み直してきた。今度こそ俺が勝つ！'},
+ {id:'jin',x:700,y:480,name:'黒瀬 迅',kind:'rival' as const,text:'ここが頂点だ。全部の要素を走り切れるか。お前の答えをコースで見せろ。'},
+ ];
  if(id==='stadium-10')return [
- {id:'staff',x:815,y:362,name:'大会受付係',kind:'owner' as const,text:'緑川グランプリ決勝です。一度だけの一本道勝負。2位以内の完走でゲームクリア、3位以下・リタイアはゲームオーバー。出場前にピットで整備を。'},
+ {id:'staff',x:815,y:362,name:'大会受付係',kind:'owner' as const,text:'緑川グランプリ決勝です。一度だけの一本道勝負。2位以内であかつき模型店を開放、3位以下・リタイアはゲームオーバー。出場前にピットで整備を。'},
  {id:'jin',x:700,y:480,name:'黒瀬 迅',kind:'rival' as const,text:'お前が黒岩を負かしたっていう新人か。俺は黒瀬 迅、こいつの先輩だ。夕凪なら38秒台。決勝でお前の走りが通用するか、見せてもらおうじゃねえか。'},
  {id:'go',x:270,y:480,name:'黒岩 豪',kind:'rival' as const,text:'迅先輩まで来てるんだ。今度こそ俺が勝つ！ 夕凪より増えた切り返しで、気を抜くなよ。'},
  {id:'sou',x:340,y:180,name:'石川 蒼',kind:'mechanic' as const,text:'とうとう決勝だね。スパイラルの後もS字が続くから、着地と旋回を整えてきたよ。'},
- {id:'ren',x:600,y:180,name:'高橋 蓮',kind:'guide' as const,text:'2位までがクリアなんだって。新品電池と慣らし済みモーターを確認しておこう。'},
+ {id:'ren',x:600,y:180,name:'高橋 蓮',kind:'guide' as const,text:'2位までがあかつきへ進めるんだって。新品電池と慣らし済みモーターを確認しておこう。'},
  {id:'rei',x:285,y:180,name:'風見 怜',kind:'rival' as const,text:'ここまで来たね、湊くん。僕たちは応援席から見守っているよ。夕凪で磨いたセッティングを信じて、最後まで走り切ろう！'},
  {id:'gaku',x:655,y:180,name:'火野 岳',kind:'rival' as const,text:'今日は俺たちは応援だ！ 相手の威勢に飲まれるな。スライドとローラーで切り返しを支えて、2位以内をつかんでこい！'},
  ];
