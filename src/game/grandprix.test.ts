@@ -27,7 +27,7 @@ test('出場権で緑川会場へ入場し、決勝・ピット・黒岩・先�
 test('一本道の決勝は夕凪より複雑で、先輩は夕凪38秒台。新作の通常装備で2位以内を狙える',()=>{
  const trail=getCircuitTrack('trail'),track=getCircuitTrack('grandprix');assert.ok(track.open);assert.equal(track.circuit.laps,1);assert.ok(track.circuitLength>trail.circuitLength+8);assert.ok(track.obstacles);
  const s=run(senior.equipment,'trail').racers[0];assert.equal(s.driving.status,'finished');assert.ok(s.driving.time>=38&&s.driving.time<39);
- for(const seed of [1,42,999]){const race=run({...seniorEquipment,body:'body-champion'},'grandprix',seed);assert.equal(race.racers.length,5);assert.ok(race.racers.every(r=>r.driving.status==='finished'));assert.ok(rankRacers(race).findIndex(r=>r.id==='player')<=1);assert.ok((race.racers[0].driving.landings??0)>=1);}
+ for(const seed of [1,42,999]){const race=run({...seniorEquipment,body:'body-champion'},'grandprix',seed);assert.equal(race.racers.length,5);assert.ok(race.racers.every(r=>r.driving.status==='finished'));const go=race.racers.find(r=>r.id==='go')!;assert.ok(go.driving.time>42&&go.driving.time<43.6);assert.ok(rankRacers(race).findIndex(r=>r.id==='player')<=1);assert.ok((race.racers[0].driving.landings??0)>=1);}
  for(const lane of [0,1,2,3,4])for(let i=0;i<=1500;i++){const p=track.sampleLanePath(i/1500*track.circuitLength,lane);assert.ok([p.x,p.y,p.z,p.curvature,p.pathScale].every(Number.isFinite));assert.ok(p.pathScale>.1);}
 });
 test('2位以内でクリア、3位以下とリタイアはゲームオーバー。一度のみ・報酬重複なし・保存復元',async()=>{

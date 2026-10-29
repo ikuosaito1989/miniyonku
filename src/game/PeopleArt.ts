@@ -10,33 +10,33 @@ const outfits={
   mechanic:{ink:'#273c50',shirt:'#317d91',light:'#9bd3cc',shade:'#24536f',hair:'#333e54',hairLight:'#728091',pants:'#365777'},
 } as const;
 const challengerColors:Record<string,string>={'#b14b67':'#514164','#ec9aa2':'#a49ab9','#7f3757':'#30283f','#39304b':'#242532','#89637c':'#535369','#4c4e70':'#343347'};
-/** 共通の小学生原画から、丸い頬・幅広の胴・太い眉で黒岩を描き分ける。 */
+/** 共通原画に肩までの黒髪と落ち着いた目元を加えた黒岩。 */
 export function challengerDrawing(direction:Facing,frame=0):PixelShape[]{
-  const facing=direction==='left'?'right':direction;
-  const widen=(x:number,y:number)=>Math.round(30+(x-30)*(y<36?1.25:1.45));
-  const shapes:PixelShape[]=personDrawing('rival',facing,frame).map(shape=>{
-    const color=challengerColors[shape.color]??shape.color;
-    if(shape.kind==='rect')return {...shape,color,x:widen(shape.x,shape.y),w:widen(shape.x+shape.w,shape.y)-widen(shape.x,shape.y)};
-    return {...shape,color,points:shape.points.map(([x,y])=>[widen(x,y),y] as const)};
-  });
-  const pen=pixelPen(),bob=frame===1||frame===3?1:0;
-  if(facing!=='up'){
-    if(facing==='down'){
-      pen.polygon([[19,18+bob],[27,21+bob],[27,23+bob],[19,21+bob]],'#242532');
-      pen.polygon([[33,21+bob],[41,18+bob],[41,21+bob],[33,23+bob]],'#242532');
-      pen.polygon([[25,30+bob],[36,29+bob],[34,33+bob],[27,34+bob]],'#713d50');
-      pen.rect(27,30+bob,7,1,'#fff0d8');
-      pen.rect(17,29+bob,5,2,'#e4a08b');pen.rect(39,29+bob,5,2,'#e4a08b');
-    }else{
-      pen.polygon([[36,18+bob],[43,20+bob],[43,23+bob],[36,21+bob]],'#242532');
-      pen.rect(39,30+bob,6,2,'#713d50');pen.rect(40,30+bob,4,1,'#fff0d8');
-    }
-    // 黒と金の横縞ジャケット。体格を服のシルエットでも伝える。
-    pen.rect(facing==='down'?17:25,47+bob,facing==='down'?27:16,4,'#b9a15c');
-    pen.rect(facing==='down'?18:25,52+bob,facing==='down'?25:16,2,'#30283f');
-  }
-  const drawing=[...shapes,...pen.shapes];
-  return direction==='left'?drawing.map(shape=>shape.kind==='rect'?{...shape,x:60-shape.x-shape.w}:{...shape,points:shape.points.map(([x,y])=>[60-x,y] as const)}):drawing;
+ const facing=direction==='left'?'right':direction,bob=frame===1||frame===3?1:0;
+ const base=personDrawing('rival',facing,frame).map(shape=>({...shape,color:challengerColors[shape.color]??shape.color}));
+ const back=pixelPen(),front=pixelPen();
+ if(facing==='down'||facing==='up'){
+  back.polygon([[17,12+bob],[42,12+bob],[46,24+bob],[45,43+bob],[40,48+bob],[35,43+bob],[23,44+bob],[15,47+bob],[13,37+bob],[14,23+bob]],'#242532');
+  for(const x of [16,19,40,43])back.rect(x,23+bob,1,19,'#535369');
+ }else{
+  back.polygon([[20,13+bob],[37,11+bob],[42,20+bob],[37,30+bob],[37,43+bob],[27,48+bob],[19,43+bob],[17,31+bob]],'#242532');
+  back.rect(21,22+bob,2,20,'#535369');back.rect(25,29+bob,1,15,'#686078');
+ }
+ if(facing==='down'){
+  front.polygon([[16,13+bob],[24,6+bob],[38,8+bob],[43,17+bob],[35,14+bob],[28,17+bob],[20,28+bob],[17,35+bob]],'#242532');
+  front.polygon([[22,12+bob],[30,9+bob],[25,16+bob],[20,21+bob]],'#535369');
+  front.rect(23,20+bob,5,1,'#242532');front.rect(33,20+bob,6,1,'#242532');
+  for(const x of [21,34]){front.rect(x,23+bob,6,7,'#f3c5a0');front.rect(x,24+bob,5,2,'#fff2d8');front.rect(x+2,24+bob,2,2,'#303443');}front.rect(27,31+bob,8,4,'#f3c5a0');front.rect(28,32+bob,6,1,'#845269');
+  front.rect(20,44+bob,20,2,'#b9a15c');front.rect(29,39+bob,2,19,'#b9a15c');
+ }else if(facing==='up'){
+  front.polygon([[17,12+bob],[24,6+bob],[38,8+bob],[44,18+bob],[44,40+bob],[37,47+bob],[24,45+bob],[16,43+bob],[14,25+bob]],'#242532');
+  for(const x of [20,24,29,34,39])front.rect(x,17+bob,1,25,'#535369');
+ }else{
+  front.polygon([[22,12+bob],[31,7+bob],[41,13+bob],[43,19+bob],[35,16+bob],[31,24+bob],[27,38+bob],[22,44+bob]],'#242532');
+  front.rect(25,16+bob,1,23,'#535369');front.rect(38,21+bob,6,1,'#242532');front.rect(36,23+bob,6,6,'#f3c5a0');front.rect(37,24+bob,5,2,'#fff2d8');front.rect(39,24+bob,2,2,'#303443');front.rect(37,30+bob,7,4,'#f3c5a0');front.rect(39,32+bob,5,1,'#845269');front.rect(28,44+bob,10,2,'#b9a15c');
+ }
+ const drawing=[...back.shapes,...base,...front.shapes];
+ return direction==='left'?drawing.map(shape=>shape.kind==='rect'?{...shape,x:60-shape.x-shape.w}:{...shape,points:shape.points.map(([x,y])=>[60-x,y] as const)}):drawing;
 }
 
 /** 役割ごとの服・体型と、方向別の独立したシルエットを持つオリジナル原画。 */

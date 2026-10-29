@@ -19,6 +19,6 @@ export const wakabaRivals:Entrant[]=technicalRivals.map((r,i)=>({...r,motorSecon
 export const seniorEquipment={...wakabaRivals[0].equipment,body:'body-proto',motor:'motor-surge',tire:'tire-landing',wheel:'wheel-floating',rollerFront:'roller-ceramic',rollerSide:'roller-ceramic',rollerRear:'roller-lowdouble',shaft:'shaft-1',terminal:'terminal-1',accessory:'accessory-stabilizer',accessory2:'accessory-support',accessory3:'accessory-slide-rear'};
 export const senior:Entrant={id:'jin',name:'黒瀬 迅',lane:0,color:0x612b3e,motorSeconds:60,equipment:seniorEquipment};
 export const grandprixRivals:Entrant[]=[senior,
- {...challenger,motorSeconds:60,equipment:{...seniorEquipment,body:'body-sport',motor:'motor-rally',wheel:'wheel-diff',rollerFront:'roller-2',rollerSide:'roller-2',rollerRear:'roller-2'}},
+ {...challenger,motorSeconds:60,equipment:{...seniorEquipment,body:'body-sport',motor:'motor-surge',wheel:'wheel-floating',rollerFront:'roller-2',rollerSide:'roller-2',rollerRear:'roller-2'}},
  ...wakabaRivals.filter(r=>r.id==='sou'||r.id==='ren').map(r=>({...r,motorSeconds:60,equipment:{...r.equipment,body:'body-sedan',motor:'motor-rally',accessory3:'accessory-damper-light'}})),
 ];

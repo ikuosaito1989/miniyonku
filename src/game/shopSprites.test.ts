@@ -28,13 +28,9 @@ test('専用カウンターの面・小物・ガラスの透過レイヤーは�
   assert.deepEqual(shapes,counterDrawing());
 });
 
-test('黒岩は共通顔を元に体幅・表情を描き分け、全方向・歩行が原画内に収まる',()=>{
+test('黒岩は共通顔を元に長髪・表情を描き分け、全方向・歩行が原画内に収まる',()=>{
   for(const facing of ['down','up','left','right'] as const)for(let frame=0;frame<4;frame++)inside(challengerDrawing(facing,frame),60,80);
-  const width=(shapes:PixelShape[])=>{
-    const xs=shapes.flatMap(shape=>shape.kind==='rect'?[shape.x,shape.x+shape.w]:shape.points.map(point=>point[0]));
-    return Math.max(...xs)-Math.min(...xs);
-  };
-  assert.ok(width(challengerDrawing('down'))>width(personDrawing('rival','down',0)));
+  assert.ok(challengerDrawing('down').some(s=>s.kind==='polygon'&&s.color==='#242532'&&s.points.some(([,y])=>y>=43)));
   assert.notDeepEqual(challengerDrawing('down'),personDrawing('rival','down',0));
   assert.notDeepEqual(challengerDrawing('left'),challengerDrawing('right'));
 });

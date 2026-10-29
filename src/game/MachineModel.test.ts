@@ -137,3 +137,10 @@ test('火野岳の愛機は展示・レースで白赤金と黒いフレア、�
     model.traverse(o=>{if(o instanceof THREE.Mesh){for(const attribute of ['position','normal'])for(const n of o.geometry.getAttribute(attribute).array)assert.ok(Number.isFinite(n));o.geometry.dispose();o.material.dispose();}});
   }
 });
+
+test('黒岩は前寄りキャノピーと大型左右カウルの専用重装モデルを使う',()=>{
+ const model=buildRaceMachineModel(challenger);assert.ok(model.getObjectByName('kuroiwa-heavy-assembly'));const canopy=model.getObjectByName('kuroiwa-forward-canopy') as THREE.Mesh;assert.ok(canopy);assert.ok(model.getObjectByName('kuroiwa-front-armour'));assert.ok(model.getObjectByName('kuroiwa-rear-drive-cover'));assert.equal(model.getObjectByName('mob-kei-yellow-plate'),undefined);
+ let wings=0;model.traverse(o=>{if(o.name==='rear-wing')wings++;if(o instanceof THREE.Mesh){for(const k of ['position','normal'])for(const v of o.geometry.getAttribute(k).array)assert.ok(Number.isFinite(v));}});assert.equal(wings,1);
+ const size=new THREE.Box3().setFromObject(model).getSize(new THREE.Vector3());assert.ok(size.x<.24&&size.z<.34&&size.y<.15);
+ model.traverse(o=>{if(o instanceof THREE.Mesh){o.geometry.dispose();o.material.dispose();}});
+});
