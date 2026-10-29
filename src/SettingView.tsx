@@ -25,7 +25,7 @@ export function SettingView(){
   const previewEquipment=equipPart(equipment,inventory,selected.id,slot);
   const preview=machinePerformance(previewEquipment,equippedCondition(previewEquipment,units,selectedUnits));
   const dirt=surfacePerformance(performance,dirtSurface),previewDirt=surfacePerformance(preview,dirtSurface);
-  const owned=parts.filter(p=>p.category===category&&inventory[p.id]>0);
+  const owned=parts.filter(p=>p.category===category&&inventory[p.id]>0).sort((a,b)=>b.price-a.price);
   return <section className="setting-screen" role="dialog" aria-modal="true" aria-labelledby="setting-title" onKeyDown={e=>{
     if(e.key!=='Tab')return;
     const controls=e.currentTarget.querySelectorAll<HTMLButtonElement>('button:not(:disabled)');
