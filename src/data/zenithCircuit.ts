@@ -1,7 +1,6 @@
 import type {CircuitTrack} from './circuit';
 type Point={x:number;y:number;z:number;loopAngle:number;loopRadius:number;bank:number};
 const mix=(a:number,b:number,t:number)=>a+(b-a)*t;
-const clamp=(n:number)=>Math.max(0,Math.min(1,n));
 /** 立体の実走行弧長で進む、縦ループ・横螺旋・混合路面の最長コース。 */
 export function buildZenithTrack(base:CircuitTrack,practice=false):CircuitTrack{
  const points:Point[]=[];
@@ -18,9 +17,9 @@ export function buildZenithTrack(base:CircuitTrack,practice=false):CircuitTrack{
  for(let i=1;i<=360;i++){const a=i/360*Math.PI*2,u=i/360;points.push({x:-20+radius*Math.sin(a),y:radius*(1-Math.cos(a)),z:-45+1.4*u*u*(3-2*u),loopAngle:a,loopRadius:radius,bank:0});}
  road([[-20,-43.6,0],[0,-43.6,0],[30,-36,0],[24,-22,0],[32,-20,1.4],[40,-20,1.4]]);
  for(let i=1;i<=540;i++){const u=i/540,a=-Math.PI/2+u*3*Math.PI;points.push({x:40+8*Math.cos(a),z:-12+8*Math.sin(a),y:1.4+1.4*u,loopAngle:0,loopRadius:0,bank:u*Math.PI*2});}
- road([[40,-4,2.8],[32,-4,2.2],[12,2,.5],[-12,8,0],[-40,12,0],[-66,25,.7],[-80,45,0],[-65,62,0],[-30,62,0],[0,58,0],[32,62,.7],[60,55,0],[76,30,0],[80,4,0],[76,-14,0],[64,-30,0],[78,-50,0],[95,-30,.8],[105,0,0],[108,36,0],[98,70,0],[65,86,0],[20,88,0],[-30,86,0],[-70,90,0],[-90,112,0],[-65,130,0],[-20,130,.4],[25,130,0],[65,127,0],[105,125,0]]);
- // 練習でも全要素を走る。公式は終盤にもう一度高速切り返しを追加する。
- if(!practice)road([[105,125,0],[125,115,0],[143,130,.5],[160,112,0],[180,130,0],[205,125,0]]);
+ road([[40,-4,2.8],[32,-4,2.2],[12,2,.5],[-12,8,0],[-40,12,0],[-66,25,.7],[-80,45,0],[-65,62,0],[-30,62,0],[0,58,0],[32,62,.7],[60,55,0],[76,30,0],[100,12,0],[120,30,0],[145,25,0],[185,25,0],[225,25,0]]);
+ // 練習でも全要素を走る。公式は短い連続S字を追加し、約1分半に収める。
+ if(!practice)road([[225,25,0],[235,18,0],[245,28,.5],[258,22,0]]);
  const lengths=[0];for(let i=1;i<points.length;i++){const a=points[i-1],b=points[i];lengths.push(lengths.at(-1)!+Math.hypot(b.x-a.x,b.y-a.y,b.z-a.z));}
  // 区間の継ぎ目の重複点を除く。
  for(let i=lengths.length-1;i>0;i--)if(lengths[i]-lengths[i-1]<1e-7){points.splice(i,1);lengths.splice(i,1);}

@@ -317,7 +317,7 @@ export class TrialRenderer {
     const overview=this.cameraMode==='overview'&&this.intro.stage==='done';
     const frame=this.overviewFrame??(this.overviewFrame=overviewViewportFrame(this.track,this.host.clientWidth,this.host.clientHeight));
     const pixelsPerUnit=this.host.clientHeight/frame.height;
-    const carScale=overview?overviewCarScale(this.host.clientHeight,frame.height,this.track.circuitLength>1000?64:8):1;
+    const carScale=overview?overviewCarScale(this.host.clientHeight,frame.height,(this.circuitId==='forge'||this.circuitId==='zenith')?64:8):1;
     const labelBoxes:Array<{x:number;y:number}>=[];
     for(const racer of this.state.racers){
       const p=sampleLanePath(finishTrackDistance(racer,this.finishPresentation),racer.lane);

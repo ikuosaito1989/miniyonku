@@ -9,7 +9,7 @@ test('緑川は全レーンで距離・旋回・着地の条件が等しく、�
  const equipment={...seniorEquipment,body:'body-champion'},times=[0,1,2,3,4].map(lane=>{const d=drive(equipment,'grandprix',lane);assert.equal(d.status,'finished');return d.time;});assert.ok(Math.max(...times)-Math.min(...times)<1e-9);
 });
 test('新コースは史上最長、縦360度・横螺旋・砂・坂・2ジャンプと有限な立体レーンを持つ',()=>{
- const practice=getCircuitTrack('forge'),final=getCircuitTrack('zenith');assert.ok(practice.circuitLength>1100);assert.ok(final.circuitLength>practice.circuitLength+80);assert.equal(final.circuit.laps,1);assert.ok(final.open);assert.equal(final.jumps.length,2);
+ const practice=getCircuitTrack('forge'),final=getCircuitTrack('zenith');assert.ok(practice.circuitLength>650);assert.ok(final.circuitLength>practice.circuitLength+30);assert.equal(final.circuit.laps,1);assert.ok(final.open);assert.equal(final.jumps.length,2);
  let inverted=false,vertical=false,banked=false,rolled=false;const surfaces=new Set<string>();
  for(let i=0;i<=2400;i++){const d=i/2400*final.circuitLength,p=final.sampleLanePath(d,2);assert.ok(p.y>=0,`地面に埋まらない ${d}`);for(const value of [p.x,p.y,p.z,p.pitch,p.upX,p.upY,p.upZ,p.sideX,p.sideY,p.sideZ,p.pathScale,p.curvature])assert.ok(Number.isFinite(value));assert.ok(Math.abs(Math.hypot(p.upX,p.upY,p.upZ)-1)<.01);inverted ||= p.upY<-.8;vertical ||= Math.abs(p.forwardY)>.85;banked ||= !p.loopRadius&&Math.abs(p.sideY)>.15;rolled ||= !p.loopRadius&&p.upY<-.8;surfaces.add(final.surfaceAt(d).name);const left=final.sampleLanePath(d,0),right=final.sampleLanePath(d,4);assert.ok(Math.abs(Math.hypot(right.x-left.x,right.y-left.y,right.z-left.z)-.88)<1e-6);}
  assert.ok(inverted&&vertical&&banked&&rolled);assert.ok(surfaces.size>=3);assert.ok(final.obstacles!.hill.height>=.8);
@@ -19,10 +19,10 @@ test('22種類の最上位品を新店だけで購入でき、説明と一種類
 });
 test('最上位の高速旋回構成で僅差になり、以前の万能構成では最強たちに勝てない',()=>{
  const recipes=[zenithEquipment,{...zenithEquipment,rollerRear:'roller-zenith'},{...zenithEquipment,accessory:'accessory-active'}];
- for(const e of recipes){const race=run(e),rank=rankRacers(race);assert.equal(rank[0].id,'player');assert.ok(race.racers.every(r=>r.driving.status==='finished'));assert.equal(race.racers[0].driving.landings,2);assert.ok(officialTime(race,rank[1])-officialTime(race,rank[0])<1.5);}
+ for(const e of recipes){const race=run(e),rank=rankRacers(race);assert.equal(rank[0].id,'player');assert.ok(officialTime(race,rank[0])>=85&&officialTime(race,rank[0])<=95,'暁は約1分半');assert.ok(race.racers.every(r=>r.driving.status==='finished'));assert.equal(race.racers[0].driving.landings,2);assert.ok(officialTime(race,rank[1])-officialTime(race,rank[0])<1.5);}
  const previous=run({...zenithEquipment,motor:'motor-zenith',chassis:'chassis-horizon',gear:'gear-4.2',tire:'tire-hybrid'});assert.notEqual(rankRacers(previous)[0].id,'player');
  const old=drive({...seniorEquipment,body:'body-champion'});assert.equal(old.status,'out');assert.equal(old.stopReason,'loop');assert.ok(old.time<30);
- const final=run(zenithEquipment,'zenith');assert.ok(rankRacers(final).findIndex(r=>r.id==='player')<=1);assert.ok(final.racers.every(r=>r.driving.status==='finished'));
+ const final=run(zenithEquipment,'zenith');assert.ok(final.racers[0].driving.time>=85&&final.racers[0].driving.time<=100,'最終戦も約1分半');assert.ok(rankRacers(final).findIndex(r=>r.id==='player')<=1);assert.ok(final.racers.every(r=>r.driving.status==='finished'));
 });
 test('旧緑川クリアから新店へ進み、勝敗によらず5回の結果で出場権。途中退出・重複報酬を数えない',async()=>{
  const before=useGame.getState();try{
