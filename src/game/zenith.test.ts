@@ -17,9 +17,10 @@ test('新コースは史上最長、縦360度・横螺旋・砂・坂・2ジャ�
 test('22種類の最上位品を新店だけで購入でき、説明と一種類一個制限がある',()=>{
  assert.equal(zenithParts.length,22);let wallet={money:100000,inventory:{} as Record<string,number>};for(const p of zenithParts){const part=parts.find(x=>x.id===p.id)!;assert.equal(part.level,9);for(const shop of Object.values(modelShops))assert.equal(isStocked(part,shop),shop.id==='akatsuki');const bought=purchase(wallet,p.id,modelShops.akatsuki);assert.ok(bought.success,p.id);wallet=bought.wallet;assert.equal(wallet.inventory[p.id],1);assert.ok(partGuidance(part).use.length>10);}
 });
-test('万能・高速＋トルクギア・高トルクの3構成で最強たちに勝て、旧装備は縦ループで失速する',()=>{
- const recipes=[zenithEquipment,{...zenithEquipment,motor:'motor-tempest',gear:'gear-5.2',chassis:'chassis-dune',tire:'tire-apex'},{...zenithEquipment,motor:'motor-titan',gear:'gear-4',chassis:'chassis-eclipse',tire:'tire-hybrid'}];
- for(const e of recipes){const race=run(e),rank=rankRacers(race);assert.equal(rank[0].id,'player');assert.ok(race.racers.every(r=>r.driving.status==='finished'));assert.equal(race.racers[0].driving.landings,2);assert.ok(officialTime(race,rank[1])-officialTime(race,rank[0])<4);}
+test('最上位の高速旋回構成で僅差になり、以前の万能構成では最強たちに勝てない',()=>{
+ const recipes=[zenithEquipment,{...zenithEquipment,rollerRear:'roller-zenith'},{...zenithEquipment,accessory:'accessory-active'}];
+ for(const e of recipes){const race=run(e),rank=rankRacers(race);assert.equal(rank[0].id,'player');assert.ok(race.racers.every(r=>r.driving.status==='finished'));assert.equal(race.racers[0].driving.landings,2);assert.ok(officialTime(race,rank[1])-officialTime(race,rank[0])<1.5);}
+ const previous=run({...zenithEquipment,motor:'motor-zenith',chassis:'chassis-horizon',gear:'gear-4.2',tire:'tire-hybrid'});assert.notEqual(rankRacers(previous)[0].id,'player');
  const old=drive({...seniorEquipment,body:'body-champion'});assert.equal(old.status,'out');assert.equal(old.stopReason,'loop');assert.ok(old.time<30);
  const final=run(zenithEquipment,'zenith');assert.ok(rankRacers(final).findIndex(r=>r.id==='player')<=1);assert.ok(final.racers.every(r=>r.driving.status==='finished'));
 });

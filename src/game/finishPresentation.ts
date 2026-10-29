@@ -31,6 +31,7 @@ export function finishCoastDistance(racer:Racer,presentation:FinishPresentation)
   const arrival=presentation.arrivals.find(a=>a.id===racer.id);
   return arrival?Math.max(.5,racer.driving.speed*finishSequence.coastSpeedFactor)*arrival.age:0;
 }
+export function finishTrackDistance(racer:Racer,presentation:FinishPresentation){return racer.driving.distance+finishCoastDistance(racer,presentation);}
 export function shouldUseFinishCamera(race:RaceState,presentation:FinishPresentation){
   const {circuit,circuitLength}=getCircuitTrack(race.circuitId);
   if(race.playerStartOffset===null||!['approach','finish'].includes(presentation.stage))return false;

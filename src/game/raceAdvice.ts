@@ -43,10 +43,10 @@ export function raceAdvice(state:RaceAdviceContext){
   if(state.review?.circuitId===shop.circuitId)lines.push(state.review.text);
   else lines.push('この店のレース記録はまだないね。今の装備で改善できる点を見てみよう。');
   if(state.shopId==='akatsuki'){
-    lines.push('あかつき模型店の最上位パーツを組み合わせよう。縦ループの失速はトルク不足。ゼニス＋4.2:1、テンペスト＋5.2:1、タイタン＋4:1などを軸に、砂地への追従とジャンプ着地の制振を両立しよう。最高速だけを上げても勝てないよ。');
-    lines.push('万能型：ホライゾン・ハイブリッドシャーシ＋マイクロトレッド。高速型：テンペスト＋5.2:1＋デューンシャーシ＋アペックスタイヤ。高トルク型：タイタン＋4:1＋エクリプスシャーシ＋マイクロトレッド。補助枠はジャイロ・駆動PRO・クラウンスライドなど異なる3種を組もう。');
+    lines.push('あかつき模型店の最上位パーツを組み合わせよう。縦ループの失速はトルク不足。テンペスト＋4:1を軸に、砂地への追従とジャンプ着地の制振を両立しよう。最高速だけを上げても勝てないよ。');
+    lines.push('優勝の基準はテンペスト＋4:1＋エクリプスシャーシ＋アペックスタイヤ。前中ゼニス・リヤ二段ローラーを基本に、リヤの軽量化やアクティブダンパーへの変更でも詰められるよ。旧万能構成のままでは強化された最強たちに届かない。補助枠はジャイロ・駆動PRO・クラウンスライドなど異なる3種を組もう。');
     const missing=['motor-zenith','chassis-horizon','tire-hybrid','battery-zenith','accessory-slide-pro'].map(id=>parts.find(p=>p.id===id)!).filter(p=>!(state.inventory[p.id]>0));
-    for(const p of missing.slice(0,3))lines.push(`万能型で不足する「${p.name}」は${p.price}円。${state.money>=p.price?'今なら購入できるよ。':'あと'+(p.price-state.money)+'円、他店の完走賞で貯めよう。'}`);
+    for(const p of missing.slice(0,3))lines.push(`優勝構成で不足する「${p.name}」は${p.price}円。${state.money>=p.price?'今なら購入できるよ。':'あと'+(p.price-state.money)+'円、他店の完走賞で貯めよう。'}`);
     if(state.motorSeconds<60&&parts.find(p=>p.id===state.equipment.motor)?.specs.wear!==0)lines.push(`モーターは作業台であと約${Math.ceil(60-state.motorSeconds)}秒ならそう。慣らし後に電池を新品に交換すると長距離で有利だよ。`);
     if(state.motorSeconds>180)lines.push('長いレースでモーターも摩耗するよ。同じ種類を新品交換し、慣らしてから再挑戦しよう。');
     if(batteryCharge(state.equipment.battery,state.batterySeconds)<.8)lines.push('電池が減っているね。ゼニス・マラソンセルの新品で最後まで出力を保とう。');

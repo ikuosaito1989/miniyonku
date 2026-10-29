@@ -11,7 +11,7 @@ import { FIXED_STEP } from './driving';
 import { canViewRaceResults, completeRaceAfterPlayerFinish, createRaceState, launchPlayer, startRace, stepRace, type RaceState, type RaceChallenge } from './race';
 import {overviewFrame,overviewViewportFrame,overviewCarScale} from './overviewCamera';
 import { raceCamera } from '../data/raceCamera';
-import { createFinishPresentation, finishCoastDistance, finishSequence, shouldUseFinishCamera, stepFinishPresentation, type FinishPresentation } from './finishPresentation';
+import { createFinishPresentation, finishTrackDistance, finishSequence, shouldUseFinishCamera, stepFinishPresentation, type FinishPresentation } from './finishPresentation';
 import { RaceAudio } from './RaceAudio';
 
 export type TrialCamera = 'broadcast' | 'overview';
@@ -320,7 +320,7 @@ export class TrialRenderer {
     const carScale=overview?overviewCarScale(this.host.clientHeight,frame.height,this.track.circuitLength>1000?64:8):1;
     const labelBoxes:Array<{x:number;y:number}>=[];
     for(const racer of this.state.racers){
-      const p=sampleLanePath(racer.driving.distance+(this.track.open?Math.min(.3,finishCoastDistance(racer,this.finishPresentation)):finishCoastDistance(racer,this.finishPresentation)),racer.lane);
+      const p=sampleLanePath(finishTrackDistance(racer,this.finishPresentation),racer.lane);
       const car=this.cars.get(racer.id)!;
       car.scale.setScalar(.85*carScale);
       const turn=this.track.sampleCircuit(this.track.startDistance+racer.driving.distance+.1),sign=p.tangentX*turn.tangentZ-p.tangentZ*turn.tangentX;

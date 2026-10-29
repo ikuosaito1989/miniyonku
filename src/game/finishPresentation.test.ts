@@ -1,9 +1,10 @@
+import {getCircuitTrack} from '../data/circuit';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { starterEquipment } from '../data/machine';
 import { circuit, circuitLength } from '../data/circuit';
 import { createRaceState, officialTime, rankRacers } from './race';
-import { createFinishPresentation, finishCoastDistance, finishSequence, shouldUseFinishCamera, stepFinishPresentation } from './finishPresentation';
+import { createFinishPresentation, finishCoastDistance, finishTrackDistance, finishSequence, shouldUseFinishCamera, stepFinishPresentation } from './finishPresentation';
 
 test('最終周の終盤だけゴール用画角へ移る',()=>{
   const race=createRaceState(starterEquipment);race.phase='running';
@@ -54,4 +55,13 @@ test('発進待ちや大きく遅れたプレイヤーをゴール画角のま�
   assert.equal(shouldUseFinishCamera(race,presentation),false);
   race.racers[0].driving.distance=circuitLength*circuit.laps-1;
   assert.equal(shouldUseFinishCamera(race,presentation),true);
+});
+
+test('一本道のゴール後も出口方向へ走り去り、記録を変えず30cm以上進み続ける',()=>{
+ const race=createRaceState(starterEquipment,42,undefined,false,'forge'),track=getCircuitTrack('forge'),racer=race.racers[0];
+ racer.driving={...racer.driving,status:'finished',distance:track.circuitLength,time:150,speed:8};
+ let presentation=stepFinishPresentation(createFinishPresentation(),race,0);
+ presentation=stepFinishPresentation(presentation,race,1);const a=track.sampleLanePath(finishTrackDistance(racer,presentation),racer.lane);
+ presentation=stepFinishPresentation(presentation,race,2);const b=track.sampleLanePath(finishTrackDistance(racer,presentation),racer.lane);
+ assert.ok(Math.hypot(a.x-b.x,a.z-b.z)>10);assert.equal(racer.driving.distance,track.circuitLength);assert.equal(racer.driving.time,150);
 });
