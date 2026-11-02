@@ -139,7 +139,7 @@ export default function TrialView(){
     <header className="race-header"><h2>{officialChallenge?raceName:legendChallenge?'レジェンド挑戦':villainChallenge?'黒岩 豪からの挑戦':circuit.name}<span>{timeTrial?'一本道・1台タイムアタック':pointToPoint?'一本道・5台レース':`${circuit.lanes}レーン・${circuit.laps}周レース`}</span></h2><nav aria-label="レース操作">
       <AudioControls/>
       <button className="race-camera-button" disabled={introducing} onClick={()=>{renderer.current?.setCamera(overview?'broadcast':'overview');setOverview(!overview);}} aria-pressed={overview}>{overview?'マシンを見る':'コース全体'}</button>
-      <button onClick={requestClose}>{officialChallenge?'会場へ':'模型店へ'} <small>Esc</small></button>
+      <button onClick={requestClose}>{officialChallenge?'会場へ':'模型店へ'}</button>
     </nav></header>
     {!introducing&&(timeTrial?<div className="time-trial-target"><span>規定 <strong>{yuunagiTimeLimit.toFixed(2)}秒以内</strong></span><span>{bestTime!==null?`自己ベスト ${(Math.ceil(bestTime*100-1e-7)/100).toFixed(2)}秒`:'初挑戦'}</span><span>{finalQualified?'出場権獲得済み':'クリアで第4大会出場権'}</span></div>:<RaceRanking race={state}/>)}
     <div className="race-viewport">
@@ -148,7 +148,7 @@ export default function TrialView(){
       {introducing&&!error&&<section className={`race-intro race-intro-${intro.stage}`} aria-label="レース場紹介">
         <div className="race-intro-heading"><span>COURSE INTRODUCTION</span><p>{officialChallenge?raceName:shop.name}</p><h2>{introduction.name}</h2></div>
         <div className="race-intro-caption" key={intro.stage}><span>{intro.stage==='overview'?'コース全景':intro.stage==='tour'?'コースの見どころ':'スターティンググリッド'}</span><p>{intro.stage==='overview'?`${timeTrial?'一本道・1台タイムアタック':pointToPoint?'一本道・5台レース':`${introduction.lanes}レーン・${introduction.laps}周`} ／ 全長 約${introduction.distance}m`:intro.stage==='tour'?introduction.feature:introduction.advice}</p><small>{introduction.surface} ／ {pointToPoint?'全長':'1周'} 約{introduction.lapLength}m ／ {legendChallenge?'特別レース・賞金なし':`${timeTrial?'完走賞':'1位賞金'} ${introduction.winnerPrize.toLocaleString('ja-JP')}円`}</small></div>
-        <button className="race-intro-skip" onClick={skipIntro}>紹介をスキップ <small>Z / Enter / Space</small></button>
+        <button className="race-intro-skip" onClick={skipIntro}>紹介をスキップ</button>
         <div className="race-intro-progress" aria-hidden="true"><i style={{transform:`scaleX(${intro.age/raceIntroDuration})`}}/></div>
       </section>}
       {!introducing&&!error&&!showTally&&!showResults&&<><div className="race-condition">電池 {batteryLabel(player.equipment.battery,player.performance.batterySeconds+driving.time)} ／ モーター {(motorFactor(player.performance.motorSeconds+driving.time,player.equipment.motor)*100).toFixed(1)}%</div>
@@ -180,7 +180,7 @@ export default function TrialView(){
     </div>
     <footer className="race-message">
       <div className="race-speaker"><StarterPortrait/><span>コース係</span></div>
-      <div className="race-commentary"><p className="race-phase">{error?'表示エラー':introducing?'レース場紹介':showResults?'最終結果':showTally?'記録集計中':ready?'スタート待機':counting?'スタートまで':waitingForGo?'GO・発進操作待ち':finish.stage==='finish'?'ゴールイン':finish.stage==='approach'?'最終ストレート':'レース中'}</p><p role="status" aria-live="polite">{message}</p><small>{introducing?'Z / Enter / Space で紹介をスキップ':canViewResults?'画面タップ / Z・Enter・Space で結果を見る':ready?'Z / Enter / Space で３カウント開始':waitingForLaunch?'Z / Enter / Space で発進。GO前の発進は残り秒数を加算。':finished?legendChallenge?'特別レース・賞金なし':`参加費なし・${timeTrial?'完走賞':'優勝'}${prizes[0].toLocaleString('ja-JP')}円${timeTrial?'・40秒以内で大会出場権':'／2〜5位も完走賞'}${prize>0?'（受取済み）':''}`:penaltyText||'走行は自動です。Esc で模型店に戻れます。'}</small></div>
+      <div className="race-commentary"><p className="race-phase">{error?'表示エラー':introducing?'レース場紹介':showResults?'最終結果':showTally?'記録集計中':ready?'スタート待機':counting?'スタートまで':waitingForGo?'GO・発進操作待ち':finish.stage==='finish'?'ゴールイン':finish.stage==='approach'?'最終ストレート':'レース中'}</p><p role="status" aria-live="polite">{message}</p><small>{introducing?'「紹介をスキップ」で先へ進む':canViewResults?'画面タップで結果を見る':ready?'「カウント開始」で３カウント開始':waitingForLaunch?'「発進」でスタート。GO前の発進は残り秒数を加算。':finished?legendChallenge?'特別レース・賞金なし':`参加費なし・${timeTrial?'完走賞':'優勝'}${prizes[0].toLocaleString('ja-JP')}円${timeTrial?'・40秒以内で大会出場権':'／2〜5位も完走賞'}${prize>0?'（受取済み）':''}`:penaltyText||'走行は自動です。'}</small></div>
       <div className="race-commands">
         {ready&&!introducing&&!error?<button className="race-start-button" onClick={start}>▶ カウント開始</button>:null}
         {waitingForLaunch&&!error&&<button className="race-start-button" onClick={start}>{counting?'▶ 発進（早出）':'▶ GO！ 発進'}</button>}

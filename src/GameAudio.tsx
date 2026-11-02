@@ -41,7 +41,7 @@ export function AudioControls({floating=false}:{floating?:boolean}){
     <div className="audio-panel">
       <button onClick={toggle} aria-pressed={enabled}>{enabled?'BGM・効果音を消す':'BGM・効果音を鳴らす'}</button>
       <label>音量 {Math.round(volume*100)}%<input aria-label="BGM・効果音の音量" type="range" min="0" max="100" value={Math.round(volume*100)} onChange={event=>setVolume(Number(event.target.value)/100)}/></label>
-      <small role="status">{status==='error'?'BGMを再生できません。HTTPS接続・通信を確認してください。':status==='waiting'?'画面のタップ・キー操作で再生します':status==='loading'?'BGM読み込み中…':status==='muted'?'消音中':status==='paused'?'BGM休止中':'BGM再生中'}</small>
+      <small role="status">{status==='error'?'BGMを再生できません。HTTPS接続・通信を確認してください。':status==='waiting'?'画面のタップで再生します':status==='loading'?'BGM読み込み中…':status==='muted'?'消音中':status==='paused'?'BGM休止中':'BGM再生中'}</small>
       <small>BGM：OpenTracks{Object.values(musicTracks).filter(track=>track.ready).map(track=><a key={track.url} href={track.source} target="_blank" rel="noreferrer">{track.title} ／ {track.author}</a>)}</small>
     </div>
   </details>;
