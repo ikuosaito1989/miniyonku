@@ -4,7 +4,7 @@ import {cupComplete,cupPlayerPlace} from './game/cup';
 import { raceIntroDuration, raceIntroAt, courseIntroduction } from './game/raceIntro';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useGame } from './game/store';
-import { TrialRenderer } from './game/TrialRenderer';
+import { TrialRenderer, type TrialCamera } from './game/TrialRenderer';
 import { canViewRaceResults, countdownNumber, createRaceState, officialTime, rankRacers } from './game/race';
 import { getCircuitTrack } from './data/circuit';
 import { officialRace, officialRounds } from './data/officialRace';
@@ -57,14 +57,15 @@ export default function TrialView(){
   const introducing=intro.stage!=='done';
   const introduction=courseIntroduction(circuitId,officialChallenge);
   const [finish,setFinish]=useState(createFinishPresentation);
-  const [overview,setOverview]=useState(false);
+  const [cameraMode,setCameraMode]=useState<TrialCamera>('broadcast');
+  const overview=cameraMode==='overview';
   const [error,setError]=useState('');
   const sound=useAudioSettings(s=>s.enabled),volume=useAudioSettings(s=>s.volume);
 
   useEffect(()=>{
     const stored=useGame.getState();
     const condition=equippedCondition(equipment,stored.units,stored.selectedUnits);
-    setState(createRaceState(equipment,stored.raceSeed,condition,challenge,circuitId));setFinish(createFinishPresentation());setError('');setOverview(false);setIntro(raceIntroAt(0));
+    setState(createRaceState(equipment,stored.raceSeed,condition,challenge,circuitId));setFinish(createFinishPresentation());setError('');setCameraMode('broadcast');setIntro(raceIntroAt(0));
     const raceAttempt=useGame.getState().raceAttempt;
     try{renderer.current=new TrialRenderer(host.current!,equipment,race=>{
       useGame.getState().settleRace(raceAttempt,race);
@@ -130,7 +131,7 @@ export default function TrialView(){
     driving.status==='out'?(driving.stopReason==='lapped'?'先頭に1周差をつけられ、マシンがコース外へ！ リタイアです。':driving.stopReason==='battery'?'電池切れで停止！ 別の電池に交換しよう。':'コースアウト！ マシンを回収したよ。ほかのマシンは走行中。'):
     state.time<2?'スタート！ GOからの反応時間も記録に含まれるよ。':timeTrial?`ゴールまで残り${Math.max(0,circuitLength-driving.distance).toFixed(0)}m。規定40秒以内を目指そう！`:playerPath.changing?`レーンチェンジ！ ${playerPath.from+1}コースから ${playerPath.to+1}コースへ。５周で全レーンを走るよ。`:`あなたは現在 ${position}位！ 赤いマシンの上の黄色い印が目印だよ。`);
 
-  return <section className="trial retro-race" data-camera={overview?'overview':'broadcast'} aria-label={legendChallenge?'レジェンド挑戦レース':villainChallenge?'黒岩 豪との挑戦レース':timeTrial?'一本道タイムアタック':'5台の3Dレース'} data-phase={introducing?'introduction':state.phase} data-intro-stage={intro.stage} data-finish-stage={finish.stage} onClick={event=>{
+  return <section className="trial retro-race" data-camera={cameraMode} aria-label={legendChallenge?'レジェンド挑戦レース':villainChallenge?'黒岩 豪との挑戦レース':timeTrial?'一本道タイムアタック':'5台の3Dレース'} data-phase={introducing?'introduction':state.phase} data-intro-stage={intro.stage} data-finish-stage={finish.stage} onClick={event=>{
     // 操作ボタン自身の処理と二重発火させない。カメラ・音・退出も発進しない。
     if(event.target instanceof Element&&event.target.closest('button,a,input,select,textarea,[data-audio-controls]'))return;
     if(canViewResults)showRaceResults();
@@ -138,12 +139,12 @@ export default function TrialView(){
   }}>
     <header className="race-header"><h2>{officialChallenge?raceName:legendChallenge?'レジェンド挑戦':villainChallenge?'黒岩 豪からの挑戦':circuit.name}<span>{timeTrial?'一本道・1台タイムアタック':pointToPoint?'一本道・5台レース':`${circuit.lanes}レーン・${circuit.laps}周レース`}</span></h2><nav aria-label="レース操作">
       <AudioControls/>
-      <button className="race-camera-button" disabled={introducing} onClick={()=>{renderer.current?.setCamera(overview?'broadcast':'overview');setOverview(!overview);}} aria-pressed={overview}>{overview?'マシンを見る':'コース全体'}</button>
       <button onClick={requestClose}>{officialChallenge?'会場へ':'模型店へ'}</button>
     </nav></header>
     {!introducing&&(timeTrial?<div className="time-trial-target"><span>規定 <strong>{yuunagiTimeLimit.toFixed(2)}秒以内</strong></span><span>{bestTime!==null?`自己ベスト ${(Math.ceil(bestTime*100-1e-7)/100).toFixed(2)}秒`:'初挑戦'}</span><span>{finalQualified?'出場権獲得済み':'クリアで第4大会出場権'}</span></div>:<RaceRanking race={state}/>)}
     <div className="race-viewport">
       <div className="trial-canvas" ref={host}/>
+      <nav className="race-camera-controls" aria-label="レースの視点">{([['broadcast','拡大'],['overview','全体'],['machine','マシンを見る']] as const).map(([mode,label])=><button key={mode} className="race-camera-button" disabled={introducing} aria-pressed={cameraMode===mode} onClick={()=>{renderer.current?.setCamera(mode);setCameraMode(mode);}}>{label}</button>)}</nav>
       <div className="race-scanlines"/>
       {introducing&&!error&&<section className={`race-intro race-intro-${intro.stage}`} aria-label="レース場紹介">
         <div className="race-intro-heading"><span>COURSE INTRODUCTION</span><p>{officialChallenge?raceName:shop.name}</p><h2>{introduction.name}</h2></div>
