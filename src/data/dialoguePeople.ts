@@ -18,7 +18,7 @@ export const dialoguePeople:Record<DialoguePersonId,{name:string;role:string;exp
   guide:{name:shopVisitors.find(person=>person.kind==='guide')!.name,role:'走行会が好きな小学生',expression:'励ます笑顔',ageGroup:'elementary',faceBase:'child-common'},
   mechanic:{name:shopVisitors.find(person=>person.kind==='mechanic')!.name,role:'マシンに詳しい小学生',expression:'元気な笑顔',ageGroup:'elementary',faceBase:'child-common'},
   legendRei:{name:'風見 怜',role:'全国大会のレジェンドレーサー',expression:'落ち着いた笑顔',ageGroup:'elementary',faceBase:'child-common'},
-  legendGaku:{name:'火野 岳',role:'全国大会のレジェンドレーサー',expression:'自信たっぷり',ageGroup:'elementary',faceBase:'child-common'},
+  legendGaku:{name:'火野 岳',role:'全国大会のレジェンドレーサー・男の子',expression:'短い髪と金色の服、自信たっぷりの笑顔',ageGroup:'elementary',faceBase:'child-common'},
 };
 const normalize=(name:string)=>name.replace(/[\s　]/g,'');
 export function dialoguePerson(speaker:string):DialoguePersonId|null{
