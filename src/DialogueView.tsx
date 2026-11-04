@@ -1,5 +1,6 @@
+import {NpcPortrait} from './NpcPortrait';
+import {npcAppearances,type NpcAppearanceId} from './data/npcAppearance';
 import {SeniorPortrait} from './SeniorPortrait';
-import { OffroaderPortrait } from './OffroaderPortrait';
 import { DoctorPortrait } from './DoctorPortrait';
 import { ChallengerPortrait } from './ChallengerPortrait';
 import { useEffect, useRef, useState } from 'react';
@@ -14,7 +15,7 @@ import koya from './assets/portraits/koya-pop.webp';
 import mechanic from './assets/portraits/mechanic-pop.webp';
 import './dialogue.css';
 
-const portraits:Record<DialoguePersonId,string>={akatsukiOwner:owner,senior:rival,yuunagiOwner:owner,atelierOwner:owner,wakabaOwner:owner,venueStaff:owner,offroader:mechanic,owner,aozoraOwner:owner,hinataOwner:owner,villain:rival,rival,guide,mechanic,legendRei:rei,legendGaku:gaku,legendKoya:koya,doctor:owner};
+const portraits:Record<DialoguePersonId,string>={ren:mechanic,sou:mechanic,momo:guide,akatsukiOwner:owner,senior:rival,yuunagiOwner:owner,atelierOwner:owner,wakabaOwner:owner,venueStaff:owner,offroader:mechanic,owner,aozoraOwner:owner,hinataOwner:owner,villain:rival,rival,guide,mechanic,legendRei:rei,legendGaku:gaku,legendKoya:koya,doctor:owner};
 export function DialogueView(){
   const {speaker,dialogue,shopAfter,advance,close,dialogueStage,startLegendChallenge,startVillainChallenge,startOfficialRace,openSetting}=useGame();
   const [selected,setSelected]=useState(0);
@@ -48,7 +49,7 @@ export function DialogueView(){
   return <div className="dialogue-layer">
     <section ref={panel} className="conversation" role="dialog" aria-modal="true" aria-labelledby="conversation-speaker" aria-describedby="conversation-message">
       <div className="conversation-portrait" aria-hidden="true">
-        {id==='senior'?<SeniorPortrait/>:id==='offroader'?<OffroaderPortrait/>:id==='doctor'?<DoctorPortrait/>:id==='villain'?<ChallengerPortrait/>:id?<img src={portraits[id]} alt="" decoding="async"/>:<div className="conversation-object"><span>{book?'本':'調'}</span><small>{book?'SETTING NOTES':'KOMOREBI MODEL'}</small></div>}
+        {id&&id in npcAppearances?<NpcPortrait id={id as NpcAppearanceId}/>:id==='senior'?<SeniorPortrait/>:id==='doctor'?<DoctorPortrait/>:id==='villain'?<ChallengerPortrait/>:id?<img src={portraits[id]} alt="" decoding="async"/>:<div className="conversation-object"><span>{book?'本':'調'}</span><small>{book?'SETTING NOTES':'KOMOREBI MODEL'}</small></div>}
       </div>
       <div className="conversation-body">
         <header><div>{person&&<p className="conversation-role">{person.role}</p>}<h2 id="conversation-speaker">{person?.name??speaker}</h2></div><button className="conversation-close" onClick={close} aria-label="会話を閉じる">閉じる</button></header>

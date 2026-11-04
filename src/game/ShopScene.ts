@@ -1,6 +1,10 @@
+import {sceneryImage,sceneryKey} from '../data/scenery';
+import {npcAppearanceId} from '../data/npcAppearance';
+import {npcDrawing} from './NpcPeopleArt';
+import {walkingSpeed} from '../data/shopThemes';
 import {legendPersonDrawing} from './LegendPeopleArt';
 import {timeBoardPlacement,timeBoardObstacle} from '../data/timeBoard';
-import {formatRecordTime,type TimeHistory} from './timeRecords';
+import type {TimeHistory} from './timeRecords';
 import {shopTrackLayout} from './shopTrackLayout';
 import {drawShopTrack} from './ShopTrackArt';
 import { officialVenue, officialFixturesFor, officialVenueFor, officialVenuePeople, officialPeopleFor } from '../data/officialVenue';
@@ -12,7 +16,7 @@ import { room, roomView, type Fixture } from '../data/shop';
 import { createShopGesture } from './shopGesture';
 import { useGame } from './store';
 import { createPeopleTextures, drawShopFixture, drawShopRoom, type Facing, type PersonKind } from './ShopArt';
-import { offroaderDrawing, personDrawing } from './PeopleArt';
+import { personDrawing } from './PeopleArt';
 import { createArrival,stepArrivalActor,type ArrivalActor,type ArrivalKind } from './arrival';
 import { EventAudio,type EventSound } from './EventAudio';
 import { useAudioSettings } from './audioSettings';
@@ -24,9 +28,6 @@ import { shopAdvice } from './shopAdvice';
 import { touchInput } from './touchInput';
 import { compactDevice, shopWorldZoom } from '../data/display';
 import { findWalkingPath, walkBounds, type Point } from './navigation';
-import { proficiencyStandings } from '../data/proficiency';
-import shopIllustration from '../assets/shop/interior-v1.webp';
-import { shopIllustrationKey } from '../data/shopIllustration';
 import { currentShop, isVenueOpen, shopExit, townSpawn, townVenues, venueMessage, townSize, townWalkBounds, townBlocks } from '../data/world';
 import { shopCast } from '../data/shopCast';
 import { mirroredShop, shopLayout } from '../data/shopLayout';
@@ -53,8 +54,7 @@ export class ShopScene extends Phaser.Scene {
   private route:Point[]=[];
   private destination!:Phaser.GameObjects.Graphics;
   private inputVersion=0;
-  private boardLines:Phaser.GameObjects.Text[]=[];
-  private boardPoints=-1;
+
   private timeBoardContainer?:Phaser.GameObjects.Container;
   private timeBoardHistory?:TimeHistory;
   private arrivalKind:ArrivalKind|null=null;
@@ -74,7 +74,7 @@ export class ShopScene extends Phaser.Scene {
   private challengerSolid:Phaser.Geom.Rectangle|null=null;
   private get cast(){return shopCast(currentShop(useGame.getState().location).id);}
   constructor(){ super('shop'); }
-  preload(){this.load.image(shopIllustrationKey,shopIllustration);}
+  preload(){const id=useGame.getState().location,image=sceneryImage(id);if(image)this.load.image(sceneryKey(id),image);}
   create(){
     this.eventAudio=new EventAudio();
     const unlockAudio=()=>{if(useAudioSettings.getState().enabled)this.eventAudio.unlock();};
@@ -93,59 +93,44 @@ export class ShopScene extends Phaser.Scene {
       drawOfficialVenue(this,useGame.getState().location);
       this.solids=officialFixturesFor(useGame.getState().location).map(f=>new Phaser.Geom.Rectangle(f.x,f.y,f.w,f.h));
       for(const npc of officialPeopleFor(useGame.getState().location)){
-        const person=this.person(npc.x,npc.y,npc.kind);
+        const person=this.person(npc.x,npc.y,npc.kind,npc.name);
         if(npc.id==='rei'||npc.id==='gaku'){(person.list[1] as Phaser.GameObjects.Image).setTexture(this.arrivalTexture(npc.id,'down',0));}
         if(npc.id==='go'||npc.id==='riku'||npc.id==='jin'||npc.id==='koya'){
           const key=`venue-${npc.id}-down`;
           if(!this.textures.exists(key)){
-            createPersonTexture(this,key,npc.id==='koya'?legendPersonDrawing('koya','down'):npc.id==='jin'?legendPersonDrawing('towa','down'):npc.id==='go'?challengerDrawing('down'):offroaderDrawing('down'));
+            createPersonTexture(this,key,npc.id==='koya'?legendPersonDrawing('koya','down'):npc.id==='jin'?legendPersonDrawing('towa','down'):npc.id==='go'?challengerDrawing('down'):npcDrawing('offroader','down'));
           }
           (person.list[1] as Phaser.GameObjects.Image).setTexture(key);
         }
         this.solids.push(new Phaser.Geom.Rectangle(npc.x-12,npc.y-9,24,21));
-        this.add.text(npc.x,npc.y+17,npc.name,{fontFamily:'sans-serif',fontSize:'9px',color:'#234844',resolution:2}).setOrigin(.5,0).setDepth(npc.y+1);
       }
     }else{
     const shopId=currentShop(useGame.getState().location).id,layout=shopLayout(shopId),mirrored=mirroredShop(shopId);
     const fixtures=layout.map(f=>f.target);
-    drawShopRoom(this,mirrored,shopId==='atelier');
+    drawShopRoom(this,mirrored,shopId==='atelier',shopId);
     drawShopDetails(this,mirrored);
     for(const {source,target:fixture} of layout){
-      drawShopFixture(this,fixture,source,mirrored);
+      drawShopFixture(this,fixture,source,mirrored,shopId);
       this.solids.push(new Phaser.Geom.Rectangle(fixture.x,fixture.y,fixture.w,fixture.h));
     }
-    const board=fixtures.find(f=>f.kind==='board')!;
-    this.boardLines=Array.from({length:5},(_,i)=>this.add.text(board.x+5,board.y+23+i*15,'',{fontFamily:'"Noto Sans JP",monospace',fontSize:'5px',color:'#e6dfbc',resolution:2}).setDepth(board.y+board.h+2));
     const cast=this.cast;
-    this.person(cast.owner.x,cast.owner.y,'owner');
-    const rivalPerson=this.person(cast.rival.x,cast.rival.y,useGame.getState().location==='hinata'?'mechanic':'rival');
-    if(useGame.getState().location==='hinata'){
-      const key='person-offroader-down';
-      if(!this.textures.exists(key)){
-        createPersonTexture(this,key,offroaderDrawing('down'));
-      }
-      (rivalPerson.list[1] as Phaser.GameObjects.Image).setTexture(key);
-    }
+    this.person(cast.owner.x,cast.owner.y,'owner',cast.owner.name);
+    const rivalPerson=this.person(cast.rival.x,cast.rival.y,useGame.getState().location==='hinata'?'mechanic':'rival',cast.rival.name);
     if(shopId==='akatsuki'){const key='akatsuki-towa';if(!this.textures.exists(key))createPersonTexture(this,key,legendPersonDrawing('towa','down'));(rivalPerson.list[1] as Phaser.GameObjects.Image).setTexture(key);}
     for(const visitor of cast.visitors){
-      const npc=this.person(visitor.x,visitor.y,visitor.kind);
-      if(shopId==='akatsuki'){if(visitor.name==='風見 怜'||visitor.name==='火野 岳')(npc.list[1] as Phaser.GameObjects.Image).setTexture(this.arrivalTexture(visitor.name==='風見 怜'?'rei':'gaku','down',0));if(visitor.name==='山城 昊也'){const key='akatsuki-koya';if(!this.textures.exists(key))createPersonTexture(this,key,legendPersonDrawing('koya','down'));(npc.list[1] as Phaser.GameObjects.Image).setTexture(key);}this.add.text(visitor.x,visitor.y+17,visitor.name,{fontFamily:'sans-serif',fontSize:'8px',color:'#234844',resolution:2}).setOrigin(.5,0).setDepth(visitor.y+1);}
+      const npc=this.person(visitor.x,visitor.y,visitor.kind,visitor.name);
+      if(shopId==='akatsuki'){if(visitor.name==='風見 怜'||visitor.name==='火野 岳')(npc.list[1] as Phaser.GameObjects.Image).setTexture(this.arrivalTexture(visitor.name==='風見 怜'?'rei':'gaku','down',0));if(visitor.name==='山城 昊也'){const key='akatsuki-koya';if(!this.textures.exists(key))createPersonTexture(this,key,legendPersonDrawing('koya','down'));(npc.list[1] as Phaser.GameObjects.Image).setTexture(key);}}
       this.solids.push(new Phaser.Geom.Rectangle(visitor.x-12,visitor.y-9,24,21));
     }
     this.solids.push(new Phaser.Geom.Rectangle(cast.rival.x-12,cast.rival.y-9,24,21));
     const shop=currentShop(useGame.getState().location);
-    // 店内の基本レイアウトは共有し、店名・色・展示コースを切り替える。
-    if(shop.id!=='komorebi'){
-      const signX=mirrored?748:204;
-      this.add.rectangle(480,320,880,570,shop.color,.09).setDepth(1);
-      this.add.rectangle(signX,70,260,64,shop.id==='aozora'?0x284b6b:0x6a5234).setDepth(110);
-      this.add.text(signX,49,shop.name,{fontFamily:'sans-serif',fontSize:'21px',fontStyle:'bold',color:'#f8edcc',resolution:2}).setOrigin(.5,0).setDepth(111);
-      this.add.text(signX,80,shop.id==='atelier'?'究極パーツの販売専門店・各25万円':shop.id==='aozora'?'連続コーナーで磨く、次の走り':shop.id==='akatsuki'?'縦横回転・砂地・ジャンプ・最強たちとの試走':shop.id==='yuunagi'?'一本道40秒チャレンジ・第4公式大会出場権へ':shop.id==='wakaba'?'坂・ジャンプ・高架スパイラルに挑もう':'砂利と砂地を走る、ダートの勝負',{fontFamily:'sans-serif',fontSize:'8px',color:'#c7e6e6',resolution:2}).setOrigin(.5,0).setDepth(111);
+    // 通路は共有し、店別の原画と正確な展示コースを重ねる。
+    {
       const f=fixtures.find(f=>f.kind==='track')!,g=this.add.graphics().setDepth(f.y+f.h+1);
-      g.fillStyle(0x476d75).fillRoundedRect(f.x+3,f.y+3,f.w-6,f.h-6,9);
-      if(shop.id==='atelier'){
+
+      if(shop.id==='atelier'&&!this.textures.exists(sceneryKey(shop.id))){
         g.fillStyle(0x302f4b).fillRect(f.x+3,f.y+3,f.w-6,f.h-6);g.lineStyle(3,0xd5b779).strokeRect(f.x+8,f.y+8,f.w-16,f.h-16);
-        for(const [i,name] of ['星皇モーター','星皇シャーシ'].entries()){
+        for(const i of [0,1]){
           const x=f.x+25+i*130;g.fillStyle(0x54456f).fillRect(x,f.y+30,105,75);g.lineStyle(2,0xe4c981).strokeRect(x,f.y+30,105,75);
           if(i===0){
             g.fillStyle(0xd8bd78).fillRect(x+23,f.y+52,55,27);g.fillStyle(0x8c72b1).fillRect(x+26,f.y+54,49,23);
@@ -159,15 +144,12 @@ export class ShopScene extends Phaser.Scene {
             g.lineStyle(3,0xc9b078).lineBetween(x+24,f.y+70,x+46,f.y+54).lineBetween(x+60,f.y+77,x+80,f.y+60);
             g.fillStyle(0x7e62a3).fillRect(x+43,f.y+58,16,12);g.fillStyle(0xf5dfa1).fillRect(x+45,f.y+59,12,2);
           }
-          this.add.text(x+52,f.y+112,`${name}\n各250,000円`,{fontFamily:'sans-serif',fontSize:'10px',align:'center',color:'#ffe5a5',resolution:2}).setOrigin(.5,0).setDepth(f.y+f.h+2);
         }
-      }else{
-      drawShopTrack(this,f,getCircuitTrack(shop.circuitId));
+      }else if(shop.id!=='atelier'){
+      drawShopTrack(this,f,getCircuitTrack(shop.circuitId),f.y+f.h+1,this.textures.exists(sceneryKey(shop.id)));
       if(shop.id==='akatsuki'){const layout=shopTrackLayout(getCircuitTrack('forge'),f.w,f.h).centerline,cars=[0x477de0,0xe5b839,0x15191f,0x612b3e].map(c=>this.add.rectangle(0,0,4,2,c).setDepth(f.y+f.h+3));this.time.addEvent({delay:90,loop:true,callback:()=>cars.forEach((car,i)=>{const j=(Math.floor(this.time.now/65)+i*280)%1200,p=layout[j],q=layout[(j+1)%1200];car.setPosition(f.x+p.x,f.y+p.y).setRotation(Math.atan2(q.y-p.y,q.x-p.x));})});}
       }
     }
-    this.add.rectangle(480,580,84,15,0x34564e).setDepth(590);
-    this.add.text(480,575,'▼ 緑川町へ',{fontFamily:'sans-serif',fontSize:'10px',color:'#fff1bd',resolution:2}).setOrigin(.5,0).setDepth(591);
     }
     if(!this.isTown&&!this.isOfficial&&useGame.getState().location!=='atelier'){
       const shop=currentShop(useGame.getState().location),obstacle=timeBoardObstacle(shop.id);
@@ -264,9 +246,12 @@ export class ShopScene extends Phaser.Scene {
     this.cameras.main.setZoom(zoom.x,zoom.y);
     this.cameras.main.centerOn(roomView.x+roomView.width/2,roomView.y+roomView.height/2);
   }
-  private person(x:number,y:number,kind:PersonKind){
+  private person(x:number,y:number,kind:PersonKind,name?:string){
     const shadow=this.add.graphics();shadow.fillStyle(0x343847,.22).fillEllipse(0,8,29,9);
-    const sprite=this.add.image(0,12,`person-${kind}-down-0`).setOrigin(.5,1).setDisplaySize(personSpriteSize.displayWidth,personSpriteSize.displayHeight);
+    const appearance=name?npcAppearanceId(name):null;
+    const key=appearance?`npc-${appearance}-down-0`:`person-${kind}-down-0`;
+    if(appearance&&!this.textures.exists(key))createPersonTexture(this,key,npcDrawing(appearance,'down'));
+    const sprite=this.add.image(0,12,key).setOrigin(.5,1).setDisplaySize(personSpriteSize.displayWidth,personSpriteSize.displayHeight);
     if(kind==='player')this.playerSprite=sprite;
     return this.add.container(x,y,[shadow,sprite]).setDepth(y);
   }
@@ -279,7 +264,6 @@ export class ShopScene extends Phaser.Scene {
       }
       this.challengerPerson=this.person(challengerSpot.x,challengerSpot.y,'rival');
       (this.challengerPerson.list[1] as Phaser.GameObjects.Image).setTexture(key);
-      this.challengerPerson.add(this.add.text(0,-51,'黒岩 豪',{fontFamily:'sans-serif',fontSize:'9px',color:'#f2def4',backgroundColor:'#35273e',padding:{x:4,y:2},resolution:2}).setOrigin(.5,1));
       this.challengerSolid=new Phaser.Geom.Rectangle(challengerSpot.x-12,challengerSpot.y-9,24,21);this.solids.push(this.challengerSolid);
     }else if(!visible&&this.challengerPerson){
       this.challengerPerson.destroy();this.challengerPerson=null;this.solids=this.solids.filter(s=>s!==this.challengerSolid);this.challengerSolid=null;
@@ -295,7 +279,6 @@ export class ShopScene extends Phaser.Scene {
       }else{
         this.doctorPerson=this.person(doctorSpot.x,doctorSpot.y,'owner');
         (this.doctorPerson.list[1] as Phaser.GameObjects.Image).setTexture(this.arrivalTexture('doctor','down',0));
-        this.doctorPerson.add(this.add.text(0,-51,doctor.name,{fontFamily:'sans-serif',fontSize:'9px',color:'#fff2c7',backgroundColor:'#253d50',padding:{x:4,y:2},resolution:2}).setOrigin(.5,1));
         this.doctorSolid=new Phaser.Geom.Rectangle(doctorSpot.x-12,doctorSpot.y-9,24,21);this.solids.push(this.doctorSolid);
       }
     }else if(!visible&&this.doctorPerson){
@@ -331,7 +314,6 @@ export class ShopScene extends Phaser.Scene {
         const actorKind=kind==='doctor'?'doctor':kind==='villain'?'villain':index?'gaku':'rei';
         const container=actorKind==='villain'&&this.challengerPerson?this.challengerPerson:this.person(state.position.x,state.position.y,'rival');
         container.setPosition(state.position.x,state.position.y);
-        if(actorKind!=='villain')container.add(this.add.text(0,-51,actorKind==='doctor'?doctor.name:index?'火野 岳':'風見 怜',{fontFamily:'sans-serif',fontSize:'9px',color:'#fff2c7',backgroundColor:'#253d50',padding:{x:4,y:2},resolution:2}).setOrigin(.5,1));
         return {state,container,kind:actorKind,solid:null};
       });
       this.playEventSound('arrival');
@@ -366,8 +348,6 @@ export class ShopScene extends Phaser.Scene {
       else if(state.location==='aozora'&&state.villainArrivalPending&&!state.villainDefeated)state.beginArrival('villain');
     }
     if(useGame.getState().overlay==='arrival'){this.updateArrival(delta);return;}
-    const points=useGame.getState().proficiencyPoints;
-    if(this.boardPoints!==points){this.boardPoints=points;proficiencyStandings(points).forEach((p,i)=>this.boardLines[i]?.setText(`${i+1} ${p.name.split(' ').at(-1)}\n    ${p.points}pt`).setColor(p.id==='player'?'#ffe18c':'#e6dfbc'));}
     const touchAction=touchInput.consume();
     const action=this.interactionPending||touchAction;
     this.interactionPending=false;
@@ -383,7 +363,7 @@ export class ShopScene extends Phaser.Scene {
     if(dx)this.facing=dx<0?'left':'right';else if(dy)this.facing=dy<0?'up':'down';
     const manual=dx!==0||dy!==0;
     if(manual||action){this.cancelRoute();this.pendingTarget=null;}
-    const step=(this.isTown?235:155)*Math.min(delta,40)/1000;
+    const step=(this.isTown?walkingSpeed.town:walkingSpeed.interior)*Math.min(delta,40)/1000;
     const waypoint=this.route[0];let travel=step;
     if(!manual&&waypoint){
       const xDistance=waypoint.x-this.player.x,yDistance=waypoint.y-this.player.y;
@@ -457,20 +437,21 @@ export class ShopScene extends Phaser.Scene {
     const state=useGame.getState(),shop=currentShop(state.location),p=timeBoardPlacement(shop.id),records=state.timeHistory[shop.circuitId]??[];
     this.timeBoardHistory=state.timeHistory;
     const board=this.add.container(p.x,p.y).setDepth(p.y+p.h);this.timeBoardContainer=board;
+    if(this.textures.exists(sceneryKey(shop.id)))return;
     const g=this.add.graphics();board.add(g);
     g.fillStyle(0x06131d,.3).fillEllipse(p.w/2,p.h+2,p.w,10);
     g.fillStyle(0x6c543b).fillRect(12,p.h-18,7,20).fillRect(p.w-19,p.h-18,7,20);
     g.fillStyle(0xc0a46c).fillRoundedRect(0,0,p.w,p.h-8,3);g.fillStyle(0x132e3a).fillRoundedRect(3,3,p.w-6,p.h-14,2);
     g.lineStyle(1,0x6c8c8f).lineBetween(8,20,p.w-8,20);
-    const text=(x:number,y:number,value:string,size:number,color:string)=>{const label=this.add.text(x,y,value,{fontFamily:'sans-serif',fontSize:`${size}px`,color,resolution:2});board.add(label);return label;};
-    text(p.w/2,6,'ベストタイム TOP 3',10,'#ffe4a1').setOrigin(.5,0);
+    // 記録そのものはタップで開くモーダルに表示。マップでは表彰台の絵で示す。
     for(let i=0;i<3;i++){
-      const record=records[i],y=24+i*11;
-      text(9,y,`${i+1}`,8,'#e8ca7e');text(23,y,record?record.racerName.slice(0,7):'—',8,'#e4eff2');
-      text(p.w-8,y,record?formatRecordTime(record.time,shop.circuitId==='trail'):'未記録',8,record?'#f9e5aa':'#91aab6').setOrigin(1,0);
+      const x=15+i*(p.w-30)/3,h=[14,22,9][i];
+      g.fillStyle([0xa8bbc0,0xe5c278,0xbb9274][i]).fillRoundedRect(x,p.h-25-h,(p.w-37)/3,h,1);
+      if(records[i])g.fillStyle(0xb2d8ca).fillCircle(x+8,p.h-30-h,2);
     }
-    text(p.w/2,p.h-17,'タップで記録を見る',6,'#9db8c2').setOrigin(.5,0);
+    g.fillStyle(0xe8c879).fillRect(p.w/2-7,9,14,8).fillRect(p.w/2-2,17,4,5).fillRect(p.w/2-7,22,14,2);
   }
+
   private interactWith(target:ShopTarget){
       this.gesture.reset();
       if(target.kind==='official-speed'||target.kind==='official-dirt'||target.kind==='official-technical'||target.kind==='official-final'||target.kind==='official-zenith')useGame.getState().openOfficialRace(target.kind==='official-zenith'?'zenith':target.kind==='official-final'?'final':target.kind==='official-technical'?'technical':target.kind==='official-speed'?'speed':'dirt');

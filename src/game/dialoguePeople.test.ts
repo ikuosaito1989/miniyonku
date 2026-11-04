@@ -18,9 +18,9 @@ test('店主の承諾だけショップへ進み、断る・一般会話・本�
   assert.deepEqual(dialogueChoices(false,false).map(choice=>choice.action),['close']);
   assert.equal(dialogueChoices(false,true)[0].label,'本を閉じる');
 });
-test('店主は大人、モブは共通の小学生顔を使う',()=>{
+test('店主は大人、モブは小学生で個別の顔を使う',()=>{
   assert.equal(dialoguePeople.owner.ageGroup,'adult');
   for(const id of ['rival','guide','mechanic'] as const)assert.equal(dialoguePeople[id].ageGroup,'elementary');
-  assert.equal(dialoguePeople.guide.faceBase,dialoguePeople.mechanic.faceBase);
+  assert.notEqual(dialoguePeople.guide.faceBase,dialoguePeople.mechanic.faceBase);
   assert.match(dialoguePeople.mechanic.role,/小学生/);
 });

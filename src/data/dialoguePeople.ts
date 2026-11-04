@@ -1,7 +1,11 @@
+import {npcAppearances} from './npcAppearance';
 import { doctor } from './doctor';
 import { story, shopVisitors } from './story';
-export type DialoguePersonId='akatsukiOwner'|'senior'|'yuunagiOwner'|'atelierOwner'|'owner'|'aozoraOwner'|'hinataOwner'|'villain'|'rival'|'guide'|'mechanic'|'legendRei'|'legendGaku'|'legendKoya'|'doctor'|'offroader'|'venueStaff'|'wakabaOwner';
+export type DialoguePersonId='akatsukiOwner'|'senior'|'yuunagiOwner'|'atelierOwner'|'owner'|'aozoraOwner'|'hinataOwner'|'villain'|'rival'|'guide'|'mechanic'|'legendRei'|'legendGaku'|'legendKoya'|'doctor'|'offroader'|'venueStaff'|'wakabaOwner'|'ren'|'sou'|'momo';
 export const dialoguePeople:Record<DialoguePersonId,{name:string;role:string;expression:string;ageGroup:'adult'|'elementary';faceBase:string}>={
+  ren:{name:'高橋 蓮',role:'小学生レーサー',expression:'丸顔・大きな目・黄色い帽子',ageGroup:'elementary',faceBase:'npc-ren'},
+  sou:{name:'石川 蒼',role:'小学生レーサー',expression:'細長い顔・眠そうな目・白い帽子',ageGroup:'elementary',faceBase:'npc-sou'},
+  momo:{name:'野村 桃香',role:'小学生レーサー',expression:'三角の顔・つり目・高いポニーテール',ageGroup:'elementary',faceBase:'npc-momo'},
   yuunagiOwner:{name:'夕凪 慎吾',role:'ゆうなぎ模型店 店主',expression:'落ち着いた笑顔',ageGroup:'adult',faceBase:'owner'},
   atelierOwner:{name:'星野 玄一',role:'星霧模型工房 店主',expression:'落ち着いた笑顔',ageGroup:'adult',faceBase:'owner'},
   wakabaOwner:{name:'若松 修一',role:'わかば模型店 店主',expression:'頼もしい笑顔',ageGroup:'adult',faceBase:'owner'},
@@ -21,6 +25,7 @@ export const dialoguePeople:Record<DialoguePersonId,{name:string;role:string;exp
   legendRei:{name:'風見 怜',role:'全国大会のレジェンドレーサー',expression:'横流しの赤紫髪、切れ長の青灰色の目と面長の輪郭',ageGroup:'elementary',faceBase:'legend-rei'},
   legendGaku:{name:'火野 岳',role:'全国大会のレジェンドレーサー・男の子',expression:'短い茶髪、大きい丸い目と太眉、丸顔の明るい笑顔と金色の服',ageGroup:'elementary',faceBase:'legend-gaku'},
 };
+for(const id of Object.keys(npcAppearances)){if(id in dialoguePeople)dialoguePeople[id as DialoguePersonId].faceBase=`npc-${id}`;}
 const normalize=(name:string)=>name.replace(/[\s　]/g,'');
 export function dialoguePerson(speaker:string):DialoguePersonId|null{
   return (Object.keys(dialoguePeople) as DialoguePersonId[]).find(id=>normalize(speaker).includes(normalize(dialoguePeople[id].name)))??null;
