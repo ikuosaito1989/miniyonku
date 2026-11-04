@@ -1,3 +1,4 @@
+import {tutorialActive} from './tutorial';
 import {openingIndex,openingSpawn,openingIsWalk,openingLocation,createOpeningWalk,stepOpeningWalk,type OpeningWalk} from './opening';
 import {sceneryImage,sceneryKey} from '../data/scenery';
 import {npcAppearanceId} from '../data/npcAppearance';
@@ -366,7 +367,7 @@ export class ShopScene extends Phaser.Scene {
     const state=useGame.getState();
     if(this.timeBoardContainer&&this.timeBoardHistory!==state.timeHistory)this.drawTimeBoard();
     if(state.overlay==='race'&&this.arriving.length)this.clearArrival();
-    if(!state.overlay){
+    if(!state.overlay&&!tutorialActive(state.tutorialStage)){
       if(state.location==='komorebi'&&state.legendRaceCompleted&&!state.doctorGiftReceived)state.beginArrival('doctor');
       else if(state.location==='komorebi'&&state.legendEventPending&&!state.legendRaceCompleted)state.beginArrival('legend');
       else if(state.location==='aozora'&&state.villainArrivalPending&&!state.villainDefeated)state.beginArrival('villain');

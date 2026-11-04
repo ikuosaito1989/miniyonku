@@ -1,3 +1,4 @@
+import {tutorialActive} from './game/tutorial';
 import {OPENING_END} from './game/opening';
 import { useRef, useState } from 'react';
 import { SaveControls } from './SaveControls';
@@ -34,7 +35,8 @@ export function GameSettings(){
     else if(!e.shiftKey&&document.activeElement===controls.at(-1)){e.preventDefault();controls[0]?.focus();}
   }}>
     <header><div><small onClick={tapSystemMark}>KOMOREBI MODEL / SYSTEM</small><h2 id="game-settings-title">ゲーム設定</h2></div><button autoFocus onClick={close}>閉じる</button></header>
-    {state.openingStep>=OPENING_END&&<section className="game-settings-opening"><h3>はじまりのシーン</h3><p>進行や所持金を変えずに、町への到着と匠くんの案内を見直せます。</p><button onClick={()=>state.startOpening(true)}>はじまりのシーンを見る</button></section>}
+    {state.openingStep>=OPENING_END&&!tutorialActive(state.tutorialStage)&&<section className="game-settings-opening"><h3>はじまりのシーン</h3><p>進行や所持金を変えずに、町への到着と匠くんの案内を見直せます。</p><button onClick={()=>state.startOpening(true)}>はじまりのシーンを見る</button></section>}
+    {tutorialActive(state.tutorialStage)?<section><h3>操作チュートリアル</h3><button onClick={state.resumeTutorial}>チュートリアルを続ける</button><button onClick={state.finishTutorial}>チュートリアルを終了</button></section>:<section><h3>操作チュートリアル</h3><p>セッティング・購入・装着・レースを、本編のデータを変えずに練習できます。</p><button onClick={()=>state.startTutorial(true)}>操作チュートリアルを練習する</button></section>}
     <section className="game-settings-audio" aria-label="音量・サウンド設定"><h3>音量・サウンド</h3><AudioControls/></section>
     <section className="game-settings-balance" aria-label="ゲームの進行状況"><small>所持金</small><strong>¥ {yen(money)}</strong><span>熟練度 {points} pt</span></section>
     <section className="game-settings-manual"><h3>次の目標</h3><p>現在地：{location==='town'?'緑川町':location==='stadium-7'?'天頂決戦・ゼニス・クラウン':location==='stadium-10'?'緑川グランプリ決勝会場':location==='stadium-9'?'星空公式レース会場':location==='stadium-5'?'若葉公式レース会場':currentShop(location).name}</p><p>{nextGoal}</p><p>街でも指を滑らせて移動できます。入口をタップして入店・調査します。</p><p>レースでは先頭に1周差をつけられるとリタイア。ゴール後は画面タップで結果を表示できます。通常戦は模型店のコース、公式戦は各公式会場内のコースから出場します。公式大会は一度しか出られません。</p></section>

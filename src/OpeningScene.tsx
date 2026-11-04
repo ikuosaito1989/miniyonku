@@ -21,8 +21,8 @@ export function OpeningScene(){
   {walking?<div className="opening-walk-status" role="status"><span className="opening-footsteps" aria-hidden="true">● ● ●</span><span>{scene.text}</span><button ref={next} onClick={proceed}>歩く場面を省略</button></div>:<section className="opening-dialogue" key={step} aria-labelledby="opening-speaker" aria-describedby="opening-message">
    <div className="opening-face">{scene.portrait==='player'?<PlayerFace/>:<NpcPortrait id={scene.portrait}/>}</div>
    <div className="opening-words"><h2 id="opening-speaker">{scene.speaker}</h2><p id="opening-message">{scene.text}</p><nav>
-    <button ref={next} onClick={proceed}>{state.openingTour&&last?'設定に戻る':scene.next}<span aria-hidden="true"> ▸</span></button>
-    {last&&!state.openingTour&&<button className="opening-look-around" onClick={()=>state.finishOpening(false)}>お店を見て回る</button>}
+    <button ref={next} onClick={proceed}>{last?'実際にやってみよう':scene.next}<span aria-hidden="true"> ▸</span></button>
+    {last&&<button className="opening-look-around" onClick={()=>state.finishOpening(false)}>{state.openingTour?'設定に戻る':'案内を省略して遊ぶ'}</button>}
    </nav></div>
   </section>}
  </div>;

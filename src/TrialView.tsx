@@ -34,6 +34,7 @@ export default function TrialView(){
   const renderer=useRef<TrialRenderer|null>(null);
   const equipment=useGame(s=>s.equipment);
   const close=useGame(s=>s.close);
+  const tutorialStage=useGame(s=>s.tutorialStage);
   const prize=useGame(s=>s.lastPrize);
   const money=useGame(s=>s.money);
   const qualificationNotice=useGame(s=>s.qualificationNotice);
@@ -120,7 +121,7 @@ export default function TrialView(){
   const firstFinisher=state.racers.find(r=>r.id===finish.arrivals[0]?.id);
   const winner=standings.find(r=>r.driving.status==='finished');
   const recentGoal=lastArrival&&lastArrival.age<1.8;
-  const message=error||(introducing?'レース場を紹介します。紹介の後は、カウント開始を押すまで発進しません。':showTally?'全マシンの走行が終了！ フライング加算も含めて、公式記録を集計しています。':
+  const message=error||(tutorialStage==='racing'&&ready&&!introducing?'まずは「カウント開始」。3カウントのあと、GOが出たら「発進」を押そう！':introducing?'レース場を紹介します。紹介の後は、カウント開始を押すまで発進しません。':showTally?'全マシンの走行が終了！ フライング加算も含めて、公式記録を集計しています。':
     showResults?(timeTrial?(driving.status==='finished'?(playerTime<=yuunagiTimeLimit?'規定40秒をクリア！ 第4公式大会・緑川グランプリの出場権を獲得！':'40秒を超えたよ。セッティングを変えて何度でも再挑戦しよう。'):'今回は完走できなかったよ。旋回とジャンプ着地を見直して再挑戦しよう。'):legendChallenge?'伝説の2人は異次元の速さ！ 背中が遠い……この悔しさを次の挑戦につなげよう。':villainChallenge?(position===1&&driving.status==='finished'?'黒岩 豪に勝利！ ひなた模型店への紹介状を手に入れた。模型店に戻って黒岩の話を聞こう。':'黒岩 豪との勝負は敗北。店内の黒岩に話しかければ、準備して再挑戦できるよ。'):driving.status==='out'?(driving.stopReason==='lapped'?'周回遅れでリタイア。セッティングを見直して挑戦しよう！':driving.stopReason==='loop'?'縦ループで失速したよ。高トルクモーターとギアを見直そう。':driving.stopReason==='battery'?'今回は電池切れ。電池を交換しよう！':'今回はコースアウト。次は完走を目指そう！'):`最終結果！ あなたは ${position}位。公式記録は ${raceClock(playerTime)}${penaltyText?`（${penaltyText}込み）`:''}。`):
     ready?'画面をタップでカウント開始 → GOで再タップして発進！':
     counting?(state.falseStartPenalty>0?`${penaltyText}。GOより早く発進した分を記録に加えるよ。`:`${countdownNumber(state)}…… GOまで待とう。今押すとフライングだよ！`):

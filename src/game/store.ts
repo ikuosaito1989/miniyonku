@@ -1,3 +1,5 @@
+import {snapshotGame,type SavedGame} from './saveData';
+import {tutorialActive,TUTORIAL_PART,type TutorialStage} from './tutorial';
 import {OPENING_END,openingIndex,openingIsWalk,openingLocation,type OpeningTour} from './opening';
 import {recordRaceTimes,type TimeHistory} from './timeRecords';
 import {yuunagiTimeLimit} from '../data/yuunagiCircuit';
@@ -23,6 +25,8 @@ import { canEnterShop, currentShop, type ShopId, type WorldLocation } from '../d
 import { challenger, challengerInvitation } from '../data/challenger';
 export type DialogueStage='none'|'legend-intro'|'legend-invite'|'legend-debrief'|'villain-intro'|'villain-win'|'villain-loss'|'doctor-gift'|'official-invite';
 export interface GameState extends Wallet {
+  tutorialStage:TutorialStage;tutorialReturn:SavedGame|null;
+  startTutorial:(practice?:boolean)=>void;resumeTutorial:()=>void;inspectTutorial:(slot:EquipmentSlot)=>void;openTutorialShop:()=>void;finishTutorial:()=>void;
   openingStep:number;openingActive:boolean;openingTour:OpeningTour|null;
   startOpening:(replay?:boolean)=>void;advanceOpening:(expectedStep:number)=>void;completeOpeningWalk:(expectedStep:number)=>void;finishOpening:(showSetting?:boolean)=>void;
   lastLoginAt:number|null;loginBonusReceived:boolean;recordLogin:(now?:number)=>void;
@@ -69,6 +73,19 @@ function updateCup(s:GameState,cup:CupProgress){
  return {...updated,gameOver:s.gameOver||updated.gameOver};
 }
 export const useGame = create<GameState>((set) => ({
+  tutorialStage:'pending',tutorialReturn:null,
+  startTutorial:(practice=false)=>set(s=>tutorialStart(s,practice)),
+  resumeTutorial:()=>set(s=>{
+    if(s.openingActive||!tutorialActive(s.tutorialStage)||s.overlay==='race')return {};
+    const stage=s.tutorialStage==='racing'?'start':s.tutorialStage;
+    return {tutorialStage:stage,location:'komorebi',lastShop:'komorebi',overlay:stage==='purchase'?'shop':['motor','tire','shop','equip'].includes(stage)?'setting':null,shopAfter:false};
+  }),
+  inspectTutorial:slot=>set(s=>s.tutorialStage==='motor'&&slot==='motor'?{tutorialStage:'tire'}:s.tutorialStage==='tire'&&slot==='tire'?{tutorialStage:'shop'}:{}),
+  openTutorialShop:()=>set(s=>!tutorialActive(s.tutorialStage)?{}:(s.inventory[TUTORIAL_PART]??0)>0?{tutorialStage:'equip',overlay:'setting',location:'komorebi',lastShop:'komorebi'}:{tutorialStage:'purchase',overlay:'shop',location:'komorebi',lastShop:'komorebi',shopAfter:false}),
+  finishTutorial:()=>set(s=>{
+    if(s.tutorialReturn)return {...s.tutorialReturn,tutorialReturn:null,openingActive:false,openingTour:null,overlay:'settings',notice:'',shopAfter:false,dialogueStage:'none',legendEventPending:s.tutorialReturn.unlockedRaces.includes(nextShopRace.id)&&!s.tutorialReturn.legendRaceCompleted,villainArrivalPending:s.tutorialReturn.aozoraWon&&!s.tutorialReturn.villainDefeated,arrivalEvent:null};
+    return {tutorialStage:'done',overlay:null,shopAfter:false,notice:''};
+  }),
   openingStep:0,openingActive:false,openingTour:null,
   startOpening:(replay=false)=>set(s=>{
     if(s.openingActive||!replay&&s.openingStep>=OPENING_END)return {};
@@ -86,8 +103,10 @@ export const useGame = create<GameState>((set) => ({
   }),
   finishOpening:(showSetting=false)=>set(s=>{
     if(!s.openingActive)return {};
+    if(s.openingTour&&showSetting)return tutorialStart(s,true);
     if(s.openingTour)return {openingTour:null,openingActive:false,location:s.openingTour.location,lastShop:s.openingTour.lastShop,townReturnVenue:s.openingTour.townReturnVenue,overlay:'settings'};
-    return {openingStep:OPENING_END,openingActive:false,location:'komorebi',lastShop:'komorebi',townReturnVenue:null,overlay:showSetting?'setting':null,shopAfter:false,nearby:'',notice:''};
+    if(showSetting&&s.tutorialStage==='pending')return {...tutorialStart(s,false),openingStep:OPENING_END};
+    return {tutorialStage:s.tutorialStage==='pending'?'done':s.tutorialStage,openingStep:OPENING_END,openingActive:false,location:'komorebi',lastShop:'komorebi',townReturnVenue:null,overlay:showSetting?'setting':null,shopAfter:false,nearby:'',notice:''};
   }),
   timeHistory:{},openTimeBoard:()=>set(s=>s.location==='town'||s.location==='atelier'||s.overlay==='race'||s.overlay==='arrival'?s:{overlay:'time-board',shopAfter:false}),
   yuunagiUnlocked:false,yuunagiBestTime:null,finalQualified:false,
@@ -165,7 +184,7 @@ export const useGame = create<GameState>((set) => ({
     const practice=breakInPractice(motor?.seconds??0,duration);
     return {units,proficiencyPoints:s.proficiencyPoints+practice,notice:`${duration.toFixed(0)}秒の慣らし運転を行いました。${rechargeable?'充電電池の残量は減りません。':'電池も消耗します。'}${practice>0?' 整備の熟練度が上がりました。':''}`};
   }),
-  startTrial: () => set(s=>s.gameOver||s.location==='atelier'||s.location==='town'||s.location==='stadium-5'||s.location==='stadium-9'||s.location==='stadium-10'||s.location==='stadium-7'?s:({overlay:'race',officialChallengeActive:false,officialQualificationNotice:false,shopAfter:false,notice:'',legendChallengeActive:false,legendDebriefPending:false,villainChallengeActive:false,villainDebriefPending:false,thirdShopNotice:false,raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,qualificationNotice:false})),
+  startTrial: () => set(s=>s.gameOver||s.location==='atelier'||s.location==='town'||s.location==='stadium-5'||s.location==='stadium-9'||s.location==='stadium-10'||s.location==='stadium-7'?s:({tutorialStage:s.tutorialStage==='start'||s.tutorialStage==='racing'?'racing':s.tutorialStage,overlay:'race',officialChallengeActive:false,officialQualificationNotice:false,shopAfter:false,notice:'',legendChallengeActive:false,legendDebriefPending:false,villainChallengeActive:false,villainDebriefPending:false,thirdShopNotice:false,raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,qualificationNotice:false})),
   settleRace: (attempt,race) => set(s=>{
     if(attempt!==s.raceAttempt)return s;
     const player=race.racers.find(r=>r.id==='player');
@@ -193,7 +212,7 @@ export const useGame = create<GameState>((set) => ({
     const inventory=s.inventory;
     if(!delta&&!reward)return s;
     const practice=reward&&player?(player.driving.status==='finished'?5+(rankRacers(race)[0]?.id==='player'?5:0):seconds>0?1:0):0;
-    return {...(reward?{timeHistory:recordRaceTimes(s.timeHistory,race,attempt)}:{}),akatsukiRaceCount,zenithQualified,yuunagiBestTime,finalQualified,...(firstHinataWin?{officialQualified:true,officialQualificationNotice:true}:{}),...cupUpdate,...(firstWakabaWin?{thirdOfficialQualified:true}:{}),...(reward?{lastRaceReview:reviewRace(race)}:{}),units,inventory,usageSeconds:Math.max(s.usageSeconds,seconds),money:s.money+prize,proficiencyPoints:s.proficiencyPoints+practice,...(firstWin?{unlockedRaces:[...s.unlockedRaces,nextShopRace.id],qualificationNotice:true,...(!s.legendRaceCompleted?{legendEventPending:true}:{})}:{}),...(firstAozoraWin?{aozoraWon:true,villainArrivalPending:true}:{}),...(defeatedVillain?{villainDefeated:true,thirdShopNotice:true}:{}),...(s.villainChallengeActive&&reward?{villainDebriefPending:true}:{}),...(completedLegend?{legendRaceCompleted:true}:{}),...(s.legendChallengeActive&&reward?{legendDebriefPending:true}:{}),...(reward?{lastPrize:prize,settledAttempt:attempt}:{})};
+    return {...(reward&&s.tutorialStage==='racing'?{tutorialStage:'result' as const}:{}),...(reward?{timeHistory:recordRaceTimes(s.timeHistory,race,attempt)}:{}),akatsukiRaceCount,zenithQualified,yuunagiBestTime,finalQualified,...(firstHinataWin?{officialQualified:true,officialQualificationNotice:true}:{}),...cupUpdate,...(firstWakabaWin?{thirdOfficialQualified:true}:{}),...(reward?{lastRaceReview:reviewRace(race)}:{}),units,inventory,usageSeconds:Math.max(s.usageSeconds,seconds),money:s.money+prize,proficiencyPoints:s.proficiencyPoints+practice,...(firstWin?{unlockedRaces:[...s.unlockedRaces,nextShopRace.id],qualificationNotice:true,...(!s.legendRaceCompleted?{legendEventPending:true}:{})}:{}),...(firstAozoraWin?{aozoraWon:true,villainArrivalPending:true}:{}),...(defeatedVillain?{villainDefeated:true,thirdShopNotice:true}:{}),...(s.villainChallengeActive&&reward?{villainDebriefPending:true}:{}),...(completedLegend?{legendRaceCompleted:true}:{}),...(s.legendChallengeActive&&reward?{legendDebriefPending:true}:{}),...(reward?{lastPrize:prize,settledAttempt:attempt}:{})};
   }),
   openSetting: () => set({overlay:'setting',shopAfter:false,notice:''}),
   openSettings:()=>set({overlay:'settings',shopAfter:false,notice:''}),
@@ -203,7 +222,7 @@ export const useGame = create<GameState>((set) => ({
     if(s.overlay==='race')return s;
     const equipment=equipPart(s.equipment,s.inventory,id,slot),selectedUnits={...s.selectedUnits};
     for(const key of ['motor','battery'] as const)if(equipment[key]!==s.equipment[key])selectedUnits[key]=s.units[equipment[key]]?.[0]?.id??'';
-    return {equipment,selectedUnits};
+    return {equipment,selectedUnits,...(s.tutorialStage==='equip'&&equipment.gear===TUTORIAL_PART?{tutorialStage:'start' as const}:{})};
   }),
   openLegendChallenge:()=>set(s=>s.location!=='komorebi'||!s.unlockedRaces.includes(nextShopRace.id)||s.legendRaceCompleted||s.overlay==='race'||s.overlay==='arrival'?s:{overlay:'dialogue',speaker:'火野 岳',dialogue:'準備はできたかい？ 僕たち兄弟とのレースに、何度でも挑んでおいで。',dialogueStage:'legend-invite',shopAfter:false}),
   startLegendChallenge:()=>set(s=>s.location!=='komorebi'||!s.unlockedRaces.includes(nextShopRace.id)||s.overlay==='arrival'?s:({overlay:'race',shopAfter:false,notice:'最強兄弟との特別レース！',legendEventPending:false,legendDebriefPending:false,legendEventSeen:true,legendChallengeActive:true,dialogueStage:'none',raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,qualificationNotice:false})),
@@ -213,6 +232,7 @@ export const useGame = create<GameState>((set) => ({
     if(s.openingActive)return s;
     if(s.overlay==='game-over')return s;
     if(s.overlay==='arrival')return s;
+    if(s.overlay==='race'&&s.location==='komorebi'&&!s.officialChallengeActive&&!s.legendChallengeActive&&tutorialActive(s.tutorialStage))return {overlay:null,shopAfter:false,notice:''};
     if(s.overlay==='dialogue'&&s.dialogueStage==='legend-debrief'&&s.legendRaceCompleted&&!s.doctorGiftReceived)return {overlay:'arrival',arrivalEvent:'doctor',dialogueStage:'none',shopAfter:false};
     if(s.overlay==='cheat')return {overlay:s.cheatReturnToSettings?'settings':null,cheatReturnToSettings:false,shopAfter:false,notice:''};
     if(s.overlay==='race'&&s.officialChallengeActive){
@@ -233,6 +253,12 @@ export const useGame = create<GameState>((set) => ({
     const result=purchase(s,id,currentShop(s.location));
     if(!result.success)return {notice:result.message};
     const consumable=id.startsWith('motor-')||id.startsWith('battery-');
-    return {...result.wallet,purchaseCount:s.purchaseCount+1,notice:result.message,...(consumable?replaceConsumable(s,id):{})};
+    return {...result.wallet,...(s.tutorialStage==='purchase'&&id===TUTORIAL_PART?{tutorialStage:'equip' as const,overlay:'setting' as const}:{}),purchaseCount:s.purchaseCount+1,notice:result.message,...(consumable?replaceConsumable(s,id):{})};
   }),
 }));
+
+function tutorialStart(state:GameState,practice:boolean):Partial<GameState>{
+ if(tutorialActive(state.tutorialStage))return {};
+ if(practice){const baseline=snapshotGame(state);return {...useGame.getInitialState(),openingStep:OPENING_END,openingActive:false,openingTour:null,tutorialReturn:baseline,tutorialStage:'motor',location:'komorebi',lastShop:'komorebi',overlay:'setting'};}
+ return {tutorialStage:'motor',openingActive:false,openingTour:null,location:'komorebi',lastShop:'komorebi',overlay:'setting',shopAfter:false};
+}
