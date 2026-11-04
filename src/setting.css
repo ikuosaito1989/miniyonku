@@ -15,3 +15,5 @@
 .card-lamps i.part-equipped-lamp{display:block;flex:1;height:9px;background:#51c9ef;box-shadow:inset 1px 1px #a9e8fb}.card-lamps i.part-equipped-lamp[data-equipped=true]{background:#f04444;box-shadow:inset 1px 1px #ffb0a0,0 0 5px #e9343466}
 
 .condition-lamp-gauge>.part-card-condition-status{color:#edf4ff;line-height:1.5}.condition-lamp-gauge>.part-card-condition-detail{color:#c9dfea;line-height:1.5}.condition-lamps-warning .condition-lamp-gauge>.part-card-condition-status{color:#ffc06e}
+
+.setting-dirt-warning{max-width:1300px;margin:0 auto 16px;padding:12px 16px;border:2px solid #bd7631;background:#fff0ce;color:#663d19;text-shadow:none;line-height:1.7}.setting-dirt-warning strong{display:block;font-size:15px}.setting-dirt-warning span{font-size:13px}

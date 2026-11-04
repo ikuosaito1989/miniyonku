@@ -5,6 +5,7 @@ import { batteryCapacityMultiplier, freshCondition, motorFactor, remainingCharge
 import type { TrackSurface } from '../data/surfaces';
 
 export const FIXED_STEP = 1/120;
+export const DIRT_CRAWL_SPEED=.12;
 export interface DrivingState { time: number; distance: number; speed: number; stress: number; status: 'ready'|'running'|'finished'|'out'; stopReason?:'battery'|'lapped'|'jump'|'loop'; flightY?:number;flightVelocity?:number;landings?:number; }
 export function machinePerformance(equipment: Equipment, condition:MachineCondition=freshCondition) {
   const get = (category: keyof Equipment) => {
@@ -70,6 +71,12 @@ export function stepDriving(state: DrivingState, performance: Performance, laneO
   const wheelResistance=state.speed**2*sampleCircuit(startDistance+state.distance).curvature*.002*performance.cornerDrag;
   const slope=track.obstacles&&!airborne&&path?performance.mass*9.81*Math.sin(path.pitch):0;
   let speed=Math.max(0,state.speed+(force-(airborne?performance.drag*state.speed**2*.25:resistance+wheelResistance)-slope)/performance.mass*FIXED_STEP);
+  // 平坦なダートは、駆動力が残っていれば空転しながら超低速で前進する。
+  // 舗装・ジャンプ・縦ループには適用せず、電池切れは上で停止する。
+  if(track.circuit.surface.roughness>0&&!track.obstacles&&!airborne&&force>0&&road.traction>0){
+    const crawlSpeed=DIRT_CRAWL_SPEED*charge*motor;
+    speed=Math.max(speed,Math.min(crawlSpeed,state.speed+.25*charge*FIXED_STEP));
+  }
   const centerCurvature=sampleCircuit(startDistance+state.distance).curvature;
   // 外側レーンは同じコーナーを通過するのに長い距離を走る。
   // distanceは全車共通の中心線上の進捗、speedは実際の走行速度。
