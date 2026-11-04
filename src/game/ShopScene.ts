@@ -1,3 +1,4 @@
+import {openingIndex,openingSpawn,openingIsWalk,openingLocation,createOpeningWalk,stepOpeningWalk,type OpeningWalk} from './opening';
 import {sceneryImage,sceneryKey} from '../data/scenery';
 import {npcAppearanceId} from '../data/npcAppearance';
 import {npcDrawing} from './NpcPeopleArt';
@@ -49,6 +50,8 @@ export class ShopScene extends Phaser.Scene {
   private facing:Facing='down';
   private playerSprite!:Phaser.GameObjects.Image;
   private walkTime=0;
+  private openingPhase=-1;
+  private openingWalk:OpeningWalk|null=null;
   private mapTime=0;
   private interactionPending=false;
   private route:Point[]=[];
@@ -155,7 +158,7 @@ export class ShopScene extends Phaser.Scene {
       const shop=currentShop(useGame.getState().location),obstacle=timeBoardObstacle(shop.id);
       this.solids.push(new Phaser.Geom.Rectangle(obstacle.x,obstacle.y,obstacle.width,obstacle.height));this.drawTimeBoard();
     }
-    const spawn=this.isTown?townSpawn(useGame.getState().townReturnVenue??useGame.getState().lastShop):this.isOfficial?officialVenue.spawn:room.spawn;
+    const spawn=useGame.getState().openingActive?openingSpawn(openingIndex(useGame.getState())):this.isTown?townSpawn(useGame.getState().townReturnVenue??useGame.getState().lastShop):this.isOfficial?officialVenue.spawn:room.spawn;
     this.player=this.person(spawn.x,spawn.y,'player');
     if(this.isTown)window.dispatchEvent(new CustomEvent('town-position',{detail:spawn}));
     this.destination=this.add.graphics().setDepth(9999).setVisible(false);
@@ -336,8 +339,29 @@ export class ShopScene extends Phaser.Scene {
       this.playEventSound('contact');useGame.getState().completeArrival();
     }
   }
+  private updateOpening(delta:number){
+    const state=useGame.getState(),step=openingIndex(state);
+    if(openingLocation(step)!==state.location)return;
+    if(this.openingPhase!==step){
+      this.openingPhase=step;this.cancelRoute();this.gesture.reset();this.pendingTarget=null;this.input.keyboard?.resetKeys();
+      const spawn=openingSpawn(step);this.player.setPosition(spawn.x,spawn.y);this.player.setDepth(spawn.y);
+      this.playerSprite.setTexture(`person-player-${step<2?'down':'up'}-0`);
+      this.openingWalk=openingIsWalk(step)?createOpeningWalk(step,spawn,this.solids):null;
+      if(step===3)this.playEventSound('arrival');
+    }
+    if(!this.openingWalk||document.hidden)return;
+    const previousBeat=Math.floor(this.openingWalk.walkTime/260);
+    this.openingWalk=stepOpeningWalk(this.openingWalk,delta);
+    if(Math.floor(this.openingWalk.walkTime/260)>previousBeat)this.playEventSound('step');
+    const walk=this.openingWalk;
+    this.player.setPosition(walk.position.x,walk.position.y).setDepth(walk.position.y);
+    this.playerSprite.setTexture(`person-player-${walk.facing}-${walk.done?0:Math.floor(walk.walkTime/150)%4}`);
+    if(walk.done){this.openingWalk=null;state.completeOpeningWalk(step);}
+  }
   update(_time:number,delta:number){
     if(!this.player)return;
+    if(useGame.getState().openingActive){this.updateOpening(delta);return;}
+    this.openingPhase=-1;this.openingWalk=null;
     this.syncChallenger();this.syncDoctor();
     const state=useGame.getState();
     if(this.timeBoardContainer&&this.timeBoardHistory!==state.timeHistory)this.drawTimeBoard();

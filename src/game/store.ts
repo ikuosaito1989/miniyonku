@@ -1,3 +1,4 @@
+import {OPENING_END,openingIndex,openingIsWalk,openingLocation,type OpeningTour} from './opening';
 import {recordRaceTimes,type TimeHistory} from './timeRecords';
 import {yuunagiTimeLimit} from '../data/yuunagiCircuit';
 import {emptyCup,cupComplete,cupPlayerPlace,cupProgression,enterCupHeat,finishCupHeat,forfeitCupHeat,raceCupHeat,type CupProgress} from './cup';
@@ -22,6 +23,8 @@ import { canEnterShop, currentShop, type ShopId, type WorldLocation } from '../d
 import { challenger, challengerInvitation } from '../data/challenger';
 export type DialogueStage='none'|'legend-intro'|'legend-invite'|'legend-debrief'|'villain-intro'|'villain-win'|'villain-loss'|'doctor-gift'|'official-invite';
 export interface GameState extends Wallet {
+  openingStep:number;openingActive:boolean;openingTour:OpeningTour|null;
+  startOpening:(replay?:boolean)=>void;advanceOpening:(expectedStep:number)=>void;completeOpeningWalk:(expectedStep:number)=>void;finishOpening:(showSetting?:boolean)=>void;
   lastLoginAt:number|null;loginBonusReceived:boolean;recordLogin:(now?:number)=>void;
   timeHistory:TimeHistory;openTimeBoard:()=>void;
   yuunagiUnlocked:boolean;yuunagiBestTime:number|null;finalQualified:boolean;
@@ -52,7 +55,7 @@ export interface GameState extends Wallet {
   selectUnit:(slot:'motor'|'battery',id:string)=>void; breakIn:()=>void;
   raceAttempt: number; settledAttempt: number; lastPrize: number;
   settleRace: (attempt: number, race: RaceState) => void;
-  overlay: 'time-board' | 'mission' | 'town-map' | 'arrival' | 'dialogue' | 'shop' | 'race' | 'setting' | 'settings' | 'proficiency' | 'legends' | 'cheat' | 'game-over' | null; speaker: string; dialogue: string; shopAfter: boolean; notice: string; nearby: string;
+  overlay: 'opening' | 'time-board' | 'mission' | 'town-map' | 'arrival' | 'dialogue' | 'shop' | 'race' | 'setting' | 'settings' | 'proficiency' | 'legends' | 'cheat' | 'game-over' | null; speaker: string; dialogue: string; shopAfter: boolean; notice: string; nearby: string;
   openSetting: () => void; equip: (id: string,slot?:EquipmentSlot) => void;
   openSettings:()=>void;
   startTrial: () => void;
@@ -66,6 +69,26 @@ function updateCup(s:GameState,cup:CupProgress){
  return {...updated,gameOver:s.gameOver||updated.gameOver};
 }
 export const useGame = create<GameState>((set) => ({
+  openingStep:0,openingActive:false,openingTour:null,
+  startOpening:(replay=false)=>set(s=>{
+    if(s.openingActive||!replay&&s.openingStep>=OPENING_END)return {};
+    const openingTour=replay?{step:0,location:s.location,lastShop:s.lastShop,townReturnVenue:s.townReturnVenue}:null;
+    const step=replay?0:s.openingStep;
+    return {openingTour,openingActive:true,location:openingLocation(step),lastShop:'komorebi',townReturnVenue:null,overlay:'opening',shopAfter:false,nearby:'',notice:''};
+  }),
+  advanceOpening:expected=>set(s=>{
+    const step=openingIndex(s);if(!s.openingActive||step!==expected||openingIsWalk(step)||step>=OPENING_END-1)return {};
+    return s.openingTour?{openingTour:{...s.openingTour,step:step+1}}:{openingStep:step+1};
+  }),
+  completeOpeningWalk:expected=>set(s=>{
+    const step=openingIndex(s);if(!s.openingActive||step!==expected||!openingIsWalk(step))return {};
+    return {...(s.openingTour?{openingTour:{...s.openingTour,step:step+1}}:{openingStep:step+1}),location:openingLocation(step+1)};
+  }),
+  finishOpening:(showSetting=false)=>set(s=>{
+    if(!s.openingActive)return {};
+    if(s.openingTour)return {openingTour:null,openingActive:false,location:s.openingTour.location,lastShop:s.openingTour.lastShop,townReturnVenue:s.openingTour.townReturnVenue,overlay:'settings'};
+    return {openingStep:OPENING_END,openingActive:false,location:'komorebi',lastShop:'komorebi',townReturnVenue:null,overlay:showSetting?'setting':null,shopAfter:false,nearby:'',notice:''};
+  }),
   timeHistory:{},openTimeBoard:()=>set(s=>s.location==='town'||s.location==='atelier'||s.overlay==='race'||s.overlay==='arrival'?s:{overlay:'time-board',shopAfter:false}),
   yuunagiUnlocked:false,yuunagiBestTime:null,finalQualified:false,
   wakabaCup:emptyCup(),technicalCup:emptyCup(),finalCup:emptyCup(),grandprixCleared:false,zenithCup:emptyCup(),zenithCleared:false,akatsukiRaceCount:0,zenithQualified:false,gameOver:false,wakabaUnlocked:false,thirdOfficialQualified:false,
@@ -187,6 +210,7 @@ export const useGame = create<GameState>((set) => ({
   talk: (speaker, dialogue, shopAfter = false) => set({ overlay:'dialogue',speaker,dialogue,shopAfter,dialogueStage:'none' }),
   advance: () => set(s => s.dialogueStage==='legend-intro'?{overlay:'dialogue',speaker:'火野 岳',dialogue:'優勝したばかりで悪いが、僕たちとも走ってくれないか？ 速さの世界を見せてあげるよ。',dialogueStage:'legend-invite'}:{ overlay: s.shopAfter ? 'shop' : null, shopAfter:false,notice:'',dialogueStage:'none' }),
   close: () => set(s=>{
+    if(s.openingActive)return s;
     if(s.overlay==='game-over')return s;
     if(s.overlay==='arrival')return s;
     if(s.overlay==='dialogue'&&s.dialogueStage==='legend-debrief'&&s.legendRaceCompleted&&!s.doctorGiftReceived)return {overlay:'arrival',arrivalEvent:'doctor',dialogueStage:'none',shopAfter:false};

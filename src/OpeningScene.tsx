@@ -1,0 +1,29 @@
+import {useEffect,useRef} from 'react';
+import {useGame} from './game/store';
+import {openingScenes,openingIndex,openingIsWalk,OPENING_END} from './game/opening';
+import {NpcPortrait} from './NpcPortrait';
+import {personDrawing} from './game/PeopleArt';
+import './opening.css';
+function PlayerFace(){return <svg viewBox="8 0 44 42" aria-hidden="true">{personDrawing('player','down',0).map((s,i)=>s.kind==='rect'?<rect key={i} x={s.x} y={s.y} width={s.w} height={s.h} fill={s.color} opacity={s.alpha}/>:<polygon key={i} points={s.points.map(p=>p.join(',')).join(' ')} fill={s.color} opacity={s.alpha}/>)}</svg>;}
+export function OpeningScene(){
+ const state=useGame(),step=openingIndex(state),scene=openingScenes[step],walking=openingIsWalk(step),last=step===OPENING_END-1,panel=useRef<HTMLDivElement>(null),next=useRef<HTMLButtonElement>(null);
+ const proceed=()=>{if(last)state.finishOpening(true);else if(walking)state.completeOpeningWalk(step);else state.advanceOpening(step);};
+ useEffect(()=>{next.current?.focus();},[step]);
+ useEffect(()=>{
+  const handler=(e:KeyboardEvent)=>{
+   if(e.code==='KeyZ'||(e.code==='Enter'||e.code==='Space')&&!(e.target instanceof Element&&e.target.closest('button'))){e.preventDefault();if(!e.repeat)proceed();}
+   if(e.key==='Tab'&&panel.current){const buttons=Array.from(panel.current.querySelectorAll<HTMLButtonElement>('button'));if(e.shiftKey&&document.activeElement===buttons[0]){e.preventDefault();buttons.at(-1)?.focus();}else if(!e.shiftKey&&document.activeElement===buttons.at(-1)){e.preventDefault();buttons[0]?.focus();}}
+  };window.addEventListener('keydown',handler);return()=>window.removeEventListener('keydown',handler);
+ });
+ if(!scene)return null;
+ return <div className={`opening-scene${walking?' opening-walking':''}`} ref={panel} role="dialog" aria-modal="true" aria-label="はじまりのシーン" data-step={step} onClick={e=>{if(!walking&&!last&&!(e.target instanceof Element&&e.target.closest('button')))state.advanceOpening(step);}}>
+  <header className="opening-chapter"><span>はじまりの一歩</span><button onClick={()=>state.finishOpening(false)}>導入を省略</button></header>
+  {walking?<div className="opening-walk-status" role="status"><span className="opening-footsteps" aria-hidden="true">● ● ●</span><span>{scene.text}</span><button ref={next} onClick={proceed}>歩く場面を省略</button></div>:<section className="opening-dialogue" key={step} aria-labelledby="opening-speaker" aria-describedby="opening-message">
+   <div className="opening-face">{scene.portrait==='player'?<PlayerFace/>:<NpcPortrait id={scene.portrait}/>}</div>
+   <div className="opening-words"><h2 id="opening-speaker">{scene.speaker}</h2><p id="opening-message">{scene.text}</p><nav>
+    <button ref={next} onClick={proceed}>{state.openingTour&&last?'設定に戻る':scene.next}<span aria-hidden="true"> ▸</span></button>
+    {last&&!state.openingTour&&<button className="opening-look-around" onClick={()=>state.finishOpening(false)}>お店を見て回る</button>}
+   </nav></div>
+  </section>}
+ </div>;
+}

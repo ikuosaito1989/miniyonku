@@ -1,3 +1,5 @@
+import {OpeningScene} from './OpeningScene';
+import {OPENING_END} from './game/opening';
 import {PurchaseConfirmation} from './PurchaseConfirmation';
 import {TimeBoard} from './TimeBoard';
 import { MissionGuide } from './MissionGuide';
@@ -27,6 +29,7 @@ const TrialView=lazy(()=>import('./TrialView'));
 export function App(){
   const game=useGame();
   const [started,setStarted]=useState(false);
+  useEffect(()=>{if(started&&!game.openingActive&&game.openingStep<OPENING_END)game.startOpening();},[started,game.openingActive,game.openingStep,game.startOpening]);
   useEffect(()=>{if(started)return keepScreenAwake();},[started]);
   const shop=currentShop(game.location);
   const [category,setCategory]=useState<Category>('motor');
@@ -48,7 +51,7 @@ export function App(){
   useEffect(()=>{
     const handler=(e:KeyboardEvent)=>{
       const state=useGame.getState();
-      if(!state.overlay)return;
+      if(!state.overlay||state.openingActive)return;
       if(e.key==='Escape'&&state.overlay!=='race'){e.preventDefault();state.close();}
       if(e.key==='Tab'&&state.overlay==='shop'&&modal.current){
         const controls=modal.current.querySelectorAll<HTMLButtonElement>('button:not(:disabled)');
@@ -61,10 +64,11 @@ export function App(){
   },[]);
   return <main>
     <GameAudio/>
-    {!started ? <TitleScreen onStart={()=>setStarted(true)}/> : <section className="game-shell" aria-label="ゲーム画面">
+    {!started ? <TitleScreen onStart={()=>{useGame.getState().startOpening();setStarted(true);}}/> : <section className="game-shell" aria-label="ゲーム画面">
       <div className="stage"><ShopWorld/>
         {game.overlay===null&&<div className="world-toolbar"><button className="game-settings-open" onClick={game.openSettings}>設定</button><MissionGuide/><AudioControls floating/></div>}
         <SaveWarning/>
+        {game.openingActive&&<OpeningScene/>}
         {game.loginBonusReceived&&<aside className="login-bonus" role="status"><span>おかえりなさい！ ログインボーナス 500円を受け取りました。</span><button aria-label="ログインボーナスのお知らせを閉じる" onClick={()=>useGame.setState({loginBonusReceived:false})}>閉じる</button></aside>}
         <TownMap/>
         {game.overlay==='mission'&&<MissionGuide/>}
