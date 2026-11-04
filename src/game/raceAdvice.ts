@@ -1,4 +1,3 @@
-import {dirtSetupWarning} from './dirtSetup';
 import {yuunagiTimeLimit} from '../data/yuunagiCircuit';
 import { parts } from '../data/parts';
 import { equipmentSlots, type Equipment, type EquipmentSlot } from '../data/machine';
@@ -14,9 +13,7 @@ export function reviewRace(race:RaceState):RaceReview|null{
   const player=race.racers.find(r=>r.id==='player');
   if(!player||race.phase!=='finished')return null;
   const rank=rankRacers(race).findIndex(r=>r.id==='player')+1;
-  const dirtWarning=dirtSetupWarning(player.performance,race.circuitId);
   const notes=[player.driving.status==='finished'?`前回は${rank}位、公式タイム${officialTime(race,player).toFixed(2)}秒。`:'前回はリタイア。'];
-  if(dirtWarning)notes.push(`ダートに対して駆動力・接地が不足し、空転して超低速になっていたよ。${dirtWarning.advice}`);
   if(player.driving.stopReason==='jump')notes.push('ジャンプの飛距離が足りず、着地点に届かなかったよ。電池・慣らし・トルクとギア比を確認しよう。');
   else if(player.driving.stopReason==='battery')notes.push('電池切れで止まったのが直接の敗因だよ。');
   else if(player.driving.stopReason==='lapped')notes.push('周回遅れになったよ。加速・最高速とコーナーでの減速を改善しよう。');

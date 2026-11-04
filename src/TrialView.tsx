@@ -1,4 +1,3 @@
-import {dirtSetupWarning} from './game/dirtSetup';
 import {yuunagiTimeLimit} from './data/yuunagiCircuit';
 import { CupScore } from './CupScore';
 import {cupComplete,cupPlayerPlace} from './game/cup';
@@ -107,7 +106,6 @@ export default function TrialView(){
   const finished=state.phase==='finished';
   const player=state.racers.find(r=>r.id==='player')!;
   const driving=player.driving;
-  const dirtWarning=dirtSetupWarning(player.performance,circuitId);
   const waitingForLaunch=!ready&&!finished&&state.playerStartOffset===null&&driving.status==='ready';
   const waitingForGo=state.phase==='running'&&waitingForLaunch;
   const playerTime=officialTime(state,player);
@@ -123,7 +121,7 @@ export default function TrialView(){
   const winner=standings.find(r=>r.driving.status==='finished');
   const recentGoal=lastArrival&&lastArrival.age<1.8;
   const message=error||(introducing?'レース場を紹介します。紹介の後は、カウント開始を押すまで発進しません。':showTally?'全マシンの走行が終了！ フライング加算も含めて、公式記録を集計しています。':
-    showResults?(timeTrial?(driving.status==='finished'?(playerTime<=yuunagiTimeLimit?'規定40秒をクリア！ 第4公式大会・緑川グランプリの出場権を獲得！':'40秒を超えたよ。セッティングを変えて何度でも再挑戦しよう。'):'今回は完走できなかったよ。旋回とジャンプ着地を見直して再挑戦しよう。'):legendChallenge?'伝説の2人は異次元の速さ！ 背中が遠い……この悔しさを次の挑戦につなげよう。':villainChallenge?(position===1&&driving.status==='finished'?'黒岩 豪に勝利！ ひなた模型店への紹介状を手に入れた。模型店に戻って黒岩の話を聞こう。':'黒岩 豪との勝負は敗北。店内の黒岩に話しかければ、準備して再挑戦できるよ。'):driving.status==='out'?(driving.stopReason==='lapped'?(dirtWarning?'ダートに装備が合わず超低速になり、周回遅れでリタイア。タイヤ・シャーシ・トルクを見直そう！':'周回遅れでリタイア。セッティングを見直して挑戦しよう！'):driving.stopReason==='loop'?'縦ループで失速したよ。高トルクモーターとギアを見直そう。':driving.stopReason==='battery'?'今回は電池切れ。電池を交換しよう！':'今回はコースアウト。次は完走を目指そう！'):`最終結果！ あなたは ${position}位。公式記録は ${raceClock(playerTime)}${penaltyText?`（${penaltyText}込み）`:''}。`):
+    showResults?(timeTrial?(driving.status==='finished'?(playerTime<=yuunagiTimeLimit?'規定40秒をクリア！ 第4公式大会・緑川グランプリの出場権を獲得！':'40秒を超えたよ。セッティングを変えて何度でも再挑戦しよう。'):'今回は完走できなかったよ。旋回とジャンプ着地を見直して再挑戦しよう。'):legendChallenge?'伝説の2人は異次元の速さ！ 背中が遠い……この悔しさを次の挑戦につなげよう。':villainChallenge?(position===1&&driving.status==='finished'?'黒岩 豪に勝利！ ひなた模型店への紹介状を手に入れた。模型店に戻って黒岩の話を聞こう。':'黒岩 豪との勝負は敗北。店内の黒岩に話しかければ、準備して再挑戦できるよ。'):driving.status==='out'?(driving.stopReason==='lapped'?'周回遅れでリタイア。セッティングを見直して挑戦しよう！':driving.stopReason==='loop'?'縦ループで失速したよ。高トルクモーターとギアを見直そう。':driving.stopReason==='battery'?'今回は電池切れ。電池を交換しよう！':'今回はコースアウト。次は完走を目指そう！'):`最終結果！ あなたは ${position}位。公式記録は ${raceClock(playerTime)}${penaltyText?`（${penaltyText}込み）`:''}。`):
     ready?'画面をタップでカウント開始 → GOで再タップして発進！':
     counting?(state.falseStartPenalty>0?`${penaltyText}。GOより早く発進した分を記録に加えるよ。`:`${countdownNumber(state)}…… GOまで待とう。今押すとフライングだよ！`):
     waitingForGo?'GO！ 画面のどこでもタップして発進！':
@@ -132,7 +130,6 @@ export default function TrialView(){
     finished?'全車のゴールを確認！ まもなく最終結果を発表します。':
     finish.stage==='approach'?'いよいよ最終ストレート！ 先頭のマシンがゴールへ飛び込んでくる！':
     driving.status==='out'?(driving.stopReason==='lapped'?'先頭に1周差をつけられ、マシンがコース外へ！ リタイアです。':driving.stopReason==='battery'?'電池切れで停止！ 別の電池に交換しよう。':'コースアウト！ マシンを回収したよ。ほかのマシンは走行中。'):
-    dirtWarning&&driving.status==='running'&&state.time>=2&&driving.speed<.4?'ダートでタイヤが空転し、ほとんど加速できていない！ ブロックタイヤや悪路シャーシでセッティングを見直そう。':
     state.time<2?'スタート！ GOからの反応時間も記録に含まれるよ。':timeTrial?`ゴールまで残り${Math.max(0,circuitLength-driving.distance).toFixed(0)}m。規定40秒以内を目指そう！`:playerPath.changing?`レーンチェンジ！ ${playerPath.from+1}コースから ${playerPath.to+1}コースへ。５周で全レーンを走るよ。`:`あなたは現在 ${position}位！ 赤いマシンの上の黄色い印が目印だよ。`);
 
   return <section className="trial retro-race" data-camera={cameraMode} aria-label={legendChallenge?'レジェンド挑戦レース':villainChallenge?'黒岩 豪との挑戦レース':timeTrial?'一本道タイムアタック':'5台の3Dレース'} data-phase={introducing?'introduction':state.phase} data-intro-stage={intro.stage} data-finish-stage={finish.stage} onClick={event=>{
@@ -156,7 +153,6 @@ export default function TrialView(){
         <button className="race-intro-skip" onClick={skipIntro}>紹介をスキップ</button>
         <div className="race-intro-progress" aria-hidden="true"><i style={{transform:`scaleX(${intro.age/raceIntroDuration})`}}/></div>
       </section>}
-      {!introducing&&!error&&!showTally&&!showResults&&dirtWarning&&<aside className="race-setup-warning" role="note" aria-label="ダートのセッティング注意"><strong>{dirtWarning.title}</strong><p>{ready||waitingForLaunch?dirtWarning.advice:driving.status==='running'?(driving.speed<.4?`空転して超低速です（${(driving.speed*3.6).toFixed(1)} km/h）。装備を見直すと改善できます。`:'路面抵抗が大きく、加速しにくい装備です。'):dirtWarning.advice}</p></aside>}
       {!introducing&&!error&&!showTally&&!showResults&&<><div className="race-condition">電池 {batteryLabel(player.equipment.battery,player.performance.batterySeconds+driving.time)} ／ モーター {(motorFactor(player.performance.motorSeconds+driving.time,player.equipment.motor)*100).toFixed(1)}%</div>
         <div className="race-lane">{playerPath.changing?`${playerPath.from+1} → ${playerPath.to+1}`:playerPath.lane+1}コース <span>あなた・{playerPath.changing?'レーンチェンジ中':timeTrial?'タイムアタック':zenith?'天頂決戦':grandprix?'グランプリ決勝':circuitId==='forge'?'最強たちとの試走':'入門マシン'}</span></div>
         {ready&&!overview&&<div className="race-start-mark" aria-hidden="true">START<span>▼</span></div>}
