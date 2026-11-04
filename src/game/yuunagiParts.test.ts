@@ -37,7 +37,7 @@ test('スライドと新作ローラーは制振・安定・抵抗に効き、�
 test('スライドはウイング下に付き、リヤ欄で選んだローラーを可動ステーへ取り付ける',()=>{
  for(const slot of ['accessory','accessory2','accessory3'] as const){const e={...old,body:'body-champion',[slot]:'accessory-slide-rear',rollerRear:'roller-lowdouble'},model=buildMachineModel(0xffffff,e);
  const carriage=model.getObjectByName('rear-slide-carriage')!,roller=model.getObjectByName('roller-rollerRear-roller-lowdouble')!;
- assert.equal(roller.parent,carriage);assert.ok(model.getObjectByName('rear-slide-return-spring'));assert.ok(model.getObjectByName('double-roller-upper'));assert.equal(model.getObjectByName('roller-rollerFront-roller-1')?.parent,model);
+ assert.equal(roller.parent?.name,'rotating-roller');assert.equal(roller.parent?.parent,carriage);assert.ok(model.getObjectByName('rear-slide-return-spring'));assert.ok(model.getObjectByName('double-roller-upper'));assert.equal(model.getObjectByName('roller-rollerFront-roller-1')?.parent?.parent,model);
  const size=new THREE.Box3().setFromObject(model).getSize(new THREE.Vector3());assert.ok(size.x<.22&&size.z<.3&&size.y<.13);
  model.traverse(o=>{if(o instanceof THREE.Mesh){for(const value of o.geometry.getAttribute('position').array)assert.ok(Number.isFinite(value));o.geometry.dispose();o.material.dispose();}});
  }

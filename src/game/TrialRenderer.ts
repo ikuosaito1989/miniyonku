@@ -1,3 +1,4 @@
+import {animateRunningGear,handlingProfile,handlingPose} from './raceMotion';
 import { studioEnvironment } from './studioEnvironment';
 import { lappedPose, lappedPresentationSeconds } from './lappedPresentation';
 import { raceIntroDuration, raceIntroTiming, raceIntroAt, stepRaceIntro, type RaceIntro } from './raceIntro';
@@ -64,7 +65,7 @@ export class TrialRenderer {
     if(challenge==='official')this.buildOfficialArena();
     this.buildTrack();this.buildObstacles();this.buildStart();
     for(const racer of this.state.racers){
-      const car=buildRaceMachineModel(racer);this.cars.set(racer.id,car);this.scene.add(car);
+      const car=buildRaceMachineModel(racer);car.userData.handling=handlingProfile(racer.equipment,racer.performance);this.cars.set(racer.id,car);this.scene.add(car);
       const canvas=document.createElement('canvas');canvas.width=144;canvas.height=54;
       const ctx=canvas.getContext('2d')!;ctx.fillStyle=racer.id==='player'?'#ffe16d':'#18293e';ctx.strokeStyle=racer.id==='player'?'#fff5d7':`#${racer.color.toString(16).padStart(6,'0')}`;ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(3,3,138,48,12);ctx.fill();ctx.stroke();
       ctx.font='bold 30px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=racer.id==='player'?'#18293e':'#fff4db';ctx.fillText(racer.id==='player'?'▼ 自分':racer.name.split(/[ 　]/).at(-1)!,72,28);
@@ -105,6 +106,7 @@ export class TrialRenderer {
   setSound(enabled:boolean,volume=0.35){this.audio.setVolume(volume);this.audio.setEnabled(enabled);}
   restart(){
     this.lappedAges.clear();
+    for(const car of this.cars.values())delete car.userData.motionDistance;
     this.state=createRaceState(this.equipment,this.seed,this.condition,this.challenge,this.circuitId);this.accumulator=0;this.lastTime=0;this.lastReport=-1;this.cameraMode='broadcast';this.startShotBlend=1;
     this.intro=raceIntroAt(0);this.introLastTime=0;this.reportIntro(this.intro);
     this.finishPresentation=createFinishPresentation();this.reportFinish(this.finishPresentation);
@@ -342,6 +344,17 @@ export class TrialRenderer {
       car.position.set(p.x+p.upX*.015,(racer.driving.flightY??p.y)+(crashed?0.14:p.upY*.015),p.z+p.upZ*.015);
       car.rotation.order='YXZ';car.rotation.set(racer.driving.flightY!==undefined?-Math.atan2(racer.driving.flightVelocity??0,Math.max(.1,racer.driving.speed)):-p.pitch,Math.atan2(p.tangentX,p.tangentZ),crashed?0.9:0);
       if((this.circuitId==='forge'||this.circuitId==='zenith')&&racer.driving.flightY===undefined&&!crashed)car.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(new THREE.Vector3(p.sideX,p.sideY,p.sideZ),new THREE.Vector3(p.upX,p.upY,p.upZ),new THREE.Vector3(p.forwardX,p.forwardY,p.forwardZ)));
+      const direction=sign<0?-1:1;
+      const grounded=racer.driving.flightY===undefined&&!crashed&&racer.driving.status!=='out';
+      animateRunningGear(car,finishTrackDistance(racer,this.finishPresentation),elapsed,direction,p.curvature,grounded);
+      if(grounded&&racer.driving.speed>.01){
+        const motion=handlingPose(car.userData.handling,racer.driving.speed,p.curvature*this.track.cornerLoad,this.track.surfaceAt(racer.driving.distance).roughness,racer.driving.time,racer.driving.distance,direction);
+        // レーン面のローカル軸で揺らすので、バンクやスパイラルでも路面から外れない。
+        const lateral=this.reducedMotion?0:motion.lateral;
+        car.position.addScaledVector(new THREE.Vector3(p.sideX,p.sideY,p.sideZ),lateral);
+        car.position.addScaledVector(new THREE.Vector3(p.upX,p.upY,p.upZ),this.reducedMotion?0:motion.heave);
+        if(!this.reducedMotion){car.rotateY(motion.yaw);car.rotateZ(motion.roll);}
+      }
       if(racer.driving.stopReason==='lapped'){
         const pose=lappedPose(this.lappedAges.get(racer.id)??0);
         const side=racer.lane<this.track.circuit.lanes/2?-1:1;

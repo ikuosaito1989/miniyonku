@@ -243,9 +243,11 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
     }
     if(accessoryId!=='accessory-slide-rear'&&accessoryId!=='accessory-slide-pro')for(const item of car.children.slice(accessoryStart))item.position.z+=accessoryIndex*.022;
   }
+  const rotatingWheels:THREE.Group[]=[],rotatingRollers:THREE.Group[]=[];
   for(const z of [-.083,.083]){
     const axle=add(new THREE.CylinderGeometry(equipment.shaft==='shaft-1'?.002:.003,equipment.shaft==='shaft-1'?.002:.003,.179,12),partMaterial(equipment.shaft,85),0,.033,z);axle.rotation.z=Math.PI/2;axle.name='drive-shaft';
     for(const side of [-1,1]){
+      const wheelStart=car.children.length;
       const trailTire=equipment.tire==='tire-trail'||equipment.tire==='tire-sand';
       const tireRadius=trailTire?.037:equipment.tire==='tire-1'?.034:(equipment.tire==='tire-2'||equipment.tire==='tire-landing')?.031:.033;
       const tireWidth=equipment.tire==='tire-1'?.034:equipment.tire==='tire-2'?.022:.028;
@@ -266,6 +268,11 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
         const spoke=add(new THREE.CapsuleGeometry(equipment.wheel==='wheel-light'?.0011:.0015,.014,3,6),wheelAccent,side*.099,.033+Math.cos(angle)*.011,z+Math.sin(angle)*.011);spoke.rotation.x=angle;spoke.name=`wheel-spoke-${equipment.wheel}`;
       }
       const hub=add(new THREE.CylinderGeometry((equipment.wheel==='wheel-oneway'||equipment.wheel==='wheel-diff'||equipment.wheel==='wheel-floating')?.009:.007,(equipment.wheel==='wheel-oneway'||equipment.wheel==='wheel-diff'||equipment.wheel==='wheel-floating')?.009:.007,.005,16),isTowa||isKoya||isKazami||isHino||isChampion?wheelAccent:partAccent(equipment.wheel,90),side*.101,.033,z);hub.rotation.z=Math.PI/2;hub.name='wheel-hub';
+      // 非対称のサイドウォールマークで、拡大時にも回転方向を読める。
+      const indexMark=add(new THREE.BoxGeometry(.0008,.007,.003),new THREE.MeshStandardMaterial({color:0xeee4bd,roughness:.7}),side*(.082+tireWidth/2+.0018),.033+tireRadius*.68,z);indexMark.name='tire-rotation-mark';
+      const wheel=new THREE.Group();wheel.name='rotating-wheel';wheel.position.set(side*.082,.033,z);wheel.userData.radius=tireRadius;wheel.userData.side=side;
+      for(const item of car.children.slice(wheelStart)){item.position.sub(wheel.position);wheel.add(item);}
+      car.add(wheel);rotatingWheels.push(wheel);
     }
   }
   for(const x of [-.101,.101])for(const z of [-.13,0,.125]){
@@ -293,12 +300,19 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
     if(id==='roller-2'||id==='roller-ceramic'){
       const inner=add(new THREE.TorusGeometry(.0045,.001,6,16),metal,x,.051,z);inner.rotation.x=Math.PI/2;inner.name=`roller-bearing-${slot}`;
     }
+    // 軸・ナットは固定し、接触するリングだけを独立して回す。
+    const roller=new THREE.Group();roller.name='rotating-roller';roller.position.set(x,.045,z);roller.userData.side=Math.sign(x);roller.userData.slot=slot;
+    const stripe=add(new THREE.BoxGeometry(.003,.0008,.009),new THREE.MeshStandardMaterial({color:0xf0d778,metalness:.3,roughness:.4}),x,.0505,z+.008);stripe.name='roller-rotation-mark';
+    if(id==='roller-double'||id==='roller-lowdouble'||id==='roller-crown')add(new THREE.BoxGeometry(.003,.0008,.009),stripe.material,x,id==='roller-lowdouble'?.068:.088,z+.008).name='roller-upper-rotation-mark';
+    for(const item of car.children.slice(rollerStart))if(item.name!=='double-roller-pole'&&item.name!=='roller-machined-hub'){item.position.sub(roller.position);roller.add(item);}
+    car.add(roller);rotatingRollers.push(roller);
     add(new THREE.CylinderGeometry(.002,.002,.022,16),metal,x,.049,z).name=`roller-axle-${slot}`;
     add(new THREE.CylinderGeometry(.004,.004,.001,24),metal,x,.053,z).name='roller-washer';
     add(new THREE.CylinderGeometry(.003,.003,.003,6),metal,x,.055,z).name='roller-hex-nut';
     const bore=add(new THREE.CylinderGeometry(.0011,.0011,.0004,12),darkRubber,x,.0566,z);bore.name='roller-nut-recess';
     if(slot==='rollerRear'&&rearSlide)for(const item of car.children.slice(rollerStart)){item.position.y+=.028;rearSlide.add(item);}
   }
+  car.userData.rotatingWheels=rotatingWheels;car.userData.rotatingRollers=rotatingRollers;
   car.userData.rearSlideCarriages=slideCarriages;
   car.scale.setScalar(.85);return car;
 }
