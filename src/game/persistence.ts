@@ -8,6 +8,7 @@ let session:ReturnType<typeof startAutoSave>|null=null;
 export async function initializeSave(){
   const savedAt=await loadSavedGame(indexedDbStorage);
   useSaveStatus.setState({phase:'saved',savedAt,message:savedAt?'セーブを読み込みました':'自動セーブを準備しています'});
+  useGame.getState().recordLogin();
   session=startAutoSave(indexedDbStorage,state=>useSaveStatus.setState(state));
   // 新規開始も直ちに保存。失敗しても初期化成功扱いにせず保存エラーを通知。
   void session.flush().catch(()=>{});
@@ -30,7 +31,7 @@ export async function resetSave(){
   }
 }
 if(typeof window!=='undefined'){
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')void saveNow().catch(()=>{});});
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')void saveNow().catch(()=>{});else if(session){useGame.getState().recordLogin();void saveNow().catch(()=>{});}});
   window.addEventListener('pagehide',()=>{void saveNow().catch(()=>{});});
 }
 if(import.meta.hot)import.meta.hot.dispose(()=>session?.stop());

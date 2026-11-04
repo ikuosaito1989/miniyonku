@@ -65,6 +65,7 @@ export function App(){
       <div className="stage"><ShopWorld/>
         {game.overlay===null&&<div className="world-toolbar"><button className="game-settings-open" onClick={game.openSettings}>設定</button><MissionGuide/><AudioControls floating/></div>}
         <SaveWarning/>
+        {game.loginBonusReceived&&<aside className="login-bonus" role="status"><span>おかえりなさい！ ログインボーナス 500円を受け取りました。</span><button aria-label="ログインボーナスのお知らせを閉じる" onClick={()=>useGame.setState({loginBonusReceived:false})}>閉じる</button></aside>}
         <TownMap/>
         {game.overlay==='mission'&&<MissionGuide/>}
         <TouchControls/>

@@ -22,6 +22,7 @@ import { canEnterShop, currentShop, type ShopId, type WorldLocation } from '../d
 import { challenger, challengerInvitation } from '../data/challenger';
 export type DialogueStage='none'|'legend-intro'|'legend-invite'|'legend-debrief'|'villain-intro'|'villain-win'|'villain-loss'|'doctor-gift'|'official-invite';
 export interface GameState extends Wallet {
+  lastLoginAt:number|null;loginBonusReceived:boolean;recordLogin:(now?:number)=>void;
   timeHistory:TimeHistory;openTimeBoard:()=>void;
   yuunagiUnlocked:boolean;yuunagiBestTime:number|null;finalQualified:boolean;
   wakabaCup:CupProgress;technicalCup:CupProgress;finalCup:CupProgress;grandprixCleared:boolean;zenithCup:CupProgress;zenithCleared:boolean;akatsukiRaceCount:number;zenithQualified:boolean;gameOver:boolean;wakabaUnlocked:boolean;thirdOfficialQualified:boolean;
@@ -115,6 +116,12 @@ export const useGame = create<GameState>((set) => ({
     return {overlay:'dialogue',speaker:`セッティング本棚 ${index+1} / ${hintBooks.length}・${book.title}`,dialogue:`${book.text}（閉じてもう一度調べると次の本）`,shopAfter:false,hintBookIndex:(index+1)%hintBooks.length};
   }),
   raceSeed:0x5eed,
+  lastLoginAt:null,loginBonusReceived:false,
+  recordLogin:(now=Date.now())=>set(s=>{
+    if(!Number.isSafeInteger(now)||now<0)return {};
+    const reward=s.lastLoginAt!==null&&now-s.lastLoginAt>=6*60*60*1000;
+    return {lastLoginAt:Math.max(s.lastLoginAt??0,now),money:s.money+(reward?500:0),loginBonusReceived:s.loginBonusReceived||reward};
+  }),
   money: INITIAL_MONEY, inventory: createStarterInventory(), equipment: {...starterEquipment}, overlay: null, speaker: '', dialogue: '', shopAfter: false, notice: '', nearby: '',
   raceAttempt: 0, settledAttempt: -1, lastPrize: 0,
   proficiencyPoints:0,
