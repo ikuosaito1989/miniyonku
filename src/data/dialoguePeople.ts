@@ -12,14 +12,14 @@ export const dialoguePeople:Record<DialoguePersonId,{name:string;role:string;exp
   aozoraOwner:{name:'青井 晴彦',role:'あおぞら模型店 店主',expression:'気さくな笑顔',ageGroup:'adult',faceBase:'owner'},
   hinataOwner:{name:'日向 誠二',role:'ひなた模型店 店主',expression:'頼もしい笑顔',ageGroup:'adult',faceBase:'owner'},
   akatsukiOwner:{name:'暁堂 司',role:'あかつき模型店 店主',expression:'頼もしい笑顔',ageGroup:'adult',faceBase:'owner'},
-  senior:{name:'橘 斗和',role:'黒岩の先輩・決勝の強敵',expression:'肩までの黒髪とクールな目元',ageGroup:'elementary',faceBase:'child-common'},
+  senior:{name:'橘 斗和',role:'黒岩の先輩・決勝の強敵',expression:'肩までの黒髪、鋭いつり目と三角形の輪郭',ageGroup:'elementary',faceBase:'legend-towa'},
   villain:{name:'黒岩 豪',role:'あおぞら模型店の挑戦者・小学生',expression:'太い眉と不敵な笑み',ageGroup:'elementary',faceBase:'rival'},
   rival:{name:story.rival,role:'ライバル・小学生',expression:'自信のある笑顔',ageGroup:'elementary',faceBase:'rival'},
   guide:{name:shopVisitors.find(person=>person.kind==='guide')!.name,role:'走行会が好きな小学生',expression:'励ます笑顔',ageGroup:'elementary',faceBase:'child-common'},
   mechanic:{name:shopVisitors.find(person=>person.kind==='mechanic')!.name,role:'マシンに詳しい小学生',expression:'元気な笑顔',ageGroup:'elementary',faceBase:'child-common'},
-  legendKoya:{name:'山城 昊也',role:'全国大会のレジェンドレーサー',expression:'黒い短髪と銀灰色の服、落ち着いた笑顔',ageGroup:'elementary',faceBase:'child-common'},
-  legendRei:{name:'風見 怜',role:'全国大会のレジェンドレーサー',expression:'落ち着いた笑顔',ageGroup:'elementary',faceBase:'child-common'},
-  legendGaku:{name:'火野 岳',role:'全国大会のレジェンドレーサー・男の子',expression:'短い髪と金色の服、自信たっぷりの笑顔',ageGroup:'elementary',faceBase:'child-common'},
+  legendKoya:{name:'山城 昊也',role:'全国大会のレジェンドレーサー',expression:'刈り上げた黒髪、丸眼鏡と四角い輪郭、銀灰色の服',ageGroup:'elementary',faceBase:'legend-koya'},
+  legendRei:{name:'風見 怜',role:'全国大会のレジェンドレーサー',expression:'横流しの赤紫髪、切れ長の青灰色の目と面長の輪郭',ageGroup:'elementary',faceBase:'legend-rei'},
+  legendGaku:{name:'火野 岳',role:'全国大会のレジェンドレーサー・男の子',expression:'短い茶髪、大きい丸い目と太眉、丸顔の明るい笑顔と金色の服',ageGroup:'elementary',faceBase:'legend-gaku'},
 };
 const normalize=(name:string)=>name.replace(/[\s　]/g,'');
 export function dialoguePerson(speaker:string):DialoguePersonId|null{

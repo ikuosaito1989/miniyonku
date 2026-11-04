@@ -91,3 +91,14 @@ Final prompt:
 ```text
 Use case: stylized-concept. Asset type: original Japanese browser RPG dialogue portrait, a single square image, intended to be displayed 160px wide. Polished hand-painted anime illustration, grounded facial anatomy and believable clothing, expressive but not exaggerated, clean fine dark-navy linework and subtle cel-painted shading, warm soft lighting. Head-and-upper-chest close-up, eyes looking slightly toward viewer, face fills upper two-thirds, shoulders extend to bottom edge, entire head fully visible with a little padding. Plain muted dark teal backdrop, no scenery, no text, no logos, no watermark, no frames. Original character only, do not reproduce any existing game character. Match these existing walking-sprite character details exactly: Takumi Saeki, Japanese young adult male around 25 years old. Short neatly side-swept dark blue-black hair, dark brown eyes, lean face and straight brows, clean-shaven. Teal blue short-sleeved work shirt with rolled cuffs under a muted pale sage/gray-green workshop apron, one chest pocket and a slim ochre pencil visible. Calm thoughtful reassuring expression and a small closed-mouth smile. No glasses, no hat, no facial hair, no logos.
 ```
+
+## レジェンド4人の顔の描き分け（2026-11）
+
+ユーザー指定により、共通顔の色違いをやめ、目・輪郭・髪型・表情を独立して制作。原画をimagegenで編集し、512×512 WebPに保存。青緑の背景、太い輪郭と16bit風の絵柄は共通とする。
+
+- 怜（rei-pop.webp）：面長、細い切れ長の青灰色の目、細眉、横流しの赤紫髪、控えめな口元、青いジャケット。
+- 岳（gaku-pop.webp）：丸顔、大きな丸い琥珀の目、太眉、短い茶髪、歯を見せた明るい笑顔、金色のジャケット。
+- 斗和（towa-pop.webp）：三角形の輪郭、鋭いつり目、小さい暗赤色の瞳、黒い長髪、無表情、黒赤のジャケット。
+- 昊也（koya-pop.webp）：四角い輪郭、小さいたれ目、丸眼鏡、黒い刈り上げ、落ち着いた笑顔、銀灰色のジャケット。
+
+一般モブ用のrival-pop.webpは変更しない。展示と会話で同じ専用原画を使用し、歩行・順位欄はLegendPeopleArtで頭部を描き分ける。

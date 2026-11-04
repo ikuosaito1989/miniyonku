@@ -1,7 +1,7 @@
+import {legendPersonDrawing} from './LegendPeopleArt';
 import {timeBoardPlacement,timeBoardObstacle} from '../data/timeBoard';
 import {formatRecordTime,type TimeHistory} from './timeRecords';
 import {shopTrackLayout} from './shopTrackLayout';
-import {seniorDrawing,koyaDrawing} from './PeopleArt';
 import {drawShopTrack} from './ShopTrackArt';
 import { officialVenue, officialFixturesFor, officialVenueFor, officialVenuePeople, officialPeopleFor } from '../data/officialVenue';
 import { drawOfficialVenue } from './OfficialVenueArt';
@@ -98,7 +98,7 @@ export class ShopScene extends Phaser.Scene {
         if(npc.id==='go'||npc.id==='riku'||npc.id==='jin'||npc.id==='koya'){
           const key=`venue-${npc.id}-down`;
           if(!this.textures.exists(key)){
-            createPersonTexture(this,key,npc.id==='koya'?koyaDrawing('down'):npc.id==='jin'?seniorDrawing('down'):npc.id==='go'?challengerDrawing('down'):offroaderDrawing('down'));
+            createPersonTexture(this,key,npc.id==='koya'?legendPersonDrawing('koya','down'):npc.id==='jin'?legendPersonDrawing('towa','down'):npc.id==='go'?challengerDrawing('down'):offroaderDrawing('down'));
           }
           (person.list[1] as Phaser.GameObjects.Image).setTexture(key);
         }
@@ -126,10 +126,10 @@ export class ShopScene extends Phaser.Scene {
       }
       (rivalPerson.list[1] as Phaser.GameObjects.Image).setTexture(key);
     }
-    if(shopId==='akatsuki'){const key='akatsuki-towa';if(!this.textures.exists(key))createPersonTexture(this,key,seniorDrawing('down'));(rivalPerson.list[1] as Phaser.GameObjects.Image).setTexture(key);}
+    if(shopId==='akatsuki'){const key='akatsuki-towa';if(!this.textures.exists(key))createPersonTexture(this,key,legendPersonDrawing('towa','down'));(rivalPerson.list[1] as Phaser.GameObjects.Image).setTexture(key);}
     for(const visitor of cast.visitors){
       const npc=this.person(visitor.x,visitor.y,visitor.kind);
-      if(shopId==='akatsuki'){if(visitor.name==='風見 怜'||visitor.name==='火野 岳')(npc.list[1] as Phaser.GameObjects.Image).setTexture(this.arrivalTexture(visitor.name==='風見 怜'?'rei':'gaku','down',0));if(visitor.name==='山城 昊也'){const key='akatsuki-koya';if(!this.textures.exists(key))createPersonTexture(this,key,koyaDrawing('down'));(npc.list[1] as Phaser.GameObjects.Image).setTexture(key);}this.add.text(visitor.x,visitor.y+17,visitor.name,{fontFamily:'sans-serif',fontSize:'8px',color:'#234844',resolution:2}).setOrigin(.5,0).setDepth(visitor.y+1);}
+      if(shopId==='akatsuki'){if(visitor.name==='風見 怜'||visitor.name==='火野 岳')(npc.list[1] as Phaser.GameObjects.Image).setTexture(this.arrivalTexture(visitor.name==='風見 怜'?'rei':'gaku','down',0));if(visitor.name==='山城 昊也'){const key='akatsuki-koya';if(!this.textures.exists(key))createPersonTexture(this,key,legendPersonDrawing('koya','down'));(npc.list[1] as Phaser.GameObjects.Image).setTexture(key);}this.add.text(visitor.x,visitor.y+17,visitor.name,{fontFamily:'sans-serif',fontSize:'8px',color:'#234844',resolution:2}).setOrigin(.5,0).setDepth(visitor.y+1);}
       this.solids.push(new Phaser.Geom.Rectangle(visitor.x-12,visitor.y-9,24,21));
     }
     this.solids.push(new Phaser.Geom.Rectangle(cast.rival.x-12,cast.rival.y-9,24,21));
@@ -308,11 +308,7 @@ export class ShopScene extends Phaser.Scene {
   private arrivalTexture(kind:string,facing:Facing,frame:number){
     const key=`arrival-${kind}-${facing}-${frame}`;
     if(!this.textures.exists(key)){
-      let drawing=kind==='doctor'?doctorDrawing(facing,frame):kind==='villain'?challengerDrawing(facing,frame):personDrawing('rival',facing,frame);
-      if(kind!=='villain'&&kind!=='doctor'){
-        const colors:Record<string,string>=kind==='rei'?{'#b14b67':'#42679f','#ec9aa2':'#9bbfe9','#7f3757':'#29456f'}:{'#b14b67':'#c49b3d','#ec9aa2':'#f3d98a','#7f3757':'#8b6529'};
-        drawing=drawing.map(shape=>({...shape,color:colors[shape.color]??shape.color}));
-      }
+      const drawing=kind==='doctor'?doctorDrawing(facing,frame):kind==='villain'?challengerDrawing(facing,frame):legendPersonDrawing(kind==='gaku'?'gaku':'rei',facing,frame);
       createPersonTexture(this,key,drawing);
     }
     return key;
