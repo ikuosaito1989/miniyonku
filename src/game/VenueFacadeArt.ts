@@ -24,44 +24,29 @@ export function paintVenueFacade(p:SceneryPen,v:TownVenue,open:boolean){
   for(const bx of [x+7,x+w-24]){p.gradient(bx,y+116,17,h-121,'#e7e2c5','#839696');p.rect(bx+3,y+118,2,h-125,'#fff1c5');}
   for(const side of [-1,1]){const fx=x+w/2+side*(w*.36);p.rect(fx,y-45,2,60,'#b9c9c4');p.poly([[fx+2,y-44],[fx+27,y-39],[fx+2,y-20]],accent);p.checker(fx+4,y-42,16,8,4);}
  }else{
-  const t=shopThemes[(v.shopId??'komorebi') as ShopId],style=t.style;
-  p.round(x,y,w,h,4,t.ink);p.gradient(x+3,y+3,w-6,h-7,t.wall,t.floorDark);
-  if(style==='timber'){
-   p.poly([[x-12,y+8],[x+w/2,y-66],[x+w+12,y+8]],'#354d4c');p.poly([[x-8,y+2],[x+w/2,y-60],[x+w+8,y+2]],'#6f8074');
-   for(let row=0;row<7;row++){const yy=y-50+row*8,half=(row+1)*w/14;p.line([[x+w/2-half,yy],[x+w/2+half,yy]],'#b4b8a0',1);}
-   for(const xx of [x+6,x+w-13])p.gradient(xx,y+7,7,h-11,t.wood,t.ink);
-   for(let yy=y+12;yy<y+h-4;yy+=10)p.line([[x+13,yy],[x+w-13,yy]],'#85694b55',.8);
-  }else if(style==='glass'){
-   p.round(x-6,y-36,w+12,42,4,'#426b80');p.gradient(x-2,y-31,w+4,30,'#a8d5df','#5486a3');p.rect(x-9,y-38,w+18,4,'#dcebed');
-   for(let xx=x+8;xx<x+w-10;xx+=32){p.gradient(xx,y+8,27,h-17,'#a9d4dc','#5a8b9f');p.rect(xx+25,y+8,2,h-17,'#dee9df');p.poly([[xx+2,y+10],[xx+14,y+10],[xx+6,y+h-16],[xx+2,y+h-16]],'#eaf7ec33');}
-  }else if(style==='garage'){
-   p.poly([[x-7,y],[x-7,y-30],[x+40,y-47],[x+40,y-29],[x+96,y-47],[x+96,y-29],[x+w+7,y-47],[x+w+7,y]],'#4a5a60');
-   for(let xx=x-4;xx<x+w;xx+=8)p.rect(xx,y-23,3,h+20,'#d9d2ba22');p.rect(x-8,y-3,w+16,6,'#b9bba9');
-   for(const xx of [x+7,x+w-15]){p.rect(xx,y+7,8,h-8,'#454c48');for(let yy=y+8;yy<y+h-8;yy+=14)p.poly([[xx,yy],[xx+8,yy],[xx+8,yy+6],[xx,yy+12]],'#dfb962');}
-  }else if(style==='garden'){
-   p.poly([[x-8,y+3],[x+w/2,y-55],[x+w+8,y+3]],'#587e71');p.poly([[x+1,y-1],[x+w/2,y-47],[x+w-1,y-1]],'#abd3be');
-   for(let i=1;i<6;i++)p.line([[x+w/2,y-47],[x+i*w/6,y]],'#e1e0b8',2);
-   for(let xx=x+10;xx<x+w-5;xx+=36){p.round(xx,y+11,28,h-19,14,'#456b5b');p.gradient(xx+3,y+15,22,h-27,'#b3cda5','#638f7b');}
-   for(let i=0;i<20;i++){const xx=x+(i*31)%w,yy=y-4+(i*7)%31;p.ellipse(xx,yy,6,3,i%3?'#4e8060':'#9ab878');}
-  }else if(style==='harbor'){
-   for(let yy=y+6;yy<y+h-5;yy+=9)p.line([[x+4,yy],[x+w-4,yy]],'#f1ece238',1);
-   p.round(x-8,y-32,w+16,44,21,'#4a526e');p.round(x-4,y-29,w+8,35,17,'#8c88aa');p.line([[x+2,y-22],[x+w-2,y-22]],'#ddc89d',2);
-   for(const xx of [x+29,x+w-29]){p.ellipse(xx,y+35,21,23,'#d2c5a0');p.ellipse(xx,y+35,17,19,'#334e71');p.ellipse(xx-4,y+31,10,12,'#8eb3c0');for(let i=0;i<8;i++){const a=i*Math.PI/4;p.ellipse(xx+Math.cos(a)*19,y+35+Math.sin(a)*21,1,1,'#716b6a');}}
-  }else if(style==='deco'){
-   for(let i=0;i<4;i++)p.round(x+17+i*13,y-43+i*8,w-34-i*26,46,3,i%2?t.metal:t.wood);
-   for(const xx of [x+7,x+35,x+w-43,x+w-15]){p.gradient(xx,y+5,8,h-11,'#e6d09e','#9e805f');p.rect(xx+2,y+5,1,h-11,'#fff0bc');}
-   p.round(x+48,y+7,w-96,h-16,22,t.ink);p.gradient(x+51,y+13,w-102,h-25,'#9c7889','#3d4b5e');p.poly([[x+w/2,y-62],[x+w/2+18,y-41],[x+w/2,y-25],[x+w/2-18,y-41]],'#e3bb7c');
-  }else{
-   p.round(x-6,y-24,w+12,h+27,12,t.ink);p.round(x-3,y-21,w+6,h+19,10,t.metal);p.round(x,y-18,w,h+11,9,t.wood);
-   p.ellipse(x+w/2,y-25,w*.35,32,'#9c87b1');p.ellipse(x+w/2,y-31,w*.31,22,'#6b5c88');p.poly([[x+w/2,y-61],[x+w/2+5,y-44],[x+w/2+20,y-40],[x+w/2+5,y-36],[x+w/2,y-20],[x+w/2-5,y-36],[x+w/2-20,y-40],[x+w/2-5,y-44]],'#ead29a');
-   for(const xx of [x+23,x+w-47]){p.round(xx,y+18,24,72,12,'#b6adca');p.round(xx+3,y+21,18,66,9,'#465775');}
-  }
-  // 共通の機能は残し、看板文字ではなく精密なミニマシンの壁章。
-  p.round(x+w/2-29,y+17,58,24,4,t.ink);p.wheel(x+w/2-14,y+30,7,t.metal);p.wheel(x+w/2+14,y+30,7,t.metal);p.poly([[x+w/2-18,y+27],[x+w/2-5,y+19],[x+w/2+15,y+22],[x+w/2+21,y+28]],t.accent);
-  for(const xx of [x+15,x+w-55]){p.round(xx,y+h-64,40,48,3,t.ink);p.gradient(xx+3,y+h-61,34,40,'#a5c6c6','#527789');p.poly([[xx+4,y+h-59],[xx+16,y+h-59],[xx+8,y+h-23],[xx+4,y+h-23]],'#f6efcc55');for(let i=0;i<3;i++){p.rect(xx+6+i*10,y+h-37,8,9,[t.accent,'#c88b79','#c7b980'][i]);p.rect(xx+7+i*10,y+h-36,6,1,'#eee5c6');}}
-  const dx=x+w/2-15;p.round(dx,y+h-66,30,61,3,t.ink);p.gradient(dx+4,y+h-61,22,39,'#c7d9cc','#688e9e');p.rect(dx+22,y+h-24,3,3,'#ebcd87');p.gradient(x+4,y+h-6,w-8,6,'#d1c6aa','#8a8a7c');
-  p.plant(x+6,y+h-4,.85);p.plant(x+w-6,y+h-4,.85);
+  const t=shopThemes[(v.shopId??'komorebi') as ShopId];
+  // 以前の二階建ての町の模型店を基本に、配色・軒・小物だけを変える。
+  p.round(x,y,w,h,3,t.ink);p.gradient(x+3,y+3,w-6,h-7,'#e3d8bc',t.floorDark);
+  p.poly([[x-8,y-24],[x+w/2,y-34],[x+w+8,y-24],[x+w+8,y+5],[x-8,y+5]],t.ink);
+  p.poly([[x-5,y-24],[x+w/2,y-31],[x+w+5,y-24],[x+w+5,y+1],[x-5,y+1]],t.accent);
+  for(let yy=y-23;yy<y;yy+=7){p.line([[x-3,yy],[x+w+3,yy]],'#dae0d066',1);for(let xx=x+3;xx<x+w;xx+=14)p.line([[xx,yy+1],[xx,yy+5]],'#30475855',1);}
+  p.rect(x-8,y+2,w+16,4,t.wood);p.rect(x-7,y+2,w+14,1,t.metal);
+  for(let xx=x+13;xx<x+w-18;xx+=35){p.round(xx,y+14,26,25,1,'#5e6e7b');p.gradient(xx+2,y+16,22,20,'#a5c9c9','#7198a6');p.rect(xx+4,y+17,3,17,'#e5ecce88');p.rect(xx+12,y+16,1,20,'#d8d9bc');p.rect(xx-1,y+38,28,2,t.wood);}
+  // 小さな模型の壁章。看板に文字は入れない。
+  p.round(x+7,y+46,w-14,25,2,t.wood);p.round(x+10,y+48,w-20,21,1,t.ink);
+  p.wheel(x+w/2-14,y+60,6,t.metal);p.wheel(x+w/2+14,y+60,6,t.metal);p.poly([[x+w/2-18,y+57],[x+w/2-5,y+51],[x+w/2+15,y+53],[x+w/2+21,y+58]],t.accent);
+  for(let i=0;i<12;i++){const xx=x+4+i*(w-8)/12;p.rect(xx,y+76,(w-8)/12,7,i%2?'#e4dec6':t.accent);p.rect(xx,y+83,(w-8)/12-1,3,i%2?'#b9b39e':t.wood);}
+  for(const xx of [x+12,x+w-62]){p.round(xx,y+92,50,37,2,t.ink);p.gradient(xx+3,y+94,44,30,'#a3c8c7','#6d969e');p.poly([[xx+5,y+95],[xx+16,y+95],[xx+8,y+123],[xx+5,y+123]],'#f6efcc55');for(let i=0;i<4;i++){p.rect(xx+5+i*10,y+115,8,9,[t.accent,'#b87e78','#c6b884','#829fb0'][i]);p.rect(xx+6+i*10,y+116,6,1,'#eee5c6');}}
+  const dx=x+w/2-14;p.round(dx,y+91,28,h-94,2,t.ink);p.gradient(dx+3,y+94,22,25,'#c7d9cc','#7b9fa9');p.rect(dx+21,y+123,3,3,'#dec388');p.gradient(x+4,y+h-6,w-8,6,'#d1c6aa','#8a8a7c');
+  p.plant(x+4,y+h-4,.75);p.plant(x+w-5,y+h-4,.75);
+  if(v.id==='hinata'){p.wheel(x+20,y+h-14,9,'#aa9170');p.wheel(x+22,y+h-21,9,'#b5a281');}
+  if(v.id==='wakaba')for(let i=0;i<7;i++){p.ellipse(x+3+i*4,y+75-i%3*4,4,2,'#719969');p.ellipse(x+w-6-i*3,y+75-i%3*3,3,2,'#8ca979');}
+  if(v.id==='aozora'){p.rect(x+w-11,y-12,1,26,'#d2dbd1');p.poly([[x+w-10,y-12],[x+w+9,y-7],[x+w-10,y+2]],'#84b8cb');}
+  if(v.id==='yuunagi')for(let i=0;i<3;i++)p.line([[x+15,y+57+i*4],[x+20,y+55+i*4],[x+25,y+59+i*4],[x+30,y+57+i*4]],'#a9b9d7',1);
+  if(v.id==='akatsuki')p.trophy(x+w-21,y+49,.4);
+  if(v.id==='atelier'){p.ellipse(x+23,y+58,7,7,'#a6a0bc');p.ellipse(x+23,y+58,3,3,t.ink);for(let i=0;i<8;i++){const a=i*Math.PI/4;p.line([[x+23+Math.cos(a)*6,y+58+Math.sin(a)*6],[x+23+Math.cos(a)*9,y+58+Math.sin(a)*9]],'#c7bed6',1.5);}}
  }
+
  // 入口の視覚的な案内。閉鎖時は鎖と鍵、開放時は床の三角形。
  if(open){p.poly([[x+w/2-7,y+h+14],[x+w/2+7,y+h+14],[x+w/2,y+h+22]],'#e5d8a4');}
  else{p.round(x+w/2-17,y+h-30,34,22,3,'#26394be8');p.round(x+w/2-6,y+h-37,12,13,6,'#c9b87d');p.round(x+w/2-9,y+h-29,18,14,3,'#ebd99d');p.ellipse(x+w/2,y+h-23,2,2,'#596174');}

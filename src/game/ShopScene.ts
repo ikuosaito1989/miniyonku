@@ -437,7 +437,6 @@ export class ShopScene extends Phaser.Scene {
     const state=useGame.getState(),shop=currentShop(state.location),p=timeBoardPlacement(shop.id),records=state.timeHistory[shop.circuitId]??[];
     this.timeBoardHistory=state.timeHistory;
     const board=this.add.container(p.x,p.y).setDepth(p.y+p.h);this.timeBoardContainer=board;
-    if(this.textures.exists(sceneryKey(shop.id)))return;
     const g=this.add.graphics();board.add(g);
     g.fillStyle(0x06131d,.3).fillEllipse(p.w/2,p.h+2,p.w,10);
     g.fillStyle(0x6c543b).fillRect(12,p.h-18,7,20).fillRect(p.w-19,p.h-18,7,20);
