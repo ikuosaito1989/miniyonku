@@ -5,7 +5,7 @@ import { raceIntroDuration, raceIntroAt, courseIntroduction } from './game/raceI
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useGame } from './game/store';
 import { TrialRenderer } from './game/TrialRenderer';
-import { nextRaceCamera, raceCameraViews, type TrialCamera } from './data/raceCamera';
+import { raceCameraViews, type TrialCamera } from './data/raceCamera';
 import { canViewRaceResults, countdownNumber, createRaceState, officialTime, rankRacers } from './game/race';
 import { getCircuitTrack } from './data/circuit';
 import { officialRace, officialRounds } from './data/officialRace';
@@ -60,8 +60,6 @@ export default function TrialView(){
   const [finish,setFinish]=useState(createFinishPresentation);
   const [cameraMode,setCameraMode]=useState<TrialCamera>('broadcast');
   const overview=cameraMode==='overview';
-  const nextCamera=nextRaceCamera(cameraMode);
-  const currentCamera=raceCameraViews.find(view=>view.id===cameraMode)!;
   const [error,setError]=useState('');
   const sound=useAudioSettings(s=>s.enabled),volume=useAudioSettings(s=>s.volume);
 
@@ -142,7 +140,7 @@ export default function TrialView(){
   }}>
     <header className="race-header"><h2>{officialChallenge?raceName:legendChallenge?'レジェンド挑戦':villainChallenge?'黒岩 豪からの挑戦':circuit.name}<span>{timeTrial?'一本道・1台タイムアタック':pointToPoint?'一本道・5台レース':`${circuit.lanes}レーン・${circuit.laps}周レース`}</span></h2><nav aria-label="レース操作">
       <AudioControls/>
-      <button className="race-camera-button" disabled={introducing} aria-label={`視点切替：現在${currentCamera.label}、次は${nextCamera.label}`} onClick={()=>{renderer.current?.setCamera(nextCamera.id);setCameraMode(nextCamera.id);}}>{nextCamera.label}</button>
+      <div className="race-camera-choices" role="group" aria-label="レースの視点">{raceCameraViews.map(view=><button key={view.id} className="race-camera-button" disabled={introducing} aria-pressed={cameraMode===view.id} onClick={()=>{renderer.current?.setCamera(view.id);setCameraMode(view.id);}}>{view.label}</button>)}</div>
       <button onClick={requestClose}>{officialChallenge?'会場へ':'模型店へ'}</button>
     </nav></header>
     {!introducing&&(timeTrial?<div className="time-trial-target"><span>規定 <strong>{yuunagiTimeLimit.toFixed(2)}秒以内</strong></span><span>{bestTime!==null?`自己ベスト ${(Math.ceil(bestTime*100-1e-7)/100).toFixed(2)}秒`:'初挑戦'}</span><span>{finalQualified?'出場権獲得済み':'クリアで第4大会出場権'}</span></div>:<RaceRanking race={state}/>)}

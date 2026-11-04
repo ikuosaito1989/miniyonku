@@ -7,9 +7,8 @@ export const raceCamera = {
 };
 
 export const raceCameraViews=[
-  {id:'broadcast',label:'マシンを見る'},
-  {id:'overview',label:'全体'},
   {id:'zoom',label:'拡大'},
+  {id:'overview',label:'全体'},
+  {id:'broadcast',label:'マシンを見る'},
 ] as const;
 export type TrialCamera=typeof raceCameraViews[number]['id'];
-export function nextRaceCamera(mode:TrialCamera){return raceCameraViews[(raceCameraViews.findIndex(view=>view.id===mode)+1)%raceCameraViews.length];}
