@@ -1,3 +1,4 @@
+import {roomView} from './shop';
 export function compactDevice(){return typeof window!=='undefined'&&(matchMedia('(pointer: coarse)').matches||innerWidth<=720);}
 export const shopRenderOptions={pixelArt:false,roundPixels:false,antialias:true,antialiasGL:true} as const;
 // 実ピクセルに合わせつつDPR・長辺・総ピクセル数でGPU負荷を制限する。
@@ -14,4 +15,10 @@ export function shopRenderScale(width:number,height:number,dpr=1){
   const w=Number.isFinite(width)?Math.max(1,width):1,h=Number.isFinite(height)?Math.max(1,height):1;
   const density=Number.isFinite(dpr)?Math.max(1,dpr):1;
   return Math.min(density,2,2560/Math.max(w,h),Math.sqrt(4_000_000/(w*h)));
+}
+
+// 街と模型店で同じ人物が同じ大きさになるよう、模型店の倍率を共用する。
+export function shopWorldZoom(width:number,height:number,compact:boolean){
+  if(compact){const zoom=Math.max(width/560,height/roomView.height);return {x:zoom,y:zoom};}
+  return {x:width/roomView.width,y:height/roomView.height};
 }

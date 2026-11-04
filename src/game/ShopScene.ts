@@ -22,7 +22,7 @@ import { nextShopRace } from '../data/shopHints';
 import { equippedCondition } from './condition';
 import { shopAdvice } from './shopAdvice';
 import { touchInput } from './touchInput';
-import { compactDevice } from '../data/display';
+import { compactDevice, shopWorldZoom } from '../data/display';
 import { findWalkingPath, walkBounds, type Point } from './navigation';
 import { proficiencyStandings } from '../data/proficiency';
 import shopIllustration from '../assets/shop/interior-v1.webp';
@@ -80,11 +80,11 @@ export class ShopScene extends Phaser.Scene {
     const unlockAudio=()=>{if(useAudioSettings.getState().enabled)this.eventAudio.unlock();};
     window.addEventListener('pointerdown',unlockAudio,true);window.addEventListener('keydown',unlockAudio,true);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN,()=>{window.removeEventListener('pointerdown',unlockAudio,true);window.removeEventListener('keydown',unlockAudio,true);this.eventAudio.dispose();});
+    this.isTown=useGame.getState().location==='town';this.isOfficial=['stadium-5','stadium-9','stadium-10','stadium-7'].includes(useGame.getState().location);
     this.fitCamera();
     this.scale.on(Phaser.Scale.Events.RESIZE,this.fitCamera,this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN,()=>this.scale.off(Phaser.Scale.Events.RESIZE,this.fitCamera,this));
     this.solids=[];
-    this.isTown=useGame.getState().location==='town';this.isOfficial=['stadium-5','stadium-9','stadium-10','stadium-7'].includes(useGame.getState().location);
     createPeopleTextures(this);
     if(this.isTown){
       drawTown(this,useGame.getState());
@@ -246,21 +246,22 @@ export class ShopScene extends Phaser.Scene {
   private fitCamera(){
     this.gesture.reset();this.pendingTarget=null;this.cancelRoute();
     const {width,height}=this.scale;
+    const compact=compactDevice(),zoom=shopWorldZoom(width,height,compact);
     if(this.isTown){
-      const camera=this.cameras.main,cssWidth=this.scale.displaySize.width;
-      camera.setZoom(width/Math.min(compactDevice()?470:850,cssWidth));
+      const camera=this.cameras.main;
+      camera.setZoom(zoom.x,zoom.y);
       camera.setBounds(0,0,townSize.width,townSize.height);
       if(this.player)camera.startFollow(this.player,false,.18,.18);
       return;
     }
-    if(compactDevice()){
+    if(compact){
       const camera=this.cameras.main;
-      camera.setZoom(Math.max(width/560,height/roomView.height));camera.setBounds(roomView.x,roomView.y,roomView.width,roomView.height);
+      camera.setZoom(zoom.x,zoom.y);camera.setBounds(roomView.x,roomView.y,roomView.width,roomView.height);
       if(this.player)camera.startFollow(this.player,false,.15,.15);
       return;
     }
     this.cameras.main.stopFollow();this.cameras.main.removeBounds();
-    this.cameras.main.setZoom(width/roomView.width,height/roomView.height);
+    this.cameras.main.setZoom(zoom.x,zoom.y);
     this.cameras.main.centerOn(roomView.x+roomView.width/2,roomView.y+roomView.height/2);
   }
   private person(x:number,y:number,kind:PersonKind){
