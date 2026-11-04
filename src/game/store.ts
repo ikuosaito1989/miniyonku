@@ -1,3 +1,4 @@
+import {recordRaceSpeeds,type SpeedHistory} from './speedRecords';
 import {yuunagiTimeLimit} from '../data/yuunagiCircuit';
 import {emptyCup,cupComplete,cupPlayerPlace,cupProgression,enterCupHeat,finishCupHeat,forfeitCupHeat,raceCupHeat,type CupProgress} from './cup';
 import { officialRace, type OfficialRound } from '../data/officialRace';
@@ -21,6 +22,7 @@ import { canEnterShop, currentShop, type ShopId, type WorldLocation } from '../d
 import { challenger, challengerInvitation } from '../data/challenger';
 export type DialogueStage='none'|'legend-intro'|'legend-invite'|'legend-debrief'|'villain-intro'|'villain-win'|'villain-loss'|'doctor-gift'|'official-invite';
 export interface GameState extends Wallet {
+  speedHistory:SpeedHistory;openSpeedBoard:()=>void;
   yuunagiUnlocked:boolean;yuunagiBestTime:number|null;finalQualified:boolean;
   wakabaCup:CupProgress;technicalCup:CupProgress;finalCup:CupProgress;grandprixCleared:boolean;zenithCup:CupProgress;zenithCleared:boolean;akatsukiRaceCount:number;zenithQualified:boolean;gameOver:boolean;wakabaUnlocked:boolean;thirdOfficialQualified:boolean;
   enterOfficialVenue:(id?:'stadium-5'|'stadium-9'|'stadium-10'|'stadium-7')=>void;townReturnVenue:'stadium-5'|'stadium-9'|'stadium-10'|'stadium-7'|null;
@@ -49,7 +51,7 @@ export interface GameState extends Wallet {
   selectUnit:(slot:'motor'|'battery',id:string)=>void; breakIn:()=>void;
   raceAttempt: number; settledAttempt: number; lastPrize: number;
   settleRace: (attempt: number, race: RaceState) => void;
-  overlay: 'mission' | 'town-map' | 'arrival' | 'dialogue' | 'shop' | 'race' | 'setting' | 'settings' | 'proficiency' | 'legends' | 'cheat' | 'game-over' | null; speaker: string; dialogue: string; shopAfter: boolean; notice: string; nearby: string;
+  overlay: 'speed-board' | 'mission' | 'town-map' | 'arrival' | 'dialogue' | 'shop' | 'race' | 'setting' | 'settings' | 'proficiency' | 'legends' | 'cheat' | 'game-over' | null; speaker: string; dialogue: string; shopAfter: boolean; notice: string; nearby: string;
   openSetting: () => void; equip: (id: string,slot?:EquipmentSlot) => void;
   openSettings:()=>void;
   startTrial: () => void;
@@ -63,6 +65,7 @@ function updateCup(s:GameState,cup:CupProgress){
  return {...updated,gameOver:s.gameOver||updated.gameOver};
 }
 export const useGame = create<GameState>((set) => ({
+  speedHistory:{},openSpeedBoard:()=>set(s=>s.location==='town'||s.location==='atelier'||s.overlay==='race'||s.overlay==='arrival'?s:{overlay:'speed-board',shopAfter:false}),
   yuunagiUnlocked:false,yuunagiBestTime:null,finalQualified:false,
   wakabaCup:emptyCup(),technicalCup:emptyCup(),finalCup:emptyCup(),grandprixCleared:false,zenithCup:emptyCup(),zenithCleared:false,akatsukiRaceCount:0,zenithQualified:false,gameOver:false,wakabaUnlocked:false,thirdOfficialQualified:false,
   townReturnVenue:null,enterOfficialVenue:(id='stadium-5')=>set(s=>s.gameOver||s.location!=='town'||!(id==='stadium-7'?s.zenithQualified:id==='stadium-10'?s.finalQualified:id==='stadium-5'?s.officialQualified:s.thirdOfficialQualified)||s.overlay==='race'||s.overlay==='arrival'?s:{location:id,overlay:null,nearby:'',notice:'',shopAfter:false,townReturnVenue:null}),
@@ -160,7 +163,7 @@ export const useGame = create<GameState>((set) => ({
     const inventory=s.inventory;
     if(!delta&&!reward)return s;
     const practice=reward&&player?(player.driving.status==='finished'?5+(rankRacers(race)[0]?.id==='player'?5:0):seconds>0?1:0):0;
-    return {akatsukiRaceCount,zenithQualified,yuunagiBestTime,finalQualified,...(firstHinataWin?{officialQualified:true,officialQualificationNotice:true}:{}),...cupUpdate,...(firstWakabaWin?{thirdOfficialQualified:true}:{}),...(reward?{lastRaceReview:reviewRace(race)}:{}),units,inventory,usageSeconds:Math.max(s.usageSeconds,seconds),money:s.money+prize,proficiencyPoints:s.proficiencyPoints+practice,...(firstWin?{unlockedRaces:[...s.unlockedRaces,nextShopRace.id],qualificationNotice:true,...(!s.legendRaceCompleted?{legendEventPending:true}:{})}:{}),...(firstAozoraWin?{aozoraWon:true,villainArrivalPending:true}:{}),...(defeatedVillain?{villainDefeated:true,thirdShopNotice:true}:{}),...(s.villainChallengeActive&&reward?{villainDebriefPending:true}:{}),...(completedLegend?{legendRaceCompleted:true}:{}),...(s.legendChallengeActive&&reward?{legendDebriefPending:true}:{}),...(reward?{lastPrize:prize,settledAttempt:attempt}:{})};
+    return {...(reward?{speedHistory:recordRaceSpeeds(s.speedHistory,race,attempt)}:{}),akatsukiRaceCount,zenithQualified,yuunagiBestTime,finalQualified,...(firstHinataWin?{officialQualified:true,officialQualificationNotice:true}:{}),...cupUpdate,...(firstWakabaWin?{thirdOfficialQualified:true}:{}),...(reward?{lastRaceReview:reviewRace(race)}:{}),units,inventory,usageSeconds:Math.max(s.usageSeconds,seconds),money:s.money+prize,proficiencyPoints:s.proficiencyPoints+practice,...(firstWin?{unlockedRaces:[...s.unlockedRaces,nextShopRace.id],qualificationNotice:true,...(!s.legendRaceCompleted?{legendEventPending:true}:{})}:{}),...(firstAozoraWin?{aozoraWon:true,villainArrivalPending:true}:{}),...(defeatedVillain?{villainDefeated:true,thirdShopNotice:true}:{}),...(s.villainChallengeActive&&reward?{villainDebriefPending:true}:{}),...(completedLegend?{legendRaceCompleted:true}:{}),...(s.legendChallengeActive&&reward?{legendDebriefPending:true}:{}),...(reward?{lastPrize:prize,settledAttempt:attempt}:{})};
   }),
   openSetting: () => set({overlay:'setting',shopAfter:false,notice:''}),
   openSettings:()=>set({overlay:'settings',shopAfter:false,notice:''}),

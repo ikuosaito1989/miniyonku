@@ -61,3 +61,5 @@
 - レジェンド展示の顔画像はdata/legendPortraitsで会話と同じ4人の原画を使う。パーツの画像はsrc/assets/partsの640×440透過WebP。PartProductModel・partProductThumbnail・scripts/render-part-products.cjsで再生成する（docs/part-product-images.md参照）。既存画像を簡易SVGへ戻さない。
 
 - 所持パーツカードの左上の長いバーはモーター消耗／電池残量（各カード1本のみ）。右上の短いランプは実際の装着状態を示し、装着中だけ赤、未装着は水色。選択カーソルやホバーでは変えず、ローラー等は全装備枠を照合する。
+
+- 模型店のコース端に最高速度TOP3の看板を設置。走行中はDrivingState.peakSpeedを保持し、レース終了精算時にspeedHistoryへコース別上位3件（主人公・CPUの各走行記録、同一レーサーの別走行可）を保存する。速度は内部m/s、表示km/h。旧セーブに記録がなければ空欄とし、過去の速度を推測しない。看板はタップ／クリックで自動接近して開き、出口の通路を塞がない。

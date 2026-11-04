@@ -1,3 +1,5 @@
+import {speedBoardPlacement,speedBoardObstacle} from '../data/speedBoard';
+import {speedKmh,type SpeedHistory} from './speedRecords';
 import {shopTrackLayout} from './shopTrackLayout';
 import {seniorDrawing,koyaDrawing} from './PeopleArt';
 import {drawShopTrack} from './ShopTrackArt';
@@ -35,7 +37,7 @@ import { drawTown } from './TownArt';
 import { drawShopDetails } from './WorldDetailArt';
 import { getCircuitTrack } from '../data/circuit';
 
-interface ShopTarget {x:number;y:number;w:number;h:number;label:string;speaker:string;shopAfter:boolean;text:string;kind?:Fixture['kind']|'exit'|'venue'|'challenger'|'legend-challenger'|'official-speed'|'official-dirt'|'official-reception'|'official-technical'|'official-final'|'official-zenith';venueId?:string}
+interface ShopTarget {x:number;y:number;w:number;h:number;label:string;speaker:string;shopAfter:boolean;text:string;kind?:Fixture['kind']|'speed-records'|'exit'|'venue'|'challenger'|'legend-challenger'|'official-speed'|'official-dirt'|'official-reception'|'official-technical'|'official-final'|'official-zenith';venueId?:string}
 export class ShopScene extends Phaser.Scene {
   private gesture=createShopGesture();
   private screenPoint(pointer:Phaser.Input.Pointer){return {x:pointer.x*this.scale.displaySize.width/this.scale.width,y:pointer.y*this.scale.displaySize.height/this.scale.height};}
@@ -53,6 +55,8 @@ export class ShopScene extends Phaser.Scene {
   private inputVersion=0;
   private boardLines:Phaser.GameObjects.Text[]=[];
   private boardPoints=-1;
+  private speedBoardContainer?:Phaser.GameObjects.Container;
+  private speedBoardHistory?:SpeedHistory;
   private arrivalKind:ArrivalKind|null=null;
   private arriving:{state:ArrivalActor;container:Phaser.GameObjects.Container;kind:string;solid:Phaser.Geom.Rectangle|null}[]=[];
   private eventAudio=new EventAudio();
@@ -165,6 +169,10 @@ export class ShopScene extends Phaser.Scene {
     this.add.rectangle(480,580,84,15,0x34564e).setDepth(590);
     this.add.text(480,575,'▼ 緑川町へ',{fontFamily:'sans-serif',fontSize:'10px',color:'#fff1bd',resolution:2}).setOrigin(.5,0).setDepth(591);
     }
+    if(!this.isTown&&!this.isOfficial&&useGame.getState().location!=='atelier'){
+      const shop=currentShop(useGame.getState().location),obstacle=speedBoardObstacle(shop.id);
+      this.solids.push(new Phaser.Geom.Rectangle(obstacle.x,obstacle.y,obstacle.width,obstacle.height));this.drawSpeedBoard();
+    }
     const spawn=this.isTown?townSpawn(useGame.getState().townReturnVenue??useGame.getState().lastShop):this.isOfficial?officialVenue.spawn:room.spawn;
     this.player=this.person(spawn.x,spawn.y,'player');
     if(this.isTown)window.dispatchEvent(new CustomEvent('town-position',{detail:spawn}));
@@ -213,7 +221,9 @@ export class ShopScene extends Phaser.Scene {
       const start=tap;tap=null;
       if(!start||start.id!==pointer.id||useGame.getState().overlay||Math.hypot(screen.x-start.x,screen.y-start.y)>12||pointer.upTime-start.time>700)return;
       const target=this.cameras.main.getWorldPoint(pointer.x,pointer.y);
-      this.route=findWalkingPath({x:this.player.x,y:this.player.y},target,this.solids,this.bounds);
+      const board=this.getTargets().find(t=>t.kind==='speed-records'&&target.x>=t.x&&target.x<=t.x+t.w&&target.y>=t.y&&target.y<=t.y+t.h);
+      this.pendingTarget=board??null;
+      this.route=findWalkingPath({x:this.player.x,y:this.player.y},board?this.approach(board):target,this.solids,this.bounds);
       const end=this.route.at(-1);
       this.destination.setVisible(!!end);if(end)this.destination.setPosition(end.x,end.y);
     });
@@ -351,6 +361,7 @@ export class ShopScene extends Phaser.Scene {
     if(!this.player)return;
     this.syncChallenger();this.syncDoctor();
     const state=useGame.getState();
+    if(this.speedBoardContainer&&this.speedBoardHistory!==state.speedHistory)this.drawSpeedBoard();
     if(state.overlay==='race'&&this.arriving.length)this.clearArrival();
     if(!state.overlay){
       if(state.location==='komorebi'&&state.legendRaceCompleted&&!state.doctorGiftReceived)state.beginArrival('doctor');
@@ -416,6 +427,7 @@ export class ShopScene extends Phaser.Scene {
     const targets:ShopTarget[]=[...shopLayout(currentShop(useGame.getState().location).id).map(({target:f})=>({...f,speaker:f.label,shopAfter:f.kind==='counter'})),{x:cast.rival.x-16,y:cast.rival.y-42,w:32,h:54,label:`ライバル ${cast.rival.name}`,speaker:cast.rival.name,shopAfter:false,text:'湊くん、速いモーターだけじゃなく、ギアやタイヤの組み合わせも大事だよ。'}];
     const state=useGame.getState(),condition=equippedCondition(state.equipment,state.units,state.selectedUnits);
     const shop=currentShop(state.location);
+    if(shop.id!=='atelier')targets.push({...speedBoardPlacement(shop.id),kind:'speed-records',label:'歴代最高速度 TOP 3',speaker:'最高速度の看板',shopAfter:false,text:'コースの最高速度記録を見る。'});
     const counter=targets.find(t=>t.kind==='counter')!;counter.label=`店主 ${shop.owner}`;counter.speaker=shop.owner;counter.text=shop.welcome;
     const track=targets.find(t=>t.kind==='track')!;track.label=shop.id==='atelier'?'究極パーツ展示':getCircuitTrack(shop.circuitId).circuit.name;
     targets.push({...shopExit,label:'緑川町への出口',speaker:shop.name,shopAfter:false,text:'外の町へ出よう。',kind:'exit'});
@@ -443,6 +455,25 @@ export class ShopScene extends Phaser.Scene {
     if(shop.id==='atelier'){for(const visitor of visitors)visitor.text='星皇のモーターとシャーシは各25万円。2つで50万円、わかば優勝約200回分のごほうびだよ。レースはほかの模型店で挑戦してね。';for(const target of targets)if(target.speaker===cast.rival.name)target.text='ここは最初から入れる特別な工房。究極の2パーツはとても高いけど、2つ揃えると多くのコースで圧倒的な強さになるんだ。';}
     return [...targets,...visitors];
   }
+  private drawSpeedBoard(){
+    this.speedBoardContainer?.destroy(true);
+    const state=useGame.getState(),shop=currentShop(state.location),p=speedBoardPlacement(shop.id),records=state.speedHistory[shop.circuitId]??[];
+    this.speedBoardHistory=state.speedHistory;
+    const board=this.add.container(p.x,p.y).setDepth(p.y+p.h);this.speedBoardContainer=board;
+    const g=this.add.graphics();board.add(g);
+    g.fillStyle(0x06131d,.3).fillEllipse(p.w/2,p.h+2,p.w,10);
+    g.fillStyle(0x6c543b).fillRect(12,p.h-18,7,20).fillRect(p.w-19,p.h-18,7,20);
+    g.fillStyle(0xc0a46c).fillRoundedRect(0,0,p.w,p.h-8,3);g.fillStyle(0x132e3a).fillRoundedRect(3,3,p.w-6,p.h-14,2);
+    g.lineStyle(1,0x6c8c8f).lineBetween(8,20,p.w-8,20);
+    const text=(x:number,y:number,value:string,size:number,color:string)=>{const label=this.add.text(x,y,value,{fontFamily:'sans-serif',fontSize:`${size}px`,color,resolution:2});board.add(label);return label;};
+    text(p.w/2,6,'最高速度 TOP 3',10,'#ffe4a1').setOrigin(.5,0);
+    for(let i=0;i<3;i++){
+      const record=records[i],y=24+i*11;
+      text(9,y,`${i+1}`,8,'#e8ca7e');text(23,y,record?record.racerName.slice(0,7):'—',8,'#e4eff2');
+      text(p.w-8,y,record?`${speedKmh(record.speed)} km/h`:'未記録',8,record?'#f9e5aa':'#91aab6').setOrigin(1,0);
+    }
+    text(p.w/2,p.h-17,'タップで記録を見る',6,'#9db8c2').setOrigin(.5,0);
+  }
   private interactWith(target:ShopTarget){
       this.gesture.reset();
       if(target.kind==='official-speed'||target.kind==='official-dirt'||target.kind==='official-technical'||target.kind==='official-final'||target.kind==='official-zenith')useGame.getState().openOfficialRace(target.kind==='official-zenith'?'zenith':target.kind==='official-final'?'final':target.kind==='official-technical'?'technical':target.kind==='official-speed'?'speed':'dirt');
@@ -462,6 +493,7 @@ export class ShopScene extends Phaser.Scene {
         else if(venue.shopId&&isVenueOpen(venue,useGame.getState()))useGame.getState().enterShop(venue.shopId);
         else useGame.getState().talk(venue.name,venueMessage(venue));
       }
+      else if(target.kind==='speed-records')useGame.getState().openSpeedBoard();
       else if(target.kind==='track')useGame.getState().startTrial();
       else if(target.kind==='board')useGame.getState().openProficiency();
       else if(target.kind==='legends')useGame.getState().openLegends();

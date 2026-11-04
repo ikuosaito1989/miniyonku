@@ -1,3 +1,4 @@
+import {SpeedBoard} from './SpeedBoard';
 import { MissionGuide } from './MissionGuide';
 import { TownMap } from './TownMap';
 import { GameOver } from './GameOver';
@@ -60,6 +61,7 @@ export function App(){
         {game.overlay==='dialogue'&&<DialogueView/>}
         {game.overlay==='proficiency'&&<ProficiencyBoard/>}
         {game.overlay==='legends'&&<LegendGallery/>}
+        {game.overlay==='speed-board'&&<SpeedBoard/>}
         {game.overlay==='settings'&&<GameSettings/>}
         {game.overlay==='cheat'&&<CheatPanel/>}
         {game.overlay==='setting'&&<SettingView/>}
