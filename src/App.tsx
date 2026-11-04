@@ -1,3 +1,4 @@
+import {PurchaseConfirmation} from './PurchaseConfirmation';
 import {SpeedBoard} from './SpeedBoard';
 import { MissionGuide } from './MissionGuide';
 import { TownMap } from './TownMap';
@@ -6,7 +7,7 @@ import { keepScreenAwake } from './game/wakeLock';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { ShopWorld } from './ShopWorld';
 import { useGame } from './game/store';
-import { categories, parts, type Category } from './data/parts';
+import { categories, parts, type Category, type Part } from './data/parts';
 import { SettingView } from './SettingView';
 import { PartDescription } from './PartDescription';
 import { PartArtwork } from './PartArtwork';
@@ -31,6 +32,16 @@ export function App(){
   const [category,setCategory]=useState<Category>('motor');
   useEffect(()=>setCategory('motor'),[shop.id]);
   const modal=useRef<HTMLDivElement>(null);
+  const [pendingPurchase,setPendingPurchase]=useState<Part|null>(null),[purchaseError,setPurchaseError]=useState('');
+  const purchaseButton=useRef<HTMLButtonElement|null>(null),purchaseBusy=useRef(false);
+  const cancelPurchase=()=>{setPendingPurchase(null);setPurchaseError('');requestAnimationFrame(()=>{const button=purchaseButton.current;if(button?.isConnected&&!button.disabled)button.focus();else modal.current?.focus();});};
+  const confirmPurchase=()=>{
+    if(!pendingPurchase||purchaseBusy.current)return;
+    purchaseBusy.current=true;const before=useGame.getState().purchaseCount;
+    useGame.getState().buy(pendingPurchase.id);
+    if(useGame.getState().purchaseCount>before)cancelPurchase();else{purchaseBusy.current=false;setPurchaseError(useGame.getState().notice);}
+  };
+  useEffect(()=>{setPendingPurchase(null);setPurchaseError('');},[game.overlay,shop.id]);
   useEffect(()=>{
     if(game.overlay)modal.current?.focus();
   },[game.overlay]);
@@ -66,13 +77,13 @@ export function App(){
         {game.overlay==='cheat'&&<CheatPanel/>}
         {game.overlay==='setting'&&<SettingView/>}
         {game.overlay==='race'&&<Suspense fallback={<div className="trial-loading">試走コースを準備中…</div>}><TrialView/></Suspense>}
-        {game.overlay==='shop'&&<div className="scrim"><div className="modal shop" role="dialog" aria-modal="true" aria-labelledby="modal-title" ref={modal} tabIndex={-1}>
+        {game.overlay==='shop'&&<div className="scrim"><div className="modal shop" inert={!!pendingPurchase} aria-hidden={pendingPurchase?true:undefined} role="dialog" aria-modal={pendingPurchase?undefined:true} aria-labelledby="modal-title" ref={modal} tabIndex={-1}>
             <div className="shop-head"><div><p className="eyebrow">{shop.name} / PARTS COUNTER</p><h2 id="modal-title">小さなパーツ、大きな可能性。</h2></div><button className="close" onClick={game.close} aria-label="ショップを閉じる">✕</button></div>
             <div className="shop-balance">所持金 <strong>¥ {yen(game.money)}</strong><span>所持パーツ {Object.values(game.inventory).reduce((a,b)=>a+b,0)} 点（初期装備含む）</span></div>
             <p>全パーツは種類ごとに1個まで所持できます。モーター・電池のみ、同じ種類の再購入で新品へ交換できます。その他①〜③には異なる種類を最大3個装着できます。ローラーは1セットで前・中・後に設定できます。</p><div className="tabs" aria-label="パーツの分類">{Object.entries(categories).filter(([key])=>!shop.exclusiveParts||parts.some(p=>p.category===key&&isStocked(p,shop))).map(([key,label])=><button key={key} aria-pressed={category===key} className={category===key?'selected':''} onClick={()=>setCategory(key as Category)}>{label}</button>)}</div>
-            <div className="parts">{parts.filter(p=>p.category===category&&isStocked(p,shop)).map(p=><article key={p.id}><div className={`part-icon ${p.category}`}><PartArtwork part={p}/></div><div className="part-info"><h3>{p.name}</h3><PartDescription part={p}/><span className="owned">所持 {game.inventory[p.id]??0}</span></div><div className="purchase"><strong>¥ {yen(p.price)}</strong><button disabled={game.money<p.price||(p.category!=='motor'&&p.category!=='battery'&&game.inventory[p.id]>0)} onClick={()=>game.buy(p.id)}>{p.category!=='motor'&&p.category!=='battery'&&game.inventory[p.id]>0?'所持済み':game.money<p.price?'所持金不足':p.category==='motor'||p.category==='battery'?(game.inventory[p.id]>0?'新品に交換':'購入して装着'):'購入する'}</button></div></article>)}</div>
+            <div className="parts">{parts.filter(p=>p.category===category&&isStocked(p,shop)).map(p=><article key={p.id}><div className={`part-icon ${p.category}`}><PartArtwork part={p}/></div><div className="part-info"><h3>{p.name}</h3><PartDescription part={p}/><span className="owned">所持 {game.inventory[p.id]??0}</span></div><div className="purchase"><strong>¥ {yen(p.price)}</strong><button disabled={game.money<p.price||(p.category!=='motor'&&p.category!=='battery'&&game.inventory[p.id]>0)} onClick={event=>{purchaseButton.current=event.currentTarget;purchaseBusy.current=false;setPurchaseError('');setPendingPurchase(p);}}>{p.category!=='motor'&&p.category!=='battery'&&game.inventory[p.id]>0?'所持済み':game.money<p.price?'所持金不足':p.category==='motor'||p.category==='battery'?(game.inventory[p.id]>0?'新品に交換':'購入して装着'):'購入する'}</button></div></article>)}</div>
             <p className="notice" role="status" aria-live="polite">{game.notice||`${shop.owner}「じっくり選んでね。各種類1個まで所持できるよ。モーター・電池を買い直すと新品を装着するよ。」`}</p><SaveControls/>
-        </div></div>}
+        </div>{pendingPurchase&&<PurchaseConfirmation part={pendingPurchase} money={game.money} owned={(game.inventory[pendingPurchase.id]??0)>0} error={purchaseError} onCancel={cancelPurchase} onConfirm={confirmPurchase}/>}</div>}
       </div>
     </section>}
   </main>;
