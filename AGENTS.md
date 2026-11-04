@@ -57,3 +57,5 @@
 
 - 最新の人物設定：黒岩の先輩は橘 斗和（旧jin IDは過去の緑川大会セーブ互換のため維持）。最終レース・あかつき模型店の試走相手・場内NPCは風見 怜、火野 岳、橘 斗和、山城 昊也の4人。最終レースIDはlegend-rei/gaku/towa/koya。旧最終戦のgo/jin記録はdecodeCupでtowa/koyaへ移行し順位・タイムを保持。
 - 斗和の専用ボディbody-legend-towaは銀色の三分割ノーズ・金色吸気口4個・金属パイプ・赤灯・白ホイール。昊也のbody-legend-muscleは黒銀の幅広カウル・前部駆動カバー・青キャノピー・黄灯・緑ホイール。LegendBodiesで描画。実在のロゴを使わない。昊也の会話顔は男子共通原画の黒髪・銀灰ジャケット差分koya-pop.webp。
+
+- レジェンド展示の顔画像はdata/legendPortraitsで会話と同じ4人の原画を使う。パーツの画像はsrc/assets/partsの640×440透過WebP。PartProductModel・partProductThumbnail・scripts/render-part-products.cjsで再生成する（docs/part-product-images.md参照）。既存画像を簡易SVGへ戻さない。

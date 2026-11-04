@@ -4,11 +4,15 @@ import { partAppearance } from './data/partAppearance';
 import { BodyArtwork } from './BodyArtwork';
 import './part-artwork.css';
 
-// 外部画像ではなく独自のベクター原画。カテゴリ内もIDごとに形状・素材を描き分ける。
+const productImages=import.meta.glob<string>('./assets/parts/*.webp',{eager:true,query:'?url',import:'default'});
+
+// カタログ用3D撮影画像を配信。ボディと追加パーツには既存の原画を利用する。
 export function PartArtwork({part}:{part:Part}){
   const id=useId().replace(/:/g,'');
   const a=partAppearance(part),c=part.category;
   const metal=`url(#${id}-metal)`,rubber=`url(#${id}-rubber)`;
+  const productImage=productImages[`./assets/parts/${part.id}.webp`];
+  if(productImage)return <img className="part-artwork part-product-image" src={productImage} alt={`${part.name}のパーツ画像`} loading="lazy" decoding="async"/>;
   return <svg className="part-artwork" viewBox="0 0 160 100" role="img" aria-label={`${part.name}のパーツイラスト`}>
     <defs><linearGradient id={`${id}-metal`} x1="0" y1="0" x2=".6" y2="1"><stop stopColor="#f1f6f7"/><stop offset=".34" stopColor={a.color}/><stop offset=".55" stopColor="#f6fbfd"/><stop offset="1" stopColor="#657b92"/></linearGradient><linearGradient id={`${id}-rubber`} x2="0" y2="1"><stop stopColor={a.color}/><stop offset="1" stopColor="#111827"/></linearGradient></defs>
     <ellipse cx="82" cy="84" rx="54" ry="7" fill="#020b1a" opacity=".25"/>
