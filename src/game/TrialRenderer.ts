@@ -10,11 +10,11 @@ import type { Equipment } from '../data/machine';
 import { FIXED_STEP } from './driving';
 import { canViewRaceResults, completeRaceAfterPlayerFinish, createRaceState, launchPlayer, startRace, stepRace, type RaceState, type RaceChallenge } from './race';
 import {overviewFrame,overviewViewportFrame,overviewCarScale} from './overviewCamera';
-import { raceCamera } from '../data/raceCamera';
+import { raceCamera, type TrialCamera } from '../data/raceCamera';
 import { createFinishPresentation, finishTrackDistance, finishSequence, shouldUseFinishCamera, stepFinishPresentation, type FinishPresentation } from './finishPresentation';
 import { RaceAudio } from './RaceAudio';
 
-export type TrialCamera = 'broadcast' | 'overview' | 'machine';
+export type { TrialCamera } from '../data/raceCamera';
 
 export class TrialRenderer {
   private renderer: THREE.WebGLRenderer;
@@ -280,12 +280,12 @@ export class TrialRenderer {
       this.camera.left=-height*this.aspect/2;this.camera.right=height*this.aspect/2;this.camera.top=height/2;this.camera.bottom=-height/2;this.camera.updateProjectionMatrix();
       this.camera.position.copy(target).add(new THREE.Vector3(...raceCamera.start.offset).multiplyScalar(Math.max(1,height/6)));this.camera.lookAt(target);return;
     }
-    const overview=this.cameraMode==='overview',machine=this.cameraMode==='machine';
+    const overview=this.cameraMode==='overview',zoom=this.cameraMode==='zoom';
     if(overview)this.camera.up.set(frame.up.x,frame.up.y,frame.up.z);else this.camera.up.set(0,1,0);
-    const goalShot=!overview&&!machine&&shouldUseFinishCamera(this.state,this.finishPresentation);
-    const blend=machine?0:this.startShotBlend*this.startShotBlend*(3-2*this.startShotBlend);
+    const goalShot=!overview&&!zoom&&shouldUseFinishCamera(this.state,this.finishPresentation);
+    const blend=zoom?0:this.startShotBlend*this.startShotBlend*(3-2*this.startShotBlend);
     const startHeight=Math.max(raceCamera.start.height,raceCamera.start.minWidth/this.aspect);
-    const runningHeight=machine?Math.max(.32,.44/this.aspect):Math.max(raceCamera.running.height,raceCamera.running.minWidth/this.aspect);
+    const runningHeight=zoom?Math.max(.55,.72/this.aspect):Math.max(raceCamera.running.height,raceCamera.running.minWidth/this.aspect);
     const viewHeight=overview?frame.height:goalShot?Math.max(raceCamera.finish.height,raceCamera.finish.minWidth/this.aspect):THREE.MathUtils.lerp(runningHeight,startHeight,blend);
     this.camera.left=-viewHeight*this.aspect/2;this.camera.right=viewHeight*this.aspect/2;
     this.camera.top=viewHeight/2;this.camera.bottom=-viewHeight/2;this.camera.updateProjectionMatrix();
@@ -293,8 +293,7 @@ export class TrialRenderer {
     const target=overview?new THREE.Vector3(frame.target.x,frame.target.y,frame.target.z):goalShot?new THREE.Vector3(start.x-start.tangentX*raceCamera.finish.lookBehind,start.y,start.z-start.tangentZ*raceCamera.finish.lookBehind):new THREE.Vector3(p.x+p.tangentX*raceCamera.running.lookAhead,p.y,p.z+p.tangentZ*raceCamera.running.lookAhead)
       .lerp(new THREE.Vector3(start.x-start.tangentX*raceCamera.start.lookBehind,start.y,start.z-start.tangentZ*raceCamera.start.lookBehind),blend);
     const offset=new THREE.Vector3(...(goalShot?raceCamera.finish.offset:raceCamera.running.offset));
-    if(machine){target.set(p.x,p.y,p.z);offset.set(-p.tangentX*.7+p.tangentZ*.5,.45,-p.tangentZ*.7-p.tangentX*.5);}
-    if(!overview&&!goalShot&&!machine)offset.lerp(new THREE.Vector3(...raceCamera.start.offset),blend);
+    if(!overview&&!goalShot)offset.lerp(new THREE.Vector3(...raceCamera.start.offset),blend);
     if(overview)offset.multiplyScalar(Math.max(1,viewHeight/6));
     this.camera.position.copy(target).add(offset);this.camera.lookAt(target);
   }

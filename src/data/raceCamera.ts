@@ -5,3 +5,11 @@ export const raceCamera = {
   finish: { offset: [-7,7,7] as const, height:1.25, minWidth:1.65, lookBehind:0.25 },
   transitionSeconds:0.9,
 };
+
+export const raceCameraViews=[
+  {id:'broadcast',label:'マシンを見る'},
+  {id:'overview',label:'全体'},
+  {id:'zoom',label:'拡大'},
+] as const;
+export type TrialCamera=typeof raceCameraViews[number]['id'];
+export function nextRaceCamera(mode:TrialCamera){return raceCameraViews[(raceCameraViews.findIndex(view=>view.id===mode)+1)%raceCameraViews.length];}
