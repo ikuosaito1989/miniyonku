@@ -12,6 +12,10 @@ export function PartCondition({part,seconds,equipped}:{part:Part;seconds:number;
   const warning=!fixed&&(battery?percent<=20:percent>=50);
   const status=battery?(fixed?'充電式・残量固定':percent<=0?'電池切れ':warning?'残りわずか':'使用できます'):`${motorLabel(seconds,part.id)}・性能 ${(motorFactor(seconds,part.id)*100).toFixed(1)}%`;
   return <span className={`card-lamps condition-lamps${warning?' condition-lamps-warning':''}`} title={`${label} ${percent.toFixed(1)}%・${status}・使用 ${seconds.toFixed(0)}秒`}>
-    <span className="condition-lamp-gauge"><progress aria-label={`${part.name}の${label}`} max={100} value={percent}/><span>{battery?`残量 ${percent.toFixed(1)}%${fixed?'（充電式）':percent<=0?'・電池切れ':''}`:fixed?'消耗なし':`消耗 ${percent.toFixed(1)}%`}</span></span>{lamp}
+    <span className="condition-lamp-gauge"><progress aria-label={`${part.name}の${label}`} max={100} value={percent}/><span>{battery?`残量 ${percent.toFixed(1)}%${fixed?'（充電式）':percent<=0?'・電池切れ':''}`:fixed?'消耗なし':`消耗 ${percent.toFixed(1)}%`}</span>
+      <span className="part-card-condition-status">{battery?status:motorLabel(seconds,part.id)}</span>
+      {motor&&<span className="part-card-condition-detail">性能 {(motorFactor(seconds,part.id)*100).toFixed(1)}%</span>}
+      <span className="part-card-condition-detail">使用 {seconds.toFixed(0)}秒</span>
+    </span>{lamp}
   </span>;
 }
