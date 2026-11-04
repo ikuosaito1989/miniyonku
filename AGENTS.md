@@ -59,3 +59,5 @@
 - 斗和の専用ボディbody-legend-towaは銀色の三分割ノーズ・金色吸気口4個・金属パイプ・赤灯・白ホイール。昊也のbody-legend-muscleは黒銀の幅広カウル・前部駆動カバー・青キャノピー・黄灯・緑ホイール。LegendBodiesで描画。実在のロゴを使わない。昊也の会話顔は男子共通原画の黒髪・銀灰ジャケット差分koya-pop.webp。
 
 - レジェンド展示の顔画像はdata/legendPortraitsで会話と同じ4人の原画を使う。パーツの画像はsrc/assets/partsの640×440透過WebP。PartProductModel・partProductThumbnail・scripts/render-part-products.cjsで再生成する（docs/part-product-images.md参照）。既存画像を簡易SVGへ戻さない。
+
+- 所持パーツカードの左上の長いバーはモーター消耗／電池残量（各カード1本のみ）。右上の短いランプは実際の装着状態を示し、装着中だけ赤、未装着は水色。選択カーソルやホバーでは変えず、ローラー等は全装備枠を照合する。
