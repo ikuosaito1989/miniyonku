@@ -286,7 +286,7 @@ export class TrialRenderer {
     const blend=zoom?0:this.startShotBlend*this.startShotBlend*(3-2*this.startShotBlend);
     const startHeight=Math.max(raceCamera.start.height,raceCamera.start.minWidth/this.aspect);
     const runningHeight=zoom?Math.max(.55,.72/this.aspect):Math.max(raceCamera.running.height,raceCamera.running.minWidth/this.aspect);
-    const viewHeight=overview?frame.height:goalShot?Math.max(raceCamera.finish.height,raceCamera.finish.minWidth/this.aspect):THREE.MathUtils.lerp(runningHeight,startHeight,blend);
+    const viewHeight=(overview?frame.height:goalShot?Math.max(raceCamera.finish.height,raceCamera.finish.minWidth/this.aspect):THREE.MathUtils.lerp(runningHeight,startHeight,blend))*(this.cameraMode==='broadcast'?raceCamera.machineViewScale:1);
     this.camera.left=-viewHeight*this.aspect/2;this.camera.right=viewHeight*this.aspect/2;
     this.camera.top=viewHeight/2;this.camera.bottom=-viewHeight/2;this.camera.updateProjectionMatrix();
     const start=sampleLanePath(this.track.open&&goalShot?this.track.circuitLength:0,(circuit.lanes-1)/2);
