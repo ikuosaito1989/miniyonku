@@ -218,7 +218,7 @@ export function offroaderDrawing(direction:Facing,frame=0):PixelShape[]{
   return personDrawing('mechanic',direction,frame).map(shape=>({...shape,color:colors[shape.color]??shape.color}));
 }
 
-/** 共通原画に肩までの黒髪と落ち着いた目元を加えた黒瀬 迅。 */
+/** 共通原画に肩までの黒髪と落ち着いた目元を加えた橘 斗和。 */
 export function seniorDrawing(direction:Facing,frame=0):PixelShape[]{
  const facing=direction==='left'?'right':direction,bob=frame===1||frame===3?1:0;
  const base=personDrawing('rival',facing,frame).map(shape=>({...shape,color:({'#b14b67':'#322b3c','#ec9aa2':'#ae5266','#7f3757':'#1e2130','#39304b':'#242532','#89637c':'#535369','#4c4e70':'#343442'} as Record<string,string>)[shape.color]??shape.color}));
@@ -245,4 +245,10 @@ export function seniorDrawing(direction:Facing,frame=0):PixelShape[]{
  }
  const drawing=[...back.shapes,...base,...front.shapes];
  return direction==='left'?drawing.map(shape=>shape.kind==='rect'?{...shape,x:60-shape.x-shape.w}:{...shape,points:shape.points.map(([x,y])=>[60-x,y] as const)}):drawing;
+}
+
+/** 昊也は共通男子原画の、黒髪・銀灰色ジャケット差分。 */
+export function koyaDrawing(direction:Facing,frame=0):PixelShape[]{
+ const colors:Record<string,string>={'#317d91':'#75828e','#9bd3cc':'#dce4e9','#24536f':'#424e5b','#333e54':'#252c34','#728091':'#687380'};
+ return personDrawing('mechanic',direction,frame).map(shape=>({...shape,color:colors[shape.color]??shape.color}));
 }

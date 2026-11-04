@@ -6,7 +6,7 @@ export type WorldLocation=ShopId|'town'|'stadium-5'|'stadium-9'|'stadium-10'|'st
 export interface ModelShop extends ShopStock { id:ShopId; owner:string; circuitId:CircuitId; stage:number; color:number; welcome:string }
 // 店の進行段階とパーツの入手段階は別。入門店の既存品揃えを維持する。
 export const modelShops:Record<ShopId,ModelShop>={
-  akatsuki:{id:'akatsuki',name:'あかつき模型店',maxPartLevel:10,owner:'暁堂 司',circuitId:'forge',stage:6,color:0xb56860,welcome:'緑川の入賞、おめでとう！ ここには最強兄弟、黒岩と黒瀬も試走に来ている。最上位パーツを22種入荷したぞ。縦ループ、横スパイラル、砂地、坂、ジャンプを制する組み合わせを探そう。勝敗に関係なく、途中で戻らず5回レースの結果まで走れば、天頂決戦・ゼニス・クラウンの出場権を渡す。'},
+  akatsuki:{id:'akatsuki',name:'あかつき模型店',maxPartLevel:10,owner:'暁堂 司',circuitId:'forge',stage:6,color:0xb56860,welcome:'緑川の入賞、おめでとう！ ここには怜・岳・斗和・昊也のレジェンド4人も試走に来ている。最上位パーツを22種入荷したぞ。縦ループ、横スパイラル、砂地、坂、ジャンプを制する組み合わせを探そう。勝敗に関係なく、途中で戻らず5回レースの結果まで走れば、天頂決戦・ゼニス・クラウンの出場権を渡す。'},
   yuunagi:{id:'yuunagi',name:'ゆうなぎ模型店',maxPartLevel:6,owner:'夕凪 慎吾',circuitId:'trail',stage:5,color:0x8074a8,welcome:'星空テクニカル杯の入賞、おめでとう！ 新作のリアウイング・スライドダンパー、セラミックローラー、低い二段ローラー、サージモーター、フローティングホイール、低反発タイヤを揃えたよ。ここはスタートとゴールが別の一本道タイムアタック。約172mの高架スパイラル・ジャンプ台・ロングストレートを越え、公式タイム40秒以内で完走すると第4公式大会・緑川グランプリの出場権を授けるよ。何度でもセッティングを変えて挑戦できる。'},
   atelier:{id:'atelier',name:'星霧模型工房',maxPartLevel:10,exclusiveParts:['motor-sovereign','chassis-sovereign'],owner:'星野 玄一',circuitId:'leaf',stage:1,color:0x77649c,welcome:'ようこそ、星霧模型工房へ。ここは最初から入れる特別な販売専門店。最高額の星皇モーターと星皇シャーシは各25万円、2つで50万円だ。わかばの優勝賞金2500円なら約200勝分。モーターは慣らし不要で摩耗せず、シャーシは駆動・旋回・制振を大幅に強化する。多くのレースで圧倒的に有利になるが、最終公式大会は、速さに加えて旋回と着地の安定も試されるぞ。通常の改造を楽しむ人は、こもれびから挑戦してごらん。'},
   wakaba:{id:'wakaba',name:'わかば模型店',maxPartLevel:5,owner:'若松 修一',circuitId:'grove',stage:4,color:0x709250,welcome:'公式杯の入賞、おめでとう。ここは坂・ジャンプ・1周半の高架スパイラルがある店だ。ライバルも上位装備を使うよ。上位のスイフトトルク、K4シャーシ、ハイグリップタイヤと新作ホイールを揃えたよ。4:1ギアと駆動サポートも組み合わせてごらん。ここで優勝すれば、第3公式大会の星空テクニカル杯の出場権がもらえるよ。'},
@@ -58,10 +58,10 @@ for(let y=130;y<2150;y+=345)for(let x=100;x<2800;x+=370){
 export const shopExit={x:440,y:575,w:80,h:7};
 export function townSpawn(shop:ShopId|'stadium-5'|'stadium-9'|'stadium-10'|'stadium-7'){const venue=townVenues.find(v=>v.id===shop)!;return {x:venue.x+venue.w/2,y:venue.entrance==='north'?venue.y-42:venue.y+venue.h+42};}
 export function venueMessage(venue:TownVenue){
-  if(venue.id==='stadium-7')return '最終大会・天頂決戦ゼニス・クラウン。あかつき模型店で5回レースを終えると出場権を獲得。全要素を詰め込んだ史上最長の一本道で、最強兄弟・黒岩・黒瀬と決戦。2位以内の完走でゲームクリア。';
+  if(venue.id==='stadium-7')return '最終大会・天頂決戦ゼニス・クラウン。あかつき模型店で5回レースを終えると出場権を獲得。全要素を詰め込んだ史上最長の一本道で、怜・岳・斗和・昊也のレジェンド4人と決戦。2位以内の完走でゲームクリア。';
   if(venue.id==='akatsuki')return '緑川グランプリで2位以内に入ると開放。最上位パーツ22種と強豪たちの試走コース。結果まで5回走れば最終大会の出場権。';
   if(venue.id==='yuunagi')return '星空テクニカル杯で3位以内に入ると開放。一本道の高架スパイラルとジャンプ台を40秒以内で完走すると、第4公式大会・緑川グランプリの出場権を獲得できます。';
-  if(venue.id==='stadium-10')return '第4公式大会・緑川グランプリ。ゆうなぎ模型店の一本道タイムアタックを40秒以内で完走すると出場権を獲得できます。黒岩と先輩の黒瀬 迅、モブ2人との一本道決勝。2位以内であかつき模型店が開放、3位以下はゲームオーバーです。';
+  if(venue.id==='stadium-10')return '第4公式大会・緑川グランプリ。ゆうなぎ模型店の一本道タイムアタックを40秒以内で完走すると出場権を獲得できます。黒岩と先輩の橘 斗和、モブ2人との一本道決勝。2位以内であかつき模型店が開放、3位以下はゲームオーバーです。';
   if(venue.id==='atelier')return '最初から入れる特別な販売専門店。星皇モーターと星皇シャーシを各25万円で販売。2つで50万円、わかば優勝約200回分の究極パーツです。';
   if(venue.id==='stadium-9')return '全4大会の第3公式大会・星空テクニカル杯。若葉公式杯で総合優勝するか、わかば模型店で優勝すると出場できます。連続コーナーを約2分走るコースです。';
   if(venue.id==='wakaba')return '若葉公式杯で総合3位以内に入賞すると入店できます。連続コーナーで長距離のセッティングを磨こう。';

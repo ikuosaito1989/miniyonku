@@ -9,10 +9,11 @@ import owner from './assets/portraits/owner-pop.webp';
 import rival from './assets/portraits/rival-pop.webp';
 import guide from './assets/portraits/guide-pop.webp';
 import gaku from './assets/portraits/gaku-pop.webp';
+import koya from './assets/portraits/koya-pop.webp';
 import mechanic from './assets/portraits/mechanic-pop.webp';
 import './dialogue.css';
 
-const portraits:Record<DialoguePersonId,string>={akatsukiOwner:owner,senior:rival,yuunagiOwner:owner,atelierOwner:owner,wakabaOwner:owner,venueStaff:owner,offroader:mechanic,owner,aozoraOwner:owner,hinataOwner:owner,villain:rival,rival,guide,mechanic,legendRei:rival,legendGaku:gaku,doctor:owner};
+const portraits:Record<DialoguePersonId,string>={akatsukiOwner:owner,senior:rival,yuunagiOwner:owner,atelierOwner:owner,wakabaOwner:owner,venueStaff:owner,offroader:mechanic,owner,aozoraOwner:owner,hinataOwner:owner,villain:rival,rival,guide,mechanic,legendRei:rival,legendGaku:gaku,legendKoya:koya,doctor:owner};
 export function DialogueView(){
   const {speaker,dialogue,shopAfter,advance,close,dialogueStage,startLegendChallenge,startVillainChallenge,startOfficialRace,openSetting}=useGame();
   const [selected,setSelected]=useState(0);

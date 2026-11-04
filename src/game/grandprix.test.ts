@@ -20,7 +20,7 @@ test('出場権で緑川会場へ入場し、決勝・ピット・黒岩・先�
  const venue=townVenues.find(v=>v.id==='stadium-10')!;assert.equal(isVenueOpen(venue,qualified()),true);assert.equal(isVenueOpen(venue,useGame.getInitialState()),false);
  useGame.setState({...useGame.getInitialState(),location:'town'});useGame.getState().enterOfficialVenue('stadium-10');assert.equal(useGame.getState().location,'town');
  useGame.setState(qualified());assert.equal(currentMission(useGame.getState()).destination,'stadium-10');useGame.getState().enterOfficialVenue('stadium-10');assert.equal(useGame.getState().location,'stadium-10');
- useGame.getState().openOfficialRace();assert.match(useGame.getState().dialogue,/2位以内/);assert.match(useGame.getState().dialogue,/黒瀬/);useGame.getState().openSetting();useGame.getState().close();useGame.getState().openOfficialRace();assert.equal(useGame.getState().dialogueStage,'official-invite');
+ useGame.getState().openOfficialRace();assert.match(useGame.getState().dialogue,/2位以内/);assert.match(useGame.getState().dialogue,/斗和/);useGame.getState().openSetting();useGame.getState().close();useGame.getState().openOfficialRace();assert.equal(useGame.getState().dialogueStage,'official-invite');
  assert.deepEqual(grandprixRivals.map(r=>r.id),['jin','go','sou','ren']);const people=officialPeopleFor('stadium-10');for(const id of ['jin','go','sou','ren','rei','gaku'])assert.ok(people.some(p=>p.id===id));assert.ok(officialFixturesFor('stadium-10').some(f=>f.kind==='official-final'));
  }finally{useGame.setState(before,true);}
 });

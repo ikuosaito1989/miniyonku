@@ -1,5 +1,5 @@
 import {shopTrackLayout} from './shopTrackLayout';
-import {seniorDrawing} from './PeopleArt';
+import {seniorDrawing,koyaDrawing} from './PeopleArt';
 import {drawShopTrack} from './ShopTrackArt';
 import { officialVenue, officialFixturesFor, officialVenueFor, officialVenuePeople, officialPeopleFor } from '../data/officialVenue';
 import { drawOfficialVenue } from './OfficialVenueArt';
@@ -91,10 +91,10 @@ export class ShopScene extends Phaser.Scene {
       for(const npc of officialPeopleFor(useGame.getState().location)){
         const person=this.person(npc.x,npc.y,npc.kind);
         if(npc.id==='rei'||npc.id==='gaku'){(person.list[1] as Phaser.GameObjects.Image).setTexture(this.arrivalTexture(npc.id,'down',0));}
-        if(npc.id==='go'||npc.id==='riku'||npc.id==='jin'){
+        if(npc.id==='go'||npc.id==='riku'||npc.id==='jin'||npc.id==='koya'){
           const key=`venue-${npc.id}-down`;
           if(!this.textures.exists(key)){
-            createPersonTexture(this,key,npc.id==='jin'?seniorDrawing('down'):npc.id==='go'?challengerDrawing('down'):offroaderDrawing('down'));
+            createPersonTexture(this,key,npc.id==='koya'?koyaDrawing('down'):npc.id==='jin'?seniorDrawing('down'):npc.id==='go'?challengerDrawing('down'):offroaderDrawing('down'));
           }
           (person.list[1] as Phaser.GameObjects.Image).setTexture(key);
         }
@@ -122,10 +122,10 @@ export class ShopScene extends Phaser.Scene {
       }
       (rivalPerson.list[1] as Phaser.GameObjects.Image).setTexture(key);
     }
-    if(shopId==='akatsuki'){const key='akatsuki-go';if(!this.textures.exists(key))createPersonTexture(this,key,challengerDrawing('down'));(rivalPerson.list[1] as Phaser.GameObjects.Image).setTexture(key);}
+    if(shopId==='akatsuki'){const key='akatsuki-towa';if(!this.textures.exists(key))createPersonTexture(this,key,seniorDrawing('down'));(rivalPerson.list[1] as Phaser.GameObjects.Image).setTexture(key);}
     for(const visitor of cast.visitors){
       const npc=this.person(visitor.x,visitor.y,visitor.kind);
-      if(shopId==='akatsuki'){if(visitor.name==='風見 怜'||visitor.name==='火野 岳')(npc.list[1] as Phaser.GameObjects.Image).setTexture(this.arrivalTexture(visitor.name==='風見 怜'?'rei':'gaku','down',0));if(visitor.name==='黒瀬 迅'){const key='akatsuki-jin';if(!this.textures.exists(key))createPersonTexture(this,key,seniorDrawing('down'));(npc.list[1] as Phaser.GameObjects.Image).setTexture(key);}this.add.text(visitor.x,visitor.y+17,visitor.name,{fontFamily:'sans-serif',fontSize:'8px',color:'#234844',resolution:2}).setOrigin(.5,0).setDepth(visitor.y+1);}
+      if(shopId==='akatsuki'){if(visitor.name==='風見 怜'||visitor.name==='火野 岳')(npc.list[1] as Phaser.GameObjects.Image).setTexture(this.arrivalTexture(visitor.name==='風見 怜'?'rei':'gaku','down',0));if(visitor.name==='山城 昊也'){const key='akatsuki-koya';if(!this.textures.exists(key))createPersonTexture(this,key,koyaDrawing('down'));(npc.list[1] as Phaser.GameObjects.Image).setTexture(key);}this.add.text(visitor.x,visitor.y+17,visitor.name,{fontFamily:'sans-serif',fontSize:'8px',color:'#234844',resolution:2}).setOrigin(.5,0).setDepth(visitor.y+1);}
       this.solids.push(new Phaser.Geom.Rectangle(visitor.x-12,visitor.y-9,24,21));
     }
     this.solids.push(new Phaser.Geom.Rectangle(cast.rival.x-12,cast.rival.y-9,24,21));
@@ -432,7 +432,8 @@ export class ShopScene extends Phaser.Scene {
       for(const visitor of visitors)visitor.text=visitor.speaker==='三浦 結衣'?(state.villainDefeated?'黒岩くんに勝ったんだね！町へ出て、街の地図でひなた模型店を探してみよう。':state.aozoraWon?'黒岩くんが店の中央で待っているよ。挑戦レースで1位になると、ひなた模型店への紹介状がもらえるんだって。':'ここは優勝1,200円、5位完走でも350円！まずは優勝しよう。町の黒岩くんが、速いレーサーを探しているみたい。'):'黒岩くんに勝つなら、記念ボディにブリーズモーターを約60秒ならして、4:1ギア・スパークセル・スポンジタイヤを試そう。低重心シャーシと軽量化も比べてね。';
       if(state.aozoraWon)targets.push({x:(this.challengerPerson?.x??challengerSpot.x)-16,y:(this.challengerPerson?.y??challengerSpot.y)-42,w:32,h:54,label:challenger.name,speaker:challenger.name,shopAfter:false,text:'挑戦を受ける。',kind:'challenger'});
     }else if(shop.id==='hinata')for(const visitor of visitors)visitor.text=visitor.speaker==='三浦 結衣'?'ひなた模型店へようこそ！ここは砂利と砂地が続くロングダート。ここで優勝すると若葉公式ダート杯への出場権がもらえるよ。街の若葉レース場で森野くんや黒岩くんと勝負しよう。':'トレイルトルクモーター・ブロックタイヤ・ダンパーで接地と駆動力を確保しよう。ポール式ダブルローラーは前中後に装着できるよ。4:1ギアから試そう。';
-    if(shop.id==='akatsuki')for(const visitor of visitors)visitor.text=visitor.speaker==='佐伯 匠'?'縦ループはモーターとギア、砂地は追従と抵抗、ジャンプは制振だ。別の種類を組み合わせて試そう。':`ここでは最強兄弟、黒岩、黒瀬と本気の試走だ。現在${state.akatsukiRaceCount}/5回。途中退出せず結果まで5回走れば、天頂決戦の出場権がもらえる。`;
+    if(shop.id==='akatsuki'){const rival=targets.find(t=>t.speaker==='橘 斗和');if(rival)rival.text='俺は橘 斗和。黒岩の先輩で、4人のレジェンドの一人だ。ここからは怜・岳・俺・昊也が相手になる。銀嵐フェンサーの走りを、コースで見せよう。';}
+    if(shop.id==='akatsuki')for(const visitor of visitors)visitor.text=visitor.speaker==='佐伯 匠'?'縦ループはモーターとギア、砂地は追従と抵抗、ジャンプは制振だ。別の種類を組み合わせて試そう。':`ここでは怜・岳・斗和・昊也のレジェンド4人と本気の試走だ。現在${state.akatsukiRaceCount}/5回。途中退出せず結果まで5回走れば、天頂決戦の出場権がもらえる。`;
     if(shop.id==='yuunagi')for(const visitor of visitors)visitor.text=visitor.speaker==='三浦 結衣'?'ここは一台ずつ、別のゴールまで走る一本道のタイムアタック。40秒以内で完走すれば第4公式大会・緑川グランプリの出場権だよ。何度でも挑戦できるよ！':'新作のスライドダンパーはその他欄、そこに付けるローラーはリヤ欄で選べるよ。前中はセラミック、リヤは二段にして、スパイラルと着地を両立させよう。';
     if(shop.id==='wakaba')for(const visitor of visitors)visitor.text=visitor.speaker==='三浦 結衣'?'長い連続コーナーの店へようこそ！ 公式杯の入賞者だけが来られるんだ。ここで優勝すると第3公式大会・星空テクニカル杯の出場権がもらえるよ。':'4:1ギア、スポンジタイヤ、低重心シャーシ、ゴムローラーとウェイト。昔のパーツも大切だよ。最高速だけ伸ばすと切り返しでコースアウトしやすいんだ。';
     for(const visitor of visitors){

@@ -21,7 +21,8 @@ test('レジェンド4人の愛機は独自名・異なるボディ・有効な�
   assert.deepEqual(proficiencyStandings(peak).slice(0,4).map(p=>p.id),legends.map(l=>l.id));
   assert.ok(fixtures.some(f=>f.kind==='legends'));
 });
-test('レジェンド専用ボディは流麗・ウェッジ・国産GTを描き分け、上位店でも非売品',()=>{
+test('レジェンド専用ボディは4人の外観を描き分け、上位店でも非売品',()=>{
+  for(const legend of legends)assert.equal(isStocked(parts.find(p=>p.id===legend.equipment.body)!,{name:'上位店',maxPartLevel:10}),false);
   const expected={'legend-rei':'flow','legend-gaku':'wedge','legend-koya':'muscle'};
   for(const [id,shape]of Object.entries(expected)){
     const legend=legends.find(l=>l.id===id)!;

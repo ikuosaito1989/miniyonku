@@ -39,6 +39,6 @@ test('最後の出場権・決戦一回・2位以内の真のクリア・3位以
  useGame.setState({...advanced(),akatsukiRaceCount:5,zenithQualified:true});useGame.getState().enterOfficialVenue('stadium-7');useGame.getState().startOfficialRace();await loadSavedGame({read:async()=>({version:1,savedAt:123,game:snapshotGame(useGame.getState())}),write:async()=>{}});assert.equal(useGame.getState().overlay,'game-over');assert.equal(useGame.getState().zenithCup.pending,null);
  }finally{useGame.setState(before,true);}
 });
-test('新店・最終会場には最強兄弟と黒岩・黒瀬が揃い、未公開の風見名は残らない',()=>{
- assert.deepEqual(zenithRivals.map(r=>r.id),['legend-rei','legend-gaku','go','jin']);const cast=shopCast('akatsuki');assert.equal(cast.rival.name,'黒岩 豪');for(const name of ['風見 怜','火野 岳','黒瀬 迅'])assert.ok(cast.visitors.some(v=>v.name===name));assert.ok(officialFixturesFor('stadium-7').some(f=>f.kind==='official-zenith'));for(const name of ['風見 怜','火野 岳','黒岩 豪','黒瀬 迅'])assert.ok(officialPeopleFor('stadium-7').some(p=>p.name===name));assert.match(townVenues.find(v=>v.id==='stadium-7')!.name,/天頂決戦/);
+test('新店・最終会場・最終レースにはレジェンド4人が揃う',()=>{
+ assert.deepEqual(zenithRivals.map(r=>r.id),['legend-rei','legend-gaku','legend-towa','legend-koya']);const cast=shopCast('akatsuki');assert.equal(cast.rival.name,'橘 斗和');for(const name of ['風見 怜','火野 岳','山城 昊也'])assert.ok(cast.visitors.some(v=>v.name===name));assert.ok(officialFixturesFor('stadium-7').some(f=>f.kind==='official-zenith'));for(const name of ['風見 怜','火野 岳','橘 斗和','山城 昊也'])assert.ok(officialPeopleFor('stadium-7').some(p=>p.name===name));assert.match(townVenues.find(v=>v.id==='stadium-7')!.name,/天頂決戦/);
 });
