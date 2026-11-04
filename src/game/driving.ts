@@ -5,7 +5,7 @@ import { batteryCapacityMultiplier, freshCondition, motorFactor, remainingCharge
 import type { TrackSurface } from '../data/surfaces';
 
 export const FIXED_STEP = 1/120;
-export interface DrivingState { peakSpeed?:number; time: number; distance: number; speed: number; stress: number; status: 'ready'|'running'|'finished'|'out'; stopReason?:'battery'|'lapped'|'jump'|'loop'; flightY?:number;flightVelocity?:number;landings?:number; }
+export interface DrivingState { time: number; distance: number; speed: number; stress: number; status: 'ready'|'running'|'finished'|'out'; stopReason?:'battery'|'lapped'|'jump'|'loop'; flightY?:number;flightVelocity?:number;landings?:number; }
 export function machinePerformance(equipment: Equipment, condition:MachineCondition=freshCondition) {
   const get = (category: keyof Equipment) => {
     const part = parts.find(p => p.id === equipment[category] && p.category === equipmentSlots[category].category);
@@ -38,7 +38,7 @@ export function machinePerformance(equipment: Equipment, condition:MachineCondit
   };
 }
 export type Performance = ReturnType<typeof machinePerformance>;
-export function createDrivingState(): DrivingState { return {peakSpeed:0,time:0,distance:0,speed:0,stress:0,status:'ready'}; }
+export function createDrivingState(): DrivingState { return {time:0,distance:0,speed:0,stress:0,status:'ready'}; }
 export function startDriving(state: DrivingState): DrivingState {
   return state.status==='ready'?{...state,status:'running'}:state;
 }
@@ -74,7 +74,6 @@ export function stepDriving(state: DrivingState, performance: Performance, laneO
   // 外側レーンは同じコーナーを通過するのに長い距離を走る。
   // distanceは全車共通の中心線上の進捗、speedは実際の走行速度。
   const laneScale=path?(airborne?path.pathScale*Math.cos(path.pitch):path.pathScale):1+laneOffset*centerCurvature;
-  const peakSpeed=Math.max(state.peakSpeed??0,state.speed,speed);
   const distance=state.distance+speed*FIXED_STEP/laneScale;
   const lateral=(airborne?0:1)*track.cornerLoad*speed**2*(path?.curvature??centerCurvature/laneScale);
   let stress=Math.max(0,state.stress+(lateral>road.lateralLimit?(lateral/Math.max(.001,road.lateralLimit)-1):-2)*FIXED_STEP);
@@ -90,18 +89,18 @@ export function stepDriving(state: DrivingState, performance: Performance, laneO
       flightY+=((flightVelocity??0)+velocity)*.5*FIXED_STEP;flightVelocity=velocity;
       const floor=track.isJumpGap(distance)?track.sampleCircuit(track.startDistance+distance).elevation:sampleLanePath(distance,initialLane).y;
       if(flightY<=floor&&velocity<0){
-        if(track.isJumpGap(distance))return {...state,peakSpeed,time:state.time+FIXED_STEP,distance,speed:0,status:'out',stopReason:'jump',flightY:undefined,flightVelocity:undefined};
+        if(track.isJumpGap(distance))return {...state,time:state.time+FIXED_STEP,distance,speed:0,status:'out',stopReason:'jump',flightY:undefined,flightVelocity:undefined};
         const impact=Math.abs(velocity)*(1-performance.damping);
         speed*=Math.max(.7,1-impact*.025);stress+=impact*.008;landings=(landings??0)+1;
         flightY=undefined;flightVelocity=undefined;
       }
     }
   }
-  if(path?.loopRadius&&path.loopAngle>.3&&speed<.5)return {...state,peakSpeed,time:state.time+FIXED_STEP,distance,speed:0,status:'out',stopReason:'loop'};
+  if(path?.loopRadius&&path.loopAngle>.3&&speed<.5)return {...state,time:state.time+FIXED_STEP,distance,speed:0,status:'out',stopReason:'loop'};
   if(path?.loopRadius&&Math.cos(path.loopAngle)<-.25&&speed**2/path.loopRadius<9.81*.92)stress+=FIXED_STEP*2;
   if(path&&!path.loopRadius&&Math.cos(path.bank)<-.5&&speed<2.5)stress+=FIXED_STEP*2;
   const finish=circuitLength*circuit.laps;
   const finished=distance>=finish;
   const fraction=finished?(finish-state.distance)/(distance-state.distance):1;
-  return {...(track.obstacles?{flightY,flightVelocity,landings}:{}),peakSpeed,time:state.time+FIXED_STEP*fraction,distance:Math.min(distance,finish),speed,stress,status:stress>0.18?'out':finished?'finished':'running'};
+  return {...(track.obstacles?{flightY,flightVelocity,landings}:{}),time:state.time+FIXED_STEP*fraction,distance:Math.min(distance,finish),speed,stress,status:stress>0.18?'out':finished?'finished':'running'};
 }
