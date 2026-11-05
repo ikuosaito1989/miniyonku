@@ -1,3 +1,4 @@
+import {townPeople,townPersonAdvice} from '../data/townPeople';
 import {tutorialActive} from './tutorial';
 import {openingIndex,openingSpawn,openingIsWalk,openingLocation,createOpeningWalk,stepOpeningWalk,type OpeningWalk} from './opening';
 import {sceneryImage,sceneryKey} from '../data/scenery';
@@ -40,7 +41,7 @@ import { drawTown } from './TownArt';
 import { drawShopDetails } from './WorldDetailArt';
 import { getCircuitTrack } from '../data/circuit';
 
-interface ShopTarget {x:number;y:number;w:number;h:number;label:string;speaker:string;shopAfter:boolean;text:string;kind?:Fixture['kind']|'time-records'|'exit'|'venue'|'challenger'|'legend-challenger'|'official-speed'|'official-dirt'|'official-reception'|'official-technical'|'official-final'|'official-zenith';venueId?:string}
+interface ShopTarget {x:number;y:number;w:number;h:number;label:string;speaker:string;shopAfter:boolean;text:string;kind?:Fixture['kind']|'town-person'|'time-records'|'exit'|'venue'|'challenger'|'legend-challenger'|'official-speed'|'official-dirt'|'official-reception'|'official-technical'|'official-final'|'official-zenith';venueId?:string}
 export class ShopScene extends Phaser.Scene {
   private gesture=createShopGesture();
   private screenPoint(pointer:Phaser.Input.Pointer){return {x:pointer.x*this.scale.displaySize.width/this.scale.width,y:pointer.y*this.scale.displaySize.height/this.scale.height};}
@@ -66,7 +67,7 @@ export class ShopScene extends Phaser.Scene {
   private eventAudio=new EventAudio();
   private isTown=false;
   private approach(target:ShopTarget){
-    if(this.isTown)return {x:target.x+target.w/2,y:target.y+target.h+28};
+    if(this.isTown)return {x:target.x+target.w/2,y:target.y+target.h+(target.kind==='town-person'?20:28)};
     return {x:target.x+target.w/2,y:target.y+target.h/2};
   }
   private get bounds(){return this.isTown?townWalkBounds:walkBounds;}
@@ -93,6 +94,10 @@ export class ShopScene extends Phaser.Scene {
     if(this.isTown){
       drawTown(this,useGame.getState());
       this.solids=[...townVenues,...townBlocks].map(v=>new Phaser.Geom.Rectangle(v.x,v.y,v.w,v.h));
+      for(const npc of townPeople){
+        this.person(npc.x,npc.y,'rival',npc.name);
+        this.solids.push(new Phaser.Geom.Rectangle(npc.x-12,npc.y-9,24,21));
+      }
     }else if(this.isOfficial){
       drawOfficialVenue(this,useGame.getState().location);
       this.solids=officialFixturesFor(useGame.getState().location).map(f=>new Phaser.Geom.Rectangle(f.x,f.y,f.w,f.h));
@@ -419,7 +424,10 @@ export class ShopScene extends Phaser.Scene {
     if(action&&target)this.interactWith(target);
   }
   private getTargets():ShopTarget[]{
-    if(this.isTown)return townVenues.map(v=>({x:v.x,y:v.y,w:v.w,h:v.h,label:v.name,speaker:v.name,shopAfter:false,text:venueMessage(v),kind:'venue',venueId:v.id}));
+    if(this.isTown)return [
+      ...townVenues.map(v=>({x:v.x,y:v.y,w:v.w,h:v.h,label:v.name,speaker:v.name,shopAfter:false,text:venueMessage(v),kind:'venue' as const,venueId:v.id})),
+      ...townPeople.map(p=>({x:p.x-16,y:p.y-42,w:32,h:54,label:p.name,speaker:p.name,shopAfter:false,text:townPersonAdvice(p,useGame.getState()),kind:'town-person' as const})),
+    ];
     if(this.isOfficial)return [
       ...officialFixturesFor(useGame.getState().location).filter(f=>f.kind!=='decoration').map(f=>({...f,speaker:f.label,shopAfter:false,text:f.kind==='bench'?'ここでマシンを組み直そう。':'コースに出場する。',kind:f.kind as ShopTarget['kind']})),
       ...officialPeopleFor(useGame.getState().location).map(p=>({x:p.x-16,y:p.y-42,w:32,h:54,label:p.name,speaker:p.name,shopAfter:false,text:(useGame.getState().location==='stadium-10'&&useGame.getState().grandprixCleared||useGame.getState().zenithCleared)&&p.id==='rei'?'おめでとう、湊くん！ 決勝で2位以内に入った君の走り、しっかり見届けたよ。セイランと一緒に、ここまで来たんだね。':(useGame.getState().location==='stadium-10'&&useGame.getState().grandprixCleared||useGame.getState().zenithCleared)&&p.id==='gaku'?'よくやった！ 最後まで走り切ったな。今日は君が主役だ。これからも自分だけのセッティングで、速さを追いかけようぜ！':p.text})),
@@ -478,7 +486,8 @@ export class ShopScene extends Phaser.Scene {
 
   private interactWith(target:ShopTarget){
       this.gesture.reset();
-      if(target.kind==='official-speed'||target.kind==='official-dirt'||target.kind==='official-technical'||target.kind==='official-final'||target.kind==='official-zenith')useGame.getState().openOfficialRace(target.kind==='official-zenith'?'zenith':target.kind==='official-final'?'final':target.kind==='official-technical'?'technical':target.kind==='official-speed'?'speed':'dirt');
+      if(target.kind==='town-person')useGame.getState().talk(target.speaker,target.text);
+      else if(target.kind==='official-speed'||target.kind==='official-dirt'||target.kind==='official-technical'||target.kind==='official-final'||target.kind==='official-zenith')useGame.getState().openOfficialRace(target.kind==='official-zenith'?'zenith':target.kind==='official-final'?'final':target.kind==='official-technical'?'technical':target.kind==='official-speed'?'speed':'dirt');
       else if(target.kind==='official-reception'||this.isOfficial&&target.speaker==='大会受付係')useGame.getState().openOfficialRace();
       else if(target.speaker==='森野 陸'){if(this.isOfficial)useGame.getState().talk(target.speaker,target.text);else useGame.getState().openOfficialRace();}
       else if(useGame.getState().location==='atelier'&&target.kind==='track')useGame.getState().talk('星霧模型工房','ここは販売専門店です。モーターとシャーシは店主から購入できます。レースはほかの模型店で楽しんでね。');
