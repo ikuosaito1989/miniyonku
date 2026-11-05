@@ -88,10 +88,10 @@ test('3店舗の人物は異なる位置にいて、あおぞらの全員と黒�
     for(const {target:f} of layout){const route=findWalkingPath(room.spawn,{x:f.x+f.w/2,y:f.y+f.h/2},obstacles);assert.ok(route.length>0);}
   }
 });
-const prepared={...starterEquipment,body:'body-champion',motor:'motor-wind',gear:'gear-4',battery:'battery-power',chassis:'chassis-low',tire:'tire-1',shaft:'shaft-1',wheel:'wheel-light',terminal:'terminal-entry',accessory:'accessory-support'};
-function runChallenge(seed:number,motorSeconds=60){
-  let race=startRace(createRaceState(prepared,seed,{motorSeconds,batterySeconds:0},'villain','wind'));
-  while(race.phase==='countdown')race=stepRace(race);race=launchPlayer(race);
+const prepared={...starterEquipment,body:'body-champion',motor:'motor-wind',gear:'gear-4',battery:'battery-power',chassis:'chassis-light',tire:'tire-1',shaft:'shaft-1',wheel:'wheel-light',terminal:'terminal-entry',accessory:'accessory-support'};
+function runChallenge(seed:number,motorSeconds=60,equipment=prepared,delayTicks=0){
+  let race=startRace(createRaceState(equipment,seed,{motorSeconds,batterySeconds:0},'villain','wind'));
+  while(race.phase==='countdown')race=stepRace(race);for(let i=0;i<delayTicks;i++)race=stepRace(race);race=launchPlayer(race);
   for(let i=0;i<120*180&&race.phase!=='finished';i++)race=stepRace(race);
   return race;
 }
@@ -103,6 +103,15 @@ test('黒岩はあおぞらのパーツと慣らしで勝てる相手。同じ�
   for(const seed of [...Array.from({length:32},(_,i)=>i+1),123,999]){const race=runChallenge(seed);assert.equal(race.phase,'finished');assert.equal(rankRacers(race)[0].id,'player');assert.ok(race.racers.some(r=>r.id===challenger.id));}
   assert.deepEqual(runChallenge(123),runChallenge(123));
   assert.notEqual(rankRacers(runChallenge(123,0))[0].id,'player');
+});
+test('黒岩にはモーターだけや旧低重心構成では届かず、店の軽量装備なら反応0.3秒でも勝てる',()=>{
+ for(const seed of [1,42,123,999]){
+  for(const equipment of [starterEquipment,{...starterEquipment,body:'body-champion',motor:'motor-wind'},{...prepared,chassis:'chassis-low'},{...prepared,motor:'motor-rescue',battery:'battery-recharge'}]){
+   const race=runChallenge(seed,60,equipment);assert.notEqual(rankRacers(race)[0].id,'player');
+  }
+  const ready=runChallenge(seed,60,prepared,36);assert.equal(rankRacers(ready)[0].id,'player');
+  const alternative=runChallenge(seed,60,{...prepared,accessory2:'accessory-weight'});assert.equal(rankRacers(alternative)[0].id,'player');
+ }
 });
 test('ひなた模型店は悪路用装備でロングダートを優勝できる',()=>{
   const equipment={...prepared,motor:'motor-trail',tire:'tire-trail',accessory:'accessory-damper',chassis:'chassis-trail',rollerFront:'roller-double',rollerSide:'roller-double',rollerRear:'roller-double',gear:'gear-4',terminal:'terminal-1',battery:'battery-endurance'};
