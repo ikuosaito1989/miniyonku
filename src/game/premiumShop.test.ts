@@ -1,3 +1,4 @@
+import {sovereignPartIds} from '../data/sovereignParts';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {useGame} from './store';
@@ -11,11 +12,11 @@ import {loadSavedGame} from './autoSave';
 import {starterEquipment} from '../data/machine';
 import {createRaceState,startRace,stepRace,launchPlayer,rankRacers,type RaceChallenge} from './race';
 const ids=['motor-sovereign','chassis-sovereign'];
-test('最高額2部品は特別店だけで販売し、セット価格はわかば優勝200回分',()=>{
+test('星皇13品は特別店だけで販売し、従来2品の価格はわかば優勝200回分',()=>{
  const list=parts.filter(p=>ids.includes(p.id));assert.equal(list.length,2);
  assert.equal(list.reduce((n,p)=>n+p.price,0),prizesForCircuit('grove')[0]*200);
  for(const p of list){assert.equal(p.price,Math.max(...parts.map(p=>p.price)));for(const shop of Object.values(modelShops))assert.equal(isStocked(p,shop),shop.id==='atelier');}
- assert.deepEqual(parts.filter(p=>isStocked(p,modelShops.atelier)).map(p=>p.id),ids);
+ assert.deepEqual(parts.filter(p=>isStocked(p,modelShops.atelier)).map(p=>p.id),sovereignPartIds);
  assert.equal(purchase({money:249999,inventory:{}},ids[0],modelShops.atelier).success,false);
  assert.equal(purchase({money:250000,inventory:{}},ids[0],modelShops.atelier).success,true);
 });

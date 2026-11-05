@@ -1,3 +1,4 @@
+import {isSovereignPart} from '../data/sovereignParts';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { purchase } from './purchase';
@@ -16,7 +17,7 @@ test('不明な商品・所持済みの同じパーツは購入できず、代�
 test('全カテゴリで同一種類は1個まで、消耗品の再購入は新品交換として許可する',async()=>{
  const {parts}=await import('../data/parts');const {isStocked}=await import('../data/progression');const {modelShops}=await import('../data/world');
  for(const part of parts.filter(p=>p.price>0)){
- const shop=part.id.endsWith('sovereign')?modelShops.atelier:{name:'上位店',maxPartLevel:10};if(!isStocked(part,shop))continue;
+ const shop=isSovereignPart(part.id)?modelShops.atelier:{name:'上位店',maxPartLevel:10};if(!isStocked(part,shop))continue;
  const initial={money:1000000,inventory:{}};const first=purchase(initial,part.id,shop);assert.ok(first.success,part.id);
  const second=purchase(first.wallet,part.id,shop),replaceable=part.category==='motor'||part.category==='battery';
  assert.equal(second.success,replaceable,part.id);assert.equal(second.wallet.inventory[part.id],1);assert.equal(second.wallet.money,first.wallet.money-(replaceable?part.price:0));

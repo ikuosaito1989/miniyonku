@@ -1,3 +1,4 @@
+import {sovereignPartIds} from './sovereignParts';
 import {mechanicMotorStages} from './mechanicMotor';
 import {zenithParts} from './zenithParts';
 import type { Part } from './parts';
@@ -37,6 +38,7 @@ export const partAppearances:Record<string,PartAppearance>={
   'motor-wind':{color:'#b8d5df',accent:'#3987bd',detail:4,mark:'BREEZE'},
   'motor-rescue':{color:'#8fb5a5',accent:'#365c54',detail:0,mark:'REUSE'},
   ...Object.fromEntries(bodies.map(body=>[body.id,{color:body.color,accent:'#edf3de',detail:body.grade,mark:body.className}])),
+  ...Object.fromEntries(sovereignPartIds.map(id=>[id,{color:id.startsWith('tire-')?'#282536':'#6e5399',accent:'#f4d77d',detail:id.startsWith('wheel-')?10:8,mark:'SOVEREIGN'}])),
   'battery-entry':{color:'#9bcde4',accent:'#4b7e91',detail:1,mark:'PLUS'},
   'shaft-entry':{color:'#c8d3dc',accent:'#66889c',detail:0,mark:'LIGHT'},
   'terminal-entry':{color:'#c5dfe3',accent:'#7098a1',detail:0,mark:'CONTACT'},

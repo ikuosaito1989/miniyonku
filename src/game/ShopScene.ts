@@ -531,7 +531,7 @@ export class ShopScene extends Phaser.Scene {
       if(visitor.speaker==='佐伯 匠'){visitor.label='佐伯 匠（レース相談）';visitor.text='装備と前回のレースを見て、勝つための相談に乗るよ。';}
       else visitor.text+=' 負けた理由や、どのパーツを替えるとよいかは、整備役の佐伯 匠に相談してね。';
     }
-    if(shop.id==='atelier'){for(const visitor of visitors)visitor.text='星皇のモーターとシャーシは各25万円。2つで50万円、わかば優勝約200回分のごほうびだよ。レースはほかの模型店で挑戦してね。';for(const target of targets)if(target.speaker===cast.rival.name)target.text='ここは最初から入れる特別な工房。究極の2パーツはとても高いけど、2つ揃えると多くのコースで圧倒的な強さになるんだ。';}
+    if(shop.id==='atelier'){for(const visitor of visitors)visitor.text='星皇シリーズは全種類そろっているよ。各25万円、13品で325万円。砂地では悪路タイヤや追従するシャーシを混ぜると、もっと速くできるんだ。レースはほかの模型店で挑戦してね。';for(const target of targets)if(target.speaker===cast.rival.name)target.text='ここは最初から入れる特別な工房。星皇は全種類にある最上位シリーズ。硬いスリックと悪路タイヤ、ギア比の違いなど、得意な路面は組み合わせで変わるよ。';}
     return [...targets,...visitors];
   }
   private drawTimeBoard(){
@@ -561,7 +561,7 @@ export class ShopScene extends Phaser.Scene {
       else if(target.kind==='official-speed'||target.kind==='official-dirt'||target.kind==='official-technical'||target.kind==='official-final'||target.kind==='official-zenith')useGame.getState().openOfficialRace(target.kind==='official-zenith'?'zenith':target.kind==='official-final'?'final':target.kind==='official-technical'?'technical':target.kind==='official-speed'?'speed':'dirt');
       else if(target.kind==='official-reception'||this.isOfficial&&target.speaker==='大会受付係')useGame.getState().openOfficialRace();
       else if(target.speaker==='森野 陸'){if(this.isOfficial)useGame.getState().talk(target.speaker,target.text);else useGame.getState().openOfficialRace();}
-      else if(useGame.getState().location==='atelier'&&target.kind==='track')useGame.getState().talk('星霧模型工房','ここは販売専門店です。モーターとシャーシは店主から購入できます。レースはほかの模型店で楽しんでね。');
+      else if(useGame.getState().location==='atelier'&&target.kind==='track')useGame.getState().talk('星霧模型工房','ここは販売専門店です。星皇シリーズの全種類を店主から購入できます。レースはほかの模型店で楽しんでね。');
       else if(target.speaker==='佐伯 匠'){
         const state=useGame.getState();
         startAdviceConversation({shopId:currentShop(state.location).id,equipment:state.equipment,inventory:state.inventory,money:state.money,...equippedCondition(state.equipment,state.units,state.selectedUnits),review:state.lastRaceReview,motorAges:Object.fromEntries(Object.entries(state.units).map(([id,list])=>[id,list[0]?.seconds??0])),batteryAges:Object.fromEntries(Object.entries(state.units).map(([id,list])=>[id,list[0]?.seconds??0]))});

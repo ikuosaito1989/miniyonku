@@ -39,7 +39,7 @@ function trial(equipment:Equipment,condition:MachineCondition,circuitId:CircuitI
   return driving.status==='finished'?driving.time:Infinity;
 }
 export function raceAdvice(state:RaceAdviceContext){
-  if(state.shopId==='atelier')return '星霧模型工房は究極パーツの販売専門店。星皇モーターと星皇シャーシは各250000円、2つで500000円です。わかば優勝2500円なら約200勝分。モーターは慣らし不要・摩耗なし。2つの組み合わせは加速・旋回・制振を大幅に強化します。電池は消耗するので残量を確認し、ほかの模型店でレースを楽しもう。';
+  if(state.shopId==='atelier')return '星霧模型工房は星皇シリーズ全11種類・13品の販売専門店。各250000円、全品3250000円です。モーターとシャーシの2品は500000円。基礎性能は最上位ですが、深い砂はデューンタイヤ、凹凸はフレックスシャーシ、急坂は高トルクギアなど、専門品を混ぜるとさらに速くできる余地があります。星皇モーター・電池は消耗なし。制振は合計90%が上限なので、十分ならダンパーを軽量品やスライドへ替える選択もあります。他の模型店で試走してみよう。';
   const shop=modelShops[state.shopId],lines=['レース相談は僕に任せて。'];
   if(state.review?.circuitId===shop.circuitId)lines.push(state.review.text);
   else lines.push('この店のレース記録はまだないね。今の装備で改善できる点を見てみよう。');

@@ -37,7 +37,7 @@ test('展示を開閉しても所持金・装備・進行は変化しない',()=
   }finally{useGame.setState(previous);}
 });
 
-test('最強兄弟は星皇装備相当の約24〜25秒で走り、同装備のプレイヤーを周回遅れにしない',()=>{
+test('最強兄弟も強化後の星皇装備と共通の性能で走り、同装備のプレイヤーを周回遅れにしない',()=>{
   for(const seed of [1,42,999]){
     let race=startRace(createRaceState({...starterEquipment,motor:'motor-sovereign',chassis:'chassis-sovereign'},seed,undefined,true));
     while(race.phase==='countdown')race=stepRace(race);
@@ -47,7 +47,7 @@ test('最強兄弟は星皇装備相当の約24〜25秒で走り、同装備の�
     assert.equal(race.racers[0].driving.status,'finished');
     for(const brother of race.racers.filter(r=>r.id.startsWith('legend-'))){
       assert.equal(brother.driving.status,'finished');
-      assert.ok(brother.driving.time>=23&&brother.driving.time<=26,`${brother.id}: ${brother.driving.time}`);
+      assert.ok(brother.driving.time>=14&&brother.driving.time<=18,`${brother.id}: ${brother.driving.time}`);
       assert.ok(Math.abs(brother.driving.time-race.racers[0].driving.time)<5);
     }
   }

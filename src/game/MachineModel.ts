@@ -65,7 +65,7 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
   const design=isMob?{...original,shape:'kei' as const,silhouette:undefined,width:.056,cabinHeight:.042,cabinFront:.041,cabinRear:-.092}:original;
   // 3Dプレビューはボディ固有色、レース中はレーサーごとの塗色を使う。
   const isStarter=design.silhouette==='starter-wedge',isChampion=design.silhouette==='champion-aero',isKazami=design.id==='body-legend-flow',isHino=design.id==='body-legend-wedge',isTowa=design.id==='body-legend-towa',isKoya=design.id==='body-legend-muscle';
-  const color=bodyPaint??(isChampion?Number.parseInt(design.color.slice(1),16):racerColor);
+  const color=bodyPaint??(isChampion||design.id==='body-sovereign'?Number.parseInt(design.color.slice(1),16):racerColor);
   const look=(id:string)=>partAppearances[id]??{color:'#8395a3',accent:'#dbe4e8',detail:0,mark:''};
   const hex=(value:string)=>Number.parseInt(value.replace('#',''),16);
   const partMaterial=(id:string,shininess=55)=>new THREE.MeshPhongMaterial({color:hex(look(id).color),shininess});
@@ -75,7 +75,7 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
   const metal=new THREE.MeshStandardMaterial({color:0xb9c4cb,metalness:.85,roughness:.25});
   const darkRubber=new THREE.MeshStandardMaterial({color:0x171c20,roughness:.91});
   const frame=isTowa?new THREE.MeshStandardMaterial({color:0x1e305d,roughness:.5}):isChampion?new THREE.MeshStandardMaterial({color:0xe3e4de,roughness:.55}):isKoya||isKazami||isHino||isKuroiwa?new THREE.MeshStandardMaterial({color:0x1d2328,roughness:.6}):partMaterial(equipment.chassis,35),frameAccent=isTowa?new THREE.MeshStandardMaterial({color:0x2b426d,roughness:.5}):isChampion?new THREE.MeshStandardMaterial({color:0xbec4c2,roughness:.5}):isKoya||isKazami||isHino||isKuroiwa?new THREE.MeshStandardMaterial({color:0x343c42,roughness:.55}):partAccent(equipment.chassis,55);
-  const accent=new THREE.MeshPhongMaterial({color:0xf4eedc,shininess:65});
+  const accent=new THREE.MeshPhongMaterial({color:design.id==='body-sovereign'?0xf5d87d:0xf4eedc,shininess:65});
   const add=(geometry:THREE.BufferGeometry,material:THREE.Material,x:number,y:number,z:number)=>{
     const mesh=new THREE.Mesh(geometry,material);mesh.position.set(x,y,z);car.add(mesh);return mesh;
   };
