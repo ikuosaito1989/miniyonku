@@ -18,7 +18,7 @@ import './dialogue.css';
 
 const portraits:Record<DialoguePersonId,string>={ren:mechanic,sou:mechanic,momo:guide,akatsukiOwner:owner,senior:rival,yuunagiOwner:owner,atelierOwner:owner,wakabaOwner:owner,venueStaff:owner,offroader:mechanic,owner,aozoraOwner:owner,hinataOwner:owner,villain:rival,rival,guide,mechanic,legendRei:rei,legendGaku:gaku,legendKoya:koya,doctor:owner};
 export function DialogueView(){
-  const {speaker,dialogue,shopAfter,advance,close,dialogueStage,startLegendChallenge,startVillainChallenge,startOfficialRace,openSetting}=useGame();
+  const {speaker,dialogue,adviceThinking,shopAfter,advance,close,dialogueStage,startLegendChallenge,startVillainChallenge,startOfficialRace,openSetting}=useGame();
   const [selected,setSelected]=useState(0);
   const panel=useRef<HTMLElement>(null),buttons=useRef<Array<HTMLButtonElement|null>>([]);
   const id=dialoguePerson(speaker),person=id?dialoguePeople[id]:null,appearance=npcAppearanceId(speaker);
@@ -48,13 +48,13 @@ export function DialogueView(){
     window.addEventListener('keydown',key);return()=>window.removeEventListener('keydown',key);
   });
   return <div className="dialogue-layer">
-    <section ref={panel} className="conversation" role="dialog" aria-modal="true" aria-labelledby="conversation-speaker" aria-describedby="conversation-message">
+    <section ref={panel} className="conversation" role="dialog" aria-modal="true" aria-labelledby="conversation-speaker" aria-describedby="conversation-message" aria-busy={adviceThinking}>
       <div className="conversation-portrait" aria-hidden="true">
         {speaker==='メカニックマン'?<img src={mechanicManPortrait} alt="" decoding="async"/>:appearance?<NpcPortrait id={appearance}/>:id&&id in npcAppearances?<NpcPortrait id={id as NpcAppearanceId}/>:id==='senior'?<SeniorPortrait/>:id==='doctor'?<DoctorPortrait/>:id==='villain'?<ChallengerPortrait/>:id?<img src={portraits[id]} alt="" decoding="async"/>:<div className="conversation-object"><span>{book?'本':'調'}</span><small>{book?'SETTING NOTES':'KOMOREBI MODEL'}</small></div>}
       </div>
       <div className="conversation-body">
         <header><div>{person&&<p className="conversation-role">{person.role}</p>}<h2 id="conversation-speaker">{person?.name??speaker}</h2></div><button className="conversation-close" onClick={close} aria-label="会話を閉じる">閉じる</button></header>
-        <p className="conversation-message" id="conversation-message">{dialogueStage==='villain-intro'&&<span className="challenge-letter"><strong>挑戦状</strong><span>黒岩 豪が、机に挑戦状を叩きつけた！</span><small>あおぞら模型店の優勝者へ ─ 勝てば、ひなた模型店への紹介状を渡す。</small></span>}{dialogue}</p>
+        <p className="conversation-message" id="conversation-message">{adviceThinking&&<span className="advice-thinking" role="status">匠がセッティングを考え中<span className="advice-thinking-dots" aria-hidden="true"><i/><i/><i/></span></span>}{dialogueStage==='villain-intro'&&<span className="challenge-letter"><strong>挑戦状</strong><span>黒岩 豪が、机に挑戦状を叩きつけた！</span><small>あおぞら模型店の優勝者へ ─ 勝てば、ひなた模型店への紹介状を渡す。</small></span>}{dialogue}</p>
         <nav className="conversation-choices" aria-label="返答を選ぶ">{choices.map((choice,index)=><button key={choice.action} ref={node=>{buttons.current[index]=node;}} className={selected===index?'is-selected':''} onFocus={()=>setSelected(index)} onClick={()=>choose(index)}><span aria-hidden="true">{selected===index?'▶':'　'}</span>{choice.label}</button>)}</nav>
       </div>
     </section>

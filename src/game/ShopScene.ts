@@ -15,7 +15,7 @@ import {drawShopTrack} from './ShopTrackArt';
 import { officialVenue, officialFixturesFor, officialVenueFor, officialVenuePeople, officialPeopleFor } from '../data/officialVenue';
 import { drawOfficialVenue } from './OfficialVenueArt';
 import { doctor, doctorSpot, doctorAdvice } from '../data/doctor';
-import { raceAdvice } from './raceAdvice';
+import {startAdviceConversation} from './adviceConversation';
 import Phaser from 'phaser';
 import { room, roomView, type Fixture } from '../data/shop';
 import { createShopGesture } from './shopGesture';
@@ -501,7 +501,7 @@ export class ShopScene extends Phaser.Scene {
       else if(useGame.getState().location==='atelier'&&target.kind==='track')useGame.getState().talk('星霧模型工房','ここは販売専門店です。モーターとシャーシは店主から購入できます。レースはほかの模型店で楽しんでね。');
       else if(target.speaker==='佐伯 匠'){
         const state=useGame.getState();
-        state.talk(target.speaker,raceAdvice({shopId:currentShop(state.location).id,equipment:state.equipment,inventory:state.inventory,money:state.money,...equippedCondition(state.equipment,state.units,state.selectedUnits),review:state.lastRaceReview,motorAges:Object.fromEntries(Object.entries(state.units).map(([id,list])=>[id,list[0]?.seconds??0])),batteryAges:Object.fromEntries(Object.entries(state.units).map(([id,list])=>[id,list[0]?.seconds??0]))}));
+        startAdviceConversation({shopId:currentShop(state.location).id,equipment:state.equipment,inventory:state.inventory,money:state.money,...equippedCondition(state.equipment,state.units,state.selectedUnits),review:state.lastRaceReview,motorAges:Object.fromEntries(Object.entries(state.units).map(([id,list])=>[id,list[0]?.seconds??0])),batteryAges:Object.fromEntries(Object.entries(state.units).map(([id,list])=>[id,list[0]?.seconds??0]))});
       }
       else if(target.kind==='legend-challenger')useGame.getState().openLegendChallenge();
       else if(target.kind==='exit')useGame.getState().leaveShop();

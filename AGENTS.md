@@ -114,3 +114,5 @@
 - 成長は一個の個体を新段階へ移し、他の所持品・個体・所持金を保持。レース中の装備変更による再開始を防ぐため、走行中の成長はレース画面を閉じてから反映する。保存・チュートリアル練習・ゲームオーバー復帰でも同じ規則を適用。熟練度不相応の上位品と複数段階同時所持は保存検証で拒否。画像はscripts/render-mechanic-motors.cjsで各段階640×440WebPを生成する。
 
 - OGPはindex.htmlの静的headに設定し、JavaScriptを実行しない共有クローラーでも読めるようにする。公開プレビューの絶対URL、og:title/description/image/url/type/locale、1200×630 PNGのサイズとalt、Xのsummary_large_imageを維持。OGP画像はscripts/render-ogp.cjsで実際のタイトル画面からpublic/ogp/seiran-title.pngへ生成し、タイトルのデザインを変えたら画像も更新する。セーブ操作の案内とフォーカス枠はOGP画像に含めない。
+
+- 佐伯 匠の通常レース相談は会話を即座に開き、「匠がセッティングを考え中」と動く点で待ち時間を示す。重い試走比較はraceAdvice.workerで実行し、画面や閉じる操作を止めない。閉じる・別会話・再相談で前の計算を中止し、遅い回答で会話を再表示・上書きしない。Workerが使えない環境では装備・状態に応じた軽い助言を表示する。adviceThinkingは保存しないUI状態。既存のraceAdviceの比較内容は維持する。
