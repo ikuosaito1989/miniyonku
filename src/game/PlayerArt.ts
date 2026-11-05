@@ -95,6 +95,15 @@ export function playerDrawing(direction:Facing,frame=0):PixelShape[]{
   for(let lace=0;lace<3;lace++)r(x+2+lace*.7,73.5+offset+lace*.5,2,.5,'#edf2e9');
   r(x+1,75.5+offset,5,.5,'#78a8be');r(x,77+offset,7,.5,'#b6c4ce');
  }
- const drawing=pen.shapes;
+ // 共通の60×80原画の中で、モブと同じ頭身・横幅・半ドット格子へ揃える。
+ const dot=(n:number)=>Math.round(n*2)/2;
+ const yAt=(y:number)=>y<=3?y:y<=32?3+(y-3)*36/29:39+(y-32)*41/48;
+ const headScale=side?1.4:1.5;
+ const xAt=(x:number,y:number)=>30+(x-30)*(y<=30?headScale:y>=40?1.15:headScale-(y-30)*(headScale-1.15)/10);
+ const drawing:PixelShape[]=pen.shapes.map(shape=>{
+  if(shape.kind==='polygon')return {...shape,points:shape.points.map(([x,y])=>[dot(xAt(x,y)),dot(yAt(y))] as const)};
+  const x=dot(xAt(shape.x,shape.y+shape.h/2)),y=dot(yAt(shape.y));
+  return {...shape,x,y,w:Math.max(.5,dot(xAt(shape.x+shape.w,shape.y+shape.h/2))-x),h:Math.max(.5,dot(yAt(shape.y+shape.h))-y)};
+ });
  return direction==='left'?drawing.map(s=>s.kind==='rect'?{...s,x:60-s.x-s.w}:{...s,points:s.points.map(([x,y])=>[60-x,y] as const)}):drawing;
 }
