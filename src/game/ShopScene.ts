@@ -178,7 +178,7 @@ export class ShopScene extends Phaser.Scene {
     }
     const spawn=koyaEscortActive(useGame.getState().koyaEscortStep)?koyaEscortSpawn(useGame.getState().koyaEscortStep):useGame.getState().openingActive?openingSpawn(openingIndex(useGame.getState())):this.isTown?townSpawn(useGame.getState().townReturnVenue??useGame.getState().lastShop):this.isOfficial?officialVenue.spawn:room.spawn;
     this.player=this.person(spawn.x,spawn.y,'player');
-    if(useGame.getState().location==='stadium-9'&&useGame.getState().koyaEscortStep>=5){
+    if(useGame.getState().location==='stadium-9'){
       this.escortGuide=this.person(koyaVenueSpot.x,koyaVenueSpot.y,'rival');
       (this.escortGuide.list[1] as Phaser.GameObjects.Image).setTexture(this.arrivalTexture('koya','down',0));
       this.solids.push(new Phaser.Geom.Rectangle(koyaVenueSpot.x-12,koyaVenueSpot.y-9,24,21));
@@ -487,7 +487,7 @@ export class ShopScene extends Phaser.Scene {
       ...townPeople.map(p=>({x:p.x-16,y:p.y-42,w:32,h:54,label:p.name,speaker:p.name,shopAfter:false,text:townPersonAdvice(p,useGame.getState()),kind:'town-person' as const})),
     ];
     if(this.isOfficial)return [
-      ...(useGame.getState().location==='stadium-9'&&this.escortGuide?[{x:koyaVenueSpot.x-16,y:koyaVenueSpot.y-42,w:32,h:54,label:'山城 昊也',speaker:'山城 昊也',shopAfter:false,text:useGame.getState().yuunagiUnlocked?'入賞おめでとう！ 次はゆうなぎ模型店の一本道コースだ。君ならもっと速くなれるよ。':'長距離の連続コーナーでは、ローラーと電池が大切だよ。ピットで準備してからコースに向かおう。僕はここで応援しているよ。'}]:[]),
+      ...(useGame.getState().location==='stadium-9'&&this.escortGuide?[{x:koyaVenueSpot.x-16,y:koyaVenueSpot.y-42,w:32,h:54,label:'山城 昊也',speaker:'山城 昊也',shopAfter:false,text:useGame.getState().yuunagiUnlocked?'入賞おめでとう！ 次はゆうなぎ模型店の一本道コースだ。君ならもっと速くなれるよ。':'長距離の連続コーナーでは、ローラーと電池が大切だよ。ピットで準備してからコースに向かおう。コースでは僕もライバルだ。いいレースにしよう。'}]:[]),
       ...officialFixturesFor(useGame.getState().location).filter(f=>f.kind!=='decoration').map(f=>({...f,speaker:f.label,shopAfter:false,text:f.kind==='bench'?'ここでマシンを組み直そう。':'コースに出場する。',kind:f.kind as ShopTarget['kind']})),
       ...officialPeopleFor(useGame.getState().location).map(p=>({x:p.x-16,y:p.y-42,w:32,h:54,label:p.name,speaker:p.name,shopAfter:false,text:(useGame.getState().location==='stadium-10'&&useGame.getState().grandprixCleared||useGame.getState().zenithCleared)&&p.id==='rei'?'おめでとう、湊くん！ 決勝で2位以内に入った君の走り、しっかり見届けたよ。セイランと一緒に、ここまで来たんだね。':(useGame.getState().location==='stadium-10'&&useGame.getState().grandprixCleared||useGame.getState().zenithCleared)&&p.id==='gaku'?'よくやった！ 最後まで走り切ったな。今日は君が主役だ。これからも自分だけのセッティングで、速さを追いかけようぜ！':p.text})),
       {...officialVenue.exit,label:'緑川町への出口',speaker:officialVenue.name,shopAfter:false,text:'町へ戻る。',kind:'exit' as const},

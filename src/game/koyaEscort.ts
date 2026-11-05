@@ -7,7 +7,7 @@ export const koyaEscortWalking=(step:number)=>step===1||step===3||step===4;
 export const koyaEscortLocation=(step:number):WorldLocation=>step===4?'town':step>=5?'stadium-9':'wakaba';
 export const koyaVenueSpot={x:440,y:535};
 export const koyaEscortSpawn=(step:number):Point=>step===4?townSpawn('wakaba'):{x:480,y:535};
-export const koyaEscortText=(step:number)=>step===1?'山城 昊也が、店の入口からやってきた。':step===2?'わかばでの優勝、おめでとう。僕は山城 昊也。君のコーナリング、見せてもらったよ。次は第3公式大会・星空テクニカル杯だ。会場まで一緒に行こう。':step===3?'昊也と一緒に、模型店の外へ。':step===4?'昊也の案内で、星空レース場へ向かう。':'ここが星空レース場だよ。連続コーナーが続く長距離戦だ。まずはピットで電池やローラーを確認しよう。準備ができたらコースへ。大会は一度きり、3位以内に入れば次の模型店への道が開ける。応援しているよ！';
+export const koyaEscortText=(step:number)=>step===1?'山城 昊也が、店の入口からやってきた。':step===2?'わかばでの優勝、おめでとう。僕は山城 昊也。君のコーナリング、見せてもらったよ。次は第3公式大会・星空テクニカル杯だ。僕も出場するんだ。会場まで一緒に行こう。':step===3?'昊也と一緒に、模型店の外へ。':step===4?'昊也の案内で、星空レース場へ向かう。':'ここが星空レース場だよ。連続コーナーが続く長距離戦だ。まずはピットで電池やローラーを確認しよう。準備ができたらコースへ。大会は一度きり、3位以内に入れば次の模型店への道が開ける。コースでは僕もライバルだ。いいレースにしよう！';
 function walk(from:Point,route:Point[]):OpeningWalk{return {position:{...from},route,facing:'up',walkTime:0,done:route.length===0};}
 export function escortWalk(from:Point,to:Point,obstacles:Obstacle[],town=false):OpeningWalk{
  const route=findWalkingPath(from,to,obstacles,town?townWalkBounds:walkBounds),last=route.at(-1);

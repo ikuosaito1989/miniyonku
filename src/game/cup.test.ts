@@ -2,7 +2,7 @@ import test from 'node:test';import assert from 'node:assert/strict';
 import {useGame} from './store';import {createRaceState,type RaceState} from './race';import {starterEquipment} from '../data/machine';import {nextShopRace} from '../data/shopHints';import {snapshotGame,decodeSave} from './saveData';import {loadSavedGame,startAutoSave} from './autoSave';import {cupStandings,cupPlayerPlace,cupComplete} from './cup';import type {CircuitId} from '../data/circuit';
 const initial=()=>({...useGame.getInitialState(),location:'stadium-5' as const,lastShop:'hinata' as const,legendRaceCompleted:true,aozoraWon:true,villainDefeated:true,officialQualified:true,unlockedRaces:[nextShopRace.id]});
 function result(id:CircuitId,place:number,official=true):RaceState{
- const r=createRaceState(starterEquipment,123,undefined,official?'official':false,id),ids=['riku','go','sou','ren'];ids.splice(place-1,0,'player');
+ const r=createRaceState(starterEquipment,123,undefined,official?'official':false,id),ids=['riku','go','sou',id==='comet'?'legend-koya':'ren'];ids.splice(place-1,0,'player');
  return {...r,phase:'finished',playerStartOffset:0,racers:r.racers.map(e=>({...e,driving:{...e.driving,status:'finished',distance:999,time:100+ids.indexOf(e.id)}}))};
 }
 function heat(id:'sprint'|'sun'|'comet',place:number){const s=useGame.getState();s.startOfficialRace();assert.equal(useGame.getState().overlay,'race');const attempt=useGame.getState().raceAttempt;s.settleRace(attempt,result(id,place));const count=useGame.getState().wakabaCup.results.length;const money=useGame.getState().money;s.settleRace(attempt,result(id,place));assert.equal(useGame.getState().wakabaCup.results.length,count);assert.equal(useGame.getState().money,money);s.close();}

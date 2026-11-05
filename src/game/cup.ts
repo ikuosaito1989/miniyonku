@@ -25,7 +25,7 @@ export function raceCupHeat(race:RaceState):CupHeat{
 }
 export function forfeitCupHeat(cup:CupProgress):CupProgress{
  if(!cup.pending)return cup;
- const people=cup.pending==='zenith'?[['legend-rei','風見 怜'],['legend-gaku','火野 岳'],['legend-towa','橘 斗和'],['legend-koya','山城 昊也'],['player','朝倉 湊']]:cup.pending==='grandprix'?[['jin','橘 斗和'],['go','黒岩 豪'],['sou','石川 蒼'],['ren','高橋 蓮'],['player','朝倉 湊']]:[['riku','森野 陸'],['go','黒岩 豪'],['sou','石川 蒼'],['ren','高橋 蓮'],['player','朝倉 湊']];
+ const people=cup.pending==='comet'?[['riku','森野 陸'],['go','黒岩 豪'],['sou','石川 蒼'],['legend-koya','山城 昊也'],['player','朝倉 湊']]:cup.pending==='zenith'?[['legend-rei','風見 怜'],['legend-gaku','火野 岳'],['legend-towa','橘 斗和'],['legend-koya','山城 昊也'],['player','朝倉 湊']]:cup.pending==='grandprix'?[['jin','橘 斗和'],['go','黒岩 豪'],['sou','石川 蒼'],['ren','高橋 蓮'],['player','朝倉 湊']]:[['riku','森野 陸'],['go','黒岩 豪'],['sou','石川 蒼'],['ren','高橋 蓮'],['player','朝倉 湊']];
  return finishCupHeat(cup,{circuitId:cup.pending,entries:people.map(([id,name],i)=>({id,name,place:i+1,finished:id!=='player',time:id==='player'?1_000_000:120+i}))});
 }
 export function cupProgression(wakabaCup:CupProgress,technicalCup:CupProgress,qualified=false,finalCup:CupProgress=emptyCup(),zenithCup:CupProgress=emptyCup()){
@@ -56,9 +56,9 @@ export function decodeCup(value:unknown,kind:'wakaba'|'technical'|'final'|'zenit
   const ids=new Set<string>(),places=new Set<number>();const entries:CupEntry[]=h.entries.map((raw:unknown)=>{
    if(!raw||typeof raw!=='object')return fail();const e=raw as Record<string,unknown>;
    const id=kind==='zenith'?(e.id==='go'?'legend-towa':e.id==='jin'?'legend-koya':e.id):e.id;
-   if(typeof id!=='string'||!(kind==='zenith'?['player','legend-rei','legend-gaku','legend-towa','legend-koya']:kind==='final'?['player','jin','go','sou','ren']:['player','riku','go','sou','ren']).includes(id)||ids.has(id)||typeof e.name!=='string'||e.name.length>80||typeof e.place!=='number'||!Number.isInteger(e.place)||e.place<1||e.place>5||places.has(e.place)||typeof e.finished!=='boolean'||typeof e.time!=='number'||!Number.isFinite(e.time)||e.time<0||e.time>1e9)return fail();
+   if(typeof id!=='string'||!(kind==='zenith'?['player','legend-rei','legend-gaku','legend-towa','legend-koya']:kind==='final'?['player','jin','go','sou','ren']:kind==='technical'?['player','riku','go','sou','ren','legend-koya']:['player','riku','go','sou','ren']).includes(id)||ids.has(id)||typeof e.name!=='string'||e.name.length>80||typeof e.place!=='number'||!Number.isInteger(e.place)||e.place<1||e.place>5||places.has(e.place)||typeof e.finished!=='boolean'||typeof e.time!=='number'||!Number.isFinite(e.time)||e.time<0||e.time>1e9)return fail();
    ids.add(id);places.add(e.place);const name=id==='legend-towa'||id==='jin'?'橘 斗和':id==='legend-koya'?'山城 昊也':e.name;return {id,name,place:e.place,finished:e.finished,time:e.time};
-  });return {circuitId:order[i],entries};
+  });if(kind==='technical'&&(!['player','riku','go','sou'].every(id=>ids.has(id))||ids.has('ren')===ids.has('legend-koya')))return fail();return {circuitId:order[i],entries};
  });
  if(c.pending!==null&&c.pending!==order[results.length]||!c.entered&&(results.length>0||c.pending!==null))return fail();
  return {entered:c.entered,pending:c.pending as CircuitId|null,results};
