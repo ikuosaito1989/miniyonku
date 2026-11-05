@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
+<defs>
+ <pattern id="brick" width="144" height="66" patternUnits="userSpaceOnUse"><rect width="144" height="66" fill="#171519"/><path d="M2 2h67v27H2zm72 0h67v27H74zM-34 35h67v27h-67zm72 0h67v27H38zm72 0h67v27h-67z" fill="#393336"/><path d="M4 4h63M76 4h63M40 37h63" stroke="#514447" stroke-width="2"/><path d="M2 29h67M74 29h67M38 62h67" stroke="#100d12" stroke-width="3"/></pattern>
+ <radialGradient id="light" cx="30%" cy="43%" r="65%"><stop stop-color="#ffe4af" stop-opacity=".52"/><stop offset=".38" stop-color="#c0ad8a" stop-opacity=".14"/><stop offset="1" stop-color="#030107" stop-opacity=".96"/></radialGradient>
+ <linearGradient id="floor" x2="0" y2="1"><stop stop-color="#2b252c"/><stop offset="1" stop-color="#06050c"/></linearGradient>
+ <radialGradient id="spot"><stop stop-color="#b6a59a" stop-opacity=".26"/><stop offset="1" stop-color="#10101b" stop-opacity="0"/></radialGradient>
+ <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".7" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope=".12"/></feComponentTransfer><feBlend in="SourceGraphic" mode="soft-light"/></filter>
+ <radialGradient id="vignette"><stop offset=".45" stop-opacity="0"/><stop offset="1" stop-color="#020107" stop-opacity=".9"/></radialGradient>
+</defs>
+<rect width="1200" height="900" fill="#08040b"/><path d="M0 0h1200v520H0z" fill="url(#brick)"/><rect width="1200" height="650" fill="url(#light)"/>
+<path d="M0 522h1200v378H0z" fill="url(#floor)"/><path d="M0 525h1200" stroke="#04020a" stroke-width="8"/>
+<g stroke="#5d5360" stroke-opacity=".16" stroke-width="2"><path d="M600 522 0 900M600 522 300 900M600 522 900 900M600 522 1200 900M0 690h1200M0 790h1200"/></g>
+<ellipse cx="600" cy="745" rx="510" ry="150" fill="url(#spot)"/><rect width="1200" height="900" fill="transparent" filter="url(#grain)"/><rect width="1200" height="900" fill="url(#vignette)"/>
+</svg>
