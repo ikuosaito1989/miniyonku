@@ -2,9 +2,8 @@ import {useEffect,useRef} from 'react';
 import {useGame} from './game/store';
 import {openingScenes,openingIndex,openingIsWalk,OPENING_END} from './game/opening';
 import {NpcPortrait} from './NpcPortrait';
-import {personDrawing} from './game/PeopleArt';
+import {PlayerPortrait} from './PlayerPortrait';
 import './opening.css';
-function PlayerFace(){return <svg viewBox="8 0 44 42" aria-hidden="true">{personDrawing('player','down',0).map((s,i)=>s.kind==='rect'?<rect key={i} x={s.x} y={s.y} width={s.w} height={s.h} fill={s.color} opacity={s.alpha}/>:<polygon key={i} points={s.points.map(p=>p.join(',')).join(' ')} fill={s.color} opacity={s.alpha}/>)}</svg>;}
 export function OpeningScene(){
  const state=useGame(),step=openingIndex(state),scene=openingScenes[step],walking=openingIsWalk(step),last=step===OPENING_END-1,panel=useRef<HTMLDivElement>(null),next=useRef<HTMLButtonElement>(null);
  const proceed=()=>{if(last)state.finishOpening(true);else if(walking)state.completeOpeningWalk(step);else state.advanceOpening(step);};
@@ -19,7 +18,7 @@ export function OpeningScene(){
  return <div className={`opening-scene${walking?' opening-walking':''}`} ref={panel} role="dialog" aria-modal="true" aria-label="はじまりのシーン" data-step={step} onClick={e=>{if(!walking&&!last&&!(e.target instanceof Element&&e.target.closest('button')))state.advanceOpening(step);}}>
   <header className="opening-chapter"><span>はじまりの一歩</span><button onClick={()=>state.finishOpening(false)}>導入を省略</button></header>
   {walking?<div className="opening-walk-status" role="status"><span className="opening-footsteps" aria-hidden="true">● ● ●</span><span>{scene.text}</span><button ref={next} onClick={proceed}>歩く場面を省略</button></div>:<section className="opening-dialogue" key={step} aria-labelledby="opening-speaker" aria-describedby="opening-message">
-   <div className="opening-face">{scene.portrait==='player'?<PlayerFace/>:<NpcPortrait id={scene.portrait}/>}</div>
+   <div className="opening-face">{scene.portrait==='player'?<PlayerPortrait/>:<NpcPortrait id={scene.portrait}/>}</div>
    <div className="opening-words"><h2 id="opening-speaker">{scene.speaker}</h2><p id="opening-message">{scene.text}</p><nav>
     <button ref={next} onClick={proceed}>{last?'実際にやってみよう':scene.next}<span aria-hidden="true"> ▸</span></button>
     {last&&<button className="opening-look-around" onClick={()=>state.finishOpening(false)}>{state.openingTour?'設定に戻る':'案内を省略して遊ぶ'}</button>}

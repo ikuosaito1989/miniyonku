@@ -1,3 +1,4 @@
+import {playerDrawing} from './PlayerArt';
 import { pixelPen, type PixelShape } from './pixelDrawing';
 export type Facing='down'|'up'|'left'|'right';
 export type PersonKind='player'|'owner'|'rival'|'guide'|'mechanic';
@@ -41,6 +42,7 @@ export function challengerDrawing(direction:Facing,frame=0):PixelShape[]{
 
 /** 役割ごとの服・体型と、方向別の独立したシルエットを持つオリジナル原画。 */
 export function personDrawing(kind:PersonKind,direction:Facing,frame:number):PixelShape[]{
+  if(['player'].includes(kind))return playerDrawing(direction,frame);
   const pen=pixelPen(),r=pen.rect,p=pen.polygon,c=outfits[kind];
   const side=direction==='left'||direction==='right',back=direction==='up';
   const step=frame===1?2:frame===3?-2:0,bob=step?1:0;
