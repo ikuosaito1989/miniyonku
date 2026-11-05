@@ -17,8 +17,8 @@ export const modelShops:Record<ShopId,ModelShop>={
 export function currentShop(location:WorldLocation){return modelShops[location==='town'?'komorebi':location==='stadium-5'?'hinata':location==='stadium-9'?'wakaba':location==='stadium-10'?'yuunagi':location==='stadium-7'?'akatsuki':location];}
 export interface WorldProgress {legendRaceCompleted:boolean;villainDefeated:boolean;officialQualified?:boolean;wakabaUnlocked?:boolean;thirdOfficialQualified?:boolean;yuunagiUnlocked?:boolean;finalQualified?:boolean;grandprixCleared?:boolean;zenithQualified?:boolean}
 export function canEnterShop(id:ShopId,progress:WorldProgress){return id==='akatsuki'?progress.grandprixCleared===true:id==='yuunagi'?progress.yuunagiUnlocked===true:id==='wakaba'?progress.wakabaUnlocked===true:(id==='komorebi'||id==='atelier')||progress.legendRaceCompleted&&(id==='aozora'||progress.villainDefeated);}
-export function isVenueOpen(venue:TownVenue,progress:WorldProgress){return venue.id==='stadium-7'?progress.zenithQualified===true:venue.id==='stadium-10'?progress.finalQualified===true:venue.id==='stadium-9'?progress.thirdOfficialQualified===true:venue.id==='stadium-5'?progress.officialQualified===true:!!venue.shopId&&canEnterShop(venue.shopId,progress);}
-export interface TownVenue {id:string;name:string;kind:'shop'|'stadium';stage:number;x:number;y:number;w:number;h:number;entrance:'north'|'south';color:number;shopId?:ShopId}
+export function isVenueOpen(venue:TownVenue,progress:WorldProgress){return venue.kind==='library'?true:venue.id==='stadium-7'?progress.zenithQualified===true:venue.id==='stadium-10'?progress.finalQualified===true:venue.id==='stadium-9'?progress.thirdOfficialQualified===true:venue.id==='stadium-5'?progress.officialQualified===true:!!venue.shopId&&canEnterShop(venue.shopId,progress);}
+export interface TownVenue {id:string;name:string;kind:'shop'|'stadium'|'library';stage:number;x:number;y:number;w:number;h:number;entrance:'north'|'south';color:number;shopId?:ShopId}
 const venueTemplates:TownVenue[]=[
   {id:'komorebi',name:'こもれび模型店',kind:'shop',stage:1,x:78,y:150,w:132,h:88,entrance:'south',color:0x528672,shopId:'komorebi'},
   {id:'aozora',name:'あおぞら模型店',kind:'shop',stage:2,x:246,y:150,w:132,h:88,entrance:'south',color:0x497eaf,shopId:'aozora'},
@@ -44,7 +44,7 @@ export function generateTownVenues(seed=19890421):TownVenue[]{
     const plot=plots[index],stadium=venue.kind==='stadium';
     return {...venue,entrance:'south',x:plot.x+Math.floor(random()*40)-20,y:plot.y+Math.floor(random()*50)-25,w:stadium?350:190,h:stadium?250:140};
   });
-  return [...venues,{id:'atelier',name:'星霧模型工房',kind:'shop',stage:1,x:650,y:805,w:190,h:140,entrance:'south',color:0x77649c,shopId:'atelier'}];
+  return [...venues,{id:'atelier',name:'星霧模型工房',kind:'shop',stage:1,x:650,y:805,w:190,h:140,entrance:'south',color:0x77649c,shopId:'atelier'},{id:'library',name:'緑川町立図書館',kind:'library',stage:1,x:970,y:805,w:190,h:140,entrance:'south',color:0x657c88}];
 }
 export const townVenues=generateTownVenues();
 // 住宅・商店街の背景棟。入口を持たない建物も歩行障害物として扱う。
@@ -58,6 +58,7 @@ for(let y=130;y<2150;y+=345)for(let x=100;x<2800;x+=370){
 export const shopExit={x:440,y:575,w:80,h:7};
 export function townSpawn(shop:ShopId|'stadium-5'|'stadium-9'|'stadium-10'|'stadium-7'){const venue=townVenues.find(v=>v.id===shop)!;return {x:venue.x+venue.w/2,y:venue.entrance==='north'?venue.y-42:venue.y+venue.h+42};}
 export function venueMessage(venue:TownVenue){
+  if(venue.kind==='library')return '最初から無料で入れる図書館。全種類のパーツの性能・特徴・入手先、ギア比やモーターの基礎を調べられます。未所持品・非売品も閲覧可能。';
   if(venue.id==='stadium-7')return '最終大会・天頂決戦ゼニス・クラウン。あかつき模型店で5回レースを終えると出場権を獲得。全要素を詰め込んだ史上最長の一本道で、怜・岳・斗和・昊也のレジェンド4人と決戦。2位以内の完走でゲームクリア。';
   if(venue.id==='akatsuki')return '緑川グランプリで2位以内に入ると開放。最上位パーツ22種と強豪たちの試走コース。結果まで5回走れば最終大会の出場権。';
   if(venue.id==='yuunagi')return '星空テクニカル杯で3位以内に入ると開放。一本道の高架スパイラルとジャンプ台を40秒以内で完走すると、第4公式大会・緑川グランプリの出場権を獲得できます。';

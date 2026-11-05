@@ -6,7 +6,16 @@ import {SceneryPen} from './SceneryCanvas';
 export function paintVenueFacade(p:SceneryPen,v:TownVenue,open:boolean){
  const w=v.w,h=v.h,x=40,y=91,c=p.c;
  p.ellipse(x+w/2+10,y+h+9,w*.6,13,'#21323b33');
- if(v.kind==='stadium'){
+ if(v.kind==='library'){
+  p.round(x,y,w,h,3,'#465e6c');p.gradient(x+3,y+3,w-6,h-6,'#e1d7bd','#b4b4a0');
+  p.poly([[x-9,y+4],[x+w/2,y-36],[x+w+9,y+4]],'#526574');p.poly([[x+6,y],[x+w/2,y-27],[x+w-6,y]],'#8c9f9e');
+  p.round(x+w/2-23,y-15,46,27,3,'#304d59');
+  p.poly([[x+w/2,y+5],[x+w/2-16,y],[x+w/2-16,y-10],[x+w/2,y-6],[x+w/2+16,y-10],[x+w/2+16,y],[x+w/2,y+5]],'#e8d7a7');p.line([[x+w/2,y-6],[x+w/2,y+5]],'#9e875d',1);
+  for(const side of [x+12,x+w-61]){p.round(side,y+26,49,74,3,'#556c77');p.gradient(side+3,y+29,43,68,'#b4d7d3','#6b929d');for(let row=0;row<3;row++){p.rect(side+5,y+43+row*21,39,3,'#84715b');for(let col=0;col<6;col++)p.rect(side+6+col*6,y+31+row*21,4,11,['#647c83','#9b7469','#b49e63'][col%3]);}p.rect(side+23,y+29,2,68,'#d7d8c2');}
+  p.round(x+w/2-22,y+48,44,h-49,3,'#475c65');p.gradient(x+w/2-18,y+53,36,h-57,'#b3d1c5','#5f8690');p.rect(x+w/2-1,y+53,2,h-57,'#d9d6ba');p.rect(x+w/2+10,y+h-24,3,11,'#dfc581');
+  for(const col of [x+5,x+w-12]){p.gradient(col,y+13,7,h-14,'#ece2cb','#999e97');p.rect(col-2,y+12,11,4,'#c1b99d');}
+  p.round(x-15,y+h-25,18,25,3,'#9e7c61');p.ellipse(x-6,y+h-29,15,12,'#66876a');p.round(x+w+1,y+h-25,18,25,3,'#9e7c61');p.ellipse(x+w+10,y+h-29,15,12,'#66876a');
+ }else if(v.kind==='stadium'){
   const colors:Record<string,string[]>={'stadium-5':['#376f73','#91bdac'],'stadium-9':['#4e527f','#bd9ace'],'stadium-10':['#745153','#e5b97a'],'stadium-7':['#354968','#dcc080']};
   const [dark,accent]=colors[v.id]??colors['stadium-5'];
   p.round(x-9,y-18,w+18,h+18,14,'#23364a');p.gradient(x-5,y-9,w+10,h+5,'#d0d3cb','#839da6');

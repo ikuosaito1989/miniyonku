@@ -1,3 +1,4 @@
+import {Library} from './Library';
 import {PodiumCeremony} from './PodiumCeremony';
 import {KoyaEscort} from './KoyaEscort';
 import {TutorialGuide} from './TutorialGuide';
@@ -76,6 +77,7 @@ export function App(){
         {game.overlay==='escort'&&<KoyaEscort/>}
         {game.overlay==='towa-escort'&&<KoyaEscort towa/>}
         {game.overlay==='podium'&&<PodiumCeremony/>}
+        {game.overlay==='library'&&<Library/>}
         <TutorialGuide context="world"/>
         {game.loginBonusReceived&&<aside className="login-bonus" role="status"><span>おかえりなさい！ ログインボーナス 500円を受け取りました。</span><button aria-label="ログインボーナスのお知らせを閉じる" onClick={()=>useGame.setState({loginBonusReceived:false})}>閉じる</button></aside>}
         <TownMap/>

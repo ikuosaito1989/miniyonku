@@ -563,7 +563,8 @@ export class ShopScene extends Phaser.Scene {
       else if(target.kind==='challenger')useGame.getState().openVillainChallenge();
       else if(target.kind==='venue'){
         const venue=townVenues.find(v=>v.id===target.venueId)!;
-        if(venue.id==='stadium-5'||venue.id==='stadium-9'||venue.id==='stadium-10'||venue.id==='stadium-7'){if(venue.id==='stadium-7'?useGame.getState().zenithQualified:venue.id==='stadium-10'?useGame.getState().finalQualified:venue.id==='stadium-9'?useGame.getState().thirdOfficialQualified:useGame.getState().officialQualified)useGame.getState().enterOfficialVenue(venue.id);else useGame.getState().talk(venue.name,venueMessage(venue));}
+        if(venue.kind==='library')useGame.getState().openLibrary();
+        else if(venue.id==='stadium-5'||venue.id==='stadium-9'||venue.id==='stadium-10'||venue.id==='stadium-7'){if(venue.id==='stadium-7'?useGame.getState().zenithQualified:venue.id==='stadium-10'?useGame.getState().finalQualified:venue.id==='stadium-9'?useGame.getState().thirdOfficialQualified:useGame.getState().officialQualified)useGame.getState().enterOfficialVenue(venue.id);else useGame.getState().talk(venue.name,venueMessage(venue));}
         else if(venue.shopId&&isVenueOpen(venue,useGame.getState()))useGame.getState().enterShop(venue.shopId);
         else useGame.getState().talk(venue.name,venueMessage(venue));
       }

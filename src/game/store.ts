@@ -69,9 +69,9 @@ export interface GameState extends Wallet {
   selectUnit:(slot:'motor'|'battery',id:string)=>void; breakIn:()=>void;
   raceAttempt: number; settledAttempt: number; lastPrize: number;
   settleRace: (attempt: number, race: RaceState) => void;
-  overlay: 'podium' | 'towa-escort' | 'escort' | 'opening' | 'time-board' | 'mission' | 'town-map' | 'arrival' | 'dialogue' | 'shop' | 'race' | 'setting' | 'settings' | 'proficiency' | 'legends' | 'cheat' | 'game-over' | null; speaker: string; dialogue: string; shopAfter: boolean; notice: string; nearby: string;
+  overlay: 'library' | 'podium' | 'towa-escort' | 'escort' | 'opening' | 'time-board' | 'mission' | 'town-map' | 'arrival' | 'dialogue' | 'shop' | 'race' | 'setting' | 'settings' | 'proficiency' | 'legends' | 'cheat' | 'game-over' | null; speaker: string; dialogue: string; shopAfter: boolean; notice: string; nearby: string;
   openSetting: () => void; equip: (id: string,slot?:EquipmentSlot) => void;
-  openSettings:()=>void;
+  openSettings:()=>void;openLibrary:()=>void;
   startTrial: () => void;
   talk: (speaker: string, text: string, shopAfter?: boolean) => void; advance: () => void; close: () => void; buy: (id: string) => void;
 }
@@ -247,6 +247,7 @@ export const useGame = create<GameState>((set) => ({
     return {...(reward&&s.officialChallengeActive&&race.event==='official'?{podiumPending:true}:{}),...(s.yuunagiUnlocked&&trialFinished&&trialTime<=yuunagiTimeLimit&&s.towaEscortStep===0&&!s.finalCup.entered?{towaEscortStep:1}:{}),...(reward&&s.tutorialStage==='racing'?{tutorialStage:'result' as const}:{}),...(reward?{timeHistory:recordRaceTimes(s.timeHistory,race,attempt)}:{}),akatsukiRaceCount,zenithQualified,yuunagiBestTime,finalQualified,...(firstHinataWin?{officialQualified:true,officialQualificationNotice:true}:{}),...cupUpdate,...(firstWakabaWin?{thirdOfficialQualified:true,...(s.koyaEscortStep===0&&!s.technicalCup.entered?{koyaEscortStep:1}:{})}:{}),...(reward?{lastRaceReview:reviewRace(race)}:{}),units,inventory,usageSeconds:Math.max(s.usageSeconds,seconds),money:s.money+prize,proficiencyPoints:s.proficiencyPoints+practice,...(firstWin?{unlockedRaces:[...s.unlockedRaces,nextShopRace.id],qualificationNotice:true,...(!s.legendRaceCompleted?{legendEventPending:true}:{})}:{}),...(firstAozoraWin?{aozoraWon:true,villainArrivalPending:true}:{}),...(defeatedVillain?{villainDefeated:true,thirdShopNotice:true}:{}),...(s.villainChallengeActive&&reward?{villainDebriefPending:true}:{}),...(completedLegend?{legendRaceCompleted:true}:{}),...(s.legendChallengeActive&&reward?{legendDebriefPending:true}:{}),...(reward?{lastPrize:prize,settledAttempt:attempt}:{})};
   }),
   openSetting: () => set(s=>(s.overlay==='escort'||s.overlay==='towa-escort'||s.overlay==='podium')?{}:{overlay:'setting',shopAfter:false,notice:''}),
+  openLibrary:()=>set(s=>s.location==='town'&&!s.overlay&&!s.openingActive?{overlay:'library',nearby:'',notice:''}:{}),
   openSettings:()=>set(s=>(s.overlay==='escort'||s.overlay==='towa-escort'||s.overlay==='podium')?{}:{overlay:'settings',shopAfter:false,notice:''}),
   openCheat:(fromSettings=false)=>set({overlay:'cheat',shopAfter:false,notice:'',cheatReturnToSettings:fromSettings}),
   applyCheat:(amount)=>set(s=>({money:amount==='max'?9_999_999:s.money+1000,cheatUsed:true,overlay:s.cheatReturnToSettings?'settings':null,cheatReturnToSettings:false,notice:''})),
