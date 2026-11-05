@@ -1,3 +1,4 @@
+import {decodeBodyPaint} from '../data/bodyPaint';
 import {legacyRetrySnapshot} from './retrySave';
 import {snapshotGame,type SavedGame} from './saveData';
 import {tutorialActive,TUTORIAL_PART,type TutorialStage} from './tutorial';
@@ -26,7 +27,7 @@ import { canEnterShop, currentShop, type ShopId, type WorldLocation } from '../d
 import { challenger, challengerInvitation } from '../data/challenger';
 export type DialogueStage='none'|'legend-intro'|'legend-invite'|'legend-debrief'|'villain-intro'|'villain-win'|'villain-loss'|'doctor-gift'|'official-invite';
 export interface GameState extends Wallet {
-  tutorialStage:TutorialStage;tutorialReturn:SavedGame|null;retryCheckpoint:SavedGame|null;retryFromSave:()=>void;
+  bodyPaint:number|null;setBodyPaint:(color:number|null)=>void;tutorialStage:TutorialStage;tutorialReturn:SavedGame|null;retryCheckpoint:SavedGame|null;retryFromSave:()=>void;
   startTutorial:(practice?:boolean)=>void;resumeTutorial:()=>void;inspectTutorial:(slot:EquipmentSlot)=>void;openTutorialShop:()=>void;finishTutorial:()=>void;
   openingStep:number;openingActive:boolean;openingTour:OpeningTour|null;
   startOpening:(replay?:boolean)=>void;advanceOpening:(expectedStep:number)=>void;completeOpeningWalk:(expectedStep:number)=>void;finishOpening:(showSetting?:boolean)=>void;
@@ -74,7 +75,7 @@ function updateCup(s:GameState,cup:CupProgress){
  return {...updated,gameOver:s.gameOver||updated.gameOver};
 }
 export const useGame = create<GameState>((set) => ({
-  tutorialStage:'pending',tutorialReturn:null,retryCheckpoint:null,
+  bodyPaint:null,setBodyPaint:color=>set({bodyPaint:decodeBodyPaint(color)}),tutorialStage:'pending',tutorialReturn:null,retryCheckpoint:null,
   retryFromSave:()=>set(s=>{
     if(!s.gameOver)return {};
     const checkpoint=s.retryCheckpoint??legacyRetrySnapshot(snapshotGame(s));

@@ -47,9 +47,9 @@ export class TrialRenderer {
   private resetIntroClock=()=>{this.introLastTime=0;};
   private reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  constructor(private host: HTMLElement, private equipment: Equipment, private report: (state: RaceState) => void, private reportFinish:(state:FinishPresentation)=>void, private condition:MachineCondition=freshCondition, private seed=0x5eed,private challenge:RaceChallenge=false,private circuitId:CircuitId='leaf',private reportIntro:(intro:RaceIntro)=>void=()=>{}) {
+  constructor(private host: HTMLElement, private equipment: Equipment, private report: (state: RaceState) => void, private reportFinish:(state:FinishPresentation)=>void, private condition:MachineCondition=freshCondition, private seed=0x5eed,private challenge:RaceChallenge=false,private circuitId:CircuitId='leaf',private reportIntro:(intro:RaceIntro)=>void=()=>{},private bodyPaint:number|null=null) {
     this.track=getCircuitTrack(circuitId);
-    this.state=createRaceState(equipment,seed,condition,challenge,circuitId);
+    this.state=createRaceState(equipment,seed,condition,challenge,circuitId,this.bodyPaint);
     this.renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});
     this.renderer.setPixelRatio(1);
     this.renderer.setClearColor(challenge==='official'?0x344d5b:0x315b2a);
@@ -108,7 +108,7 @@ export class TrialRenderer {
   restart(){
     this.lappedAges.clear();
     for(const car of this.cars.values())delete car.userData.motionDistance;
-    this.state=createRaceState(this.equipment,this.seed,this.condition,this.challenge,this.circuitId);this.accumulator=0;this.lastTime=0;this.lastReport=-1;this.cameraMode='broadcast';this.startShotBlend=1;
+    this.state=createRaceState(this.equipment,this.seed,this.condition,this.challenge,this.circuitId,this.bodyPaint);this.accumulator=0;this.lastTime=0;this.lastReport=-1;this.cameraMode='broadcast';this.startShotBlend=1;
     this.intro=raceIntroAt(0);this.introLastTime=0;this.reportIntro(this.intro);
     this.finishPresentation=createFinishPresentation();this.reportFinish(this.finishPresentation);
     this.report({...this.state});

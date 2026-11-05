@@ -53,11 +53,11 @@ function lowWedgeShell(sections:number[][],color:number,shininess=85){
   return new THREE.Mesh(geometry,new THREE.MeshPhongMaterial({color,shininess,side:THREE.DoubleSide}));
 }
 
-export function buildRaceMachineModel(racer:Pick<Entrant,'id'|'color'|'equipment'>){
- return buildMachineModel(racer.color,racer.equipment,racer.id===challenger.id?'kuroiwa':racer.id!=='player'&&racer.id!=='riku'&&racer.id!=='jin'&&!racer.id.startsWith('legend-')?'mob-kei':'stock');
+export function buildRaceMachineModel(racer:Pick<Entrant,'id'|'color'|'equipment'|'bodyPaint'>){
+ return buildMachineModel(racer.color,racer.equipment,racer.id===challenger.id?'kuroiwa':racer.id!=='player'&&racer.id!=='riku'&&racer.id!=='jin'&&!racer.id.startsWith('legend-')?'mob-kei':'stock',racer.id==='player'?racer.bodyPaint:undefined);
 }
 
-export function buildMachineModel(racerColor:number,equipment:Equipment,appearance:'stock'|'mob-kei'|'kuroiwa'='stock'){
+export function buildMachineModel(racerColor:number,equipment:Equipment,appearance:'stock'|'mob-kei'|'kuroiwa'='stock',bodyPaint?:number){
   const original=bodyDesign(equipment.body);
   // コハクK660と通常NPCは同じ素朴な軽ワゴンの造形を使う。性能データは変更しない。
   const isKuroiwa=appearance==='kuroiwa';
@@ -65,7 +65,7 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
   const design=isMob?{...original,shape:'kei' as const,silhouette:undefined,width:.056,cabinHeight:.042,cabinFront:.041,cabinRear:-.092}:original;
   // 3Dプレビューはボディ固有色、レース中はレーサーごとの塗色を使う。
   const isStarter=design.silhouette==='starter-wedge',isChampion=design.silhouette==='champion-aero',isKazami=design.id==='body-legend-flow',isHino=design.id==='body-legend-wedge',isTowa=design.id==='body-legend-towa',isKoya=design.id==='body-legend-muscle';
-  const color=isChampion?Number.parseInt(design.color.slice(1),16):racerColor;
+  const color=bodyPaint??(isChampion?Number.parseInt(design.color.slice(1),16):racerColor);
   const look=(id:string)=>partAppearances[id]??{color:'#8395a3',accent:'#dbe4e8',detail:0,mark:''};
   const hex=(value:string)=>Number.parseInt(value.replace('#',''),16);
   const partMaterial=(id:string,shininess=55)=>new THREE.MeshPhongMaterial({color:hex(look(id).color),shininess});
@@ -156,7 +156,16 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
       }
     }
     add(isStarter?new THREE.BoxGeometry(.036,.006,.003):new THREE.BoxGeometry(.045,.008,.003),isStarter?new THREE.MeshPhongMaterial({color:0x17212a,shininess:35}):frame,0,isStarter?.052:.051,isStarter?.137:.131).name='front-grille';
-  }else car.add(isTowa?buildTowaBody():isKoya?buildKoyaBody():isKuroiwa?buildKuroiwaBody():isHino?buildHinoBody():isKazami?buildKazamiBody():buildSeiranBody());
+  }else {
+    const body=isTowa?buildTowaBody():isKoya?buildKoyaBody():isKuroiwa?buildKuroiwaBody():isHino?buildHinoBody():isKazami?buildKazamiBody():buildSeiranBody();
+    if(bodyPaint!==undefined){
+      const primary=isTowa?0xbfc8cc:isKoya?0x919ba1:isHino||isKazami?0xf1f1e9:0xf2f3eb;
+      const materials=new Set<THREE.MeshStandardMaterial>();
+      body.traverse(object=>{if(object instanceof THREE.Mesh)for(const material of Array.isArray(object.material)?object.material:[object.material])if(material instanceof THREE.MeshStandardMaterial&&material.color.getHex()===primary)materials.add(material);});
+      materials.forEach(material=>material.color.setHex(bodyPaint));
+    }
+    car.add(body);
+  }
   // ミニ四駆機構は共通のまま、曲線バンパーを車体の前後に配置。
   if(!isChampion){
     for(const side of [-1,1]){

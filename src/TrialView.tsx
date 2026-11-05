@@ -54,7 +54,7 @@ export default function TrialView(){
   const raceClock=(seconds:number)=>clock(seconds,timeTrial);
   const prizes=prizesForCircuit(circuitId);
   const {circuit,circuitLength,sampleLanePath}=getCircuitTrack(circuitId);
-  const [state,setState]=useState(()=>createRaceState(equipment,useGame.getState().raceSeed,undefined,challenge,circuitId));
+  const [state,setState]=useState(()=>createRaceState(equipment,useGame.getState().raceSeed,undefined,challenge,circuitId,useGame.getState().bodyPaint));
   const [intro,setIntro]=useState(()=>raceIntroAt(0));
   const introducing=intro.stage!=='done';
   const introduction=courseIntroduction(circuitId,officialChallenge);
@@ -67,12 +67,12 @@ export default function TrialView(){
   useEffect(()=>{
     const stored=useGame.getState();
     const condition=equippedCondition(equipment,stored.units,stored.selectedUnits);
-    setState(createRaceState(equipment,stored.raceSeed,condition,challenge,circuitId));setFinish(createFinishPresentation());setError('');setCameraMode('broadcast');setIntro(raceIntroAt(0));
+    setState(createRaceState(equipment,stored.raceSeed,condition,challenge,circuitId,stored.bodyPaint));setFinish(createFinishPresentation());setError('');setCameraMode('broadcast');setIntro(raceIntroAt(0));
     const raceAttempt=useGame.getState().raceAttempt;
     try{renderer.current=new TrialRenderer(host.current!,equipment,race=>{
       useGame.getState().settleRace(raceAttempt,race);
       setState(race);
-    },setFinish,condition,stored.raceSeed,challenge,circuitId,setIntro);}
+    },setFinish,condition,stored.raceSeed,challenge,circuitId,setIntro,stored.bodyPaint);}
     catch{setError('3D表示を開始できませんでした。WebGL対応ブラウザで再試行してください。');}
     return()=>{renderer.current?.dispose();renderer.current=null;};
   },[equipment,challenge,circuitId]);
@@ -131,7 +131,7 @@ export default function TrialView(){
     finished?'全車のゴールを確認！ まもなく最終結果を発表します。':
     finish.stage==='approach'?'いよいよ最終ストレート！ 先頭のマシンがゴールへ飛び込んでくる！':
     driving.status==='out'?(driving.stopReason==='lapped'?'先頭に1周差をつけられ、マシンがコース外へ！ リタイアです。':driving.stopReason==='battery'?'電池切れで停止！ 別の電池に交換しよう。':'コースアウト！ マシンを回収したよ。ほかのマシンは走行中。'):
-    state.time<2?'スタート！ GOからの反応時間も記録に含まれるよ。':timeTrial?`ゴールまで残り${Math.max(0,circuitLength-driving.distance).toFixed(0)}m。規定40秒以内を目指そう！`:playerPath.changing?`レーンチェンジ！ ${playerPath.from+1}コースから ${playerPath.to+1}コースへ。５周で全レーンを走るよ。`:`あなたは現在 ${position}位！ 赤いマシンの上の黄色い印が目印だよ。`);
+    state.time<2?'スタート！ GOからの反応時間も記録に含まれるよ。':timeTrial?`ゴールまで残り${Math.max(0,circuitLength-driving.distance).toFixed(0)}m。規定40秒以内を目指そう！`:playerPath.changing?`レーンチェンジ！ ${playerPath.from+1}コースから ${playerPath.to+1}コースへ。５周で全レーンを走るよ。`:`あなたは現在 ${position}位！ 自分のマシンの上の黄色い印が目印だよ。`);
 
   return <section className="trial retro-race" data-camera={cameraMode} aria-label={legendChallenge?'レジェンド挑戦レース':villainChallenge?'黒岩 豪との挑戦レース':timeTrial?'一本道タイムアタック':'5台の3Dレース'} data-phase={introducing?'introduction':state.phase} data-intro-stage={intro.stage} data-finish-stage={finish.stage} onClick={event=>{
     // 操作ボタン自身の処理と二重発火させない。カメラ・音・退出も発進しない。

@@ -39,9 +39,9 @@ export class MachinePreviewRenderer {
     this.camera.position.set(-.45,.42,.55);this.camera.lookAt(0,.05,0);
     this.observer=new ResizeObserver(this.resize);this.observer.observe(host);this.resize();
   }
-  setEquipment(equipment:Equipment){
+  setEquipment(equipment:Equipment,bodyPaint:number|null=null){
     if(this.model){this.scene.remove(this.model);disposeModel(this.model);}
-    this.model=buildMachineModel(Number.parseInt(bodyDesign(equipment.body).color.slice(1),16),equipment);this.model.rotation.y=this.yaw;
+    this.model=buildMachineModel(Number.parseInt(bodyDesign(equipment.body).color.slice(1),16),equipment,'stock',bodyPaint??undefined);this.model.rotation.y=this.yaw;
     this.model.traverse(object=>{if(object instanceof THREE.Mesh){object.castShadow=true;object.receiveShadow=true;}});
     this.scene.add(this.model);this.render();
   }
