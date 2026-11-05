@@ -20,7 +20,7 @@ import { racePrize } from './reward';
 import { officialTime, rankRacers, type RaceState } from './race';
 import { INITIAL_MONEY } from '../data/economy';
 import { nextRaceSeed } from './raceSeed';
-import { batteryCharge, batteryCapacity, batteryConsumption, createStarterUnits, type UnitInventory } from './condition';
+import { createStarterUnits, type UnitInventory } from './condition';
 import { breakInPractice } from '../data/proficiency';
 import { hintBooks, nextShopRace } from '../data/shopHints';
 import { canEnterShop, currentShop, type ShopId, type WorldLocation } from '../data/world';
@@ -159,7 +159,7 @@ export const useGame = create<GameState>((set) => ({
   enterShop:id=>set(s=>s.gameOver||s.location!=='town'||!canEnterShop(id,s)?s:{location:id,lastShop:id,townReturnVenue:null,overlay:null,nearby:'',notice:'',shopAfter:false}),
   hintBookIndex:0,unlockedRaces:[],qualificationNotice:false,legendEventSeen:false,legendEventPending:false,legendDebriefPending:false,legendChallengeActive:false,dialogueStage:'none',cheatUsed:false,cheatReturnToSettings:false,
   purchaseCount:0,lastRaceReview:null,
-  exchangeReusable:slot=>set(s=>s.location==='town'||s.overlay==='race'||s.overlay==='arrival'?s:{...replaceConsumable(s,slot==='motor'?'motor-rescue':'battery-recharge'),notice:slot==='motor'?'リユースモーターを装着しました。他の種類のモーターは保持しています。':'リチャージセルを装着しました。他の種類の電池は保持しています。'}),
+  exchangeReusable:slot=>set(s=>s.location==='town'||s.overlay==='race'||s.overlay==='arrival'?s:{...replaceConsumable(s,slot==='motor'?'motor-rescue':'battery-recharge'),notice:slot==='motor'?'リユースモーターを装着しました。他の種類のモーターは保持しています。':'リチウムセルを装着しました。他の種類の電池は保持しています。'}),
   readHintBook:()=>set(s=>{
     const index=s.hintBookIndex%hintBooks.length,book=hintBooks[index];
     return {overlay:'dialogue',speaker:`セッティング本棚 ${index+1} / ${hintBooks.length}・${book.title}`,dialogue:`${book.text}（閉じてもう一度調べると次の本）`,shopAfter:false,hintBookIndex:(index+1)%hintBooks.length};
@@ -181,15 +181,11 @@ export const useGame = create<GameState>((set) => ({
   breakIn:()=>set(s=>{
     if(s.overlay!=='setting')return s;
     if(parts.find(p=>p.id===s.equipment.motor)?.specs.wear===0)return {notice:'リユースモーターは消耗せず性能一定です。慣らしは不要です。'};
-    const battery=s.units[s.equipment.battery]?.find(u=>u.id===s.selectedUnits.battery);
-    if(!battery||batteryCharge(s.equipment.battery,battery.seconds)<=0)return {notice:'電池が空です。別の電池に交換してください。'};
-    const rechargeable=batteryConsumption(s.equipment.battery)===0;
-    const duration=rechargeable?30:Math.min(30,Math.max(0,batteryCapacity(s.equipment.battery)-battery.seconds));
-    const units={...s.units};
-    for(const slot of ['motor','battery'] as const)units[s.equipment[slot]]=units[s.equipment[slot]].map(u=>u.id===s.selectedUnits[slot]?{...u,seconds:u.seconds+duration}:u);
+    const duration=30;
+    const units={...s.units,[s.equipment.motor]:s.units[s.equipment.motor].map(u=>u.id===s.selectedUnits.motor?{...u,seconds:u.seconds+duration}:u)};
     const motor=s.units[s.equipment.motor]?.find(u=>u.id===s.selectedUnits.motor);
     const practice=breakInPractice(motor?.seconds??0,duration);
-    return {units,proficiencyPoints:s.proficiencyPoints+practice,notice:`${duration.toFixed(0)}秒の慣らし運転を行いました。${rechargeable?'充電電池の残量は減りません。':'電池も消耗します。'}${practice>0?' 整備の熟練度が上がりました。':''}`};
+    return {units,proficiencyPoints:s.proficiencyPoints+practice,notice:`${duration.toFixed(0)}秒の慣らし運転を行いました。電池の残量は減りません。${practice>0?' 整備の熟練度が上がりました。':''}`};
   }),
   startTrial: () => set(s=>s.gameOver||s.location==='atelier'||s.location==='town'||s.location==='stadium-5'||s.location==='stadium-9'||s.location==='stadium-10'||s.location==='stadium-7'?s:({tutorialStage:s.tutorialStage==='start'||s.tutorialStage==='racing'?'racing':s.tutorialStage,overlay:'race',officialChallengeActive:false,officialQualificationNotice:false,shopAfter:false,notice:'',legendChallengeActive:false,legendDebriefPending:false,villainChallengeActive:false,villainDebriefPending:false,thirdShopNotice:false,raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,qualificationNotice:false})),
   settleRace: (attempt,race) => set(s=>{

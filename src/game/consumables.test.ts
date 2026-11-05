@@ -1,3 +1,4 @@
+import {createRaceState} from './race';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { parts } from '../data/parts';
@@ -92,9 +93,10 @@ test('異種電池の残量を保持して付け替え、同種再購入だけ�
   const original=useGame.getState();
   try{
     useGame.setState({...useGame.getInitialState(),money:10000});
-    useGame.getState().openSetting();useGame.getState().breakIn();
+    const drive=(seconds:number)=>{const s=useGame.getState();s.startTrial();const r=createRaceState(s.equipment);r.phase='running';r.racers[0].driving.time=seconds;useGame.getState().settleRace(useGame.getState().raceAttempt,r);useGame.getState().close();};
+    drive(30);
     useGame.getState().buy('battery-entry');check();
-    useGame.getState().openSetting();useGame.getState().breakIn();useGame.getState().breakIn();
+    drive(60);
     useGame.getState().equip('battery-basic','battery');
     let state=useGame.getState();
     assert.equal(state.units['battery-basic'][0].seconds,30);

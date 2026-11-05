@@ -36,7 +36,7 @@ test('途中報告と慣らしは重複せず、再購入時だけ古いモー�
   try{
     useGame.setState({units:createStarterUnits(),equipment:{...starterEquipment},selectedUnits:{motor:'starter-motor',battery:'starter-battery'},unitSerial:0,money:3000});
     useGame.getState().openSetting();useGame.getState().breakIn();useGame.getState().breakIn();
-    let s=useGame.getState();assert.equal(equippedCondition(s.equipment,s.units,s.selectedUnits).motorSeconds,60);
+    let s=useGame.getState();assert.equal(equippedCondition(s.equipment,s.units,s.selectedUnits).motorSeconds,60);assert.equal(s.units['battery-basic'][0].seconds,0);
     s.startTrial();let race=createRaceState(starterEquipment);race={...race,phase:'running',racers:race.racers.map(r=>r.id==='player'?{...r,driving:{...r.driving,time:10,status:'running'}}:r)};
     const attempt=useGame.getState().raceAttempt;
     useGame.getState().settleRace(attempt,race);useGame.getState().settleRace(attempt,race);
@@ -46,6 +46,6 @@ test('途中報告と慣らしは重複せず、再購入時だけ古いモー�
     assert.equal(equippedCondition(s.equipment,s.units,s.selectedUnits).motorSeconds,0);
     s.selectUnit('motor','starter-motor');s=useGame.getState();assert.equal(equippedCondition(s.equipment,s.units,s.selectedUnits).motorSeconds,0);
     s.openSetting();useGame.setState({units:{...s.units,'battery-basic':[{id:'starter-battery',seconds:batteryCapacity('battery-basic')}]}});
-    const before=useGame.getState().units['motor-stock'][0].seconds;useGame.getState().breakIn();assert.equal(useGame.getState().units['motor-stock'][0].seconds,before);
+    const before=useGame.getState().units['motor-stock'][0].seconds;useGame.getState().breakIn();assert.equal(useGame.getState().units['motor-stock'][0].seconds,before+30);assert.equal(useGame.getState().units['battery-basic'][0].seconds,batteryCapacity('battery-basic'));
   }finally{useGame.setState(original);}
 });

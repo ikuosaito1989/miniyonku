@@ -45,7 +45,7 @@ const definitions: PartDefinition[] = [
   {id:'chassis-light',category:'chassis',name:'K1 ライト',price:1000,description:'肉抜きで軽量化。加速重視の設計。',specs:{weight:16,efficiency:1.02,stability:0.97},performance:'16 g / 駆動効率 ×1.02 / 安定性 ×0.97'},
   {id:'chassis-low',category:'chassis',name:'K2 ローセンター',price:1100,description:'低重心でコーナーの安定性を高める。',specs:{weight:23,efficiency:0.98,stability:1.08},performance:'23 g / 駆動効率 ×0.98 / 安定性 ×1.08'},
   {id:'battery-basic',category:'battery',name:'ベーシックセル',price:150,description:'出力は控えめだが軽い入門用電池2本。',specs:{weight:40,power:1,endurance:90},performance:'2本 40 g / 出力 ×1.00 / 持続係数90秒'},
-  {id:'battery-recharge',category:'battery',name:'リチャージセル',price:0,description:'作業台で無料交換できる救済用の充電電池2本。残量は減らず、交換・充電の費用も不要。通常電池より出力が少し弱い。非売品。',specs:{weight:40,power:.95,endurance:90,consumption:0},performance:'2本 40 g / 出力 ×0.95 / 残量100%固定・充電不要 / 非売品'},
+  {id:'battery-recharge',category:'battery',name:'リチウムセル',price:0,description:'作業台で無料交換できる救済用のリチウム電池2本。残量は減らず、交換・充電の費用も不要。通常電池より出力が少し弱い。非売品。',specs:{weight:40,power:.95,endurance:90,consumption:0},performance:'2本 40 g / 出力 ×0.95 / 残量100%固定・充電不要 / 非売品'},
   {id:'battery-power',category:'battery',name:'スパークセル',price:450,description:'高出力の短距離向け電池2本。後半の電圧低下に注意。',specs:{weight:45,power:1.12,endurance:55},performance:'2本 45 g / 出力 ×1.12 / 持続係数55秒'},
   {id:'battery-endurance',category:'battery',name:'ロングランセル',price:650,description:'出力低下の緩やかな長距離向け電池2本。',specs:{weight:43,power:1.02,endurance:180},performance:'2本 43 g / 出力 ×1.02 / 持続係数180秒'},
   {id:'wheel-basic',category:'wheel',name:'スタンダード5スポーク',price:250,description:'タイヤとは別に交換するホイール4本セット。',specs:{weight:6,diameter:17,cornerDrag:1},performance:'4本 6 g / リム径17 mm / コーナー抵抗 ×1.00'},
