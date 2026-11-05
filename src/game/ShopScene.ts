@@ -1,3 +1,4 @@
+import {towaEscortLocation,towaEscortSpawn} from './towaEscort';
 import {koyaEscortActive,koyaEscortLocation,koyaEscortSpawn,koyaVenueSpot,escortWalk,townEscortWalks} from './koyaEscort';
 import {hiddenMechanicSpot,mechanicManName} from '../data/hiddenMechanic';
 import {mechanicManDrawing} from './MechanicManArt';
@@ -116,6 +117,7 @@ export class ShopScene extends Phaser.Scene {
       for(const npc of officialPeopleFor(useGame.getState().location)){
         const person=this.person(npc.x,npc.y,npc.kind,npc.name);
         if(npc.id==='rei'||npc.id==='gaku'){(person.list[1] as Phaser.GameObjects.Image).setTexture(this.arrivalTexture(npc.id,'down',0));}
+        if(npc.id==='jin'&&useGame.getState().location==='stadium-10')this.escortGuide=person;
         if(npc.id==='go'||npc.id==='riku'||npc.id==='jin'||npc.id==='koya'){
           const key=`venue-${npc.id}-down`;
           if(!this.textures.exists(key)){
@@ -176,7 +178,7 @@ export class ShopScene extends Phaser.Scene {
       const shop=currentShop(useGame.getState().location),obstacle=timeBoardObstacle(shop.id);
       this.solids.push(new Phaser.Geom.Rectangle(obstacle.x,obstacle.y,obstacle.width,obstacle.height));this.drawTimeBoard();
     }
-    const spawn=koyaEscortActive(useGame.getState().koyaEscortStep)?koyaEscortSpawn(useGame.getState().koyaEscortStep):useGame.getState().openingActive?openingSpawn(openingIndex(useGame.getState())):this.isTown?townSpawn(useGame.getState().townReturnVenue??useGame.getState().lastShop):this.isOfficial?officialVenue.spawn:room.spawn;
+    const spawn=koyaEscortActive(useGame.getState().towaEscortStep)?towaEscortSpawn(useGame.getState().towaEscortStep):koyaEscortActive(useGame.getState().koyaEscortStep)?koyaEscortSpawn(useGame.getState().koyaEscortStep):useGame.getState().openingActive?openingSpawn(openingIndex(useGame.getState())):this.isTown?townSpawn(useGame.getState().townReturnVenue??useGame.getState().lastShop):this.isOfficial?officialVenue.spawn:room.spawn;
     this.player=this.person(spawn.x,spawn.y,'player');
     if(useGame.getState().location==='stadium-9'){
       this.escortGuide=this.person(koyaVenueSpot.x,koyaVenueSpot.y,'rival');
@@ -318,7 +320,7 @@ export class ShopScene extends Phaser.Scene {
   private arrivalTexture(kind:string,facing:Facing,frame:number){
     const key=`arrival-${kind}-${facing}-${frame}`;
     if(!this.textures.exists(key)){
-      const drawing=kind==='doctor'?doctorDrawing(facing,frame):kind==='villain'?challengerDrawing(facing,frame):legendPersonDrawing(kind==='koya'?'koya':kind==='gaku'?'gaku':'rei',facing,frame);
+      const drawing=kind==='doctor'?doctorDrawing(facing,frame):kind==='villain'?challengerDrawing(facing,frame):legendPersonDrawing(kind==='towa'?'towa':kind==='koya'?'koya':kind==='gaku'?'gaku':'rei',facing,frame);
       createPersonTexture(this,key,drawing);
     }
     return key;
@@ -363,8 +365,8 @@ export class ShopScene extends Phaser.Scene {
     }
   }
   private updateKoyaEscort(delta:number){
-    const state=useGame.getState(),step=state.koyaEscortStep;
-    if(koyaEscortLocation(step)!==state.location)return;
+    const state=useGame.getState(),towa=state.overlay==='towa-escort',step=towa?state.towaEscortStep:state.koyaEscortStep,kind=towa?'towa':'koya',advance=towa?state.advanceTowaEscort:state.advanceKoyaEscort;
+    if((towa?towaEscortLocation(step):koyaEscortLocation(step))!==state.location)return;
     if(this.escortPhase!==step){
       this.escortPhase=step;this.resetKeys();this.cancelRoute();this.gesture.reset();this.pendingTarget=null;
       this.escortArrival=null;this.escortPlayerWalk=null;this.escortGuideWalk=null;
@@ -375,18 +377,18 @@ export class ShopScene extends Phaser.Scene {
         this.escortGuideWalk=escortWalk({x:this.escortGuide.x,y:this.escortGuide.y},{x:480,y:581},this.solids);
         this.escortPlayerWalk=escortWalk({x:this.player.x,y:this.player.y},{x:480,y:557},this.solids);
       }
-      if(step===4){const walks=townEscortWalks(this.solids);this.escortPlayerWalk=walks.player;this.escortGuideWalk=walks.guide;}
-      if(step===5){this.player.setPosition(480,535).setDepth(535);this.escortGuide.setPosition(koyaVenueSpot.x,koyaVenueSpot.y).setDepth(koyaVenueSpot.y);}
-      (this.escortGuide.list[1] as Phaser.GameObjects.Image).setTexture(this.arrivalTexture('koya','down',0));
+      if(step===4){const walks=townEscortWalks(this.solids,towa?'yuunagi':'wakaba',towa?'stadium-10':'stadium-9');this.escortPlayerWalk=walks.player;this.escortGuideWalk=walks.guide;}
+      if(step===5){this.player.setPosition(480,535).setDepth(535);if(!towa)this.escortGuide.setPosition(koyaVenueSpot.x,koyaVenueSpot.y).setDepth(koyaVenueSpot.y);}
+      (this.escortGuide.list[1] as Phaser.GameObjects.Image).setTexture(this.arrivalTexture(kind,'down',0));
       this.playerSprite.setTexture('person-player-up-0');
     }
     if(document.hidden)return;
     if(this.escortArrival){
       const before=this.escortArrival;this.escortArrival=stepArrivalActor(before,{x:this.player.x,y:this.player.y},delta);
       const actor=this.escortArrival;this.escortGuide!.setPosition(actor.position.x,actor.position.y).setDepth(actor.position.y);
-      (this.escortGuide!.list[1] as Phaser.GameObjects.Image).setTexture(this.arrivalTexture('koya',actor.facing,actor.arrived?0:Math.floor(actor.walkTime/150)%4));
+      (this.escortGuide!.list[1] as Phaser.GameObjects.Image).setTexture(this.arrivalTexture(kind,actor.facing,actor.arrived?0:Math.floor(actor.walkTime/150)%4));
       if(Math.floor(before.distance/18)<Math.floor(actor.distance/18))this.playEventSound('step');
-      if(actor.arrived){this.escortArrival=null;state.advanceKoyaEscort(step);}return;
+      if(actor.arrived){this.escortArrival=null;advance(step);}return;
     }
     if(this.escortPlayerWalk&&this.escortGuideWalk){
       const beat=Math.floor(this.escortPlayerWalk.walkTime/260),speed=step===4?walkingSpeed.town:walkingSpeed.interior;
@@ -396,8 +398,8 @@ export class ShopScene extends Phaser.Scene {
       this.player.setPosition(hero.position.x,hero.position.y).setDepth(hero.position.y);
       this.playerSprite.setTexture(`person-player-${hero.facing}-${hero.done?0:Math.floor(hero.walkTime/150)%4}`);
       this.escortGuide!.setPosition(guide.position.x,guide.position.y).setDepth(guide.position.y);
-      (this.escortGuide!.list[1] as Phaser.GameObjects.Image).setTexture(this.arrivalTexture('koya',guide.facing,guide.done?0:Math.floor(guide.walkTime/150)%4));
-      if(hero.done&&guide.done)state.advanceKoyaEscort(step);
+      (this.escortGuide!.list[1] as Phaser.GameObjects.Image).setTexture(this.arrivalTexture(kind,guide.facing,guide.done?0:Math.floor(guide.walkTime/150)%4));
+      if(hero.done&&guide.done)advance(step);
     }
   }
   private updateOpening(delta:number){
@@ -424,7 +426,8 @@ export class ShopScene extends Phaser.Scene {
     if(useGame.getState().openingActive){this.updateOpening(delta);return;}
     this.openingPhase=-1;this.openingWalk=null;
     if(!useGame.getState().overlay&&koyaEscortActive(useGame.getState().koyaEscortStep))useGame.getState().resumeKoyaEscort();
-    if(useGame.getState().overlay==='escort'){this.updateKoyaEscort(delta);return;}
+    if(!useGame.getState().overlay&&koyaEscortActive(useGame.getState().towaEscortStep))useGame.getState().resumeTowaEscort();
+    if(useGame.getState().overlay==='escort'||useGame.getState().overlay==='towa-escort'){this.updateKoyaEscort(delta);return;}
     this.syncChallenger();this.syncDoctor();
     const state=useGame.getState();
     if(this.timeBoardContainer&&this.timeBoardHistory!==state.timeHistory)this.drawTimeBoard();

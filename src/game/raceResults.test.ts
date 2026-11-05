@@ -119,6 +119,6 @@ test('公式戦のコースアウト終了は敗退を確定し、前のセー�
   race.phase='running';race.playerStartOffset=0;race.time=10;race.racers=race.racers.map(r=>({...r,driving:{...r.driving,status:r.id==='player'?'out':'running',time:10,distance:r.id==='player'?10:length-.01,speed:r.id==='player'?0:2}}));
   const result=completeRaceAfterPlayerFinish(race);assert.equal(result.phase,'finished');assert.equal(racePrize(result),0);useGame.getState().settleRace(attempt,result);useGame.getState().settleRace(attempt,result);
   assert.equal(useGame.getState().gameOver,true);assert.equal(useGame.getState().grandprixCleared,false);assert.equal(useGame.getState().money,4321);assert.equal(useGame.getState().finalCup.results[0].entries.find(e=>e.id==='player')?.finished,false);
-  useGame.getState().close();assert.equal(useGame.getState().overlay,'game-over');useGame.getState().retryFromSave();assert.deepEqual(snapshotGame(useGame.getState()),baseline);
+  useGame.getState().close();assert.equal(useGame.getState().overlay,'podium');useGame.getState().close();assert.equal(useGame.getState().overlay,'game-over');useGame.getState().retryFromSave();assert.deepEqual(snapshotGame(useGame.getState()),baseline);
  }finally{useGame.setState(before,true);}
 });

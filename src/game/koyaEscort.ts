@@ -1,4 +1,4 @@
-import {townSpawn,townWalkBounds,type WorldLocation} from '../data/world';
+import {townSpawn,townWalkBounds,type ShopId,type WorldLocation} from '../data/world';
 import {findWalkingPath,walkBounds,type Obstacle,type Point} from './navigation';
 import {stepOpeningWalk,type OpeningWalk} from './opening';
 export const KOYA_ESCORT_END=6;
@@ -15,8 +15,8 @@ export function escortWalk(from:Point,to:Point,obstacles:Obstacle[],town=false):
  return walk(from,route);
 }
 // A shared path keeps the guide close even when the route turns around buildings.
-export function townEscortWalks(obstacles:Obstacle[]):{player:OpeningWalk;guide:OpeningWalk}{
- const start=townSpawn('wakaba'),door=townSpawn('stadium-9'),full=escortWalk(start,{x:door.x,y:door.y-20},obstacles,true);
+export function townEscortWalks(obstacles:Obstacle[],source:ShopId='wakaba',venue:'stadium-9'|'stadium-10'='stadium-9'):{player:OpeningWalk;guide:OpeningWalk}{
+ const start=townSpawn(source),door=townSpawn(venue),full=escortWalk(start,{x:door.x,y:door.y-20},obstacles,true);
  const guide=stepOpeningWalk(full,40,800);
  const points=[start,...full.route];let remaining=24,cut=points.length-1;
  while(cut>0){const a=points[cut-1],b=points[cut],length=Math.hypot(b.x-a.x,b.y-a.y);if(length>=remaining){points[cut]={x:b.x+(a.x-b.x)*remaining/length,y:b.y+(a.y-b.y)*remaining/length};break;}remaining-=length;cut--;}

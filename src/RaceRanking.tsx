@@ -4,12 +4,12 @@ import { challenger } from './data/challenger';
 import { rankRacers, type RaceState } from './game/race';
 import { challengerDrawing, personDrawing, type PersonKind } from './game/PeopleArt';
 
-function RacerPortrait({id,color}:{id:string;color:number}){
+export function RacerPortrait({id,color,facing='right'}:{id:string;color:number;facing?:'down'|'right'}){
   const kind:PersonKind=id==='player'?'player':id==='nagi'||id===challenger.id?'rival':id==='momo'?'guide':'mechanic';
   const jacket=`#${color.toString(16).padStart(6,'0')}`;
   return <svg className="ranking-portrait" viewBox="0 0 60 82" aria-hidden="true">
     <ellipse cx="30" cy="79" rx="18" ry="2" fill="#050b17" opacity=".35"/>
-    {(id.startsWith('legend-')?legendPersonDrawing(id.slice(7) as LegendPerson,'right'):id==='jin'?legendPersonDrawing('towa','right'):id===challenger.id?challengerDrawing('right'):id==='riku'?npcDrawing('offroader','right'):id==='nagi'?npcDrawing('rival','right'):id==='momo'?npcDrawing('momo','right'):id==='sou'||id==='ren'?npcDrawing(id,'right'):personDrawing(kind,'right',0)).map((shape,i)=>{
+    {(id.startsWith('legend-')?legendPersonDrawing(id.slice(7) as LegendPerson,facing):id==='jin'?legendPersonDrawing('towa',facing):id===challenger.id?challengerDrawing(facing):id==='riku'?npcDrawing('offroader',facing):id==='nagi'?npcDrawing('rival',facing):id==='momo'?npcDrawing('momo',facing):id==='sou'||id==='ren'?npcDrawing(id,facing):personDrawing(kind,facing,0)).map((shape,i)=>{
       const fill=kind==='mechanic'&&shape.color==='#317d91'?jacket:shape.color;
       return shape.kind==='rect'
         ?<rect key={i} x={shape.x} y={shape.y} width={shape.w} height={shape.h} fill={fill} opacity={shape.alpha}/>

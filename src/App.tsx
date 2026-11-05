@@ -1,3 +1,4 @@
+import {PodiumCeremony} from './PodiumCeremony';
 import {KoyaEscort} from './KoyaEscort';
 import {TutorialGuide} from './TutorialGuide';
 import {tutorialActive,TUTORIAL_PART} from './game/tutorial';
@@ -67,12 +68,14 @@ export function App(){
   },[]);
   return <main>
     <GameAudio/>
-    {!started ? <TitleScreen onStart={()=>{useGame.getState().startOpening();useGame.getState().resumeTutorial();useGame.getState().resumeKoyaEscort();setStarted(true);}}/> : <section className="game-shell" aria-label="ゲーム画面">
+    {!started ? <TitleScreen onStart={()=>{useGame.getState().startOpening();useGame.getState().resumeTutorial();useGame.getState().resumeKoyaEscort();useGame.getState().resumeTowaEscort();setStarted(true);}}/> : <section className="game-shell" aria-label="ゲーム画面">
       <div className="stage"><ShopWorld/>
         {game.overlay===null&&<div className="world-toolbar"><button className="game-settings-open" onClick={game.openSettings}>設定</button>{!tutorialActive(game.tutorialStage)&&<MissionGuide/>}<AudioControls floating/></div>}
         <SaveWarning/>
         {game.openingActive&&<OpeningScene/>}
         {game.overlay==='escort'&&<KoyaEscort/>}
+        {game.overlay==='towa-escort'&&<KoyaEscort towa/>}
+        {game.overlay==='podium'&&<PodiumCeremony/>}
         <TutorialGuide context="world"/>
         {game.loginBonusReceived&&<aside className="login-bonus" role="status"><span>おかえりなさい！ ログインボーナス 500円を受け取りました。</span><button aria-label="ログインボーナスのお知らせを閉じる" onClick={()=>useGame.setState({loginBonusReceived:false})}>閉じる</button></aside>}
         <TownMap/>
