@@ -1,3 +1,6 @@
+import {syncMechanicMotor} from './mechanicMotor';
+import {mechanicMotorFor,mechanicMotorStages} from '../data/mechanicMotor';
+import {mechanicManName} from '../data/hiddenMechanic';
 import {decodeBodyPaint} from '../data/bodyPaint';
 import {legacyRetrySnapshot} from './retrySave';
 import {snapshotGame,type SavedGame} from './saveData';
@@ -54,7 +57,7 @@ export interface GameState extends Wallet {
   legendEventSeen:boolean;legendEventPending:boolean;legendDebriefPending:boolean;legendChallengeActive:boolean;dialogueStage:DialogueStage;startLegendChallenge:()=>void;
   raceSeed:number;
   equipment: Equipment;
-  proficiencyPoints:number;
+  proficiencyPoints:number;talkMechanicMan:()=>void;
   openProficiency:()=>void;
   openLegends:()=>void;
   units:UnitInventory; selectedUnits:Record<'motor'|'battery',string>; unitSerial:number; usageSeconds:number;
@@ -174,13 +177,20 @@ export const useGame = create<GameState>((set) => ({
   money: INITIAL_MONEY, inventory: createStarterInventory(), equipment: {...starterEquipment}, overlay: null, speaker: '', dialogue: '', shopAfter: false, notice: '', nearby: '',
   raceAttempt: 0, settledAttempt: -1, lastPrize: 0,
   proficiencyPoints:0,
+  talkMechanicMan:()=>set(s=>{
+   if(s.location!=='town'||s.overlay||s.openingActive)return {};
+   const update=syncMechanicMotor(s,true),stage=mechanicMotorFor(s.proficiencyPoints),next=mechanicMotorStages[stage.level];
+   const owned=Object.keys(s.inventory).some(id=>id.startsWith('motor-mechanic-')&&s.inventory[id]>0);
+   return {...update,overlay:'dialogue',speaker:mechanicManName,shopAfter:false,dialogueStage:'none',dialogue:`よくこの路地を見つけたな。私はメカニックマン。${owned?'贈ったモーターの調子はどうだ？':'君に、メカニック・リンクを一つ贈ろう。模型店の作業台で装着できるぞ。'} 今の君の熟練度は${Math.floor(s.proficiencyPoints)}pt。モーターはLv.${stage.level}、${stage.rpm.toLocaleString('en-US')}rpm・トルク${stage.torque.toFixed(2)}。消耗せず、慣らしもいらない。熟練度が上がれば、私のところに戻らなくても自動で強化される。${next?`次は${next.points}ptだ。`:'熟練度ランキング単独1位、おめでとう！ 最高段階の力を託そう。'} 最高段階は、レジェンドも含めた熟練度ランキングの単独1位になったときだけだ。腕を磨いてこい！`};
+  }),
   openProficiency:()=>set({overlay:'proficiency',shopAfter:false,notice:''}),
   openLegends:()=>set({overlay:'legends',shopAfter:false,notice:''}),
   units:createStarterUnits(),selectedUnits:{motor:'starter-motor',battery:'starter-battery'},unitSerial:0,usageSeconds:0,
   selectUnit:(slot,id)=>set(s=>s.overlay==='race'||!s.units[s.equipment[slot]]?.some(u=>u.id===id)?s:{selectedUnits:{...s.selectedUnits,[slot]:id}}),
   breakIn:()=>set(s=>{
     if(s.overlay!=='setting')return s;
-    if(parts.find(p=>p.id===s.equipment.motor)?.specs.wear===0)return {notice:'リユースモーターは消耗せず性能一定です。慣らしは不要です。'};
+    const motorPart=parts.find(p=>p.id===s.equipment.motor);
+    if(motorPart?.specs.wear===0)return {notice:`${motorPart.name}は消耗しません。慣らしは不要です。`};
     const duration=30;
     const units={...s.units,[s.equipment.motor]:s.units[s.equipment.motor].map(u=>u.id===s.selectedUnits.motor?{...u,seconds:u.seconds+duration}:u)};
     const motor=s.units[s.equipment.motor]?.find(u=>u.id===s.selectedUnits.motor);
@@ -265,3 +275,9 @@ function tutorialStart(state:GameState,practice:boolean):Partial<GameState>{
  if(practice){const baseline=snapshotGame(state);return {...useGame.getInitialState(),openingStep:OPENING_END,openingActive:false,openingTour:null,tutorialReturn:baseline,retryCheckpoint:state.retryCheckpoint,tutorialStage:'motor',location:'komorebi',lastShop:'komorebi',overlay:'setting'};}
  return {tutorialStage:'motor',openingActive:false,openingTour:null,location:'komorebi',lastShop:'komorebi',overlay:'setting',shopAfter:false};
 }
+
+// 熟練度の獲得、保存復元、練習終了、再開にも同じ成長規則を適用する。
+useGame.subscribe((state,previous)=>{
+ if(state.overlay==='race'||state.proficiencyPoints===previous.proficiencyPoints&&state.overlay===previous.overlay)return;
+ const update=syncMechanicMotor(state);if(update)useGame.setState(update);
+});

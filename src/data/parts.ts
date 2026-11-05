@@ -1,3 +1,4 @@
+import {mechanicMotorParts} from './mechanicMotor';
 import {zenithParts} from './zenithParts';
 import { partLevels } from './progression';
 import { bodies } from './bodies';
@@ -6,6 +7,7 @@ export const categories: Record<Category, string> = { body:'ボディ', chassis:
 export interface Part { id: string; level:number; category: Category; name: string; price: number; description: string; specs: Record<string, number>; performance: string }
 type PartDefinition=Omit<Part,'level'>;
 const definitions: PartDefinition[] = [
+  ...mechanicMotorParts,
   ...zenithParts,
   {id:'accessory-slide-rear',category:'accessory',name:'リアウイング・スライドダンパー',price:2600,description:'ゆうなぎの新作。ウイング下の左右スライドステーへリヤローラーを取り付ける補助ユニット。横方向の衝撃と着地の揺れを逃がす。ローラーはリヤ欄で別に選択する。',specs:{weight:5,stability:1.2,efficiency:1,damping:.38,cornerDrag:.92},performance:'5 g / 安定性 ×1.20 / 制振38% / 旋回抵抗 ×0.92'},
   {id:'roller-ceramic',category:'roller',name:'セラミック・エアロベアリングローラー',price:1900,description:'ゆうなぎの新作。軽量な低摩擦リングとセラミック軸受けで、スパイラルでも速度を残す。リヤへ装着すればスライドダンパーの両端にも取り付けられる。1セットで前・中・後へ設定可能。',specs:{friction:.035,weight:6,stability:1.08,damping:.04},performance:'摩擦0.035 / 6 g / 安定性 ×1.08 / 制振4%'},

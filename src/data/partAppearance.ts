@@ -1,9 +1,11 @@
+import {mechanicMotorStages} from './mechanicMotor';
 import {zenithParts} from './zenithParts';
 import type { Part } from './parts';
 import { bodies } from './bodies';
 
 export interface PartAppearance { color:string; accent:string; detail:number; mark:string }
 export const partAppearances:Record<string,PartAppearance>={
+ ...Object.fromEntries(mechanicMotorStages.map((stage,index)=>[stage.id,{color:index===8?'#6c4c92':'#315d78',accent:index===8?'#f4d77d':'#b9d4d5',detail:6,mark:`LINK ${stage.level}`} ])),
   ...Object.fromEntries(zenithParts.map((p,i)=>[p.id,{color:i%3?'#42577b':'#665078',accent:'#e6cb79',detail:p.category==='wheel'?8:6,mark:p.id.includes('slide')?'CROWN SLIDE':p.id.includes('motor')?'ZENITH':'CROWN'}])),
   'accessory-slide-rear':{color:'#3d4559',accent:'#c6a4f0',detail:6,mark:'REAR SLIDE'},
   'roller-ceramic':{color:'#d1dce4',accent:'#9b7bd3',detail:6,mark:'CERAMIC'},

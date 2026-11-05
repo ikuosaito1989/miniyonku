@@ -26,7 +26,7 @@ export function SettingView(){
   const freePart=category==='motor'?'motor-rescue':category==='battery'?'battery-recharge':null;
   const [cursor,setCursor]=useState<string|null>(null);
   const current=parts.find(p=>p.id===equipment[slot])!;
-  const selected=parts.find(p=>p.id===cursor&&p.category===category)??current;
+  const selected=parts.find(p=>p.id===cursor&&p.category===category&&(inventory[p.id]>0||p.id===freePart))??current;
   const condition=equippedCondition(equipment,units,selectedUnits);
   const performance=machinePerformance(equipment,condition);
   const previewEquipment=equipPart(equipment,selected.id===freePart?{...inventory,[selected.id]:1}:inventory,selected.id,slot);

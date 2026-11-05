@@ -1,3 +1,4 @@
+import mechanicManPortrait from './assets/portraits/mechanic-man-pop.webp';
 import {NpcPortrait} from './NpcPortrait';
 import {npcAppearanceId,npcAppearances,type NpcAppearanceId} from './data/npcAppearance';
 import {SeniorPortrait} from './SeniorPortrait';
@@ -49,7 +50,7 @@ export function DialogueView(){
   return <div className="dialogue-layer">
     <section ref={panel} className="conversation" role="dialog" aria-modal="true" aria-labelledby="conversation-speaker" aria-describedby="conversation-message">
       <div className="conversation-portrait" aria-hidden="true">
-        {appearance?<NpcPortrait id={appearance}/>:id&&id in npcAppearances?<NpcPortrait id={id as NpcAppearanceId}/>:id==='senior'?<SeniorPortrait/>:id==='doctor'?<DoctorPortrait/>:id==='villain'?<ChallengerPortrait/>:id?<img src={portraits[id]} alt="" decoding="async"/>:<div className="conversation-object"><span>{book?'本':'調'}</span><small>{book?'SETTING NOTES':'KOMOREBI MODEL'}</small></div>}
+        {speaker==='メカニックマン'?<img src={mechanicManPortrait} alt="" decoding="async"/>:appearance?<NpcPortrait id={appearance}/>:id&&id in npcAppearances?<NpcPortrait id={id as NpcAppearanceId}/>:id==='senior'?<SeniorPortrait/>:id==='doctor'?<DoctorPortrait/>:id==='villain'?<ChallengerPortrait/>:id?<img src={portraits[id]} alt="" decoding="async"/>:<div className="conversation-object"><span>{book?'本':'調'}</span><small>{book?'SETTING NOTES':'KOMOREBI MODEL'}</small></div>}
       </div>
       <div className="conversation-body">
         <header><div>{person&&<p className="conversation-role">{person.role}</p>}<h2 id="conversation-speaker">{person?.name??speaker}</h2></div><button className="conversation-close" onClick={close} aria-label="会話を閉じる">閉じる</button></header>

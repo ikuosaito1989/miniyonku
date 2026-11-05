@@ -1,3 +1,4 @@
+import {isMechanicMotor,mechanicMotorFor} from '../data/mechanicMotor';
 import {decodeBodyPaint} from '../data/bodyPaint';
 import {decodeTutorialStage} from './tutorial';
 import {OPENING_END} from './opening';
@@ -52,6 +53,8 @@ export function decodeSave(value:unknown):SaveData{
     else counts[part.id]=(counts[part.id]??0)+1;
     if(counts[part.id]>(inventory[part.id]??0))throw new Error('未所持のパーツを装備しています。');
   }
+  const giftIds=Object.keys(inventory).filter(id=>isMechanicMotor(id)&&inventory[id]>0);
+  if(giftIds.length>1||giftIds.some(id=>Number(id.split('-').at(-1))>mechanicMotorFor(number(game.proficiencyPoints)).level-1))throw new Error('成長モーターの熟練度が不正です。');
   const units:UnitInventory={},ids=new Set<string>();let maxSerial=0;
   for(const [id,list]of Object.entries(object(game.units))){
     const part=byId.get(id);

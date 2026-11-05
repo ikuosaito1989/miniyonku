@@ -1,3 +1,5 @@
+import {hiddenMechanicSpot,mechanicManName} from '../data/hiddenMechanic';
+import {mechanicManDrawing} from './MechanicManArt';
 import {townPeople,townPersonAdvice} from '../data/townPeople';
 import {tutorialActive} from './tutorial';
 import {openingIndex,openingSpawn,openingIsWalk,openingLocation,createOpeningWalk,stepOpeningWalk,type OpeningWalk} from './opening';
@@ -41,7 +43,7 @@ import { drawTown } from './TownArt';
 import { drawShopDetails } from './WorldDetailArt';
 import { getCircuitTrack } from '../data/circuit';
 
-interface ShopTarget {x:number;y:number;w:number;h:number;label:string;speaker:string;shopAfter:boolean;text:string;kind?:Fixture['kind']|'town-person'|'time-records'|'exit'|'venue'|'challenger'|'legend-challenger'|'official-speed'|'official-dirt'|'official-reception'|'official-technical'|'official-final'|'official-zenith';venueId?:string}
+interface ShopTarget {x:number;y:number;w:number;h:number;label:string;speaker:string;shopAfter:boolean;text:string;kind?:Fixture['kind']|'mechanic-man'|'town-person'|'time-records'|'exit'|'venue'|'challenger'|'legend-challenger'|'official-speed'|'official-dirt'|'official-reception'|'official-technical'|'official-final'|'official-zenith';venueId?:string}
 export class ShopScene extends Phaser.Scene {
   private gesture=createShopGesture();
   private screenPoint(pointer:Phaser.Input.Pointer){return {x:pointer.x*this.scale.displaySize.width/this.scale.width,y:pointer.y*this.scale.displaySize.height/this.scale.height};}
@@ -67,7 +69,7 @@ export class ShopScene extends Phaser.Scene {
   private eventAudio=new EventAudio();
   private isTown=false;
   private approach(target:ShopTarget){
-    if(this.isTown)return {x:target.x+target.w/2,y:target.y+target.h+(target.kind==='town-person'?20:28)};
+    if(this.isTown)return {x:target.x+target.w/2,y:target.y+target.h+(target.kind==='town-person'||target.kind==='mechanic-man'?20:28)};
     return {x:target.x+target.w/2,y:target.y+target.h/2};
   }
   private get bounds(){return this.isTown?townWalkBounds:walkBounds;}
@@ -94,6 +96,10 @@ export class ShopScene extends Phaser.Scene {
     if(this.isTown){
       drawTown(this,useGame.getState());
       this.solids=[...townVenues,...townBlocks].map(v=>new Phaser.Geom.Rectangle(v.x,v.y,v.w,v.h));
+      const hidden=this.person(hiddenMechanicSpot.x,hiddenMechanicSpot.y,'owner');
+      const hiddenKey='mechanic-man-down';if(!this.textures.exists(hiddenKey))createPersonTexture(this,hiddenKey,mechanicManDrawing());
+      (hidden.list[1] as Phaser.GameObjects.Image).setTexture(hiddenKey);
+      this.solids.push(new Phaser.Geom.Rectangle(hiddenMechanicSpot.x-12,hiddenMechanicSpot.y-9,24,21));
       for(const npc of townPeople){
         this.person(npc.x,npc.y,'rival',npc.name);
         this.solids.push(new Phaser.Geom.Rectangle(npc.x-12,npc.y-9,24,21));
@@ -425,6 +431,7 @@ export class ShopScene extends Phaser.Scene {
   }
   private getTargets():ShopTarget[]{
     if(this.isTown)return [
+      {x:hiddenMechanicSpot.x-16,y:hiddenMechanicSpot.y-42,w:32,h:54,label:mechanicManName,speaker:mechanicManName,shopAfter:false,text:'……よく見つけたな。',kind:'mechanic-man'},
       ...townVenues.map(v=>({x:v.x,y:v.y,w:v.w,h:v.h,label:v.name,speaker:v.name,shopAfter:false,text:venueMessage(v),kind:'venue' as const,venueId:v.id})),
       ...townPeople.map(p=>({x:p.x-16,y:p.y-42,w:32,h:54,label:p.name,speaker:p.name,shopAfter:false,text:townPersonAdvice(p,useGame.getState()),kind:'town-person' as const})),
     ];
@@ -486,7 +493,8 @@ export class ShopScene extends Phaser.Scene {
 
   private interactWith(target:ShopTarget){
       this.gesture.reset();
-      if(target.kind==='town-person')useGame.getState().talk(target.speaker,target.text);
+      if(target.kind==='mechanic-man')useGame.getState().talkMechanicMan();
+      else if(target.kind==='town-person')useGame.getState().talk(target.speaker,target.text);
       else if(target.kind==='official-speed'||target.kind==='official-dirt'||target.kind==='official-technical'||target.kind==='official-final'||target.kind==='official-zenith')useGame.getState().openOfficialRace(target.kind==='official-zenith'?'zenith':target.kind==='official-final'?'final':target.kind==='official-technical'?'technical':target.kind==='official-speed'?'speed':'dirt');
       else if(target.kind==='official-reception'||this.isOfficial&&target.speaker==='大会受付係')useGame.getState().openOfficialRace();
       else if(target.speaker==='森野 陸'){if(this.isOfficial)useGame.getState().talk(target.speaker,target.text);else useGame.getState().openOfficialRace();}

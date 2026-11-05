@@ -1,10 +1,12 @@
 import {zenithParts} from './zenithParts';
 import type { Part } from './parts';
-export function partGuidance(part:Part):{use:string;tradeoff:string}{
+export function partGuidance(part:Part):{
+use:string;tradeoff:string}{
+ if(part.id.startsWith('motor-mechanic-'))return {use:'メカニックマンからの専用モーター。熟練度の上昇で自動強化され、外している間も成長します。装着中ならレースを終えて戻ったときに反映されます。',tradeoff:'消耗なし・慣らし不要。最高段階はレジェンドを含む熟練度ランキング単独1位で解放。モーター以外のタイヤ・ギア・車体のセッティングも必要です。'};
  const s=part.specs;
  if(zenithParts.some(p=>p.id===part.id)){
  const use=part.category==='motor'?(part.id==='motor-tempest'?'あかつきと天頂決戦の高速型。5.2:1ギア・デューンシャーシ・アペックスタイヤで縦ループの力と砂地の接地を補います。':part.id==='motor-titan'?'あかつきと天頂決戦の高トルク型。4:1ギア・エクリプスシャーシ・ハイブリッドタイヤなどで高速も両立できます。':'あかつきと天頂決戦の万能型。4.2:1ギア・ホライゾンシャーシ・ハイブリッドタイヤを軸に、縦横ループ・砂地・着地を両立します。'):part.category==='roller'?'前・中・後へ1セットで設定できます。クラウンスライドのローラーはリヤ欄で選び、速度を残す前中と姿勢を支える後を使い分けます。':part.category==='accessory'?'その他①〜③の異なる種類を組み合わせ、縦横回転後の姿勢・砂地の接地・ジャンプの着地を支えます。スライドのローラーはリヤ欄で選びます。':'あかつきの試走と最長の天頂決戦向け。'+part.description;
- const tradeoff=part.category==='motor'?'新品は約60秒の慣らしが必要。長距離レースでは摩耗も進みます。単品の出力だけでなく、ギア・砂地の追従・着地の制振も整えましょう。':part.category==='battery'?'走行と慣らしで消耗します。同じ種類を再購入すると1個の新品へ交換します。':part.category==='accessory'?'同じ種類は1個まで、重複装着できません。重量も加算されるので3枠の配分を考えましょう。':'単品で全難所を解決するものではありません。高速型・トルク型・悪路型の役割と重量を比べ、他のパーツと組み合わせましょう。';
+ const tradeoff=part.category==='motor'?'新品は約60秒の慣らしが必要。長距離レースでは摩耗も進みます。単品の出力だけでなく、ギア・砂地の追従・着地の制振も整えましょう。':part.category==='battery'?'走行で消耗します。慣らしでは残量は減りません。同じ種類を再購入すると1個の新品へ交換します。':part.category==='accessory'?'同じ種類は1個まで、重複装着できません。重量も加算されるので3枠の配分を考えましょう。':'単品で全難所を解決するものではありません。高速型・トルク型・悪路型の役割と重量を比べ、他のパーツと組み合わせましょう。';
  return {use,tradeoff};
  }
 
