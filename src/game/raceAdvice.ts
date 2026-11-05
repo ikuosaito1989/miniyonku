@@ -17,6 +17,7 @@ export function reviewRace(race:RaceState):RaceReview|null{
   if(player.driving.stopReason==='jump')notes.push('ジャンプの飛距離が足りず、着地点に届かなかったよ。電池・慣らし・トルクとギア比を確認しよう。');
   else if(player.driving.stopReason==='battery')notes.push('電池切れで止まったのが直接の敗因だよ。');
   else if(player.driving.stopReason==='lapped')notes.push('周回遅れになったよ。加速・最高速とコーナーでの減速を改善しよう。');
+  else if(player.driving.stopReason==='retired')notes.push('先頭のゴール後に走行を終了したため、未完走として記録されたよ。');
   else if(player.driving.status==='out')notes.push('コースアウトしているね。速度だけでなく、タイヤのグリップとシャーシの安定性を見直そう。');
   else if(rank>1){
     const winner=rankRacers(race)[0];

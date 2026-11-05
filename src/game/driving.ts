@@ -6,7 +6,7 @@ import type { TrackSurface } from '../data/surfaces';
 
 export const FIXED_STEP = 1/120;
 export const DIRT_CRAWL_SPEED=.12;
-export interface DrivingState { time: number; distance: number; speed: number; stress: number; status: 'ready'|'running'|'finished'|'out'; stopReason?:'battery'|'lapped'|'jump'|'loop'; flightY?:number;flightVelocity?:number;landings?:number; }
+export interface DrivingState { time: number; distance: number; speed: number; stress: number; status: 'ready'|'running'|'finished'|'out'; stopReason?:'retired'|'battery'|'lapped'|'jump'|'loop'; flightY?:number;flightVelocity?:number;landings?:number; }
 export function machinePerformance(equipment: Equipment, condition:MachineCondition=freshCondition) {
   const get = (category: keyof Equipment) => {
     const part = parts.find(p => p.id === equipment[category] && p.category === equipmentSlots[category].category);

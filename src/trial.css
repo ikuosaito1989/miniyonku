@@ -230,3 +230,8 @@
  .trial.retro-race .ranking-portrait{height:12px;width:10px}
  .trial.retro-race .ranking-name{font-size:8px;line-height:7px}
 }
+
+/* タイムアタックの規定・ベスト・資格は折り返した実際の高さを確保する。 */
+.trial.retro-race.retro-race[data-camera][data-time-trial='true']:not([data-phase='introduction']){grid-template-rows:var(--compact-header) auto minmax(0,1fr) var(--compact-footer)}
+.trial.retro-race .time-trial-target{min-width:0;padding:7px 12px;line-height:1.6;align-content:center}
+.trial.retro-race .time-trial-target>span{max-width:100%;white-space:normal;overflow-wrap:anywhere}

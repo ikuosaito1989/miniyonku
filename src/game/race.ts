@@ -80,11 +80,15 @@ export function stepRace(state:RaceState):RaceState {
 }
 export function canViewRaceResults(state:RaceState){
   const player=state.racers.find(r=>r.id==='player');
-  return player?.driving.status==='finished'||player?.driving.status==='out';
+  return player?.driving.status==='finished'||player?.driving.status==='out'||state.phase==='running'&&state.racers.some(r=>r.driving.status==='finished');
 }
-// ゴール・リタイア後の待ち時間だけを省略。固定刻みでCPUの順位・リタイアも確定する。
+// 先頭ゴール後の終了操作は未完走をDNFで確定。自分の完走・リタイア後はCPUの残りを計算する。
 export function completeRaceAfterPlayerFinish(state:RaceState):RaceState {
-  if(!canViewRaceResults(state))return state;
+  if(state.phase==='finished'||!canViewRaceResults(state))return state;
+  const player=state.racers.find(r=>r.id==='player');
+  // Explicitly ending after the leader finishes freezes every unfinished car as DNF.
+  // Do not simulate a stalled car forward or grant an invented finish time.
+  if(player&&player.driving.status!=='finished'&&state.racers.some(r=>r.driving.status==='finished'))return {...state,phase:'finished',racers:state.racers.map(r=>r.driving.status==='running'||r.driving.status==='ready'?{...r,driving:{...r.driving,status:'out',speed:0,stopReason:'retired'}}:r)};
   let result=state;
   while(result.phase==='running')result=stepRace(result);
   return result;

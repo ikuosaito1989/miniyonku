@@ -24,7 +24,7 @@ export function RaceRanking({race}:{race:RaceState}){
     <span className="ranking-edge ranking-last" aria-hidden="true">{waiting?'出場':'後方'}<span>▶</span></span>
     <ol className="ranking-racers">{rankRacers(race).map((r,i)=>{
       const out=r.driving.status==='out';
-      return <li key={r.id} style={{left:`${(race.racers.length-1-i)*20}%`}} className={`${r.id==='player'?'ranking-player':''} ${out?'ranking-out':''}`} aria-label={`${waiting?'出場':out?'リタイア':`${i+1}位`}：${r.name}${r.id==='player'?'（あなた）':''}${out?(r.driving.stopReason==='lapped'?'、周回遅れ':r.driving.stopReason==='battery'?'、電池切れ':'、コースアウト'):''}`} title={`${r.name} / ${out?'リタイア':waiting?'スタート待機':`${i+1}位`}`}>
+      return <li key={r.id} style={{left:`${(race.racers.length-1-i)*20}%`}} className={`${r.id==='player'?'ranking-player':''} ${out?'ranking-out':''}`} aria-label={`${waiting?'出場':out?'リタイア':`${i+1}位`}：${r.name}${r.id==='player'?'（あなた）':''}${out?(r.driving.stopReason==='retired'?'、未完走':r.driving.stopReason==='lapped'?'、周回遅れ':r.driving.stopReason==='battery'?'、電池切れ':'、コースアウト'):''}`} title={`${r.name} / ${out?'リタイア':waiting?'スタート待機':`${i+1}位`}`}>
         <span className="ranking-place">{r.id==='player'&&<i>▼</i>}{waiting?'—':out?'OUT':`${i+1}位`}</span>
         <RacerPortrait id={r.id} color={r.color}/>
         <span className="ranking-name">{r.name.split(' ').at(-1)}{r.id==='player'?'（自分）':''}</span>

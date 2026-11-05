@@ -122,3 +122,15 @@ test('公式戦のコースアウト終了は敗退を確定し、前のセー�
   useGame.getState().close();assert.equal(useGame.getState().overlay,'podium');useGame.getState().close();assert.equal(useGame.getState().overlay,'game-over');useGame.getState().retryFromSave();assert.deepEqual(snapshotGame(useGame.getState()),baseline);
  }finally{useGame.setState(before,true);}
 });
+
+test('先頭がゴールしたら砂で停止中・未発進でも即座に終了でき、未完走と現在の消耗を確定する',()=>{
+ for(const circuitId of ['forge','zenith'] as const)for(const status of ['running','ready'] as const){
+  const race=createRaceState(starterEquipment,42,undefined,circuitId==='zenith'?'official':false,circuitId),track=getCircuitTrack(circuitId);
+  race.phase='running';race.time=99;race.playerStartOffset=status==='ready'?null:0;
+  race.racers=race.racers.map((r,i)=>({...r,driving:{...r.driving,status:i===1?'finished':r.id==='player'?status:'running',time:i===1?87:99,distance:i===1?track.circuitLength:r.id==='player'?100:150+i,speed:0}}));
+  const snapshot=structuredClone(race);assert.equal(canViewRaceResults(race),true);const result=completeRaceAfterPlayerFinish(race);
+  assert.equal(result.phase,'finished');assert.equal(result.time,99);assert.deepEqual(race,snapshot);assert.deepEqual(result.racers[1],race.racers[1]);
+  for(const r of result.racers.filter(r=>r.id!==race.racers[1].id)){assert.equal(r.driving.status,'out');assert.equal(r.driving.stopReason,'retired');assert.equal(r.driving.time,99);assert.equal(r.driving.distance,race.racers.find(old=>old.id===r.id)!.driving.distance);}
+  assert.equal(rankRacers(result)[0].id,race.racers[1].id);assert.equal(racePrize(result),0);assert.equal(completeRaceAfterPlayerFinish(result),result);
+ }
+});
