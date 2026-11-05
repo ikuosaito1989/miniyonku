@@ -10,7 +10,7 @@ export const openingScenes=[
  {kind:'shop-walk',speaker:'',portrait:'mechanic',text:'作業台の方へ歩いていく。',next:''},
  {kind:'dialogue',speaker:'佐伯 匠',portrait:'mechanic',text:'はじめまして！ 僕は匠。湊くんもチビ四駆を始めるんだね。最初は分からないことがあって当たり前。僕でよかったら、何でも聞いてよ！',next:'よろしく、匠くん！'},
  {kind:'dialogue',speaker:'佐伯 匠',portrait:'mechanic',text:'まずは今のマシンで走ってみよう。模型店のコースなら、参加費はかからないし、完走するだけでも賞金がもらえるよ。いきなり一番を目指さなくても大丈夫！',next:'走って覚えていこう'},
- {kind:'dialogue',speaker:'佐伯 匠',portrait:'mechanic',text:'パーツの交換は、この作業台でできるよ。速いモーターだけじゃなく、ギア、タイヤ、ローラーの組み合わせが大事なんだ。買い足したいときは、カウンターの店主さんに声をかけてね。',next:'作業台とカウンターだね'},
+ {kind:'dialogue',speaker:'佐伯 匠',portrait:'mechanic',text:'パーツの交換は、この作業台でできるよ。街や店内の何もない場所をダブルタップしても、セッティング画面を開けるんだ。速いモーターだけじゃなく、ギア、タイヤ、ローラーの組み合わせが大事なんだ。買い足したいときは、カウンターの店主さんに声をかけてね。',next:'作業台とカウンターだね'},
  {kind:'dialogue',speaker:'佐伯 匠',portrait:'mechanic',text:'電池の残量とモーターの消耗は、パーツの上のメーターで確認できるよ。このあと一緒にセッティングを見て、ギアを買って装着して、レースまでやってみよう！ 困ったときは、いつでも僕に声をかけてね。',next:'マシンを見てみる'},
 ] as const;
 export const OPENING_END=openingScenes.length;
