@@ -61,7 +61,7 @@ export function raceAdvice(state:RaceAdviceContext){
     const missing=['chassis-turn','tire-turn','wheel-diff','motor-turn','accessory-stabilizer'].map(id=>parts.find(p=>p.id===id)!).find(p=>!(state.inventory[p.id]>0));
     if(missing)lines.push(`${shop.name}で不足している「${missing.name}」を${missing.price}円で購入できるよ。${state.money>=missing.price?'今の所持金で購入できるよ。':`あと${missing.price-state.money}円、完走賞で貯めよう。`}単品だけでなく、上位の旋回装備を組み合わせよう。`);
   }
-  if(state.shopId==='aozora')lines.push('黒岩は軽量シャーシと前後のベアリングローラーで旋回を強化しているよ。この店のパーツなら、ブリーズモーター・4:1ギア・スポンジタイヤに、K1 ライト・ライト6スポーク・中空シャフト・スパークセル・駆動サポートを組み合わせてみよう。低重心だけでなく軽さも効くよ。モーターは約60秒の慣らし、電池は残量、発進はGOへの反応も確認してね。');
+  if(state.shopId==='aozora')lines.push('黒岩は軽量シャーシと前後のベアリングローラーで旋回を強化しているよ。セイランにこの店のブリーズモーター・4:1ギア・スポンジタイヤに、K1 ライト・ライト6スポーク・中空シャフト・高接触ターミナル・スパークセル・駆動サポートを組み合わせてみよう。低重心だけでなく軽さも効くよ。モーターは約60秒の慣らし、電池は残量、発進はGOへの反応も確認してね。');
   const motor=parts.find(p=>p.id===state.equipment.motor)!;
   if(motor.specs.wear!==0&&state.motorSeconds<60)lines.push(`今の${motor.name}は使用${state.motorSeconds.toFixed(0)}秒。作業台であと約${Math.ceil(60-state.motorSeconds)}秒ならそう。慣らしでは電池残量は減らないよ。`);
   else if(motor.specs.wear!==0&&state.motorSeconds>180)lines.push(`今の${motor.name}は使用${state.motorSeconds.toFixed(0)}秒で摩耗中。慣らしを増やしても回復しないので、新品への交換を優先しよう。`);
