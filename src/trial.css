@@ -189,3 +189,44 @@
 .retro-race .race-message { min-height: 0; max-height: 40dvh; overflow-y: auto; overflow-x: hidden; }
 .retro-race .race-commentary { min-width: 0; overflow-wrap: anywhere; }
 .retro-race .race-speaker span { display: block; white-space: nowrap; letter-spacing: 0; line-height: 1.4; }
+
+/* 順位と実況を全視点で圧縮し、空いた高さをレース映像へ渡す。 */
+.trial.retro-race.retro-race[data-camera]{
+ --compact-header:44px;--compact-ranking:50px;--compact-footer:68px;
+ grid-template-rows:var(--compact-header) var(--compact-ranking) minmax(0,1fr) var(--compact-footer);
+ overflow:hidden;
+}
+.trial.retro-race.retro-race[data-camera][data-phase='introduction']{grid-template-rows:var(--compact-header) minmax(0,1fr) var(--compact-footer)}
+.trial.retro-race .ranking-racers li{gap:0}
+.trial.retro-race .ranking-place{height:12px;line-height:12px;font-size:10px}
+.trial.retro-race .ranking-portrait{height:24px;width:20px}
+.trial.retro-race .ranking-name{font-size:9px;line-height:10px}
+.trial.retro-race .ranking-edge{gap:0;font-size:8px}
+.trial.retro-race .ranking-edge>span{font-size:14px}
+.trial.retro-race[data-camera] .race-message{
+ grid-template-columns:32px minmax(0,1fr) auto;grid-template-rows:minmax(0,1fr);
+ gap:6px;margin:3px 5px;padding:5px 8px;max-height:none;overflow:hidden;
+}
+.trial.retro-race[data-camera] .race-speaker{grid-row:1;align-self:center}
+.trial.retro-race[data-camera] .starter-portrait{width:28px;height:28px;margin-bottom:1px}
+.trial.retro-race[data-camera] .race-speaker span{font-size:7px;line-height:10px}
+.trial.retro-race[data-camera] .race-commentary{align-self:stretch;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+.trial.retro-race[data-camera] .race-commentary p{font-size:12px;line-height:1.4;letter-spacing:0}
+.trial.retro-race[data-camera] .race-commentary .race-phase{font-size:9px;line-height:12px;letter-spacing:0;margin-bottom:2px}
+.trial.retro-race[data-camera] .race-commentary small{display:none}
+.trial.retro-race[data-camera] .race-commands{grid-column:3;grid-row:1;display:flex;flex-direction:column;flex-wrap:nowrap;gap:0;justify-content:center;min-width:0}
+.trial.retro-race[data-camera] .race-running{display:none}
+.trial.retro-race[data-camera] .race-start-button,.trial.retro-race[data-camera] .race-commands>button{min-height:44px;padding:4px;font-size:12px;letter-spacing:0}
+@media(max-width:600px){
+ .trial.retro-race.retro-race[data-camera]{--compact-header:48px;--compact-ranking:42px}
+ .trial.retro-race .ranking-place{height:10px;line-height:10px;font-size:9px}
+ .trial.retro-race .ranking-portrait{height:20px;width:17px}
+ .trial.retro-race .ranking-name{font-size:8px;line-height:8px}
+ .trial.retro-race[data-camera] .race-commentary p{font-size:11px;line-height:1.45}
+}
+@media(max-height:480px){
+ .trial.retro-race.retro-race[data-camera]{--compact-header:34px;--compact-ranking:32px;--compact-footer:60px}
+ .trial.retro-race .ranking-place{height:9px;line-height:9px;font-size:8px}
+ .trial.retro-race .ranking-portrait{height:12px;width:10px}
+ .trial.retro-race .ranking-name{font-size:8px;line-height:7px}
+}
