@@ -1,3 +1,4 @@
+import {koyaEscortActive,koyaEscortLocation,koyaEscortSpawn,koyaVenueSpot,escortWalk,townEscortWalks} from './koyaEscort';
 import {hiddenMechanicSpot,mechanicManName} from '../data/hiddenMechanic';
 import {mechanicManDrawing} from './MechanicManArt';
 import {townPeople,townPersonAdvice} from '../data/townPeople';
@@ -54,6 +55,11 @@ export class ShopScene extends Phaser.Scene {
   private facing:Facing='down';
   private playerSprite!:Phaser.GameObjects.Image;
   private walkTime=0;
+  private escortPhase=-1;
+  private escortGuide:Phaser.GameObjects.Container|null=null;
+  private escortArrival:ArrivalActor|null=null;
+  private escortPlayerWalk:OpeningWalk|null=null;
+  private escortGuideWalk:OpeningWalk|null=null;
   private openingPhase=-1;
   private openingWalk:OpeningWalk|null=null;
   private mapTime=0;
@@ -170,8 +176,13 @@ export class ShopScene extends Phaser.Scene {
       const shop=currentShop(useGame.getState().location),obstacle=timeBoardObstacle(shop.id);
       this.solids.push(new Phaser.Geom.Rectangle(obstacle.x,obstacle.y,obstacle.width,obstacle.height));this.drawTimeBoard();
     }
-    const spawn=useGame.getState().openingActive?openingSpawn(openingIndex(useGame.getState())):this.isTown?townSpawn(useGame.getState().townReturnVenue??useGame.getState().lastShop):this.isOfficial?officialVenue.spawn:room.spawn;
+    const spawn=koyaEscortActive(useGame.getState().koyaEscortStep)?koyaEscortSpawn(useGame.getState().koyaEscortStep):useGame.getState().openingActive?openingSpawn(openingIndex(useGame.getState())):this.isTown?townSpawn(useGame.getState().townReturnVenue??useGame.getState().lastShop):this.isOfficial?officialVenue.spawn:room.spawn;
     this.player=this.person(spawn.x,spawn.y,'player');
+    if(useGame.getState().location==='stadium-9'&&useGame.getState().koyaEscortStep>=5){
+      this.escortGuide=this.person(koyaVenueSpot.x,koyaVenueSpot.y,'rival');
+      (this.escortGuide.list[1] as Phaser.GameObjects.Image).setTexture(this.arrivalTexture('koya','down',0));
+      this.solids.push(new Phaser.Geom.Rectangle(koyaVenueSpot.x-12,koyaVenueSpot.y-9,24,21));
+    }
     if(this.isTown)window.dispatchEvent(new CustomEvent('town-position',{detail:spawn}));
     this.destination=this.add.graphics().setDepth(9999).setVisible(false);
     this.destination.lineStyle(2,0xffdf87).strokeCircle(0,0,8).lineBetween(-12,0,-5,0).lineBetween(5,0,12,0).lineBetween(0,-12,0,-5).lineBetween(0,5,0,12);
@@ -307,7 +318,7 @@ export class ShopScene extends Phaser.Scene {
   private arrivalTexture(kind:string,facing:Facing,frame:number){
     const key=`arrival-${kind}-${facing}-${frame}`;
     if(!this.textures.exists(key)){
-      const drawing=kind==='doctor'?doctorDrawing(facing,frame):kind==='villain'?challengerDrawing(facing,frame):legendPersonDrawing(kind==='gaku'?'gaku':'rei',facing,frame);
+      const drawing=kind==='doctor'?doctorDrawing(facing,frame):kind==='villain'?challengerDrawing(facing,frame):legendPersonDrawing(kind==='koya'?'koya':kind==='gaku'?'gaku':'rei',facing,frame);
       createPersonTexture(this,key,drawing);
     }
     return key;
@@ -351,6 +362,44 @@ export class ShopScene extends Phaser.Scene {
       this.playEventSound('contact');useGame.getState().completeArrival();
     }
   }
+  private updateKoyaEscort(delta:number){
+    const state=useGame.getState(),step=state.koyaEscortStep;
+    if(koyaEscortLocation(step)!==state.location)return;
+    if(this.escortPhase!==step){
+      this.escortPhase=step;this.resetKeys();this.cancelRoute();this.gesture.reset();this.pendingTarget=null;
+      this.escortArrival=null;this.escortPlayerWalk=null;this.escortGuideWalk=null;
+      if(!this.escortGuide)this.escortGuide=this.person(480,550,'rival');
+      if(step===1){this.escortArrival=createArrival({x:this.player.x,y:this.player.y},this.solids,1)[0];this.playEventSound('arrival');}
+      if(step===2){const actor=createArrival({x:this.player.x,y:this.player.y},this.solids,1)[0];const end=actor.route.at(-1)??actor.position;this.escortGuide.setPosition(end.x,end.y).setDepth(end.y);}
+      if(step===3){
+        this.escortGuideWalk=escortWalk({x:this.escortGuide.x,y:this.escortGuide.y},{x:480,y:581},this.solids);
+        this.escortPlayerWalk=escortWalk({x:this.player.x,y:this.player.y},{x:480,y:557},this.solids);
+      }
+      if(step===4){const walks=townEscortWalks(this.solids);this.escortPlayerWalk=walks.player;this.escortGuideWalk=walks.guide;}
+      if(step===5){this.player.setPosition(480,535).setDepth(535);this.escortGuide.setPosition(koyaVenueSpot.x,koyaVenueSpot.y).setDepth(koyaVenueSpot.y);}
+      (this.escortGuide.list[1] as Phaser.GameObjects.Image).setTexture(this.arrivalTexture('koya','down',0));
+      this.playerSprite.setTexture('person-player-up-0');
+    }
+    if(document.hidden)return;
+    if(this.escortArrival){
+      const before=this.escortArrival;this.escortArrival=stepArrivalActor(before,{x:this.player.x,y:this.player.y},delta);
+      const actor=this.escortArrival;this.escortGuide!.setPosition(actor.position.x,actor.position.y).setDepth(actor.position.y);
+      (this.escortGuide!.list[1] as Phaser.GameObjects.Image).setTexture(this.arrivalTexture('koya',actor.facing,actor.arrived?0:Math.floor(actor.walkTime/150)%4));
+      if(Math.floor(before.distance/18)<Math.floor(actor.distance/18))this.playEventSound('step');
+      if(actor.arrived){this.escortArrival=null;state.advanceKoyaEscort(step);}return;
+    }
+    if(this.escortPlayerWalk&&this.escortGuideWalk){
+      const beat=Math.floor(this.escortPlayerWalk.walkTime/260),speed=step===4?walkingSpeed.town:walkingSpeed.interior;
+      this.escortPlayerWalk=stepOpeningWalk(this.escortPlayerWalk,delta,speed);this.escortGuideWalk=stepOpeningWalk(this.escortGuideWalk,delta,speed);
+      const hero=this.escortPlayerWalk,guide=this.escortGuideWalk;
+      if(Math.floor(hero.walkTime/260)>beat)this.playEventSound('step');
+      this.player.setPosition(hero.position.x,hero.position.y).setDepth(hero.position.y);
+      this.playerSprite.setTexture(`person-player-${hero.facing}-${hero.done?0:Math.floor(hero.walkTime/150)%4}`);
+      this.escortGuide!.setPosition(guide.position.x,guide.position.y).setDepth(guide.position.y);
+      (this.escortGuide!.list[1] as Phaser.GameObjects.Image).setTexture(this.arrivalTexture('koya',guide.facing,guide.done?0:Math.floor(guide.walkTime/150)%4));
+      if(hero.done&&guide.done)state.advanceKoyaEscort(step);
+    }
+  }
   private updateOpening(delta:number){
     const state=useGame.getState(),step=openingIndex(state);
     if(openingLocation(step)!==state.location)return;
@@ -374,6 +423,8 @@ export class ShopScene extends Phaser.Scene {
     if(!this.player)return;
     if(useGame.getState().openingActive){this.updateOpening(delta);return;}
     this.openingPhase=-1;this.openingWalk=null;
+    if(!useGame.getState().overlay&&koyaEscortActive(useGame.getState().koyaEscortStep))useGame.getState().resumeKoyaEscort();
+    if(useGame.getState().overlay==='escort'){this.updateKoyaEscort(delta);return;}
     this.syncChallenger();this.syncDoctor();
     const state=useGame.getState();
     if(this.timeBoardContainer&&this.timeBoardHistory!==state.timeHistory)this.drawTimeBoard();
@@ -436,6 +487,7 @@ export class ShopScene extends Phaser.Scene {
       ...townPeople.map(p=>({x:p.x-16,y:p.y-42,w:32,h:54,label:p.name,speaker:p.name,shopAfter:false,text:townPersonAdvice(p,useGame.getState()),kind:'town-person' as const})),
     ];
     if(this.isOfficial)return [
+      ...(useGame.getState().location==='stadium-9'&&this.escortGuide?[{x:koyaVenueSpot.x-16,y:koyaVenueSpot.y-42,w:32,h:54,label:'山城 昊也',speaker:'山城 昊也',shopAfter:false,text:useGame.getState().yuunagiUnlocked?'入賞おめでとう！ 次はゆうなぎ模型店の一本道コースだ。君ならもっと速くなれるよ。':'長距離の連続コーナーでは、ローラーと電池が大切だよ。ピットで準備してからコースに向かおう。僕はここで応援しているよ。'}]:[]),
       ...officialFixturesFor(useGame.getState().location).filter(f=>f.kind!=='decoration').map(f=>({...f,speaker:f.label,shopAfter:false,text:f.kind==='bench'?'ここでマシンを組み直そう。':'コースに出場する。',kind:f.kind as ShopTarget['kind']})),
       ...officialPeopleFor(useGame.getState().location).map(p=>({x:p.x-16,y:p.y-42,w:32,h:54,label:p.name,speaker:p.name,shopAfter:false,text:(useGame.getState().location==='stadium-10'&&useGame.getState().grandprixCleared||useGame.getState().zenithCleared)&&p.id==='rei'?'おめでとう、湊くん！ 決勝で2位以内に入った君の走り、しっかり見届けたよ。セイランと一緒に、ここまで来たんだね。':(useGame.getState().location==='stadium-10'&&useGame.getState().grandprixCleared||useGame.getState().zenithCleared)&&p.id==='gaku'?'よくやった！ 最後まで走り切ったな。今日は君が主役だ。これからも自分だけのセッティングで、速さを追いかけようぜ！':p.text})),
       {...officialVenue.exit,label:'緑川町への出口',speaker:officialVenue.name,shopAfter:false,text:'町へ戻る。',kind:'exit' as const},

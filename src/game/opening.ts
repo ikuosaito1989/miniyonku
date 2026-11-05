@@ -38,9 +38,9 @@ export function createOpeningWalk(step:number,from:Point,obstacles:Obstacle[]):O
  if(!last||Math.hypot(last.x-goal.x,last.y-goal.y)>1)throw new Error('はじまりのシーンの歩行経路を作成できません。');
  return {position:{...from},route,facing:'up',walkTime:0,done:false};
 }
-export function stepOpeningWalk(walk:OpeningWalk,delta:number):OpeningWalk{
+export function stepOpeningWalk(walk:OpeningWalk,delta:number,speed=110):OpeningWalk{
  if(walk.done)return walk;
- const position={...walk.position},route=[...walk.route];let budget=110*Math.max(0,Math.min(delta,40))/1000,facing=walk.facing,moved=false;
+ const position={...walk.position},route=[...walk.route];let budget=speed*Math.max(0,Math.min(delta,40))/1000,facing=walk.facing,moved=false;
  while(route.length&&budget>0){const point=route[0],dx=point.x-position.x,dy=point.y-position.y,distance=Math.hypot(dx,dy);if(distance<.001){route.shift();continue;}const travel=Math.min(budget,distance);facing=Math.abs(dx)>.01?dx<0?'left':'right':dy<0?'up':'down';position.x+=dx/distance*travel;position.y+=dy/distance*travel;budget-=travel;moved=true;if(travel>=distance)route.shift();}
  return {position,route,facing,walkTime:walk.walkTime+(moved?Math.max(0,Math.min(delta,40)):0),done:route.length===0};
 }

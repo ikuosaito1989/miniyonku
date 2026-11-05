@@ -1,3 +1,4 @@
+import {koyaEscortActive,koyaEscortLocation} from './koyaEscort';
 import {cupProgression,forfeitCupHeat} from './cup';
 import type { StoreApi } from 'zustand';
 import { useGame, type GameState } from './store';
@@ -12,7 +13,7 @@ export async function loadSavedGame(storage:SaveStorage,store:StoreApi<GameState
   const data=decodeSave(raw);
   const progression=cupProgression(forfeitCupHeat(data.game.wakabaCup),forfeitCupHeat(data.game.technicalCup),data.game.thirdOfficialQualified,forfeitCupHeat(data.game.finalCup),forfeitCupHeat(data.game.zenithCup));
   // UIや途中レースは再開せず、保存した店の入口／街の店前から復帰する。
-  store.setState({...store.getInitialState(),...data.game,...progression,retryCheckpoint:data.checkpoint??null,tutorialStage:data.game.tutorialStage==='racing'?'start':data.game.tutorialStage,...(progression.gameOver?{overlay:'game-over' as const}:{}),legendEventPending:data.game.unlockedRaces.includes(nextShopRace.id)&&!data.game.legendRaceCompleted,villainArrivalPending:data.game.aozoraWon&&!data.game.villainDefeated});
+  store.setState({...store.getInitialState(),...data.game,...progression,retryCheckpoint:data.checkpoint??null,tutorialStage:data.game.tutorialStage==='racing'?'start':data.game.tutorialStage,...(koyaEscortActive(data.game.koyaEscortStep)?{overlay:'escort' as const,location:koyaEscortLocation(data.game.koyaEscortStep)}:{}),...(progression.gameOver?{overlay:'game-over' as const}:{}),legendEventPending:data.game.unlockedRaces.includes(nextShopRace.id)&&!data.game.legendRaceCompleted,villainArrivalPending:data.game.aozoraWon&&!data.game.villainDefeated});
   return data.savedAt;
 }
 export function startAutoSave(storage:SaveStorage,status:(status:SaveStatus)=>void,store:StoreApi<GameState>=useGame){
