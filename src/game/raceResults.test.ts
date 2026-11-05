@@ -1,3 +1,4 @@
+import {legacyCup,cupProgression} from './cup';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { starterEquipment } from '../data/machine';
@@ -25,12 +26,11 @@ test('ゴール後の結果表示は残りCPUを通常と同じ計算で確定�
     assert.equal(completeRaceAfterPlayerFinish(result),result);
   }
 });
-test('発進前・走行中・通常のコースアウトでは結果へのスキップを許可しない',()=>{
+test('発進前・走行中は結果へのスキップを許可しない',()=>{
   const ready=createRaceState(starterEquipment),running=nearGoal('leaf');
   assert.equal(completeRaceAfterPlayerFinish(ready),ready);
   assert.equal(completeRaceAfterPlayerFinish(startRace(ready)).phase,'countdown');
   assert.equal(completeRaceAfterPlayerFinish(running),running);
-  running.racers[0].driving.status='out';assert.equal(completeRaceAfterPlayerFinish(running),running);
 });
 test('先頭から1周以上の差でリタイア。1周未満・既にゴールした車はリタイアにしない',()=>{
   for(const id of ['leaf','wind'] as const){
@@ -98,4 +98,27 @@ test('未発進で周回遅れになっても結果を集計できる',()=>{
   const stopped=stepRace(race),result=completeRaceAfterPlayerFinish(stopped);
   assert.equal(canViewRaceResults(stopped),true);assert.equal(result.phase,'finished');
   assert.equal(result.racers[0].driving.stopReason,'lapped');assert.equal(result.playerStartOffset,null);
+});
+
+test('コースアウト・着地失敗・ループ失速・電池切れから残りCPUを確定して終了できる',()=>{
+ for(const reason of [undefined,'jump','loop','battery','lapped'] as const)for(const circuitId of ['leaf','wind'] as const){
+  const stopped=nearGoal(circuitId);stopped.racers[0].driving={...stopped.racers[0].driving,status:'out',speed:0,stopReason:reason};
+  const snapshot=structuredClone(stopped);let expected=stopped;while(expected.phase==='running')expected=stepRace(expected);
+  assert.equal(canViewRaceResults(stopped),true);const result=completeRaceAfterPlayerFinish(stopped);
+  assert.deepEqual(result,expected);assert.equal(result.phase,'finished');assert.deepEqual(result.racers[0].driving,snapshot.racers[0].driving);assert.deepEqual(stopped,snapshot);assert.equal(racePrize(result),0);
+  assert.equal(completeRaceAfterPlayerFinish(result),result);
+ }
+});
+
+test('公式戦のコースアウト終了は敗退を確定し、前のセーブから再開できる',()=>{
+ const before=useGame.getState();try{
+  const wakaba=legacyCup(true,true),technical={entered:true,pending:null,results:[{...wakaba.results[0],circuitId:'comet' as const}]};
+  useGame.setState({...useGame.getInitialState(),...cupProgression(wakaba,technical,true),openingStep:9,tutorialStage:'done',location:'town',legendRaceCompleted:true,aozoraWon:true,villainDefeated:true,officialQualified:true,unlockedRaces:[nextShopRace.id],yuunagiBestTime:39,finalQualified:true,money:4321},true);
+  useGame.getState().enterOfficialVenue('stadium-10');const baseline=snapshotGame(useGame.getState());useGame.getState().startOfficialRace();
+  const attempt=useGame.getState().raceAttempt,race=createRaceState(useGame.getState().equipment,42,undefined,'official','grandprix'),length=getCircuitTrack('grandprix').circuitLength;
+  race.phase='running';race.playerStartOffset=0;race.time=10;race.racers=race.racers.map(r=>({...r,driving:{...r.driving,status:r.id==='player'?'out':'running',time:10,distance:r.id==='player'?10:length-.01,speed:r.id==='player'?0:2}}));
+  const result=completeRaceAfterPlayerFinish(race);assert.equal(result.phase,'finished');assert.equal(racePrize(result),0);useGame.getState().settleRace(attempt,result);useGame.getState().settleRace(attempt,result);
+  assert.equal(useGame.getState().gameOver,true);assert.equal(useGame.getState().grandprixCleared,false);assert.equal(useGame.getState().money,4321);assert.equal(useGame.getState().finalCup.results[0].entries.find(e=>e.id==='player')?.finished,false);
+  useGame.getState().close();assert.equal(useGame.getState().overlay,'game-over');useGame.getState().retryFromSave();assert.deepEqual(snapshotGame(useGame.getState()),baseline);
+ }finally{useGame.setState(before,true);}
 });

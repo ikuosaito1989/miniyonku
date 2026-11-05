@@ -80,9 +80,9 @@ export function stepRace(state:RaceState):RaceState {
 }
 export function canViewRaceResults(state:RaceState){
   const player=state.racers.find(r=>r.id==='player');
-  return player?.driving.status==='finished'||player?.driving.status==='out'&&player.driving.stopReason==='lapped';
+  return player?.driving.status==='finished'||player?.driving.status==='out';
 }
-// ゴール・周回遅れ後の待ち時間だけを省略。固定刻みでCPUの順位・リタイアも確定する。
+// ゴール・リタイア後の待ち時間だけを省略。固定刻みでCPUの順位・リタイアも確定する。
 export function completeRaceAfterPlayerFinish(state:RaceState):RaceState {
   if(!canViewRaceResults(state))return state;
   let result=state;

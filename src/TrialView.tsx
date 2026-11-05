@@ -84,7 +84,7 @@ export default function TrialView(){
   },[close,error,state.phase,officialChallenge]);
   const skipIntro=useCallback(()=>renderer.current?.skipIntro(),[]);
   const start=useCallback(()=>renderer.current?.start(),[]);
-  const showRaceResults=useCallback(()=>renderer.current?.showResults(),[]);
+  const showRaceResults=useCallback(()=>renderer.current?.showResults(true),[]);
   useEffect(()=>{
     const handleKey=(event:KeyboardEvent)=>{
       if(event.key==='Escape'){event.preventDefault();if(!event.repeat)requestClose();return;}
@@ -127,10 +127,10 @@ export default function TrialView(){
     counting?(state.falseStartPenalty>0?`${penaltyText}。GOより早く発進した分を記録に加えるよ。`:`${countdownNumber(state)}…… GOまで待とう。今押すとフライングだよ！`):
     waitingForGo?'GO！ 画面のどこでもタップして発進！':
     driving.status==='finished'?`ゴール！ 記録は ${raceClock(playerTime)}。画面をタップすると結果を見られます。`:
+    driving.status==='out'?`${driving.stopReason==='lapped'?'周回遅れでリタイア。':driving.stopReason==='battery'?'電池切れで停止。':driving.stopReason==='loop'?'縦ループで失速。':'コースアウト！'}「レースを終了」で結果へ進めるよ。`:
     recentGoal?`${lastFinisher?.name}、ゴールイン！ 公式タイム ${raceClock(officialTime(state,lastFinisher!))}。${state.falseStartPenalty>0?'最終順位は加算後のタイムで決まります。':''}`:
     finished?'全車のゴールを確認！ まもなく最終結果を発表します。':
     finish.stage==='approach'?'いよいよ最終ストレート！ 先頭のマシンがゴールへ飛び込んでくる！':
-    driving.status==='out'?(driving.stopReason==='lapped'?'先頭に1周差をつけられ、マシンがコース外へ！ リタイアです。':driving.stopReason==='battery'?'電池切れで停止！ 別の電池に交換しよう。':'コースアウト！ マシンを回収したよ。ほかのマシンは走行中。'):
     state.time<2?'スタート！ GOからの反応時間も記録に含まれるよ。':timeTrial?`ゴールまで残り${Math.max(0,circuitLength-driving.distance).toFixed(0)}m。規定40秒以内を目指そう！`:playerPath.changing?`レーンチェンジ！ ${playerPath.from+1}コースから ${playerPath.to+1}コースへ。５周で全レーンを走るよ。`:`あなたは現在 ${position}位！ 自分のマシンの上の黄色い印が目印だよ。`);
 
   return <section className="trial retro-race" data-camera={cameraMode} aria-label={legendChallenge?'レジェンド挑戦レース':villainChallenge?'黒岩 豪との挑戦レース':timeTrial?'一本道タイムアタック':'5台の3Dレース'} data-phase={introducing?'introduction':state.phase} data-intro-stage={intro.stage} data-finish-stage={finish.stage} onClick={event=>{
@@ -187,7 +187,7 @@ export default function TrialView(){
       <div className="race-commands">
         {ready&&!introducing&&!error?<button className="race-start-button" onClick={start}>▶ カウント開始</button>:null}
         {waitingForLaunch&&!error&&<button className="race-start-button" onClick={start}>{counting?'▶ 発進（早出）':'▶ GO！ 発進'}</button>}
-        {canViewResults&&<button className="race-start-button" onClick={showRaceResults}>▶ 結果を見る</button>}
+        {canViewResults&&<button className="race-start-button" onClick={showRaceResults}>{driving.status==='out'?'▶ レースを終了':'▶ 結果を見る'}</button>}
         {(showResults||error)&&<button onClick={requestClose}>{gameOver?'ゲームオーバーへ':officialChallenge?'会場へ戻る':'模型店へ戻る'}</button>}
         {!ready&&!finished&&!waitingForLaunch&&!canViewResults&&!error&&<span className="race-running">走行中<span>●</span></span>}
       </div>

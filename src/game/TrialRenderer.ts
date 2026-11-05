@@ -95,9 +95,9 @@ export class TrialRenderer {
     this.report({...this.state});
   }
   setCamera(mode:TrialCamera){if(this.intro.stage==='done')this.cameraMode=mode;}
-  showResults(){
+  showResults(skipRetirementAnimation=false){
     const player=this.state.racers.find(r=>r.id==='player');
-    if(player?.driving.stopReason==='lapped'&&(this.lappedAges.get('player')??0)<lappedPresentationSeconds)return;
+    if(!skipRetirementAnimation&&player?.driving.stopReason==='lapped'&&(this.lappedAges.get('player')??0)<lappedPresentationSeconds)return;
     if(this.finishPresentation.stage==='results'||!canViewRaceResults(this.state))return;
     this.state=completeRaceAfterPlayerFinish(this.state);
     this.finishPresentation={...stepFinishPresentation(this.finishPresentation,this.state,0),stage:'results',finalAge:finishSequence.holdSeconds+finishSequence.tallySeconds};
