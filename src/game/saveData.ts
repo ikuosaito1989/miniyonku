@@ -101,12 +101,12 @@ export function decodeSave(value:unknown):SaveData{
   if(game.cheatUsed!==undefined&&typeof game.cheatUsed!=='boolean')throw new Error('裏技記録が不正です。');
   if(game.legendRaceCompleted!==undefined&&typeof game.legendRaceCompleted!=='boolean')throw new Error('兄弟レースの記録が不正です。');
   const location=game.location??'komorebi',lastShop=game.lastShop??'komorebi';
-  if(typeof location!=='string'||location!=='town'&&location!=='stadium-5'&&location!=='stadium-9'&&location!=='stadium-10'&&location!=='stadium-7'&&!Object.hasOwn(modelShops,location)||typeof lastShop!=='string'||!Object.hasOwn(modelShops,lastShop))throw new Error('現在地が不正です。');
+  if(typeof location!=='string'||location!=='town'&&location!=='library'&&location!=='stadium-5'&&location!=='stadium-9'&&location!=='stadium-10'&&location!=='stadium-7'&&!Object.hasOwn(modelShops,location)||typeof lastShop!=='string'||!Object.hasOwn(modelShops,lastShop))throw new Error('現在地が不正です。');
   const legendRaceCompleted=game.legendRaceCompleted===true;
   if(game.doctorGiftReceived!==undefined&&typeof game.doctorGiftReceived!=='boolean')throw new Error('博士の贈呈記録が不正です。');
   const doctorGiftReceived=game.doctorGiftReceived===true;
   if(doctorGiftReceived&&(!legendRaceCompleted||!(inventory['body-champion']>=1)))throw new Error('博士の贈呈条件を満たしていません。');
-  if((legendRaceCompleted||(location!=='komorebi'&&location!=='atelier'&&location!=='town')||(lastShop!=='komorebi'&&lastShop!=='atelier'))&&(!game.unlockedRaces.includes(nextShopRace.id)||!legendRaceCompleted))throw new Error('街の解放条件を満たしていません。');
+  if((legendRaceCompleted||(location!=='komorebi'&&location!=='atelier'&&location!=='town'&&location!=='library')||(lastShop!=='komorebi'&&lastShop!=='atelier'))&&(!game.unlockedRaces.includes(nextShopRace.id)||!legendRaceCompleted))throw new Error('街の解放条件を満たしていません。');
   for(const key of ['finalQualified','yuunagiUnlocked','gameOver','wakabaUnlocked','thirdOfficialQualified','officialSpeedWon','officialDirtWon','officialQualified','officialWon','aozoraWon','villainDefeated'])if(game[key]!==undefined&&typeof game[key]!=='boolean')throw new Error('あおぞらのイベント記録が不正です。');
   const aozoraWon=game.aozoraWon===true,villainDefeated=game.villainDefeated===true;
   if(aozoraWon&&!legendRaceCompleted||villainDefeated&&!aozoraWon||(location==='hinata'||lastShop==='hinata')&&!villainDefeated)throw new Error('ひなた模型店の解放条件を満たしていません。');
@@ -129,7 +129,7 @@ export function decodeSave(value:unknown):SaveData{
   const finalQualified=progression.yuunagiUnlocked&&yuunagiBestTime!==null&&yuunagiBestTime<=yuunagiTimeLimit;
   if(finalCup.entered&&!finalQualified)throw new Error('緑川グランプリの出場条件を満たしていません。');
   const townReturnVenue=game.townReturnVenue??null;
-  if(townReturnVenue!==null&&townReturnVenue!=='stadium-5'&&townReturnVenue!=='stadium-9'&&townReturnVenue!=='stadium-10'&&townReturnVenue!=='stadium-7'||(location==='stadium-5'||townReturnVenue==='stadium-5')&&game.officialQualified!==true||(location==='stadium-9'||townReturnVenue==='stadium-9')&&!progression.thirdOfficialQualified||(location==='stadium-10'||townReturnVenue==='stadium-10')&&!finalQualified||(location==='stadium-7'||townReturnVenue==='stadium-7')&&!zenithQualified)throw new Error('公式会場の入場条件を満たしていません。');
+  if(townReturnVenue!==null&&townReturnVenue!=='library'&&townReturnVenue!=='stadium-5'&&townReturnVenue!=='stadium-9'&&townReturnVenue!=='stadium-10'&&townReturnVenue!=='stadium-7'||(location==='stadium-5'||townReturnVenue==='stadium-5')&&game.officialQualified!==true||(location==='stadium-9'||townReturnVenue==='stadium-9')&&!progression.thirdOfficialQualified||(location==='stadium-10'||townReturnVenue==='stadium-10')&&!finalQualified||(location==='stadium-7'||townReturnVenue==='stadium-7')&&!zenithQualified)throw new Error('公式会場の入場条件を満たしていません。');
   const officialSpeedWon=progression.officialSpeedWon,officialDirtWon=progression.officialDirtWon;
   const openingStep=game.openingStep===undefined?OPENING_END:number(game.openingStep,true);
   if(openingStep>OPENING_END)throw new Error('はじまりのシーンの記録が不正です。');

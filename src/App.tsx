@@ -71,7 +71,7 @@ export function App(){
     <GameAudio/>
     {!started ? <TitleScreen onStart={()=>{useGame.getState().startOpening();useGame.getState().resumeTutorial();useGame.getState().resumeKoyaEscort();useGame.getState().resumeTowaEscort();setStarted(true);}}/> : <section className="game-shell" aria-label="ゲーム画面">
       <div className="stage"><ShopWorld/>
-        {game.overlay===null&&<div className="world-toolbar"><button className="game-settings-open" onClick={game.openSettings}>設定</button>{!tutorialActive(game.tutorialStage)&&<MissionGuide/>}<AudioControls floating/></div>}
+        {game.overlay===null&&<div className="world-toolbar"><button className="game-settings-open" onClick={game.openSettings}>設定</button>{game.location==='library'?<div className="library-room-guide"><div><strong>緑川町立図書館</strong><span>{game.nearby||'本棚をタップして近づくと読めます'}</span></div><button onClick={()=>game.openLibrary()}>全蔵書</button></div>:!tutorialActive(game.tutorialStage)&&<MissionGuide/>}<AudioControls floating/></div>}
         <SaveWarning/>
         {game.openingActive&&<OpeningScene/>}
         {game.overlay==='escort'&&<KoyaEscort/>}

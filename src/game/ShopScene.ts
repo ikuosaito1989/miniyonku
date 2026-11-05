@@ -1,3 +1,6 @@
+import {drawLibraryRoom} from './LibraryRoomArt';
+import {libraryShelves,libraryObstacles,librarySpawn,libraryExit,libraryReadingDesk} from '../data/libraryRoom';
+import type {Category} from '../data/parts';
 import {towaEscortLocation,towaEscortSpawn} from './towaEscort';
 import {koyaEscortActive,koyaEscortLocation,koyaEscortSpawn,koyaVenueSpot,escortWalk,townEscortWalks} from './koyaEscort';
 import {hiddenMechanicSpot,mechanicManName} from '../data/hiddenMechanic';
@@ -45,7 +48,7 @@ import { drawTown } from './TownArt';
 import { drawShopDetails } from './WorldDetailArt';
 import { getCircuitTrack } from '../data/circuit';
 
-interface ShopTarget {x:number;y:number;w:number;h:number;label:string;speaker:string;shopAfter:boolean;text:string;kind?:Fixture['kind']|'mechanic-man'|'town-person'|'time-records'|'exit'|'venue'|'challenger'|'legend-challenger'|'official-speed'|'official-dirt'|'official-reception'|'official-technical'|'official-final'|'official-zenith';venueId?:string}
+interface ShopTarget {x:number;y:number;w:number;h:number;label:string;speaker:string;shopAfter:boolean;text:string;libraryCategory?:Category|'all';kind?:Fixture['kind']|'library-shelf'|'library-catalogue'|'mechanic-man'|'town-person'|'time-records'|'exit'|'venue'|'challenger'|'legend-challenger'|'official-speed'|'official-dirt'|'official-reception'|'official-technical'|'official-final'|'official-zenith';venueId?:string}
 export class ShopScene extends Phaser.Scene {
   private gesture=createShopGesture();
   private screenPoint(pointer:Phaser.Input.Pointer){return {x:pointer.x*this.scale.displaySize.width/this.scale.width,y:pointer.y*this.scale.displaySize.height/this.scale.height};}
@@ -80,6 +83,7 @@ export class ShopScene extends Phaser.Scene {
     return {x:target.x+target.w/2,y:target.y+target.h/2};
   }
   private get bounds(){return this.isTown?townWalkBounds:walkBounds;}
+  private get isLibrary(){return useGame.getState().location==='library';}
   private isOfficial=false;
   private transitionArmed=true;
   private doctorPerson:Phaser.GameObjects.Container|null=null;
@@ -111,6 +115,8 @@ export class ShopScene extends Phaser.Scene {
         this.person(npc.x,npc.y,'rival',npc.name);
         this.solids.push(new Phaser.Geom.Rectangle(npc.x-12,npc.y-9,24,21));
       }
+    }else if(this.isLibrary){
+      drawLibraryRoom(this);this.solids=libraryObstacles.map(r=>new Phaser.Geom.Rectangle(r.x,r.y,r.width,r.height));
     }else if(this.isOfficial){
       drawOfficialVenue(this,useGame.getState().location);
       this.solids=officialFixturesFor(useGame.getState().location).map(f=>new Phaser.Geom.Rectangle(f.x,f.y,f.w,f.h));
@@ -174,11 +180,11 @@ export class ShopScene extends Phaser.Scene {
       }
     }
     }
-    if(!this.isTown&&!this.isOfficial&&useGame.getState().location!=='atelier'){
+    if(!this.isTown&&!this.isLibrary&&!this.isOfficial&&useGame.getState().location!=='atelier'){
       const shop=currentShop(useGame.getState().location),obstacle=timeBoardObstacle(shop.id);
       this.solids.push(new Phaser.Geom.Rectangle(obstacle.x,obstacle.y,obstacle.width,obstacle.height));this.drawTimeBoard();
     }
-    const spawn=koyaEscortActive(useGame.getState().towaEscortStep)?towaEscortSpawn(useGame.getState().towaEscortStep):koyaEscortActive(useGame.getState().koyaEscortStep)?koyaEscortSpawn(useGame.getState().koyaEscortStep):useGame.getState().openingActive?openingSpawn(openingIndex(useGame.getState())):this.isTown?townSpawn(useGame.getState().townReturnVenue??useGame.getState().lastShop):this.isOfficial?officialVenue.spawn:room.spawn;
+    const spawn=this.isLibrary?librarySpawn:koyaEscortActive(useGame.getState().towaEscortStep)?towaEscortSpawn(useGame.getState().towaEscortStep):koyaEscortActive(useGame.getState().koyaEscortStep)?koyaEscortSpawn(useGame.getState().koyaEscortStep):useGame.getState().openingActive?openingSpawn(openingIndex(useGame.getState())):this.isTown?townSpawn(useGame.getState().townReturnVenue??useGame.getState().lastShop):this.isOfficial?officialVenue.spawn:room.spawn;
     this.player=this.person(spawn.x,spawn.y,'player');
     if(useGame.getState().location==='stadium-9'){
       this.escortGuide=this.person(koyaVenueSpot.x,koyaVenueSpot.y,'rival');
@@ -217,11 +223,11 @@ export class ShopScene extends Phaser.Scene {
         const point=this.cameras.main.getWorldPoint(pointer.x,pointer.y);
         const targets=this.getTargets();
         const ownerPosition=this.cast.owner;
-        const owner=!this.isTown&&Math.abs(point.x-ownerPosition.x)<24&&point.y>ownerPosition.y-44&&point.y<ownerPosition.y+16;
+        const owner=!this.isTown&&!this.isLibrary&&Math.abs(point.x-ownerPosition.x)<24&&point.y>ownerPosition.y-44&&point.y<ownerPosition.y+16;
         const target=owner?targets.find(t=>t.kind==='counter'):targets.find(t=>point.x>=t.x-5&&point.x<=t.x+t.w+5&&point.y>=t.y-5&&point.y<=t.y+t.h+5);
         const emptyFloor=!target&&point.x>=this.bounds.left&&point.x<=this.bounds.right&&point.y>=this.bounds.top&&point.y<=this.bounds.bottom&&!this.solids.some(r=>r.contains(point.x,point.y));
         const action=this.gesture.up(pointer.id,screen.x,screen.y,pointer.upTime,emptyFloor);
-        if(action==='setting'){this.cancelRoute();this.pendingTarget=null;useGame.getState().openSetting();}
+        if(action==='setting'){this.cancelRoute();this.pendingTarget=null;if(this.isLibrary)useGame.getState().openLibrary();else useGame.getState().openSetting();}
         else if(action==='tap'&&target){
           this.pendingTarget=target;
           this.route=findWalkingPath({x:this.player.x,y:this.player.y},this.approach(target),this.solids,this.bounds);
@@ -231,7 +237,7 @@ export class ShopScene extends Phaser.Scene {
       const start=tap;tap=null;
       if(!start||start.id!==pointer.id||useGame.getState().overlay||Math.hypot(screen.x-start.x,screen.y-start.y)>12||pointer.upTime-start.time>700)return;
       const target=this.cameras.main.getWorldPoint(pointer.x,pointer.y);
-      const board=this.getTargets().find(t=>t.kind==='time-records'&&target.x>=t.x&&target.x<=t.x+t.w&&target.y>=t.y&&target.y<=t.y+t.h);
+      const board=this.getTargets().find(t=>(t.kind==='time-records'||this.isLibrary)&&target.x>=t.x&&target.x<=t.x+t.w&&target.y>=t.y&&target.y<=t.y+t.h);
       this.pendingTarget=board??null;
       this.route=findWalkingPath({x:this.player.x,y:this.player.y},board?this.approach(board):target,this.solids,this.bounds);
       const end=this.route.at(-1);
@@ -484,6 +490,7 @@ export class ShopScene extends Phaser.Scene {
     if(action&&target)this.interactWith(target);
   }
   private getTargets():ShopTarget[]{
+    if(this.isLibrary)return [...libraryShelves.map(s=>({...s,y:s.y-42,h:s.h+60,kind:'library-shelf' as const,libraryCategory:s.category,speaker:s.label,shopAfter:false,text:'本棚の資料を読む。'})),{...libraryReadingDesk,x:libraryReadingDesk.x-10,y:libraryReadingDesk.y-36,w:100,h:92,kind:'library-catalogue' as const,libraryCategory:'all' as const,speaker:'閲覧台',shopAfter:false,text:'全パーツの資料を読む。'},{...libraryExit,h:40,kind:'exit' as const,label:'図書館の出口',speaker:'図書館',shopAfter:false,text:'街へ戻る。'}];
     if(this.isTown)return [
       {x:hiddenMechanicSpot.x-16,y:hiddenMechanicSpot.y-42,w:32,h:54,label:mechanicManName,speaker:mechanicManName,shopAfter:false,text:'……よく見つけたな。',kind:'mechanic-man'},
       ...townVenues.map(v=>({x:v.x,y:v.y,w:v.w,h:v.h,label:v.name,speaker:v.name,shopAfter:false,text:venueMessage(v),kind:'venue' as const,venueId:v.id})),
@@ -548,7 +555,8 @@ export class ShopScene extends Phaser.Scene {
 
   private interactWith(target:ShopTarget){
       this.gesture.reset();
-      if(target.kind==='mechanic-man')useGame.getState().talkMechanicMan();
+      if(target.kind==='library-shelf'||target.kind==='library-catalogue')useGame.getState().openLibrary(target.libraryCategory);
+      else if(target.kind==='mechanic-man')useGame.getState().talkMechanicMan();
       else if(target.kind==='town-person')useGame.getState().talk(target.speaker,target.text);
       else if(target.kind==='official-speed'||target.kind==='official-dirt'||target.kind==='official-technical'||target.kind==='official-final'||target.kind==='official-zenith')useGame.getState().openOfficialRace(target.kind==='official-zenith'?'zenith':target.kind==='official-final'?'final':target.kind==='official-technical'?'technical':target.kind==='official-speed'?'speed':'dirt');
       else if(target.kind==='official-reception'||this.isOfficial&&target.speaker==='大会受付係')useGame.getState().openOfficialRace();
@@ -563,7 +571,7 @@ export class ShopScene extends Phaser.Scene {
       else if(target.kind==='challenger')useGame.getState().openVillainChallenge();
       else if(target.kind==='venue'){
         const venue=townVenues.find(v=>v.id===target.venueId)!;
-        if(venue.kind==='library')useGame.getState().openLibrary();
+        if(venue.kind==='library')useGame.getState().enterLibrary();
         else if(venue.id==='stadium-5'||venue.id==='stadium-9'||venue.id==='stadium-10'||venue.id==='stadium-7'){if(venue.id==='stadium-7'?useGame.getState().zenithQualified:venue.id==='stadium-10'?useGame.getState().finalQualified:venue.id==='stadium-9'?useGame.getState().thirdOfficialQualified:useGame.getState().officialQualified)useGame.getState().enterOfficialVenue(venue.id);else useGame.getState().talk(venue.name,venueMessage(venue));}
         else if(venue.shopId&&isVenueOpen(venue,useGame.getState()))useGame.getState().enterShop(venue.shopId);
         else useGame.getState().talk(venue.name,venueMessage(venue));
