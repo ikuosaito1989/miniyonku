@@ -60,6 +60,41 @@ export function playerDrawing(direction:Facing,frame=0):PixelShape[]{
  if(!back){p(side?[[33,8+bob],[37,7+bob],[35,10+bob]]:[[29,7+bob],[33,7+bob],[31,10+bob]],'#f0ca51');}
  p(side?[[23,11+bob],[43,11+bob],[47,14+bob],[41,16+bob],[25,14+bob]]:[[18,11+bob],[39,11+bob],[42,13+bob],[36,15+bob],[20,14+bob]],c.blueShade);
  r(side?29:22,12+bob,side?13:14,1,c.blueLight);
+ // モブ・レジェンドと同じ半ドット単位の髪、瞳、布、靴の仕上げ。
+ const ry=(x:number,y:number,w:number,h:number,color:string,alpha=1)=>r(x,y+bob,w,h,color,alpha);
+ const py=(points:readonly (readonly [number,number])[],color:string)=>p(points.map(([x,y])=>[x,y+bob] as const),color);
+ py([[23,7],[26,5.5],[28,5],[27,6.5],[24,8]],'#ffffff');
+ py([[35,6.5],[37,8],[38,10],[36.5,9.5],[35.5,8]],'#7b8fa9');
+ for(let i=0;i<5;i++)ry((side?29:22)+i*2.2,12,.8,.5,'#c4e5ec');
+ ry(side?34:30,6,.5,3,'#478bbf');ry(side?35:31,7,1,.5,'#88b8dc');
+ if(back){
+  for(const [x,y] of [[23,17],[28,20],[34,16],[36,24],[25,25]]){py([[x,y],[x+1,y-2],[x+1.5,y+3],[x+.5,y+4]],'#73513a');ry(x,y+3,.5,2,'#392e2a');}
+  ry(24,30,3,.5,'#b28658');ry(34,29,2,.5,'#b28658');
+  ry(26,36,9,.5,'#c9d9e1');ry(25,38,.5,8,'#c9d6dc');ry(36,39,.5,8,'#6c859e');
+  py([[24,44],[27,46],[29,47],[23,46]],'#c4d2dc');
+ }else{
+  const locks=side?[[24,16],[28,15],[32,14]]:[[23,16],[28,15],[34,16]];
+  for(const [x,y] of locks){py([[x,y],[x+1.5,y-1],[x+1,y+2.5],[x,y+4]],'#ad8054');ry(x+.5,y,1,.5,'#c09b6a');ry(x-.5,y+2,.5,2,'#362b2b');}
+  if(side){
+   ry(36,20,3,.5,'#b87960');ry(38,23,1,2,'#82522f');ry(38,21,.7,.8,'#fff7dd');ry(40,26,1,.5,'#e8a98a');ry(34,29,3,.5,'#ffd7a4');
+   py([[28,24],[29,23],[30,24],[29,26],[28,26]],'#d69874');ry(28.5,24,1,.5,'#f6c79d');
+  }else{
+   for(const x of [24,33]){ry(x,20,4,.5,'#c18a67');ry(x+1,23,2,2,'#7f512e');ry(x+1,21,.8,1,'#fff9de');ry(x+2,25,1,.5,'#b38751');ry(x-.5,26,3,.5,'#de9d7c');}
+   ry(29,24,.7,1,'#ffe4b6');ry(30,26,.8,.5,'#af755f');ry(28,28,4,.5,'#f8ddae');ry(23,27,2,.5,'#e6a384');ry(35,27,2,.5,'#e6a384');
+  }
+  ry(27,32,1.5,.5,'#ffd8aa');ry(31,34,1,.5,'#122f59');
+  py([[22,37],[24,36],[25,39],[23,44],[22,43]],'#ffffff');
+  py([[35,38],[37,40],[36,48],[34,49],[35,44]],'#8199b0');
+  py([[24,46],[28,47],[29,48],[23,48]],'#c2d1db');ry(26,41,.5,3,'#d3dfe4');
+ }
+ for(const x of side?[37]:[16,39]){ry(x,38,2,.5,'#ffffff');ry(x,41,2,.5,'#a7bdcd');ry(x+1,45,.7,5,'#ffd7a7');ry(x+2,50,.7,2,'#d99b78');}
+ for(let leg=0;leg<2;leg++){
+  const x=side?25+leg*5:21+leg*11,offset=leg?step:-step;
+  r(x+4,62,1,4+offset,'#d49b73');r(x+1,65+offset,2,.5,'#ffd9aa');r(x+2,66+offset,2,.5,'#bc8667');
+  r(x+4,68+offset,1,4,'#a9bbcb');r(x+1,70+offset,3,.5,'#d9e8e9');r(x+1,72+offset,3,.5,'#8bc6de');
+  for(let lace=0;lace<3;lace++)r(x+2+lace*.7,73.5+offset+lace*.5,2,.5,'#edf2e9');
+  r(x+1,75.5+offset,5,.5,'#78a8be');r(x,77+offset,7,.5,'#b6c4ce');
+ }
  const drawing=pen.shapes;
  return direction==='left'?drawing.map(s=>s.kind==='rect'?{...s,x:60-s.x-s.w}:{...s,points:s.points.map(([x,y])=>[60-x,y] as const)}):drawing;
 }
