@@ -13,7 +13,7 @@ import {npcAppearanceId} from '../data/npcAppearance';
 import {npcDrawing} from './NpcPeopleArt';
 import {walkingSpeed} from '../data/shopThemes';
 import {legendPersonDrawing} from './LegendPeopleArt';
-import {timeBoardPlacement,timeBoardObstacle} from '../data/timeBoard';
+import {timeBoardPlacement,timeBoardObstacle,officialTimeBoards} from '../data/timeBoard';
 import type {TimeHistory} from './timeRecords';
 import {shopTrackLayout} from './shopTrackLayout';
 import {drawShopTrack} from './ShopTrackArt';
@@ -46,9 +46,9 @@ import { challengerDrawing, doctorDrawing } from './PeopleArt';
 import { createPersonTexture } from './PersonTexture';
 import { drawTown } from './TownArt';
 import { drawShopDetails } from './WorldDetailArt';
-import { getCircuitTrack } from '../data/circuit';
+import { getCircuitTrack,type CircuitId } from '../data/circuit';
 
-interface ShopTarget {x:number;y:number;w:number;h:number;label:string;speaker:string;shopAfter:boolean;text:string;libraryCategory?:Category|'all';kind?:Fixture['kind']|'library-shelf'|'library-catalogue'|'mechanic-man'|'town-person'|'time-records'|'exit'|'venue'|'challenger'|'legend-challenger'|'official-speed'|'official-dirt'|'official-reception'|'official-technical'|'official-final'|'official-zenith';venueId?:string}
+interface ShopTarget {circuitId?:CircuitId;x:number;y:number;w:number;h:number;label:string;speaker:string;shopAfter:boolean;text:string;libraryCategory?:Category|'all';kind?:Fixture['kind']|'library-shelf'|'library-catalogue'|'mechanic-man'|'town-person'|'time-records'|'exit'|'venue'|'challenger'|'legend-challenger'|'official-speed'|'official-dirt'|'official-reception'|'official-technical'|'official-final'|'official-zenith';venueId?:string}
 export class ShopScene extends Phaser.Scene {
   private gesture=createShopGesture();
   private screenPoint(pointer:Phaser.Input.Pointer){return {x:pointer.x*this.scale.displaySize.width/this.scale.width,y:pointer.y*this.scale.displaySize.height/this.scale.height};}
@@ -145,10 +145,10 @@ export class ShopScene extends Phaser.Scene {
     const cast=this.cast;
     this.person(cast.owner.x,cast.owner.y,'owner',cast.owner.name);
     const rivalPerson=this.person(cast.rival.x,cast.rival.y,useGame.getState().location==='hinata'?'mechanic':'rival',cast.rival.name);
-    if(shopId==='akatsuki'){const key='akatsuki-towa';if(!this.textures.exists(key))createPersonTexture(this,key,legendPersonDrawing('towa','down'));(rivalPerson.list[1] as Phaser.GameObjects.Image).setTexture(key);}
+    if((shopId==='akatsuki'||shopId==='hoshikuzu')){const key='akatsuki-towa';if(!this.textures.exists(key))createPersonTexture(this,key,legendPersonDrawing('towa','down'));(rivalPerson.list[1] as Phaser.GameObjects.Image).setTexture(key);}
     for(const visitor of cast.visitors){
       const npc=this.person(visitor.x,visitor.y,visitor.kind,visitor.name);
-      if(shopId==='akatsuki'){if(visitor.name==='風見 怜'||visitor.name==='火野 岳')(npc.list[1] as Phaser.GameObjects.Image).setTexture(this.arrivalTexture(visitor.name==='風見 怜'?'rei':'gaku','down',0));if(visitor.name==='山城 昊也'){const key='akatsuki-koya';if(!this.textures.exists(key))createPersonTexture(this,key,legendPersonDrawing('koya','down'));(npc.list[1] as Phaser.GameObjects.Image).setTexture(key);}}
+      if((shopId==='akatsuki'||shopId==='hoshikuzu')){if(visitor.name==='風見 怜'||visitor.name==='火野 岳')(npc.list[1] as Phaser.GameObjects.Image).setTexture(this.arrivalTexture(visitor.name==='風見 怜'?'rei':'gaku','down',0));if(visitor.name==='山城 昊也'){const key='akatsuki-koya';if(!this.textures.exists(key))createPersonTexture(this,key,legendPersonDrawing('koya','down'));(npc.list[1] as Phaser.GameObjects.Image).setTexture(key);}}
       this.solids.push(new Phaser.Geom.Rectangle(visitor.x-12,visitor.y-9,24,21));
     }
     this.solids.push(new Phaser.Geom.Rectangle(cast.rival.x-12,cast.rival.y-9,24,21));
@@ -176,10 +176,11 @@ export class ShopScene extends Phaser.Scene {
         }
       }else if(shop.id!=='atelier'){
       drawShopTrack(this,f,getCircuitTrack(shop.circuitId),f.y+f.h+1,this.textures.exists(sceneryKey(shop.id)));
-      if(shop.id==='akatsuki'){const layout=shopTrackLayout(getCircuitTrack('forge'),f.w,f.h).centerline,cars=[0x477de0,0xe5b839,0x15191f,0x612b3e].map(c=>this.add.rectangle(0,0,4,2,c).setDepth(f.y+f.h+3));this.time.addEvent({delay:90,loop:true,callback:()=>cars.forEach((car,i)=>{const j=(Math.floor(this.time.now/65)+i*280)%1200,p=layout[j],q=layout[(j+1)%1200];car.setPosition(f.x+p.x,f.y+p.y).setRotation(Math.atan2(q.y-p.y,q.x-p.x));})});}
+      if(shop.id==='akatsuki'||shop.id==='hoshikuzu'){const layout=shopTrackLayout(getCircuitTrack('forge'),f.w,f.h).centerline,cars=[0x477de0,0xe5b839,0x15191f,0x612b3e].map(c=>this.add.rectangle(0,0,4,2,c).setDepth(f.y+f.h+3));this.time.addEvent({delay:90,loop:true,callback:()=>cars.forEach((car,i)=>{const j=(Math.floor(this.time.now/65)+i*280)%1200,p=layout[j],q=layout[(j+1)%1200];car.setPosition(f.x+p.x,f.y+p.y).setRotation(Math.atan2(q.y-p.y,q.x-p.x));})});}
       }
     }
     }
+    if(this.isOfficial){for(const p of officialTimeBoards(useGame.getState().location))this.solids.push(new Phaser.Geom.Rectangle(p.x+8,p.y+p.h-10,p.w-16,10));this.drawTimeBoard();}
     if(!this.isTown&&!this.isLibrary&&!this.isOfficial&&useGame.getState().location!=='atelier'){
       const shop=currentShop(useGame.getState().location),obstacle=timeBoardObstacle(shop.id);
       this.solids.push(new Phaser.Geom.Rectangle(obstacle.x,obstacle.y,obstacle.width,obstacle.height));this.drawTimeBoard();
@@ -497,6 +498,7 @@ export class ShopScene extends Phaser.Scene {
       ...townPeople.map(p=>({x:p.x-16,y:p.y-42,w:32,h:54,label:p.name,speaker:p.name,shopAfter:false,text:townPersonAdvice(p,useGame.getState()),kind:'town-person' as const})),
     ];
     if(this.isOfficial)return [
+      ...officialTimeBoards(useGame.getState().location).map(p=>({...p,kind:'time-records' as const,label:`${getCircuitTrack(p.circuitId).circuit.name}・歴代タイム`,speaker:'コース記録の看板',shopAfter:false,text:'歴代タイムを見る。'})),
       ...(useGame.getState().location==='stadium-9'&&this.escortGuide?[{x:koyaVenueSpot.x-16,y:koyaVenueSpot.y-42,w:32,h:54,label:'山城 昊也',speaker:'山城 昊也',shopAfter:false,text:useGame.getState().yuunagiUnlocked?'入賞おめでとう！ 次はゆうなぎ模型店の一本道コースだ。君ならもっと速くなれるよ。':'長距離の連続コーナーでは、ローラーと電池が大切だよ。ピットで準備してからコースに向かおう。コースでは僕もライバルだ。いいレースにしよう。'}]:[]),
       ...officialFixturesFor(useGame.getState().location).filter(f=>f.kind!=='decoration').map(f=>({...f,speaker:f.label,shopAfter:false,text:f.kind==='bench'?'ここでマシンを組み直そう。':'コースに出場する。',kind:f.kind as ShopTarget['kind']})),
       ...officialPeopleFor(useGame.getState().location).map(p=>({x:p.x-16,y:p.y-42,w:32,h:54,label:p.name,speaker:p.name,shopAfter:false,text:(useGame.getState().location==='stadium-10'&&useGame.getState().grandprixCleared||useGame.getState().zenithCleared)&&p.id==='rei'?'おめでとう、湊くん！ 決勝で2位以内に入った君の走り、しっかり見届けたよ。セイランと一緒に、ここまで来たんだね。':(useGame.getState().location==='stadium-10'&&useGame.getState().grandprixCleared||useGame.getState().zenithCleared)&&p.id==='gaku'?'よくやった！ 最後まで走り切ったな。今日は君が主役だ。これからも自分だけのセッティングで、速さを追いかけようぜ！':p.text})),
@@ -525,6 +527,7 @@ export class ShopScene extends Phaser.Scene {
     }else if(shop.id==='hinata')for(const visitor of visitors)visitor.text=visitor.speaker==='三浦 結衣'?'ひなた模型店へようこそ！ここは砂利と砂地が続くロングダート。ここで優勝すると若葉公式ダート杯への出場権がもらえるよ。街の若葉レース場で森野くんや黒岩くんと勝負しよう。':'トレイルトルクモーター・ブロックタイヤ・ダンパーで接地と駆動力を確保しよう。ポール式ダブルローラーは前中後に装着できるよ。4:1ギアから試そう。';
     if(shop.id==='akatsuki'){const rival=targets.find(t=>t.speaker==='橘 斗和');if(rival)rival.text='俺は橘 斗和。黒岩の先輩で、4人のレジェンドの一人だ。ここからは怜・岳・俺・昊也が相手になる。銀嵐フェンサーの走りを、コースで見せよう。';}
     if(shop.id==='akatsuki')for(const visitor of visitors)visitor.text=visitor.speaker==='佐伯 匠'?'縦ループはモーターとギア、砂地は追従と抵抗、ジャンプは制振だ。別の種類を組み合わせて試そう。':`ここでは怜・岳・斗和・昊也のレジェンド4人と本気の試走だ。現在${state.akatsukiRaceCount}/5回。途中退出せず結果まで5回走れば、天頂決戦の出場権がもらえる。`;
+    if(shop.id==='hoshikuzu'){const rival=targets.find(t=>t.speaker==='橘 斗和');if(rival)rival.text='ここからは、自分の記録との勝負だ。舗装・砂・坂、それぞれに合わせた装備を試せ。俺たち4人のボディも、この店で手に入る。';for(const visitor of visitors)visitor.text=visitor.speaker==='佐伯 匠'?'コースごとに装備を変えて、タイムを比べよう。星皇を外せば、看板に装備ごと記録されるよ。':'クリアおめでとう！ これからは各公式会場でタイムアタックだ。自分だけのセッティングを見つけよう。';}
     if(shop.id==='yuunagi')for(const visitor of visitors)visitor.text=visitor.speaker==='三浦 結衣'?'ここは一台ずつ、別のゴールまで走る一本道のタイムアタック。40秒以内で完走すれば第4公式大会・緑川グランプリの出場権だよ。何度でも挑戦できるよ！':'新作のスライドダンパーはその他欄、そこに付けるローラーはリヤ欄で選べるよ。前中はセラミック、リヤは二段にして、スパイラルと着地を両立させよう。';
     if(shop.id==='wakaba')for(const visitor of visitors)visitor.text=visitor.speaker==='三浦 結衣'?'長い連続コーナーの店へようこそ！ 公式杯の入賞者だけが来られるんだ。ここで優勝すると第3公式大会・星空テクニカル杯の出場権がもらえるよ。':'4:1ギア、スポンジタイヤ、低重心シャーシ、ゴムローラーとウェイト。昔のパーツも大切だよ。最高速だけ伸ばすと切り返しでコースアウトしやすいんだ。';
     for(const visitor of visitors){
@@ -536,9 +539,11 @@ export class ShopScene extends Phaser.Scene {
   }
   private drawTimeBoard(){
     this.timeBoardContainer?.destroy(true);
-    const state=useGame.getState(),shop=currentShop(state.location),p=timeBoardPlacement(shop.id),records=state.timeHistory[shop.circuitId]??[];
+    const state=useGame.getState(),shop=currentShop(state.location),boards=this.isOfficial?officialTimeBoards(state.location):[{...timeBoardPlacement(shop.id),circuitId:shop.circuitId}];
     this.timeBoardHistory=state.timeHistory;
-    const board=this.add.container(p.x,p.y).setDepth(p.y+p.h);this.timeBoardContainer=board;
+    const root=this.add.container(0,0).setDepth(Math.max(...boards.map(p=>p.y+p.h)));this.timeBoardContainer=root;
+    for(const p of boards){const records=state.timeHistory[p.circuitId]??[];
+    const board=this.add.container(p.x,p.y).setDepth(p.y+p.h);root.add(board);
     const g=this.add.graphics();board.add(g);
     g.fillStyle(0x06131d,.3).fillEllipse(p.w/2,p.h+2,p.w,10);
     g.fillStyle(0x6c543b).fillRect(12,p.h-18,7,20).fillRect(p.w-19,p.h-18,7,20);
@@ -551,6 +556,7 @@ export class ShopScene extends Phaser.Scene {
       if(records[i])g.fillStyle(0xb2d8ca).fillCircle(x+8,p.h-30-h,2);
     }
     g.fillStyle(0xe8c879).fillRect(p.w/2-7,9,14,8).fillRect(p.w/2-2,17,4,5).fillRect(p.w/2-7,22,14,2);
+    }
   }
 
   private interactWith(target:ShopTarget){
@@ -562,6 +568,7 @@ export class ShopScene extends Phaser.Scene {
       else if(target.kind==='official-reception'||this.isOfficial&&target.speaker==='大会受付係')useGame.getState().openOfficialRace();
       else if(target.speaker==='森野 陸'){if(this.isOfficial)useGame.getState().talk(target.speaker,target.text);else useGame.getState().openOfficialRace();}
       else if(useGame.getState().location==='atelier'&&target.kind==='track')useGame.getState().talk('星霧模型工房','ここは販売専門店です。星皇シリーズの全種類を店主から購入できます。レースはほかの模型店で楽しんでね。');
+      else if(target.speaker==='佐伯 匠'&&useGame.getState().location==='hoshikuzu')useGame.getState().talk('佐伯 匠','ここからはタイムを詰める楽しみだね。舗装は軽量シャーシと低摩擦ローラー、砂は追従するタイヤとFMシャーシ、立体コースはトルクと制振を比べよう。ギア比だけ変えて同じコースを走ると違いが分かりやすいよ。星皇を外した記録は、コース端の看板でセッティングごとに見られるよ。');
       else if(target.speaker==='佐伯 匠'){
         const state=useGame.getState();
         startAdviceConversation({shopId:currentShop(state.location).id,equipment:state.equipment,inventory:state.inventory,money:state.money,...equippedCondition(state.equipment,state.units,state.selectedUnits),review:state.lastRaceReview,motorAges:Object.fromEntries(Object.entries(state.units).map(([id,list])=>[id,list[0]?.seconds??0])),batteryAges:Object.fromEntries(Object.entries(state.units).map(([id,list])=>[id,list[0]?.seconds??0]))});
@@ -576,7 +583,7 @@ export class ShopScene extends Phaser.Scene {
         else if(venue.shopId&&isVenueOpen(venue,useGame.getState()))useGame.getState().enterShop(venue.shopId);
         else useGame.getState().talk(venue.name,venueMessage(venue));
       }
-      else if(target.kind==='time-records')useGame.getState().openTimeBoard();
+      else if(target.kind==='time-records')useGame.getState().openTimeBoard(target.circuitId);
       else if(target.kind==='track')useGame.getState().startTrial();
       else if(target.kind==='board')useGame.getState().openProficiency();
       else if(target.kind==='legends')useGame.getState().openLegends();

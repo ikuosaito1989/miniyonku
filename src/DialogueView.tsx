@@ -18,12 +18,12 @@ import './dialogue.css';
 
 const portraits:Record<DialoguePersonId,string>={ren:mechanic,sou:mechanic,momo:guide,akatsukiOwner:owner,senior:rival,yuunagiOwner:owner,atelierOwner:owner,wakabaOwner:owner,venueStaff:owner,offroader:mechanic,owner,aozoraOwner:owner,hinataOwner:owner,villain:rival,rival,guide,mechanic,legendRei:rei,legendGaku:gaku,legendKoya:koya,doctor:owner};
 export function DialogueView(){
-  const {speaker,dialogue,adviceThinking,shopAfter,advance,close,dialogueStage,startLegendChallenge,startVillainChallenge,startOfficialRace,openSetting}=useGame();
+  const {speaker,dialogue,adviceThinking,shopAfter,advance,close,dialogueStage,zenithCleared,startLegendChallenge,startVillainChallenge,startOfficialRace,openSetting}=useGame();
   const [selected,setSelected]=useState(0);
   const panel=useRef<HTMLElement>(null),buttons=useRef<Array<HTMLButtonElement|null>>([]);
   const id=dialoguePerson(speaker),person=id?dialoguePeople[id]:null,appearance=npcAppearanceId(speaker);
   const book=speaker.startsWith('セッティング本棚');
-  const choices=dialogueChoices(shopAfter,book,dialogueStage);
+  const choices=dialogueChoices(shopAfter,book,dialogueStage).map(choice=>choice.action==='officialRace'&&zenithCleared?{...choice,label:'タイムアタックに挑戦！'}:choice);
   const choose=(index:number)=>{const action=choices[index]?.action;if(action==='officialRace')startOfficialRace();else if(action==='advance')advance();else if(action==='legendSetting')openSetting();else if(action==='legendRace')startLegendChallenge();else if(action==='villainRace')startVillainChallenge();else close();};
   useEffect(()=>{setSelected(0);buttons.current[0]?.focus();},[speaker,dialogue]);
   useEffect(()=>{

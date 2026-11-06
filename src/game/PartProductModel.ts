@@ -44,7 +44,7 @@ export function buildPartProduct(part:Part){
    for(const z of [-1.39,1.39])ring(side*.5,.22,z,.073,.023,metal);
   }
   for(const z of [-1.05,1.08]){box(0,.3,z,1.05,.25,.36,color);cylinder(0,.35,z,.11,1.5,steel,'x');cylinder(.8,.35,z,.15,.09,black,'x');cylinder(-.8,.35,z,.15,.09,black,'x');for(const x of [-.34,0,.34])box(x,.44,z,.045,.035,.28,accent);}
-  box(0,.21,.08,.055,.12,1.6,color);box(0,.38,-.84,.66,.25,.44,black);cylinder(.15,.44,-.84,.18,.72,metal,'x');
+  box(0,.21,.08,.055,.12,1.6,color);box(0,.38,part.specs.frontMotor===1?.84:-.84,.66,.25,.44,black);cylinder(.15,.44,part.specs.frontMotor===1?.84:-.84,.18,.72,metal,'x');
   for(const side of [-1,1])for(const z of [-.64,.65])box(side*.36,.28,z,.24,.22,.05,black);
  }else if(part.category==='battery'){
   for(const x of [-.4,.4]){
@@ -59,7 +59,7 @@ export function buildPartProduct(part:Part){
   for(const side of [-1,1])ring(side*width/2,.84,0,tire?.73:.72,.027,tire?black:edge,'x');
   if(!tire){cylinder(width/2,.84,0,.16,.15,accent,'x');for(let i=0;i<Math.max(3,a.detail);i++){const angle=i*2*Math.PI/Math.max(3,a.detail);const spoke=box(width/2,.84+Math.cos(angle)*.39,Math.sin(angle)*.39,.1,.63,.085,accent);spoke.rotation.x=angle;}cylinder(width/2+.09,.84,0,.065,.03,black,'x');}
   else{
-   const offroad=/sand|trail|hybrid|apex/.test(part.id);
+   const offroad=/sand|trail|hybrid|apex|dune|gravel/.test(part.id);
    for(let i=0;i<(offroad?28:48);i++){const angle=i*Math.PI*2/(offroad?28:48);const tread=box(0,.84+Math.cos(angle)*r,Math.sin(angle)*r,width*.87,offroad?.06:.007,offroad?.06:.012,offroad?black:steel);tread.rotation.x=angle;}
    for(const side of [-1,1])ring(side*(width/2+.004),.84,0,.64,.01,accent,'x');
   }

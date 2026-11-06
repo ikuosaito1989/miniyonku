@@ -53,6 +53,7 @@ export function paintVenueFacade(p:SceneryPen,v:TownVenue,open:boolean){
   if(v.id==='aozora'){p.rect(x+w-11,y-12,1,26,'#d2dbd1');p.poly([[x+w-10,y-12],[x+w+9,y-7],[x+w-10,y+2]],'#84b8cb');}
   if(v.id==='yuunagi')for(let i=0;i<3;i++)p.line([[x+15,y+57+i*4],[x+20,y+55+i*4],[x+25,y+59+i*4],[x+30,y+57+i*4]],'#a9b9d7',1);
   if(v.id==='akatsuki')p.trophy(x+w-21,y+49,.4);
+  if(v.id==='hoshikuzu')for(const xx of [x+20,x+w-20]){p.line([[xx,y+49],[xx,y+68]],'#e7d5a2',2);p.line([[xx-7,y+58],[xx+7,y+58]],'#e7d5a2',2);}
   if(v.id==='atelier'){p.ellipse(x+23,y+58,7,7,'#a6a0bc');p.ellipse(x+23,y+58,3,3,t.ink);for(let i=0;i<8;i++){const a=i*Math.PI/4;p.line([[x+23+Math.cos(a)*6,y+58+Math.sin(a)*6],[x+23+Math.cos(a)*9,y+58+Math.sin(a)*9]],'#c7bed6',1.5);}}
  }
 

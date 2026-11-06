@@ -213,17 +213,24 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
       add(new THREE.BoxGeometry(.006,.002,.004),partAccent(equipment.terminal,90),side*.021,serviceDeck+.003,-.098).name='terminal-contact';
     }
   }
-  // モーター／ギアはリアデッキの点検窓から見える小型パーツとして表現。
+  const frontMotor=parts.find(p=>p.id===equipment.chassis)!.specs.frontMotor===1;
+  const motorZ=frontMotor?.086:-.126,gearZ=frontMotor?.113:-.105;
+  // FMは前部、通常は後部の点検窓に駆動ユニットを配置する。
   const motorPaint=partMaterial(equipment.motor,75),gearPaint=partMaterial(equipment.gear,80),gearAccent=partAccent(equipment.gear,70);
   const gearRatio=parts.find(p=>p.id===equipment.gear)!.specs.ratio;
   const gearTeeth=equipment.gear==='gear-3.5'?24:Math.round(gearRatio*7);
-  add(new THREE.CylinderGeometry(.012,.012,.004,gearTeeth),gearPaint,0,.074,-.105).name='gear-inspection-cap';
-  add(new THREE.TorusGeometry(.014,.0015,6,32),gearAccent,0,.077,-.105).name='gear-accent-ring';
+  add(new THREE.CylinderGeometry(.012,.012,.004,gearTeeth),gearPaint,0,.074,gearZ).name='gear-inspection-cap';
+  add(new THREE.TorusGeometry(.014,.0015,6,32),gearAccent,0,.077,gearZ).name='gear-accent-ring';
   const motorSpecs=parts.find(p=>p.id===equipment.motor)!.specs;
   const ventCount=equipment.motor==='motor-rev'?5:equipment.motor==='motor-torque'?3:Math.max(4,Math.min(8,Math.round(motorSpecs.rpm/5000)+2));
   for(let i=0;i<ventCount;i++){
     const x=(i-(ventCount-1)/2)*.008;
-    add(new THREE.BoxGeometry(.003,.003,.021),motorPaint,x,.074,-.126).name='motor-cooling-fin';
+    add(new THREE.BoxGeometry(.003,.003,.021),motorPaint,x,.074,motorZ).name='motor-cooling-fin';
+  }
+  if(frontMotor){
+    const can=add(new THREE.CylinderGeometry(.008,.008,.052,24),motorPaint,0,.067,motorZ);can.rotation.z=Math.PI/2;can.name='front-motor-can';
+    for(const side of [-1,1]){const cap=add(new THREE.CylinderGeometry(.0085,.0085,.003,20),partAccent(equipment.motor,85),side*.027,.067,motorZ);cap.rotation.z=Math.PI/2;cap.name='front-motor-end-cap';}
+    const gearcase=add(new THREE.BoxGeometry(.05,.012,.025),frameAccent,0,.052,.112);gearcase.name='front-gearbox';
   }
   const hollowShaft=parts.find(p=>p.id===equipment.shaft)!.specs.weight<=3;
   if(hollowShaft){
@@ -235,7 +242,7 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
   const slideCarriages:THREE.Group[]=[];
   for(const [accessoryIndex,accessoryId] of [equipment.accessory,equipment.accessory2,equipment.accessory3].entries()){
     const accessoryStart=car.children.length;
-    if((accessoryId==='accessory-slide-rear'||accessoryId==='accessory-slide-pro')){
+    if(/slide/.test(accessoryId)){
       const {housing,carriage}=buildRearSlide(accessoryIndex,look(accessoryId));car.add(housing,carriage);rearSlide??=carriage;slideCarriages.push(carriage);
     }else if(/damper/.test(accessoryId)||accessoryId==='accessory-active'){
       for(const side of [-1,1]){
@@ -245,7 +252,7 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
         add(new THREE.SphereGeometry(.004,12,8),darkRubber,side*.057,.09,.025).name='damper-post-cap';
         for(let ring=0;ring<5;ring++){const spring=add(new THREE.TorusGeometry(.005,.001,4,12),metal,side*.057,.067+ring*.003,.025);spring.rotation.x=Math.PI/2;spring.name='damper-spring';}
       }
-    }else if(accessoryId==='accessory-weight'){
+    }else if(/weight/.test(accessoryId)){
       add(new THREE.BoxGeometry(.052,.007,.024),partMaterial(accessoryId,65),0,.034,.066).name='ballast-plate';
       add(new THREE.BoxGeometry(.04,.002,.003),partAccent(accessoryId),0,.039,.066).name='ballast-mark';
     }else if(/gyro/.test(accessoryId)){
@@ -254,18 +261,18 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
     }else if(accessoryId==='accessory-stabilizer'){
       add(new THREE.BoxGeometry(.13,.006,.018),partMaterial(accessoryId,70),0,.027,-.07).name='low-stabilizer-bar';
       for(const side of [-1,1])add(new THREE.CylinderGeometry(.006,.006,.012,12),partAccent(accessoryId,80),side*.064,.034,-.07).name='low-stabilizer-end';
-    }else if(/support|drive/.test(accessoryId)){
+    }else if(/support|drive|bearing/.test(accessoryId)){
       for(const side of [-1,1])add(new THREE.BoxGeometry(.008,.012,.11),partMaterial(accessoryId,75),side*.07,.031,0).name='underbody-support';
     }
     for(const item of car.children.slice(accessoryStart)){item.userData.partId=accessoryId;item.userData.equipmentSlot=['accessory','accessory2','accessory3'][accessoryIndex];}
-    if(accessoryId!=='accessory-slide-rear'&&accessoryId!=='accessory-slide-pro')for(const item of car.children.slice(accessoryStart))item.position.z+=accessoryIndex*.022;
+    if(!/slide/.test(accessoryId))for(const item of car.children.slice(accessoryStart))item.position.z+=accessoryIndex*.022;
   }
   const rotatingWheels:THREE.Group[]=[],rotatingRollers:THREE.Group[]=[];
   for(const z of [-.083,.083]){
     const axle=add(new THREE.CylinderGeometry(hollowShaft?.002:.003,hollowShaft?.002:.003,.179,12),partMaterial(equipment.shaft,85),0,.033,z);axle.rotation.z=Math.PI/2;axle.name='drive-shaft';
     for(const side of [-1,1]){
       const wheelStart=car.children.length;
-      const trailTire=/trail|sand|dune/.test(equipment.tire),microTread=equipment.tire==='tire-hybrid';
+      const trailTire=/trail|sand|dune|gravel/.test(equipment.tire),microTread=/hybrid|gravel/.test(equipment.tire);
       const tireRadius=parts.find(p=>p.id===equipment.tire)!.specs.diameter/26*.033;
       const tireWidth=equipment.tire==='tire-1'?.034:equipment.tire==='tire-2'?.022:.028;
       const tire=add(new THREE.CylinderGeometry(tireRadius,tireRadius,tireWidth,40,1),rubber,side*.082,.033,z);tire.rotation.z=Math.PI/2;tire.name=`tire-${equipment.tire}`;
@@ -279,11 +286,12 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
       }
       const wheelColor=hex(look(equipment.wheel).color),wheelAccent=new THREE.MeshStandardMaterial({color:hex(look(equipment.wheel).accent),metalness:.65,roughness:.34});
       const rim=add(new THREE.LatheGeometry([new THREE.Vector2(.019,-.0015),new THREE.Vector2(.022,-.0015),new THREE.Vector2(.022,.0015),new THREE.Vector2(.019,.0015),new THREE.Vector2(.019,-.0015)],32),new THREE.MeshStandardMaterial({color:wheelColor,metalness:.5,roughness:.4}),side*.097,.033,z);rim.rotation.z=Math.PI/2;rim.name=`wheel-rim-${equipment.wheel}`;
-      const spokes=Math.max(3,look(equipment.wheel).detail);
+      const spokes=Math.max(3,look(equipment.wheel).detail),rimScale=(parts.find(p=>p.id===equipment.wheel)!.specs.diameter??17)/17;
+      rim.scale.set(rimScale,1,rimScale);
 
       for(let i=0;i<spokes;i++){
         const angle=i*Math.PI*2/spokes;
-        const spoke=add(new THREE.CapsuleGeometry(equipment.wheel==='wheel-light'?.0011:.0015,.014,3,6),wheelAccent,side*.099,.033+Math.cos(angle)*.011,z+Math.sin(angle)*.011);spoke.rotation.x=angle;spoke.name=`wheel-spoke-${equipment.wheel}`;
+        const spoke=add(new THREE.CapsuleGeometry(equipment.wheel==='wheel-light'?.0011:.0015,.014*rimScale,3,6),wheelAccent,side*.099,.033+Math.cos(angle)*.011*rimScale,z+Math.sin(angle)*.011*rimScale);spoke.rotation.x=angle;spoke.name=`wheel-spoke-${equipment.wheel}`;
       }
       const oneWay=parts.find(p=>p.id===equipment.wheel)!.specs.cornerDrag<.9;
       const hub=add(new THREE.CylinderGeometry(oneWay?.009:.007,oneWay?.009:.007,.005,16),partAccent(equipment.wheel,90),side*.101,.033,z);hub.rotation.z=Math.PI/2;hub.name='wheel-hub';
@@ -297,12 +305,12 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
   for(const x of [-.101,.101])for(const z of [-.13,0,.125]){
     const rollerStart=car.children.length;
     const slot=z<0?'rollerRear':z>0?'rollerFront':'rollerSide',id=equipment[slot];
-    if(id==='roller-double'||id==='roller-lowdouble'||id==='roller-crown'){
+    if(/double|crown/.test(id)){
       add(new THREE.CylinderGeometry(.0025,.0025,id==='roller-lowdouble'?.034:.055,12),metal,x,id==='roller-lowdouble'?.058:.065,z).name='double-roller-pole';
       add(new THREE.CylinderGeometry(.014,.014,.009,24),partMaterial(id,65),x,id==='roller-lowdouble'?.063:.083,z).name='double-roller-upper';
       const upperRing=add(new THREE.TorusGeometry(.01,.0015,6,24),partAccent(id,85),x,id==='roller-lowdouble'?.068:.088,z);upperRing.rotation.x=Math.PI/2;
     }
-    const machined=id==='roller-sovereign'||id==='roller-2'||id==='roller-double'||id==='roller-turn'||id==='roller-ceramic'||id==='roller-lowdouble'||id==='roller-zenith'||id==='roller-crown';
+    const machined=(parts.find(p=>p.id===id)!.specs.friction<=.05)||id==='roller-sovereign'||id==='roller-2'||id==='roller-double'||id==='roller-turn'||id==='roller-ceramic'||id==='roller-lowdouble'||id==='roller-zenith'||id==='roller-crown';
     const rollerMaterial=machined&&id!=='roller-sovereign'?metal:partMaterial(id,id==='roller-1'?12:60);
     const profile=[new THREE.Vector2(.0105,-.0045),new THREE.Vector2(.0137,-.0045),new THREE.Vector2(.014,-.003),new THREE.Vector2(.014,.003),new THREE.Vector2(.0137,.0045),new THREE.Vector2(.0105,.0045),new THREE.Vector2(.0105,-.0045)];
     const base=add(machined?new THREE.LatheGeometry(profile,32):new THREE.CylinderGeometry(.014,.014,.009,32),rollerMaterial,x,.045,z);base.name=`roller-${slot}-${id}`;
@@ -322,7 +330,7 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
     // 軸・ナットは固定し、接触するリングだけを独立して回す。
     const roller=new THREE.Group();roller.name='rotating-roller';roller.position.set(x,.045,z);roller.userData.side=Math.sign(x);roller.userData.slot=slot;
     const stripe=add(new THREE.BoxGeometry(.003,.0008,.009),new THREE.MeshStandardMaterial({color:0xf0d778,metalness:.3,roughness:.4}),x,.0505,z+.008);stripe.name='roller-rotation-mark';
-    if(id==='roller-double'||id==='roller-lowdouble'||id==='roller-crown')add(new THREE.BoxGeometry(.003,.0008,.009),stripe.material,x,id==='roller-lowdouble'?.068:.088,z+.008).name='roller-upper-rotation-mark';
+    if(/double|crown/.test(id))add(new THREE.BoxGeometry(.003,.0008,.009),stripe.material,x,id==='roller-lowdouble'?.068:.088,z+.008).name='roller-upper-rotation-mark';
     for(const item of car.children.slice(rollerStart))if(item.name!=='double-roller-pole'&&item.name!=='roller-machined-hub'){item.position.sub(roller.position);roller.add(item);}
     car.add(roller);rotatingRollers.push(roller);
     add(new THREE.CylinderGeometry(.002,.002,.022,16),metal,x,.049,z).name=`roller-axle-${slot}`;

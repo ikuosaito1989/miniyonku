@@ -52,7 +52,7 @@ export class TrialRenderer {
     this.state=createRaceState(equipment,seed,condition,challenge,circuitId,this.bodyPaint);
     this.renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});
     this.renderer.setPixelRatio(1);
-    this.renderer.setClearColor(challenge==='official'?0x344d5b:0x315b2a);
+    this.renderer.setClearColor((challenge==='official'||challenge==='time-attack')?0x344d5b:0x315b2a);
     this.renderer.outputColorSpace=THREE.SRGBColorSpace;
     this.environment=studioEnvironment(this.renderer);this.scene.environment=this.environment.texture;
     this.renderer.domElement.style.width='100%';
@@ -61,9 +61,9 @@ export class TrialRenderer {
     this.scene.add(new THREE.HemisphereLight(0xe4efff,0x45653b,2));
     const sun=new THREE.DirectionalLight(0xffffff,1.3);sun.position.set(-3,8,4);this.scene.add(sun);
     const grass=this.grassTexture();
-    const ground=new THREE.Mesh(new THREE.PlaneGeometry(this.track.open?600:100,this.track.open?600:100),new THREE.MeshLambertMaterial(challenge==='official'?{color:0x7c928f}:{map:grass}));
+    const ground=new THREE.Mesh(new THREE.PlaneGeometry(this.track.open?600:100,this.track.open?600:100),new THREE.MeshLambertMaterial((challenge==='official'||challenge==='time-attack')?{color:0x7c928f}:{map:grass}));
     ground.rotation.x=-Math.PI/2;ground.position.y=-0.025;this.scene.add(ground);
-    this.scene.add(raceVenueScenery(this.track,challenge==='official'));
+    this.scene.add(raceVenueScenery(this.track,(challenge==='official'||challenge==='time-attack')));
     this.buildTrack();this.buildObstacles();this.buildStart();
     for(const racer of this.state.racers){
       const car=buildRaceMachineModel(racer);car.userData.handling=handlingProfile(racer.equipment,racer.performance);this.cars.set(racer.id,car);this.scene.add(car);

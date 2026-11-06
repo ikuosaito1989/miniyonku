@@ -1,12 +1,15 @@
+import {postClearPartIds,legendBodyIds} from './postClearParts';
+import {zenithParts} from './zenithParts';
 import {sovereignPartIds} from './sovereignParts';
 import { starterShop, type ShopStock } from './progression';
 import type { CircuitId } from './circuit';
 
-export type ShopId='atelier'|'komorebi'|'aozora'|'hinata'|'wakaba'|'yuunagi'|'akatsuki';
+export type ShopId='hoshikuzu'|'atelier'|'komorebi'|'aozora'|'hinata'|'wakaba'|'yuunagi'|'akatsuki';
 export type WorldLocation=ShopId|'library'|'town'|'stadium-5'|'stadium-9'|'stadium-10'|'stadium-7';
 export interface ModelShop extends ShopStock { id:ShopId; owner:string; circuitId:CircuitId; stage:number; color:number; welcome:string }
 // 店の進行段階とパーツの入手段階は別。入門店の既存品揃えを維持する。
 export const modelShops:Record<ShopId,ModelShop>={
+ hoshikuzu:{id:'hoshikuzu',name:'ほしくず模型店',maxPartLevel:10,exclusiveParts:[...postClearPartIds,...legendBodyIds,...zenithParts.map(p=>p.id),'tire-trail','tire-sand'],owner:'星野 玄一',circuitId:'forge',stage:7,color:0x526b92,welcome:'天頂決戦のクリア、おめでとう！ レジェンド4人のボディ、FMの前置きモーターシャーシ、砂・砂利・舗装・着地の専門パーツを揃えたよ。組み合わせたマシンで各公式会場のタイムアタックへ。星皇を1つでも装着した走行はランキングに記録されないから、記録用のセッティングを作ろう！'},
   akatsuki:{id:'akatsuki',name:'あかつき模型店',maxPartLevel:10,owner:'暁堂 司',circuitId:'forge',stage:6,color:0xb56860,welcome:'緑川の入賞、おめでとう！ ここには怜・岳・斗和・昊也のレジェンド4人も試走に来ている。最上位パーツを22種入荷したぞ。縦ループ、横スパイラル、砂地、坂、ジャンプを制する組み合わせを探そう。勝敗に関係なく、途中で戻らず5回レースの結果まで走れば、天頂決戦・ゼニス・クラウンの出場権を渡す。'},
   yuunagi:{id:'yuunagi',name:'ゆうなぎ模型店',maxPartLevel:6,owner:'夕凪 慎吾',circuitId:'trail',stage:5,color:0x8074a8,welcome:'星空テクニカル杯の入賞、おめでとう！ 新作のリアウイング・スライドダンパー、セラミックローラー、低い二段ローラー、サージモーター、フローティングホイール、低反発タイヤを揃えたよ。ここはスタートとゴールが別の一本道タイムアタック。約172mの高架スパイラル・ジャンプ台・ロングストレートを越え、公式タイム40秒以内で完走すると第4公式大会・緑川グランプリの出場権を授けるよ。何度でもセッティングを変えて挑戦できる。'},
   atelier:{id:'atelier',name:'星霧模型工房',maxPartLevel:10,exclusiveParts:sovereignPartIds,owner:'星野 玄一',circuitId:'leaf',stage:1,color:0x77649c,welcome:'ようこそ、星霧模型工房へ。星皇シリーズは全11種類・13品、各25万円。全品325万円で、ローラー1セットを前中後に共用できる。モーター・電池は消耗なし。出力・軽さ・効率・旋回は最上位だが、硬いスリックは砂地に弱い。悪路タイヤやフレックスシャーシ、比率の違うギアとの混成で、コースに合わせてさらに速い構成を探そう。'},
@@ -16,8 +19,8 @@ export const modelShops:Record<ShopId,ModelShop>={
   hinata:{id:'hinata',name:'ひなた模型店',maxPartLevel:4,owner:'日向 誠二',circuitId:'sun',stage:3,color:0xb78e4f,welcome:'黒岩くんを破ったレーサーだね。ようこそ、ひなた模型店へ！ここは砂利・砂地・連続コーナーが続く長いダートコースだ。悪路用モーターとブロックタイヤ、ダンパー、ポール式ダブルローラーで挑もう。'},
 };
 export function currentShop(location:WorldLocation){return modelShops[location==='town'||location==='library'?'komorebi':location==='stadium-5'?'hinata':location==='stadium-9'?'wakaba':location==='stadium-10'?'yuunagi':location==='stadium-7'?'akatsuki':location];}
-export interface WorldProgress {legendRaceCompleted:boolean;villainDefeated:boolean;officialQualified?:boolean;wakabaUnlocked?:boolean;thirdOfficialQualified?:boolean;yuunagiUnlocked?:boolean;finalQualified?:boolean;grandprixCleared?:boolean;zenithQualified?:boolean}
-export function canEnterShop(id:ShopId,progress:WorldProgress){return id==='akatsuki'?progress.grandprixCleared===true:id==='yuunagi'?progress.yuunagiUnlocked===true:id==='wakaba'?progress.wakabaUnlocked===true:(id==='komorebi'||id==='atelier')||progress.legendRaceCompleted&&(id==='aozora'||progress.villainDefeated);}
+export interface WorldProgress {legendRaceCompleted:boolean;villainDefeated:boolean;officialQualified?:boolean;wakabaUnlocked?:boolean;thirdOfficialQualified?:boolean;yuunagiUnlocked?:boolean;finalQualified?:boolean;grandprixCleared?:boolean;zenithQualified?:boolean;zenithCleared?:boolean}
+export function canEnterShop(id:ShopId,progress:WorldProgress){return id==='hoshikuzu'?progress.zenithCleared===true:id==='akatsuki'?progress.grandprixCleared===true:id==='yuunagi'?progress.yuunagiUnlocked===true:id==='wakaba'?progress.wakabaUnlocked===true:(id==='komorebi'||id==='atelier')||progress.legendRaceCompleted&&(id==='aozora'||progress.villainDefeated);}
 export function isVenueOpen(venue:TownVenue,progress:WorldProgress){return venue.kind==='library'?true:venue.id==='stadium-7'?progress.zenithQualified===true:venue.id==='stadium-10'?progress.finalQualified===true:venue.id==='stadium-9'?progress.thirdOfficialQualified===true:venue.id==='stadium-5'?progress.officialQualified===true:!!venue.shopId&&canEnterShop(venue.shopId,progress);}
 export interface TownVenue {id:string;name:string;kind:'shop'|'stadium'|'library';stage:number;x:number;y:number;w:number;h:number;entrance:'north'|'south';color:number;shopId?:ShopId}
 const venueTemplates:TownVenue[]=[
@@ -27,7 +30,7 @@ const venueTemplates:TownVenue[]=[
   {id:'wakaba',name:'わかば模型店',kind:'shop',stage:4,x:582,y:150,w:132,h:88,entrance:'south',color:0x709250,shopId:'wakaba'},
   {id:'yuunagi',name:'ゆうなぎ模型店',kind:'shop',stage:5,x:750,y:150,w:132,h:88,entrance:'south',color:0x8074a8,shopId:'yuunagi'},
   {id:'akatsuki',name:'あかつき模型店',kind:'shop',stage:6,x:78,y:466,w:132,h:88,entrance:'north',color:0xb56860,shopId:'akatsuki'},
-  {id:'hoshikuzu',name:'ほしくず模型店',kind:'shop',stage:7,x:246,y:466,w:132,h:88,entrance:'north',color:0x626f99},
+  {id:'hoshikuzu',name:'ほしくず模型店',kind:'shop',stage:7,x:246,y:466,w:132,h:88,entrance:'north',color:0x626f99,shopId:'hoshikuzu'},
   {id:'stadium-5',name:'若葉レース場',kind:'stadium',stage:5,x:414,y:466,w:132,h:88,entrance:'north',color:0x55978c},
   {id:'stadium-7',name:'天頂決戦・ゼニス・クラウン',kind:'stadium',stage:7,x:582,y:466,w:132,h:88,entrance:'north',color:0x697eae},
   {id:'stadium-9',name:'星空レース場',kind:'stadium',stage:9,x:750,y:466,w:132,h:88,entrance:'north',color:0x9674a6},
@@ -60,6 +63,7 @@ export const shopExit={x:440,y:575,w:80,h:7};
 export function townSpawn(shop:ShopId|'library'|'stadium-5'|'stadium-9'|'stadium-10'|'stadium-7'){const venue=townVenues.find(v=>v.id===shop)!;return {x:venue.x+venue.w/2,y:venue.entrance==='north'?venue.y-42:venue.y+venue.h+42};}
 export function venueMessage(venue:TownVenue){
   if(venue.kind==='library')return '最初から無料で入れる図書館。全種類のパーツの性能・特徴・入手先、ギア比やモーターの基礎を調べられます。未所持品・非売品も閲覧可能。';
+  if(venue.id==='hoshikuzu')return 'ゲームクリア後に開放。レジェンドのボディ、FMシャーシ、路面別の専門パーツを豊富に販売。公式会場のタイムアタックへ向けてセッティングを磨こう。';
   if(venue.id==='stadium-7')return '最終大会・天頂決戦ゼニス・クラウン。あかつき模型店で5回レースを終えると出場権を獲得。全要素を詰め込んだ史上最長の一本道で、怜・岳・斗和・昊也のレジェンド4人と決戦。2位以内の完走でゲームクリア。';
   if(venue.id==='akatsuki')return '緑川グランプリで2位以内に入ると開放。最上位パーツ22種と強豪たちの試走コース。結果まで5回走れば最終大会の出場権。';
   if(venue.id==='yuunagi')return '星空テクニカル杯で3位以内に入ると開放。一本道の高架スパイラルとジャンプ台を40秒以内で完走すると、第4公式大会・緑川グランプリの出場権を獲得できます。';

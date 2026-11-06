@@ -1,3 +1,4 @@
+import {postClearParts} from './postClearParts';
 import {sovereignParts} from './sovereignParts';
 import {mechanicMotorParts} from './mechanicMotor';
 import {zenithParts} from './zenithParts';
@@ -9,6 +10,7 @@ export interface Part { id: string; level:number; category: Category; name: stri
 type PartDefinition=Omit<Part,'level'>;
 const definitions: PartDefinition[] = [
   ...sovereignParts,
+  ...postClearParts,
   ...mechanicMotorParts,
   ...zenithParts,
   {id:'accessory-slide-rear',category:'accessory',name:'リアウイング・スライドダンパー',price:2600,description:'ゆうなぎの新作。ウイング下の左右スライドステーへリヤローラーを取り付ける補助ユニット。横方向の衝撃と着地の揺れを逃がす。ローラーはリヤ欄で別に選択する。',specs:{weight:5,stability:1.2,efficiency:1,damping:.38,cornerDrag:.92},performance:'5 g / 安定性 ×1.20 / 制振38% / 旋回抵抗 ×0.92'},

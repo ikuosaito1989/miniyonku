@@ -18,8 +18,8 @@ test('16人は別の顔・原画セルを持ち、全方向・歩行フレーム
  for(const shop of Object.values(modelShops))assert.ok(npcAppearanceId(shop.owner));
  for(const id of ['rival','guide','mechanic','ren','sou','momo'] as const)assert.equal(dialoguePeople[id].faceBase,`npc-${id}`);
 });
-test('7店は共通の模型店の床を保ち、配色を変え、歩行は約2割速くする',()=>{
+test('8店は共通の模型店の床を保ち、配色を変え、歩行は約2割速くする',()=>{
  assert.equal(new Set(Object.values(shopThemes).map(t=>t.style)).size,7);
- assert.equal(new Set(Object.values(shopThemes).map(t=>t.floor)).size,7);assert.ok(Object.values(shopThemes).every(t=>t.pattern==='tile'));
+ assert.equal(new Set(Object.values(shopThemes).map(t=>t.floor)).size,8);assert.ok(Object.values(shopThemes).every(t=>t.pattern==='tile'));
  assert.ok(walkingSpeed.town>235&&walkingSpeed.town<300);assert.ok(walkingSpeed.interior>155&&walkingSpeed.interior<210);
 });

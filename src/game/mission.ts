@@ -6,7 +6,7 @@ type Progress=Pick<GameState,'location'|'gameOver'|'unlockedRaces'|'legendRaceCo
 /** セーブされた進行から現在の一件を導く。表示のために進行を変更しない。 */
 export function currentMission(s:Progress):Mission{
  if(s.gameOver)return {id:'game-over',title:'ゲームオーバー',destination:null,place:'公式大会',steps:['大会の総合順位を確認する。'],hint:'公式大会は一度限りです。再出場はできません。'};
- if(s.zenithCleared)return {id:'complete',title:'天頂決戦・ゲームクリア！',destination:null,place:'ゼニス・クラウン',steps:['史上最長の決戦を2位以内で走り切りました。'],hint:'最強の仲間たちとの決戦の記録はセーブ済みです。模型店のレースと改造を楽しめます。',complete:true};
+ if(s.zenithCleared)return {id:'complete',title:'クリア後のタイムアタック',destination:'hoshikuzu',place:'ほしくず模型店',steps:['史上最長の決戦を2位以内で走り切りました。'],hint:'ほしくず模型店が開放されました。FMシャーシや専門パーツを揃え、各公式会場で何度でも記録に挑戦できます。星皇装着の走行は記録対象外です。',complete:true};
  if(s.zenithQualified)return {id:'zenith',title:'天頂決戦・ゼニス・クラウンへ',destination:'stadium-7',place:'天頂決戦・ゼニス・クラウン',steps:['街のゼニス・クラウン会場へ入る。','ピットで縦ループ・砂・ジャンプを両立する装備に整える。','怜・岳・斗和・昊也のレジェンド4人との最長の決戦で2位以内に完走する。'],hint:'出場は一度だけ。3位以下・リタイア・途中退出・再読み込みはゲームオーバー。モーターのトルクとギア、砂地の追従、長距離電池を確認しよう。'};
  if(s.grandprixCleared)return {id:'akatsuki',title:`あかつきで5回レースする（${Math.min(5,s.akatsukiRaceCount)}/5）`,destination:'akatsuki',place:'あかつき模型店',steps:['街のあかつき模型店へ向かう。','22種の最上位パーツから、ループ・砂地・着地に対応する構成を組む。','怜・岳・斗和・昊也のレジェンド4人と、途中退出せず結果まで5回レースする。'],hint:'勝利数は条件ではありません。5回で最後の出場権。バランス型、高速＋トルクギア、悪路追従型などを試そう。'};
  if(s.finalQualified)return {id:'grandprix',title:'緑川グランプリで2位以内に入る',destination:'stadium-10',place:'緑川グランプリ',steps:['街の緑川グランプリ決勝会場へ入る。','ピットで新品電池・慣らし済みモーター・旋回と着地の装備を確認する。','中央の決勝コースを調べ、黒岩・橘 斗和・モブ2人と勝負する。'],hint:'伝説の兄弟も応援に来ています。夕凪を発展させた一本道。2位以内で次のあかつき模型店、3位以下・リタイアはゲームオーバー。出場は一度だけ、途中退出・再読み込みは棄権です。'};

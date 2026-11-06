@@ -1,6 +1,7 @@
 import type {ShopId} from './world';
 export type ShopTheme={style:'timber'|'glass'|'garage'|'garden'|'harbor'|'deco'|'atelier';floor:string;floorDark:string;wall:string;ink:string;wood:string;metal:string;accent:string;light:string;pattern:'parquet'|'tile'|'concrete'|'stone'|'deck'|'marble'|'mosaic'};
 export const shopThemes:Record<ShopId,ShopTheme>={
+ hoshikuzu:{style:'deco',floor:'#c3d3dc',floorDark:'#9db4c5',wall:'#687c9d',ink:'#233954',wood:'#425a75',metal:'#ced8dd',accent:'#a9c5df',light:'#eee9bf',pattern:'tile'},
  komorebi:{style:'timber',floor:'#b9e1d4',floorDark:'#9cc6b7',wall:'#858fae',ink:'#334c49',wood:'#74503d',metal:'#8b9b96',accent:'#588c70',light:'#ffe5ad',pattern:'tile'},
  aozora:{style:'glass',floor:'#c5dee8',floorDark:'#a6c7d6',wall:'#879cb5',ink:'#264d71',wood:'#738aa0',metal:'#d4e5ea',accent:'#4e9fc4',light:'#d9f8ff',pattern:'tile'},
  hinata:{style:'garage',floor:'#e1cfaa',floorDark:'#c4b58e',wall:'#a49d8c',ink:'#33454a',wood:'#755845',metal:'#c4c5b8',accent:'#d49a4e',light:'#ffdf9e',pattern:'tile'},

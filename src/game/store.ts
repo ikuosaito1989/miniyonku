@@ -1,3 +1,4 @@
+import type {CircuitId} from '../data/circuit';
 import {towaEscortLocation} from './towaEscort';
 import {KOYA_ESCORT_END,koyaEscortActive,koyaEscortLocation} from './koyaEscort';
 import {syncMechanicMotor} from './mechanicMotor';
@@ -40,7 +41,7 @@ export interface GameState extends Wallet {
   openingStep:number;openingActive:boolean;openingTour:OpeningTour|null;
   startOpening:(replay?:boolean)=>void;advanceOpening:(expectedStep:number)=>void;completeOpeningWalk:(expectedStep:number)=>void;finishOpening:(showSetting?:boolean)=>void;
   lastLoginAt:number|null;loginBonusReceived:boolean;recordLogin:(now?:number)=>void;
-  timeHistory:TimeHistory;openTimeBoard:()=>void;
+  timeHistory:TimeHistory;legacyTimeHistory:TimeHistory;timeBoardCircuit:CircuitId|null;openTimeBoard:(id?:CircuitId)=>void;officialReplayActive:boolean;
   yuunagiUnlocked:boolean;yuunagiBestTime:number|null;finalQualified:boolean;
   wakabaCup:CupProgress;technicalCup:CupProgress;finalCup:CupProgress;grandprixCleared:boolean;zenithCup:CupProgress;zenithCleared:boolean;akatsukiRaceCount:number;zenithQualified:boolean;gameOver:boolean;wakabaUnlocked:boolean;thirdOfficialQualified:boolean;
   enterOfficialVenue:(id?:'stadium-5'|'stadium-9'|'stadium-10'|'stadium-7')=>void;townReturnVenue:'library'|'stadium-5'|'stadium-9'|'stadium-10'|'stadium-7'|null;
@@ -137,7 +138,8 @@ export const useGame = create<GameState>((set) => ({
     if(showSetting&&s.tutorialStage==='pending')return {...tutorialStart(s,false),openingStep:OPENING_END};
     return {tutorialStage:s.tutorialStage==='pending'?'done':s.tutorialStage,openingStep:OPENING_END,openingActive:false,location:'komorebi',lastShop:'komorebi',townReturnVenue:null,overlay:showSetting?'setting':null,shopAfter:false,nearby:'',notice:''};
   }),
-  timeHistory:{},openTimeBoard:()=>set(s=>s.location==='town'||s.location==='atelier'||s.overlay==='race'||(s.overlay==='escort'||s.overlay==='towa-escort'||s.overlay==='podium')||s.overlay==='arrival'?s:{overlay:'time-board',shopAfter:false}),
+  legacyTimeHistory:{},timeBoardCircuit:null,officialReplayActive:false,
+  timeHistory:{},openTimeBoard:(id)=>set(s=>s.location==='town'||s.location==='atelier'||s.overlay==='race'||(s.overlay==='escort'||s.overlay==='towa-escort'||s.overlay==='podium')||s.overlay==='arrival'?s:{overlay:'time-board',shopAfter:false,timeBoardCircuit:id??null}),
   yuunagiUnlocked:false,yuunagiBestTime:null,finalQualified:false,
   wakabaCup:emptyCup(),technicalCup:emptyCup(),finalCup:emptyCup(),grandprixCleared:false,zenithCup:emptyCup(),zenithCleared:false,akatsukiRaceCount:0,zenithQualified:false,gameOver:false,wakabaUnlocked:false,thirdOfficialQualified:false,
   townReturnVenue:null,enterOfficialVenue:(id='stadium-5')=>set(s=>s.gameOver||s.location!=='town'||!(id==='stadium-7'?s.zenithQualified:id==='stadium-10'?s.finalQualified:id==='stadium-5'?s.officialQualified:s.thirdOfficialQualified)||s.overlay==='race'||(s.overlay==='escort'||s.overlay==='towa-escort'||s.overlay==='podium')||s.overlay==='arrival'?s:{location:id,overlay:null,nearby:'',notice:'',shopAfter:false,townReturnVenue:null}),
@@ -145,6 +147,7 @@ export const useGame = create<GameState>((set) => ({
   openOfficialRace:round=>set(s=>{
     if(s.gameOver||s.overlay==='race'||(s.overlay==='escort'||s.overlay==='towa-escort'||s.overlay==='podium')||s.overlay==='arrival')return s;
     if(s.location!=='stadium-5'&&s.location!=='stadium-9'&&s.location!=='stadium-10'&&s.location!=='stadium-7')return {overlay:'dialogue',speaker:'森野 陸',dialogue:'公式戦は各公式会場のコースで開催するよ。若葉杯の総合入賞でわかば模型店、優勝で第3公式大会への出場権が得られる。一度限りの勝負に向けて準備しよう。',dialogueStage:'none',shopAfter:false};
+    if(s.zenithCleared){const selected=s.location==='stadium-5'?(round==='dirt'?'dirt':'speed'):s.location==='stadium-9'?'technical':s.location==='stadium-10'?'final':'zenith';return {officialRound:selected,overlay:'dialogue',speaker:'大会受付係',dialogue:'クリア後の公式コース・タイムアタックです。1台で何度でも挑戦できます。本編の大会結果は変わりません。星皇パーツを1つでも装着した走行は記録対象外です。準備ができたらスタートしましょう。',dialogueStage:'official-invite',shopAfter:false};}
     const cup=activeCup(s),kind=cupKind(s),next=activeRound(s);
     if(cupComplete(cup,kind))return {overlay:'dialogue',speaker:'大会受付係',dialogue:`この大会は出場済みです。総合${cupPlayerPlace(cup)}位。公式大会は一度限りで、再出場はできません。`,dialogueStage:'none',shopAfter:false};
     if(round&&round!==next)return {overlay:'dialogue',speaker:'大会受付係',dialogue:next==='speed'?'まずは第1戦の高速コースから出場してください。':'第1戦は終了しました。ピットで装備を組み直し、第2戦のダートへ進んでください。',dialogueStage:'none',shopAfter:false};
@@ -153,6 +156,7 @@ export const useGame = create<GameState>((set) => ({
   startOfficialRace:()=>set(s=>{
     if(s.gameOver||s.overlay==='race'||(s.overlay==='escort'||s.overlay==='towa-escort'||s.overlay==='podium')||s.overlay==='arrival'||s.location!=='stadium-5'&&s.location!=='stadium-9'&&s.location!=='stadium-10'&&s.location!=='stadium-7')return s;
     if(!(s.location==='stadium-7'?s.zenithQualified:s.location==='stadium-10'?s.finalQualified:s.location==='stadium-9'?s.thirdOfficialQualified:s.officialQualified))return s;
+    if(s.zenithCleared)return {officialRound:s.location==='stadium-5'?(s.officialRound==='speed'?'speed':'dirt'):s.location==='stadium-9'?'technical':s.location==='stadium-10'?'final':'zenith',overlay:'race',officialChallengeActive:true,officialReplayActive:true,legendChallengeActive:false,villainChallengeActive:false,podiumPending:false,shopAfter:false,dialogueStage:'none',notice:'',raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0};
     const round=activeRound(s),id=round==='zenith'?'zenith':round==='final'?'grandprix':round==='technical'?'comet':round==='speed'?'sprint':'sun',old=activeCup(s),cup=enterCupHeat(old,id,cupKind(s));
     if(cup===old)return s;
     return {retryCheckpoint:snapshotGame(s),...(s.location==='stadium-7'?{zenithCup:cup}:s.location==='stadium-10'?{finalCup:cup}:s.location==='stadium-9'?{technicalCup:cup}:{wakabaCup:cup}),overlay:'race',officialChallengeActive:true,officialRound:round,legendChallengeActive:false,villainChallengeActive:false,legendDebriefPending:false,villainDebriefPending:false,shopAfter:false,dialogueStage:'none',notice:'',raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,officialQualificationNotice:false,qualificationNotice:false,thirdShopNotice:false};
@@ -233,7 +237,7 @@ export const useGame = create<GameState>((set) => ({
     const firstAozoraWin=playerWon&&s.location==='aozora'&&!s.villainChallengeActive&&!s.aozoraWon;
     const defeatedVillain=playerWon&&s.location==='aozora'&&s.villainChallengeActive&&!s.villainDefeated;
     const firstHinataWin=playerWon&&race.circuitId==='sun'&&s.location==='hinata'&&!s.officialChallengeActive&&race.event!=='official'&&!s.officialQualified;
-    const cupUpdate=reward&&s.officialChallengeActive&&race.event==='official'?updateCup(s,finishCupHeat(activeCup(s),raceCupHeat(race))):{};
+    const cupUpdate=reward&&s.officialChallengeActive&&!s.officialReplayActive&&race.event==='official'?updateCup(s,finishCupHeat(activeCup(s),raceCupHeat(race))):{};
     const firstWakabaWin=playerWon&&s.location==='wakaba'&&!s.officialChallengeActive;
     const trialFinished=reward&&s.location==='yuunagi'&&race.circuitId==='trail'&&race.event==='shop'&&!s.officialChallengeActive&&player?.driving.status==='finished';
     const trialTime=trialFinished&&player?officialTime(race,player):Infinity;
@@ -244,7 +248,7 @@ export const useGame = create<GameState>((set) => ({
     const inventory=s.inventory;
     if(!delta&&!reward)return s;
     const practice=reward&&player?(player.driving.status==='finished'?5+(rankRacers(race)[0]?.id==='player'?5:0):seconds>0?1:0):0;
-    return {...(reward&&s.officialChallengeActive&&race.event==='official'?{podiumPending:true}:{}),...(s.yuunagiUnlocked&&trialFinished&&trialTime<=yuunagiTimeLimit&&s.towaEscortStep===0&&!s.finalCup.entered?{towaEscortStep:1}:{}),...(reward&&s.tutorialStage==='racing'?{tutorialStage:'result' as const}:{}),...(reward?{timeHistory:recordRaceTimes(s.timeHistory,race,attempt)}:{}),akatsukiRaceCount,zenithQualified,yuunagiBestTime,finalQualified,...(firstHinataWin?{officialQualified:true,officialQualificationNotice:true}:{}),...cupUpdate,...(firstWakabaWin?{thirdOfficialQualified:true,...(s.koyaEscortStep===0&&!s.technicalCup.entered?{koyaEscortStep:1}:{})}:{}),...(reward?{lastRaceReview:reviewRace(race)}:{}),units,inventory,usageSeconds:Math.max(s.usageSeconds,seconds),money:s.money+prize,proficiencyPoints:s.proficiencyPoints+practice,...(firstWin?{unlockedRaces:[...s.unlockedRaces,nextShopRace.id],qualificationNotice:true,...(!s.legendRaceCompleted?{legendEventPending:true}:{})}:{}),...(firstAozoraWin?{aozoraWon:true,villainArrivalPending:true}:{}),...(defeatedVillain?{villainDefeated:true,thirdShopNotice:true}:{}),...(s.villainChallengeActive&&reward?{villainDebriefPending:true}:{}),...(completedLegend?{legendRaceCompleted:true}:{}),...(s.legendChallengeActive&&reward?{legendDebriefPending:true}:{}),...(reward?{lastPrize:prize,settledAttempt:attempt}:{})};
+    return {...(reward&&s.officialChallengeActive&&!s.officialReplayActive&&race.event==='official'?{podiumPending:true}:{}),...(s.yuunagiUnlocked&&trialFinished&&trialTime<=yuunagiTimeLimit&&s.towaEscortStep===0&&!s.finalCup.entered?{towaEscortStep:1}:{}),...(reward&&s.tutorialStage==='racing'?{tutorialStage:'result' as const}:{}),...(reward?{timeHistory:recordRaceTimes(s.timeHistory,race,attempt)}:{}),akatsukiRaceCount,zenithQualified,yuunagiBestTime,finalQualified,...(firstHinataWin?{officialQualified:true,officialQualificationNotice:true}:{}),...cupUpdate,...(firstWakabaWin?{thirdOfficialQualified:true,...(s.koyaEscortStep===0&&!s.technicalCup.entered?{koyaEscortStep:1}:{})}:{}),...(reward?{lastRaceReview:reviewRace(race)}:{}),units,inventory,usageSeconds:Math.max(s.usageSeconds,seconds),money:s.money+prize,proficiencyPoints:s.proficiencyPoints+practice,...(firstWin?{unlockedRaces:[...s.unlockedRaces,nextShopRace.id],qualificationNotice:true,...(!s.legendRaceCompleted?{legendEventPending:true}:{})}:{}),...(firstAozoraWin?{aozoraWon:true,villainArrivalPending:true}:{}),...(defeatedVillain?{villainDefeated:true,thirdShopNotice:true}:{}),...(s.villainChallengeActive&&reward?{villainDebriefPending:true}:{}),...(completedLegend?{legendRaceCompleted:true}:{}),...(s.legendChallengeActive&&reward?{legendDebriefPending:true}:{}),...(reward?{lastPrize:prize,settledAttempt:attempt}:{})};
   }),
   openSetting: () => set(s=>(s.overlay==='escort'||s.overlay==='towa-escort'||s.overlay==='podium')?{}:{overlay:'setting',shopAfter:false,notice:''}),
   libraryShelf:'all',
@@ -266,6 +270,7 @@ export const useGame = create<GameState>((set) => ({
   close: () => set(s=>{
     if(s.openingActive)return s;
     if(s.overlay==='game-over')return s;
+    if(s.overlay==='race'&&s.officialReplayActive)return {overlay:null,officialReplayActive:false,officialChallengeActive:false,shopAfter:false,notice:''};
     if(s.overlay==='race'&&s.officialChallengeActive&&s.podiumPending)return {overlay:'podium'};
     if(s.overlay==='race'&&s.location==='yuunagi'&&s.towaEscortStep===1)return {overlay:'towa-escort',shopAfter:false,notice:''};
     if(s.overlay==='arrival'||s.overlay==='escort'||s.overlay==='towa-escort')return s;
@@ -276,7 +281,7 @@ export const useGame = create<GameState>((set) => ({
     if((s.overlay==='race'||s.overlay==='podium')&&s.officialChallengeActive){
       const updated=updateCup(s,forfeitCupHeat(activeCup(s))),cup=s.location==='stadium-7'?updated.zenithCup:s.location==='stadium-10'?updated.finalCup:s.location==='stadium-9'?updated.technicalCup:updated.wakabaCup,done=cupComplete(cup,cupKind(s));
       if(updated.gameOver)return {...updated,podiumPending:false,overlay:'game-over',officialChallengeActive:false,dialogueStage:'none',shopAfter:false};
-      return {...updated,podiumPending:false,overlay:'dialogue',speaker:'大会受付係',dialogue:done?s.location==='stadium-7'?`天頂決戦・ゼニス・クラウン、${cupPlayerPlace(cup)}位！ おめでとう！ すべての難所と強豪を越え、今度こそゲームクリアです。`:s.location==='stadium-10'?`緑川グランプリ・${cupPlayerPlace(cup)}位！ おめでとう、あかつき模型店が開放されました！ 最上位パーツを揃え、強豪たちと5回走って天頂決戦の出場権をつかんでください。`:s.location==='stadium-9'?`星空テクニカル杯・総合${cupPlayerPlace(cup)}位、おめでとうございます。長距離の連続コーナーを走り切りました。街のゆうなぎ模型店が開放されました！ 次は一本道コースを40秒以内で完走して、第4公式大会の出場権を目指してください。この大会は再出場できません。`:`総合${cupPlayerPlace(cup)}位、おめでとうございます。${updated.officialWon?'第3公式大会・星空テクニカル杯の出場権を獲得！':''}${updated.wakabaUnlocked?'街のわかば模型店が開放されました。':''}この大会は再出場できません。`:'第1戦の結果を記録しました。ピットで装備を組み直し、第2戦へ進んでください。第1戦はやり直せません。',officialChallengeActive:false,dialogueStage:done?'none':'official-invite',shopAfter:false};
+      return {...updated,podiumPending:false,overlay:'dialogue',speaker:'大会受付係',dialogue:done?s.location==='stadium-7'?`天頂決戦・ゼニス・クラウン、${cupPlayerPlace(cup)}位！ おめでとう！ すべての難所と強豪を越え、今度こそゲームクリアです。ほしくず模型店が開放され、各公式会場で何度でもタイムアタックに挑戦できます！ 星皇装着の走行は記録されません。`:s.location==='stadium-10'?`緑川グランプリ・${cupPlayerPlace(cup)}位！ おめでとう、あかつき模型店が開放されました！ 最上位パーツを揃え、強豪たちと5回走って天頂決戦の出場権をつかんでください。`:s.location==='stadium-9'?`星空テクニカル杯・総合${cupPlayerPlace(cup)}位、おめでとうございます。長距離の連続コーナーを走り切りました。街のゆうなぎ模型店が開放されました！ 次は一本道コースを40秒以内で完走して、第4公式大会の出場権を目指してください。この大会は再出場できません。`:`総合${cupPlayerPlace(cup)}位、おめでとうございます。${updated.officialWon?'第3公式大会・星空テクニカル杯の出場権を獲得！':''}${updated.wakabaUnlocked?'街のわかば模型店が開放されました。':''}この大会は再出場できません。`:'第1戦の結果を記録しました。ピットで装備を組み直し、第2戦へ進んでください。第1戦はやり直せません。',officialChallengeActive:false,dialogueStage:done?'none':'official-invite',shopAfter:false};
     }
     if(s.overlay==='race'&&s.officialQualificationNotice)return {overlay:'dialogue',speaker:'日向 誠二',dialogue:officialRace.invitation,dialogueStage:'none',officialQualificationNotice:false,shopAfter:false};
     if(s.overlay==='race'&&s.villainChallengeActive&&s.villainDebriefPending)return {overlay:'dialogue',speaker:challenger.name,dialogue:s.villainDefeated?'な、なんだと……俺が負けた？ ちっ、約束は守る。ひなた模型店への紹介状だ。町の、あおぞら模型店の右隣へ行け。次は負けないからな！':'ふん、まだその程度か。ギアと電池、それにモーターの慣らしを見直してこい。ここで待っている。勝てるまで何度でも相手をしてやる！',dialogueStage:s.villainDefeated?'villain-win':'villain-loss',villainChallengeActive:false,villainDebriefPending:false,shopAfter:false};
