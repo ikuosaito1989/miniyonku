@@ -1,5 +1,5 @@
 import type {Category} from './parts';
-const p=(id:string,category:Category,name:string,price:number,description:string,specs:Record<string,number>,performance:string)=>({id,category,name,price,description:`ほしくず専売。${description}`,specs,performance});
+const p=(id:string,category:Category,name:string,price:number,description:string,specs:Record<string,number>,performance:string)=>({id,category,name,price,description,specs,performance});
 export const postClearParts=[
  p('motor-hoshi-sprint','motor','流星スプリント',7800,'舗装の最高速を狙う高回転型。トルクは抑えめなので坂や砂にはギアで補う。',{rpm:29000,torque:2.4,weight:18},'29,000 rpm / 2.4 mN·m / 18 g'),
  p('motor-hoshi-rally','motor','砂星ラリー',7600,'砂や砂利で再加速しやすい高トルク型。重めの足回りとも相性がよい。',{rpm:24000,torque:3.3,weight:22},'24,000 rpm / 3.3 mN·m / 22 g'),

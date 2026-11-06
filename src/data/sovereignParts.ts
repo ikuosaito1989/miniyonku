@@ -1,6 +1,6 @@
 import type {Equipment} from './machine';
 import type {Category} from './parts';
-const part=(id:string,category:Category,name:string,description:string,specs:Record<string,number>,performance:string)=>({id,category,name,price:250000,description:`星霧模型工房限定・星皇シリーズ。${description}`,specs,performance});
+const part=(id:string,category:Category,name:string,description:string,specs:Record<string,number>,performance:string)=>({id,category,name,price:250000,description:`星皇シリーズ。${description}`,specs,performance});
 export const sovereignParts=[
  part('motor-sovereign','motor','星皇オーバードライブモーター','最高回転数と最大トルクを両立。慣らし不要・摩耗なし。強い出力を路面へ伝えるには、タイヤとギアの選択も大切。',{rpm:32000,torque:12,weight:17,wear:0},'32,000 rpm / 12.0 mN·m / 17 g / 消耗なし'),
  part('chassis-sovereign','chassis','星皇ゼロリミットシャーシ','最軽量・最高効率・最高安定の高剛性シャーシ。舗装と立体コースに強いが、深い砂ではデューンの追従性を組み合わせる余地がある。',{weight:13,efficiency:1.3,stability:4.3,damping:.6,roughGrip:1.3,roughResistance:.55,compliance:1.4},'13 g / 駆動効率×1.30 / 安定性×4.30 / 制振60%'),
