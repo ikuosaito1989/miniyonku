@@ -85,7 +85,7 @@ function buildCircuit(id:Exclude<CircuitId,'forge'|'zenith'>){
     return progress<.18?{name:'締まった土',roughness:.45,grip:.9}:progress<.4?{name:'砂利ストレート',roughness:.95,grip:.72}:progress<.7?{name:'荒れたダート連続コーナー',roughness:1,grip:.76}:{name:'砂地のS字',roughness:.8,grip:.65};
   };
   // 連続した切り返しで姿勢を戻す余裕が少なく、旋回時の負荷が増す。
-  return {fairLanes:id==='grandprix',jumps:obstacles?[obstacles.jump]:[],open,obstacles,courseProgress,isJumpGap,obstacleHeight,cornerLoad:'cornerLoad' in circuit?circuit.cornerLoad:1,surfaceAt,circuit,circuitLength,startDistance,laneOffset,sampleCircuit,laneChange,sampleLanePath,startRamp,startRampHeight};
+  return {fairLanes:true,jumps:obstacles?[obstacles.jump]:[],open,obstacles,courseProgress,isJumpGap,obstacleHeight,cornerLoad:'cornerLoad' in circuit?circuit.cornerLoad:1,surfaceAt,circuit,circuitLength,startDistance,laneOffset,sampleCircuit,laneChange,sampleLanePath,startRamp,startRampHeight};
 }
 export type CircuitTrack=ReturnType<typeof buildCircuit>;
 const tracks:Record<CircuitId,CircuitTrack>={leaf:buildCircuit('leaf'),wind:buildCircuit('wind'),sun:buildCircuit('sun'),sprint:buildCircuit('sprint'),grove:buildCircuit('grove'),comet:buildCircuit('comet'),trail:buildCircuit('trail'),grandprix:buildCircuit('grandprix'),forge:buildZenithTrack(buildCircuit('trail'),true),zenith:buildZenithTrack(buildCircuit('trail'))};

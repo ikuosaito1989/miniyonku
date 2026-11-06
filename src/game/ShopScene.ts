@@ -568,7 +568,7 @@ export class ShopScene extends Phaser.Scene {
       else if(target.kind==='official-reception'||this.isOfficial&&target.speaker==='大会受付係')useGame.getState().openOfficialRace();
       else if(target.speaker==='森野 陸'){if(this.isOfficial)useGame.getState().talk(target.speaker,target.text);else useGame.getState().openOfficialRace();}
       else if(useGame.getState().location==='atelier'&&target.kind==='track')useGame.getState().talk('星霧模型工房','ここは販売専門店です。星皇シリーズの全種類を店主から購入できます。レースはほかの模型店で楽しんでね。');
-      else if(target.speaker==='佐伯 匠'&&useGame.getState().location==='hoshikuzu')useGame.getState().talk('佐伯 匠','ここからはタイムを詰める楽しみだね。舗装は軽量シャーシと低摩擦ローラー、砂は追従するタイヤとFMシャーシ、立体コースはトルクと制振を比べよう。ギア比だけ変えて同じコースを走ると違いが分かりやすいよ。星皇を外した記録は、コース端の看板でセッティングごとに見られるよ。');
+      else if(target.speaker==='佐伯 匠'&&useGame.getState().location==='hoshikuzu')useGame.getState().talk('佐伯 匠','ここからはタイムを詰める楽しみだね。舗装は軽量シャーシと低摩擦ローラー、砂は追従するタイヤ、立体はトルク・反発・ブレーキを比べよう。FMはジャンプが低くなる前寄り重心だから、飛距離も見て選ぼう。ギア比だけ変えて同じコースを走ると違いが分かりやすいよ。星皇を外した記録は、コース端の看板でセッティングごとに見られるよ。');
       else if(target.speaker==='佐伯 匠'){
         const state=useGame.getState();
         startAdviceConversation({shopId:currentShop(state.location).id,equipment:state.equipment,inventory:state.inventory,money:state.money,...equippedCondition(state.equipment,state.units,state.selectedUnits),review:state.lastRaceReview,motorAges:Object.fromEntries(Object.entries(state.units).map(([id,list])=>[id,list[0]?.seconds??0])),batteryAges:Object.fromEntries(Object.entries(state.units).map(([id,list])=>[id,list[0]?.seconds??0]))});

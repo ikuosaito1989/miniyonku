@@ -1,9 +1,9 @@
 import type {Category} from './parts';
 const part=(id:string,category:Category,name:string,price:number,description:string,specs:Record<string,number>,performance:string)=>({id,category,name,price,description,specs,performance});
 export const zenithParts=[
- part('motor-zenith','motor','ゼニス・ハイブリッドモーター',4200,'高速と登坂を両立する最上位バランス型。縦ループと砂地の両方へ対応。', {rpm:24500,torque:8,weight:21},'24,500 rpm / トルク8.0 / 21 g'),
- part('motor-tempest','motor','テンペスト・スプリント',4500,'最高速を優先する最上位型。縦ループでは高トルクギアと組み、砂地の接地も補おう。',{rpm:28500,torque:6.5,weight:19},'28,500 rpm / トルク6.5 / 19 g'),
- part('motor-titan','motor','タイタン・クライム',4300,'登坂・砂地・縦ループで力を発揮する最上位高トルク型。最高速はテンペストに譲る。',{rpm:22000,torque:11,weight:23},'22,000 rpm / トルク11.0 / 23 g'),
+ part('motor-zenith','motor','ゼニス・ハイブリッドモーター',4200,'高速と登坂を両立する最上位バランス型。縦ループと砂地の両方へ対応。', {rpm:24500,torque:2.5,weight:21},'24,500 rpm / トルク2.5 / 21 g'),
+ part('motor-tempest','motor','テンペスト・スプリント',4500,'最高速を優先する最上位型。縦ループでは高トルクギアと組み、砂地の接地も補おう。',{rpm:28500,torque:2.2,weight:19},'28,500 rpm / トルク2.2 / 19 g'),
+ part('motor-titan','motor','タイタン・クライム',4300,'登坂・砂地・縦ループで力を発揮する最上位高トルク型。最高速はテンペストに譲る。',{rpm:22000,torque:3,weight:23},'22,000 rpm / トルク3.0 / 23 g'),
  part('chassis-horizon','chassis','K7 ホライゾン・ハイブリッド',4600,'軽量・制振・悪路追従を両立。舗装と砂地が交互に現れる長距離向け。',{weight:17,efficiency:1.17,stability:1.65,damping:.22,roughGrip:1.6,roughResistance:.4,compliance:1.8},'17 g / 効率1.17 / 安定1.65 / 制振22%'),
  part('chassis-dune','chassis','K7 デューン・フレックス',4400,'砂地の抵抗と着地の跳ねを抑える強化シャーシ。舗装加速はエアロ型より控えめ。',{weight:19,efficiency:1.12,stability:1.55,damping:.35,roughGrip:2,roughResistance:.2,compliance:2.5},'19 g / 悪路抵抗×0.20 / 追従×2.50'),
  part('chassis-eclipse','chassis','K7 エクリプス・エアロ',4900,'軽量・高効率・高い旋回安定を持つ舗装寄りの最上位型。砂地はタイヤとダンパーで補う。',{weight:14,efficiency:1.23,stability:1.8,damping:.12,roughGrip:1.25,roughResistance:.55,compliance:1.25},'14 g / 効率1.23 / 安定1.80'),

@@ -6,6 +6,7 @@ export const MAX_PART_LEVEL=10;
 import { bodies } from './bodies';
 // レベルは単純な速度倍率ではなく、入手段階の目安。
 export const partLevels:Record<string,number>={
+ 'accessory-brake-soft':4,'accessory-brake-hard':6,
  ...Object.fromEntries(postClearPartIds.map(id=>[id,10])),
  ...Object.fromEntries(sovereignPartIds.map(id=>[id,10])),
  ...Object.fromEntries(mechanicMotorStages.map(stage=>[stage.id,stage.level])),

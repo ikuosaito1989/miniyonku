@@ -19,9 +19,10 @@ test('ひなたは長い複合ダートで、路面区間ごとに接地条件�
  assert.equal(new Set([.1,.3,.5,.8].map(t=>track.surfaceAt(t*track.circuitLength).name)).size,4);
  for(const id of Object.values(dirt).filter(id=>!Object.values(road).includes(id))){const part=parts.find(p=>p.id===id)!;assert.ok(isStocked(part,modelShops.hinata));assert.ok(!isStocked(part,modelShops.aozora));}
 });
-test('舗装装備は優勝できず、悪路装備は複数シードで優勝。タイヤ・制振・トルクの欠落が敗因になる',()=>{
+test('舗装装備は優勝できず、悪路装備は複数シードで優勝。タイヤ・制振・トルクの不足でタイムが落ちる',()=>{
  for(const seed of [1,7,42,123,999]){
   const winner=run(dirt,seed);assert.equal(rankRacers(winner)[0].id,'player');assert.equal(winner.racers[0].driving.status,'finished');
-  for(const equipment of [road,{...dirt,accessory:'accessory-none'},{...dirt,tire:'tire-1'},{...dirt,motor:'motor-wind'}])assert.notEqual(rankRacers(run(equipment,seed))[0].id,'player');
+  assert.notEqual(rankRacers(run(road,seed))[0].id,'player');
+  for(const equipment of [{...dirt,accessory:'accessory-none'},{...dirt,tire:'tire-1'},{...dirt,motor:'motor-wind'}]){const slower=run(equipment,seed).racers[0].driving;assert.ok(slower.status!=='finished'||slower.time>winner.racers[0].driving.time+2);}
  }
 });

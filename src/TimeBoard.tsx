@@ -15,7 +15,7 @@ export function TimeBoard(){
   <p className="time-board-course">{circuit.name}</p>
   <ol>{[0,1,2].map(index=>{const record=records[index];return <li key={index} data-rank={index+1}><span className="time-board-rank">{index+1}</span><div className="time-board-entry">{record?<><strong>{record.racerName}{record.racerId==='player'?'（自分）':''}</strong><span>{record.machineName}</span><small>{new Date(record.recordedAt).toLocaleDateString('ja-JP')}</small></>:<strong>まだ記録がありません</strong>}</div><div className="time-board-value">{record?formatRecordTime(record.time,id==='trail'):'—'}<small>公式タイム</small></div></li>;})}</ol>
   {records.map(record=><details key={record.id}><summary>{record.racerName} · {formatRecordTime(record.time,id==='trail')}のセッティング</summary><dl>{record.equipment&&Object.entries(record.equipment).map(([slot,partId])=><div key={slot}><dt>{equipmentSlots[slot as keyof typeof equipmentSlots].label}</dt><dd>{parts.find(p=>p.id===partId)?.name}</dd></div>)}</dl></details>)}
-  {old.length>0&&<details><summary>旧参考記録（装備情報なし）</summary><p>以前の記録は星皇使用の判別ができないため、ランキングとは分けて保存しています。</p>{old.map(r=><p key={r.id}>{r.racerName}　{formatRecordTime(r.time,id==='trail')}</p>)}</details>}
+  {old.length>0&&<details><summary>旧参考記録（調整前・装備情報なし）</summary><p>調整前の走行や装備情報のない記録は、新しいルールのランキングとは分けて保存しています。</p>{old.map(r=><p key={r.id}>{r.racerName}　{formatRecordTime(r.time,id==='trail')}</p>)}</details>}
   <p>星皇シリーズを1つでも装着した走行は記録対象外です。完走したレースの公式タイムを、主人公・対戦相手を含めて速い順に記録します。反応時間・早出ペナルティも含みます。同じレーサーの別レースも記録対象です。</p><footer>このブラウザでの記録を自動保存します。更新後に走ったレースから記録されます。</footer>
  </section></div>;
 }

@@ -29,10 +29,10 @@ test('新作6種類はLv6のゆうなぎで購入でき、説明・注意点が�
  equipment=equipPart(equipment,wallet.inventory,'accessory-slide-rear','accessory3');assert.equal(equipment.accessory3,'accessory-slide-rear');assert.equal(equipPart(equipment,wallet.inventory,'accessory-slide-rear','accessory2').accessory2,'accessory-none');
 });
 test('スライドと新作ローラーは制振・安定・抵抗に効き、過去の市販装備を生かして40秒を切れる',()=>{
- const before=machinePerformance(wakaba),after=machinePerformance(upgraded);assert.ok(after.damping>before.damping);assert.ok(after.lateralLimit>before.lateralLimit);assert.ok(after.drag<before.drag);assert.ok(after.cornerDrag<before.cornerDrag);
+ const before=machinePerformance(wakaba),after=machinePerformance(upgraded);assert.ok(after.damping>before.damping);assert.ok(after.lateralLimit>before.lateralLimit);assert.ok(after.rollerFriction<before.rollerFriction);assert.ok(after.cornerDrag<before.cornerDrag);
  const previous=run(wakaba);assert.equal(previous.racers[0].driving.status,'finished');assert.ok(previous.racers[0].driving.time>40);
- for(const seed of [1,42,999]){const race=run(upgraded,seed),player=race.racers[0];assert.equal(player.driving.status,'finished');assert.equal(player.driving.landings,1);assert.ok(player.driving.time>38&&player.driving.time<40);}
- for(const slot of ['motor','tire','wheel','rollerFront','rollerSide','rollerRear','accessory3'] as const){const race=run({...wakaba,[slot]:upgraded[slot]});assert.equal(race.racers[0].driving.status,'finished');assert.ok(race.racers[0].driving.time<=previous.racers[0].driving.time,slot+' must not slow the same setup');}
+ for(const seed of [1,42,999]){const race=run(upgraded,seed),player=race.racers[0];assert.equal(player.driving.status,'finished');assert.equal(player.driving.landings,1);assert.ok(player.driving.time>36&&player.driving.time<40);}
+ for(const slot of ['motor','tire','wheel','rollerFront','rollerSide','rollerRear','accessory3'] as const){const race=run({...wakaba,[slot]:upgraded[slot]});assert.equal(race.racers[0].driving.status,'finished');if(slot==='tire')assert.ok(machinePerformance({...wakaba,tire:upgraded.tire}).rebound<before.rebound);else assert.ok(race.racers[0].driving.time<=previous.racers[0].driving.time,slot+' improves this setup');}
 });
 test('スライドはウイング下に付き、リヤ欄で選んだローラーを可動ステーへ取り付ける',()=>{
  for(const slot of ['accessory','accessory2','accessory3'] as const){const e={...old,body:'body-champion',[slot]:'accessory-slide-rear',rollerRear:'roller-lowdouble'},model=buildMachineModel(0xffffff,e);

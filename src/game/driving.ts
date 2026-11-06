@@ -6,7 +6,7 @@ import type { TrackSurface } from '../data/surfaces';
 
 export const FIXED_STEP = 1/120;
 export const DIRT_CRAWL_SPEED=.12;
-export interface DrivingState { time: number; distance: number; speed: number; stress: number; status: 'ready'|'running'|'finished'|'out'; stopReason?:'retired'|'battery'|'lapped'|'jump'|'loop'; flightY?:number;flightVelocity?:number;landings?:number; }
+export interface DrivingState { time: number; distance: number; speed: number; stress: number; status: 'ready'|'running'|'finished'|'out'; stopReason?:'retired'|'battery'|'lapped'|'jump'|'loop'; flightY?:number;flightVelocity?:number;flightLandingEnd?:number;landings?:number; }
 export function machinePerformance(equipment: Equipment, condition:MachineCondition=freshCondition) {
   const get = (category: keyof Equipment) => {
     const part = parts.find(p => p.id === equipment[category] && p.category === equipmentSlots[category].category);
@@ -26,7 +26,8 @@ export function machinePerformance(equipment: Equipment, condition:MachineCondit
     freeSpeed: motor.rpm * terminal.efficiency * battery.power / 60 / gear.ratio * 2 * Math.PI * radius,
     stallForce: motor.torque/1000 * gear.ratio * terminal.efficiency * battery.power * chassis.efficiency * accessory.efficiency * 0.8 / radius,
     treadDrag:tire.pavedDrag??0,
-    mass, drag: (0.012 * body.drag + friction * 0.025), cornerDrag:wheel.cornerDrag*accessory.cornerDrag,
+    mass, drag:0.012*body.drag, rollerFriction:friction, tireScrub:tire.grip, cornerDrag:wheel.cornerDrag*accessory.cornerDrag,
+    rebound:tire.rebound??.45, frontBias:chassis.frontMotor===1?.1:0, brake:accessories.reduce((n,p)=>n+(p.brake??0),0),
     batteryEndurance:battery.endurance,
     batteryConsumption:battery.consumption??1,
     motorSeconds:condition.motorSeconds,batterySeconds:condition.batterySeconds,motorWearRate:motor.wear??1,
@@ -35,7 +36,7 @@ export function machinePerformance(equipment: Equipment, condition:MachineCondit
     roughResistance:body.roughResistance*(tire.roughResistance??1)*(chassis.roughResistance??1),
     damping:Math.min(.9,(tire.damping??0)+(accessory.damping??0)+(chassis.damping??0)+(front.damping??0)*.45+(side.damping??0)*.35+(rear.damping??0)*.2),
     // 柔らかいスポンジは凹凸に追従し、ハードは舗装向け。
-    tireCompliance:(tire.compliance??(equipment.tire==='tire-1'?1.2:equipment.tire==='tire-2'?.7:1))*(chassis.compliance??1),
+    tireCompliance:1/(.75/(tire.compliance??(equipment.tire==='tire-1'?1.2:equipment.tire==='tire-2'?.7:1))+.25/(chassis.compliance??1)),
   };
 }
 export type Performance = ReturnType<typeof machinePerformance>;
@@ -47,9 +48,11 @@ export function startDriving(state: DrivingState): DrivingState {
 export function surfacePerformance(performance:Performance,surface:TrackSurface){
   const roughness=Math.max(0,Math.min(1,surface.roughness));
   const vibration=roughness*(1-performance.damping);
-  const contact=(1-roughness+roughness*Math.min(1,performance.roughGrip*performance.tireCompliance))*(1-vibration*.4);
+  // シャーシが良くてもタイヤの追従不足は残る。弱い側を残す合成で万能化を防ぐ。
+  const tireContact=.25+.75*Math.min(1,performance.tireCompliance/2.1);
+  const contact=(1-roughness+roughness*Math.min(1,performance.roughGrip)*tireContact)*(1-vibration*.4);
   return {
-    rollingDrag:performance.treadDrag*(1-roughness),
+    rollingDrag:performance.treadDrag*(1-roughness)**3,
     traction:Math.min(1,Math.max(0,surface.grip)*contact),
     resistance:performance.mass*9.81*roughness*(.18+.6*vibration)*performance.roughResistance/performance.tireCompliance,
     lateralLimit:performance.lateralLimit*Math.max(0,surface.grip)*contact,
@@ -67,7 +70,11 @@ export function stepDriving(state: DrivingState, performance: Performance, laneO
   const path=initialLane===undefined?undefined:track.sampleLanePath(state.distance,initialLane);
   const airborne=state.flightY!==undefined;
   const force=(airborne?0:1)*performance.stallForce*charge*motor*Math.max(0,1-state.speed/(performance.freeSpeed*charge*motor))*road.traction;
-  const resistance=performance.mass*9.81*0.025+(performance.drag+road.rollingDrag)*state.speed**2+road.resistance;
+  const curvature=path?.curvature??sampleCircuit(startDistance+state.distance).curvature;
+  // 壁への押し付け荷重でローラー抵抗、タイヤの横擦れで旋回損失が生じる。直線には加えない。
+  const cornerResistance=performance.mass*state.speed**2*curvature*(performance.rollerFriction*.5+performance.tireScrub*.018);
+  const brakeResistance=path&&!path.loopRadius?performance.mass*9.81*performance.brake*Math.max(0,Math.min(1,(path.pitch-.035)/.16)):0;
+  const resistance=performance.mass*9.81*0.025+(performance.drag+road.rollingDrag)*state.speed**2+road.resistance+cornerResistance+brakeResistance;
   const wheelResistance=state.speed**2*sampleCircuit(startDistance+state.distance).curvature*.002*performance.cornerDrag;
   const slope=track.obstacles&&!airborne&&path?performance.mass*9.81*Math.sin(path.pitch):0;
   let speed=Math.max(0,state.speed+(force-(airborne?performance.drag*state.speed**2*.25:resistance+wheelResistance)-slope)/performance.mass*FIXED_STEP);
@@ -84,12 +91,13 @@ export function stepDriving(state: DrivingState, performance: Performance, laneO
   const distance=state.distance+speed*FIXED_STEP/laneScale;
   const lateral=(airborne?0:1)*track.cornerLoad*speed**2*(path?.curvature??centerCurvature/laneScale);
   let stress=Math.max(0,state.stress+(lateral>road.lateralLimit?(lateral/Math.max(.001,road.lateralLimit)-1):-2)*FIXED_STEP);
-  let flightY=state.flightY,flightVelocity=state.flightVelocity,landings=state.landings;
+  let flightY=state.flightY,flightVelocity=state.flightVelocity,flightLandingEnd=state.flightLandingEnd,landings=state.landings;
   if(track.obstacles&&initialLane!==undefined){
     const from=track.courseProgress(state.distance),to=track.courseProgress(distance),jump=track.jumps.find(j=>from<j.takeoff&&to>=j.takeoff)??track.obstacles.jump;
     if(!airborne&&from<jump.takeoff&&to>=jump.takeoff&&to>=from){
       flightY=sampleLanePath(Math.floor(state.distance/circuitLength)*circuitLength+jump.takeoff-.001,initialLane).y;
-      flightVelocity=speed*jump.height/jump.rise;
+      flightVelocity=speed*jump.height/jump.rise*(1-performance.frontBias);
+      flightLandingEnd=Math.floor(state.distance/circuitLength)*circuitLength+jump.takeoff+jump.gap+jump.landingLength;
     }
     if(flightY!==undefined){
       const velocity=(flightVelocity??0)-9.81*FIXED_STEP;
@@ -97,9 +105,11 @@ export function stepDriving(state: DrivingState, performance: Performance, laneO
       const floor=track.isJumpGap(distance)?track.sampleCircuit(track.startDistance+distance).elevation:sampleLanePath(distance,initialLane).y;
       if(flightY<=floor&&velocity<0){
         if(track.isJumpGap(distance))return {...state,time:state.time+FIXED_STEP,distance,speed:0,status:'out',stopReason:'jump',flightY:undefined,flightVelocity:undefined};
-        const impact=Math.abs(velocity)*(1-performance.damping);
-        speed*=Math.max(.7,1-impact*.025);stress+=impact*.008;landings=(landings??0)+1;
-        flightY=undefined;flightVelocity=undefined;
+        const impact=Math.abs(velocity)*(1-performance.damping)*(0.6+performance.rebound)*(1-performance.frontBias);
+        const overrun=flightLandingEnd===undefined?0:Math.max(0,distance-flightLandingEnd);
+        speed*=Math.max(.55,1-impact*.025-overrun*(1-performance.damping)*.05);
+        stress+=impact*.008+overrun*(1-performance.damping)*.15;landings=(landings??0)+1;
+        flightY=undefined;flightVelocity=undefined;flightLandingEnd=undefined;
       }
     }
   }
@@ -109,5 +119,5 @@ export function stepDriving(state: DrivingState, performance: Performance, laneO
   const finish=circuitLength*circuit.laps;
   const finished=distance>=finish;
   const fraction=finished?(finish-state.distance)/(distance-state.distance):1;
-  return {...(track.obstacles?{flightY,flightVelocity,landings}:{}),time:state.time+FIXED_STEP*fraction,distance:Math.min(distance,finish),speed,stress,status:stress>0.18?'out':finished?'finished':'running'};
+  return {...(track.obstacles?{flightY,flightVelocity,flightLandingEnd,landings}:{}),time:state.time+FIXED_STEP*fraction,distance:Math.min(distance,finish),speed,stress,status:stress>0.18?'out':finished?'finished':'running'};
 }

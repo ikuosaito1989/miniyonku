@@ -80,7 +80,10 @@ export function buildPartProduct(part:Part){
   }
  }else if(part.category==='accessory'){
   if(part.id==='accessory-none'){ring(0,.2,0,.7,.035,steel);box(0,.22,0,1.3,.07,.06,steel).rotation.y=Math.PI/4;}
-  else if(/damper|active/.test(part.id)){
+  else if(/brake/.test(part.id)){
+   const shape=rectangle(-1.25,-.36,2.5,.72);for(const x of [-1,-.55,.55,1])hole(shape,x,0,.075);plate(shape,.08,color,.26);
+   for(const x of [-.6,.6]){box(x,.12,0,.7,.18,.5,accent);box(x,.023,0,.65,.035,.46,rubber);screw(x,.39,0);}
+  }else if(/damper|active/.test(part.id)){
    for(const x of [-.5,.5]){cylinder(x,.55,0,.055,1.1,metal);cylinder(x,.28,0,.24,.4,gold);ring(x,.1,0,.23,.025,steel);ring(x,.48,0,.23,.025,edge);const points:THREE.Vector3[]=[];for(let i=0;i<=160;i++){const t=i/160,angle=t*Math.PI*12;points.push(new THREE.Vector3(x+Math.cos(angle)*.12,.5+t*.49,Math.sin(angle)*.12));}add(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points),160,.026,6,false),steel);cylinder(x,1.09,0,.15,.08,accent);screw(x,1.15,0);}
   }else{
    const shape=rectangle(-1.2,-.32,2.4,.64);for(const x of [-1,-.55,.55,1])hole(shape,x,0,.09);plate(shape,.12,/weight/.test(part.id)?gold:color,.14);

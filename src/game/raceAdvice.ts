@@ -18,7 +18,7 @@ export function reviewRace(race:RaceState):RaceReview|null{
   else if(player.driving.stopReason==='battery')notes.push('電池切れで止まったのが直接の敗因だよ。');
   else if(player.driving.stopReason==='lapped')notes.push('周回遅れになったよ。加速・最高速とコーナーでの減速を改善しよう。');
   else if(player.driving.stopReason==='retired')notes.push('先頭のゴール後に走行を終了したため、未完走として記録されたよ。');
-  else if(player.driving.status==='out')notes.push('コースアウトしているね。速度だけでなく、タイヤのグリップとシャーシの安定性を見直そう。');
+  else if(player.driving.status==='out')notes.push('コースアウトしているね。旋回ならローラーとシャーシの安定性、ジャンプ後ならタイヤの反発・ダンパー・ブレーキを見直そう。高グリップのタイヤは安定する代わりにコーナー抵抗も増えるよ。');
   else if(rank>1){
     const winner=rankRacers(race)[0];
     if(winner.driving.status==='finished')notes.push(`先頭との差は${Math.max(0,officialTime(race,player)-officialTime(race,winner)).toFixed(2)}秒だったよ。`);
@@ -45,9 +45,9 @@ export function raceAdvice(state:RaceAdviceContext){
   if(state.review?.circuitId===shop.circuitId)lines.push(state.review.text);
   else lines.push('この店のレース記録はまだないね。今の装備で改善できる点を見てみよう。');
   if(state.shopId==='akatsuki'){
-    lines.push('あかつき模型店の最上位パーツを組み合わせよう。縦ループの失速はトルク不足。テンペスト＋4:1を軸に、砂地への追従とジャンプ着地の制振を両立しよう。最高速だけを上げても勝てないよ。');
-    lines.push('優勝の基準はテンペスト＋4:1＋エクリプスシャーシ＋アペックスタイヤ。前中ゼニス・リヤ二段ローラーを基本に、リヤの軽量化やアクティブダンパーへの変更でも詰められるよ。旧万能構成のままでは強化された最強たちに届かない。補助枠はジャイロ・駆動PRO・クラウンスライドなど異なる3種を組もう。');
-    const missing=['motor-zenith','chassis-horizon','tire-hybrid','battery-zenith','accessory-slide-pro'].map(id=>parts.find(p=>p.id===id)!).filter(p=>!(state.inventory[p.id]>0));
+    lines.push('あかつき模型店の最上位パーツを組み合わせよう。縦ループの失速はトルク不足。テンペスト＋4:1を軸に、砂地への追従とジャンプ着地の制振を両立しよう。最高速だけを上げても勝てないよ。テンペスト＋3.5:1はループで失速するので4:1以上を試そう。電池が減っていれば5.2:1も有効だ。');
+    lines.push('入賞を狙う軽量構成はタイタン＋3.5:1＋エクリプスシャーシ＋アペックスタイヤ。前中後をゼニスで軽くし、ジャイロ・駆動PRO・クラウンスライドを合わせよう。テンペストなら4:1も候補だ。ダンパーを増やすほど速いわけではなく、制振が十分なら軽さを選ぼう。重いボディや残量低下時はギアを大きくする必要があるよ。');
+    const missing=['motor-titan','chassis-eclipse','tire-apex','battery-zenith','accessory-slide-pro'].map(id=>parts.find(p=>p.id===id)!).filter(p=>!(state.inventory[p.id]>0));
     for(const p of missing.slice(0,3))lines.push(`優勝構成で不足する「${p.name}」は${p.price}円。${state.money>=p.price?'今なら購入できるよ。':'あと'+(p.price-state.money)+'円、他店の完走賞で貯めよう。'}`);
     if(state.motorSeconds<60&&parts.find(p=>p.id===state.equipment.motor)?.specs.wear!==0)lines.push(`モーターは作業台であと約${Math.ceil(60-state.motorSeconds)}秒ならそう。慣らし後に電池を新品に交換すると長距離で有利だよ。`);
     if(state.motorSeconds>180)lines.push('長いレースでモーターも摩耗するよ。同じ種類を新品交換し、慣らしてから再挑戦しよう。');

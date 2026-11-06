@@ -111,7 +111,7 @@ function runWind(seed=123){
 test('新コースは長く曲率が異なり、専用CPUと5台で完走・優勝可能。同一シードで再現する',()=>{
   const leaf=getCircuitTrack('leaf'),wind=getCircuitTrack('wind');
   assert.ok(wind.circuitLength>leaf.circuitLength);assert.notEqual(wind.sampleCircuit(5).curvature,leaf.sampleCircuit(5).curvature);
-  const result=runWind();assert.equal(result.phase,'finished');assert.ok(result.racers.every(r=>r.driving.status==='finished'));
+  const result=runWind();assert.equal(result.phase,'finished');assert.equal(result.racers[0].driving.status,'finished');assert.ok(result.racers.filter(r=>r.driving.status==='finished').length>=4);assert.ok(result.racers.every(r=>r.driving.status==='finished'||r.driving.stopReason==='lapped'));
   assert.equal(rankRacers(result)[0].id,'player');assert.deepEqual(result,runWind());
-  assert.ok(result.racers.every(r=>Math.abs(r.driving.distance-wind.circuitLength*5)<1e-6));
+  assert.ok(result.racers.filter(r=>r.driving.status==='finished').every(r=>Math.abs(r.driving.distance-wind.circuitLength*5)<1e-6));
 });

@@ -1,5 +1,7 @@
 /** Reproduce the balance audit without changing gameplay. Run: pnpm exec tsx scripts/audit-race-balance.ts [output.json] */
-import {writeFileSync} from 'node:fs';
+import {readFileSync,writeFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import {raceRulesVersion} from '../src/game/timeRecords';
 import {execFileSync} from 'node:child_process';
 import {parts} from '../src/data/parts';
 import {starterEquipment,equipmentSlots,type Equipment,type EquipmentSlot} from '../src/data/machine';
@@ -81,6 +83,8 @@ const controlled={
  tire:[...new Set(['tire-0','tire-1','tire-2','tire-turn','tire-landing','tire-apex','tire-hybrid','tire-hoshi-low','tire-hoshi-slick','tire-hoshi-sand'])].map(tire=>({tire,courses:(['wind','sun','trail','zenith'] as const).map(course=>({course,...run(course,{...late,tire})}))})),
  allGearsOnStageBuild:stages.slice(0,10).map(stage=>({course:stage.course,gearOnly:gears.map(g=>({gear:g.id,...run(stage.course,{...stage.equipment,gear:g.id})})).sort(ranked)})),
 };
-const output={sourceCommit:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),method:{stockPolicy:'Cumulative stock from shops accessible at each story stage. Sovereign and non-shop mechanic motors excluded; gifted body preserved in baseline.',step:FIXED_STEP,condition:fresh,timeLimit:300,random:false,cpuBonus:false,sovereignExcluded:true,scope:'10 courses × 5 lanes × 2 builds; cumulative-shop one-part swaps; 3-lane checks for motor/tire/chassis/roller swaps; motor/gear cross products in 3 contexts. This is not exhaustive whole-build optimization.',cacheSize:cache.size},names,lanes,laneSensitivity,laneFailures,stages:stageResults,motorGear,controlled};
+const physicsFiles=['src/game/driving.ts','src/game/race.ts','src/game/condition.ts','src/data/circuit.ts','src/data/zenithCircuit.ts','src/data/parts.ts','src/data/zenithParts.ts','src/data/postClearParts.ts','src/data/mechanicMotor.ts','src/data/officialRace.ts','src/data/zenithRace.ts','src/data/bodies.ts','src/data/machine.ts','src/data/rivals.ts','src/data/surfaces.ts','src/data/world.ts','src/data/progression.ts','src/data/sovereignParts.ts'];
+const sourceDigests=Object.fromEntries(physicsFiles.map(path=>[path,createHash('sha256').update(readFileSync(path)).digest('hex')]));
+const output={rulesVersion:raceRulesVersion,sourceDigests,modifiedFiles:execFileSync('git',['diff','--name-only'],{encoding:'utf8'}).trim().split('\n').filter(Boolean),sourceCommit:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),method:{stockPolicy:'Cumulative stock from shops accessible at each story stage. Sovereign and non-shop mechanic motors excluded; gifted body preserved in baseline.',step:FIXED_STEP,condition:fresh,timeLimit:300,random:false,cpuBonus:false,sovereignExcluded:true,scope:'10 courses × 5 lanes × 2 builds; cumulative-shop one-part swaps; 3-lane checks for motor/tire/chassis/roller swaps; motor/gear cross products in 3 contexts. This is not exhaustive whole-build optimization.',cacheSize:cache.size},names,lanes,laneSensitivity,laneFailures,stages:stageResults,motorGear,controlled};
 writeFileSync(process.argv[2]??'docs/balance/2026-11-06-results.json',JSON.stringify(output)+'\n');
 console.error(`Done: ${simulations} distinct simulations.`);

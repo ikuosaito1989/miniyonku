@@ -54,7 +54,7 @@ test('追加カテゴリの全パーツが有限の走行性能を持ち、重�
   assert.ok(machinePerformance({...starterEquipment,wheel:'wheel-oneway'}).cornerDrag<baseline.cornerDrag);
   assert.ok(machinePerformance({...starterEquipment,accessory:'accessory-weight'}).lateralLimit>baseline.lateralLimit);
   assert.ok(machinePerformance({...starterEquipment,accessory:'accessory-support'}).stallForce>baseline.stallForce);
-  for(const slot of ['rollerFront','rollerSide','rollerRear'] as const)assert.ok(machinePerformance({...starterEquipment,[slot]:'roller-2'}).drag<baseline.drag);
+  for(const slot of ['rollerFront','rollerSide','rollerRear'] as const)assert.ok(machinePerformance({...starterEquipment,[slot]:'roller-2'}).rollerFriction<baseline.rollerFriction);
 });
 test('電池の持続特性が走行時間に応じた出力低下を変える',()=>{
   const baseline=machinePerformance(starterEquipment);

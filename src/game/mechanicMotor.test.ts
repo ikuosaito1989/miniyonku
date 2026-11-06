@@ -43,7 +43,7 @@ test('称号マスターや同点1位では最高級にならず、ランキン�
  assert.equal(mechanicMasterPoints,1601);assert.notEqual(proficiencyStandings(750)[0].id,'player');assert.notEqual(proficiencyStandings(1600)[0].id,'player');assert.equal(proficiencyStandings(1601)[0].id,'player');
  const best=mechanicMotorStages.at(-1)!;assert.notEqual(mechanicMotorFor(1600).id,best.id);assert.equal(mechanicMotorFor(1601).id,best.id);
  const premium=parts.find(p=>p.id==='motor-sovereign')!;for(const stage of mechanicMotorStages.slice(0,-1)){assert.ok(stage.rpm<premium.specs.rpm);assert.ok(stage.torque<premium.specs.torque);}
- assert.equal(best.rpm,parts.find(p=>p.id==='motor-tempest')!.specs.rpm);assert.equal(best.torque,parts.find(p=>p.id==='motor-zenith')!.specs.torque);
+ assert.equal(best.rpm,parts.find(p=>p.id==='motor-tempest')!.specs.rpm);assert.ok(best.torque>=Math.max(...parts.filter(p=>p.category==='motor'&&p.id!=='motor-sovereign'&&!p.id.startsWith('motor-mechanic-')).map(p=>p.specs.torque)));
  for(const stage of mechanicMotorStages)for(const seconds of [0,60,1200,100000]){assert.equal(motorFactor(seconds,stage.id),1);assert.equal(motorWear(seconds,stage.id),0);}
  const equipment={...useGame.getInitialState().equipment,motor:best.id};const fresh=machinePerformance(equipment),old=machinePerformance(equipment,{motorSeconds:100000,batterySeconds:0});assert.equal(fresh.freeSpeed,old.freeSpeed);assert.equal(fresh.stallForce,old.stallForce);
 });

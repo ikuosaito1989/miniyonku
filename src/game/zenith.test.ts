@@ -18,11 +18,11 @@ test('22種類の最上位品を新店だけで購入でき、説明と一種類
  assert.equal(zenithParts.length,22);let wallet={money:100000,inventory:{} as Record<string,number>};for(const p of zenithParts){const part=parts.find(x=>x.id===p.id)!;assert.equal(part.level,9);for(const shop of Object.values(modelShops))assert.equal(isStocked(part,shop),shop.id==='akatsuki'||shop.id==='hoshikuzu');const bought=purchase(wallet,p.id,modelShops.akatsuki);assert.ok(bought.success,p.id);wallet=bought.wallet;assert.equal(wallet.inventory[p.id],1);assert.ok(partGuidance(part).use.length>10);}
 });
 test('最上位の高速旋回構成で僅差になり、以前の万能構成では最強たちに勝てない',()=>{
- const recipes=[zenithEquipment,{...zenithEquipment,rollerRear:'roller-zenith'},{...zenithEquipment,accessory:'accessory-active'}];
- for(const e of recipes){const race=run(e),rank=rankRacers(race);assert.equal(rank[0].id,'player');assert.ok(officialTime(race,rank[0])>=85&&officialTime(race,rank[0])<=95,'暁は約1分半');assert.ok(race.racers.every(r=>r.driving.status==='finished'));assert.equal(race.racers[0].driving.landings,2);assert.ok(officialTime(race,rank[1])-officialTime(race,rank[0])<1.5);}
+ const recipes=[zenithEquipment,{...zenithEquipment,rollerRear:'roller-zenith'},{...zenithEquipment,motor:'motor-titan',gear:'gear-3.5'}];
+ for(const e of recipes){const race=run(e),rank=rankRacers(race);assert.equal(rank[0].id,'player');assert.ok(officialTime(race,rank[0])>=110&&officialTime(race,rank[0])<=130,'負荷とギアを調整した暁は約2分');assert.ok(race.racers.every(r=>r.driving.status==='finished'));assert.equal(race.racers[0].driving.landings,2);assert.ok(officialTime(race,rank[1])-officialTime(race,rank[0])<officialTime(race,rank[0])*.02);}
  const previous=run({...zenithEquipment,motor:'motor-zenith',chassis:'chassis-horizon',gear:'gear-4.2',tire:'tire-hybrid'});assert.notEqual(rankRacers(previous)[0].id,'player');
  const old=drive({...seniorEquipment,body:'body-champion'});assert.equal(old.status,'out');assert.equal(old.stopReason,'loop');assert.ok(old.time<30);
- const final=run(zenithEquipment,'zenith');assert.ok(final.racers[0].driving.time>=85&&final.racers[0].driving.time<=100,'最終戦も約1分半');assert.ok(rankRacers(final).findIndex(r=>r.id==='player')<=1);assert.ok(final.racers.every(r=>r.driving.status==='finished'));
+ const final=run(zenithEquipment,'zenith');assert.ok(final.racers[0].driving.time>=115&&final.racers[0].driving.time<=140,'最終戦も約2分');assert.ok(rankRacers(final).findIndex(r=>r.id==='player')<=1);assert.ok(final.racers.every(r=>r.driving.status==='finished'));
 });
 test('旧緑川クリアから新店へ進み、勝敗によらず5回の結果で出場権。途中退出・重複報酬を数えない',async()=>{
  const before=useGame.getState();try{

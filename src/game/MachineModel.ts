@@ -252,6 +252,9 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
         add(new THREE.SphereGeometry(.004,12,8),darkRubber,side*.057,.09,.025).name='damper-post-cap';
         for(let ring=0;ring<5;ring++){const spring=add(new THREE.TorusGeometry(.005,.001,4,12),metal,side*.057,.067+ring*.003,.025);spring.rotation.x=Math.PI/2;spring.name='damper-spring';}
       }
+    }else if(/brake/.test(accessoryId)){
+      add(new THREE.BoxGeometry(.095,.004,.018),partMaterial(accessoryId,65),0,.019,-.13).name='rear-brake-stay';
+      for(const side of [-1,1])add(new THREE.BoxGeometry(.025,.006,.014),partAccent(accessoryId,20),side*.026,.014,-.135).name='rear-brake-pad';
     }else if(/weight/.test(accessoryId)){
       add(new THREE.BoxGeometry(.052,.007,.024),partMaterial(accessoryId,65),0,.034,.066).name='ballast-plate';
       add(new THREE.BoxGeometry(.04,.002,.003),partAccent(accessoryId),0,.039,.066).name='ballast-mark';
