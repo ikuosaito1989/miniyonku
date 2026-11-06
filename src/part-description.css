@@ -10,3 +10,7 @@
 .part-card-description{display:block;font-size:12px;line-height:1.6;text-align:left;color:#edf5ff}
 .setting-explanation{grid-column:1/-1;background:#215976}.setting-explanation h2{margin-bottom:7px}.setting-explanation .part-stats{max-width:640px;gap:9px}.setting-explanation .part-stat-heading{font-size:12px}.setting-explanation .part-stat-track{background:#173d58}.setting-explanation .part-stat-fill{background:linear-gradient(90deg,#37a8c5,#8edbd1)}.setting-explanation .part-stat-reference{background:#ffe28a;box-shadow:none}
 @media(max-width:450px){.part-stat-heading{font-size:11px}.part-stats{gap:6px}.part-description .part-summary{font-size:11px}.part-traits span{font-size:9px}}
+
+/* Keep the selected part's comparison visible while browsing the inventory. */
+.setting-explanation{position:sticky;top:0;z-index:5;align-self:start;box-sizing:border-box;max-height:45vh;max-height:45svh;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
+.setting-options [data-part-id]{scroll-margin-top:46vh;scroll-margin-top:46svh}
