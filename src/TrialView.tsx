@@ -46,7 +46,8 @@ export default function TrialView(){
   const officialChallenge=useGame(s=>s.officialChallengeActive),officialQualificationNotice=useGame(s=>s.officialQualificationNotice);
   const replay=useGame(s=>s.officialReplayActive),recordEligible=isRecordEquipmentEligible(equipment);
   const challenge=replay?'time-attack' as const:officialChallenge?'official' as const:legendChallenge?true:villainChallenge?'villain' as const:false;
-  const location=useGame(s=>s.location),shop=officialChallenge?modelShops.hinata:currentShop(location);
+  const outdoor=useGame(s=>s.outdoorCourse);
+  const location=useGame(s=>s.location),shop=outdoor?modelShops[outdoor]:officialChallenge?modelShops.hinata:currentShop(location);
   const officialRound=useGame(s=>s.officialRound),wakabaCup=useGame(s=>s.wakabaCup),technicalCup=useGame(s=>s.technicalCup),finalCup=useGame(s=>s.finalCup),zenithCup=useGame(s=>s.zenithCup),gameOver=useGame(s=>s.gameOver),thirdQualified=useGame(s=>s.thirdOfficialQualified);
   const grandprix=location==='stadium-10',zenith=location==='stadium-7';
   const cup=zenith?zenithCup:grandprix?finalCup:location==='stadium-9'?technicalCup:wakabaCup,kind=zenith?'zenith' as const:grandprix?'final' as const:location==='stadium-9'?'technical' as const:'wakaba' as const;
@@ -82,7 +83,7 @@ export default function TrialView(){
   useEffect(()=>{renderer.current?.setSound(sound,volume);},[sound,volume,equipment]);
 
   const requestClose=useCallback(()=>{
-    if(!error&&state.phase!=='finished'&&!window.confirm(`レースを終了して${officialChallenge||isPracticeCourse(location)?'会場':'模型店'}に戻りますか？\n${officialChallenge&&!replay?'公式戦は一度限りです。このレースは棄権として記録され、やり直せません。':'途中で戻ると、このレースの賞金は受け取れません。'}`))return;
+    if(!error&&state.phase!=='finished'&&!window.confirm(`レースを終了して${outdoor?'街':officialChallenge||isPracticeCourse(location)?'会場':'模型店'}に戻りますか？\n${officialChallenge&&!replay?'公式戦は一度限りです。このレースは棄権として記録され、やり直せません。':'途中で戻ると、このレースの賞金は受け取れません。'}`))return;
     close();
   },[close,error,state.phase,officialChallenge,replay]);
   const skipIntro=useCallback(()=>renderer.current?.skipIntro(),[]);
@@ -147,7 +148,7 @@ export default function TrialView(){
     <header className="race-header"><h2>{officialChallenge?raceName:legendChallenge?'レジェンド挑戦':villainChallenge?'黒岩 豪からの挑戦':circuit.name}<span>{replay?'公式コース・1台タイムアタック':timeTrial?'一本道・1台タイムアタック':pointToPoint?'一本道・5台レース':`${circuit.lanes}レーン・${circuit.laps}周レース`}</span></h2><nav aria-label="レース操作">
       <AudioControls/>
       <div className="race-camera-choices" role="group" aria-label="レースの視点">{raceCameraViews.map(view=><button key={view.id} className="race-camera-button" disabled={introducing} aria-pressed={cameraMode===view.id} onClick={()=>{renderer.current?.setCamera(view.id);setCameraMode(view.id);}}>{view.label}</button>)}</div>
-      <button onClick={requestClose}>{officialChallenge||isPracticeCourse(location)?'会場へ':'模型店へ'}</button>
+      <button onClick={requestClose}>{outdoor?'街へ':officialChallenge||isPracticeCourse(location)?'会場へ':'模型店へ'}</button>
     </nav></header>
     {!introducing&&(replay?<div className="time-trial-target"><span>クリア後・タイムアタック</span><span>{recordEligible?'記録対象：星皇なし':'星皇装着・記録対象外'}</span></div>:timeTrial?<div className="time-trial-target"><span>規定 <strong>{yuunagiTimeLimit.toFixed(2)}秒以内</strong></span><span>{bestTime!==null?`自己ベスト ${(Math.ceil(bestTime*100-1e-7)/100).toFixed(2)}秒`:'初挑戦'}</span><span>{finalQualified?'出場権獲得済み':'クリアで第4大会出場権'}</span></div>:<RaceRanking race={state}/>)}
     <div className="race-viewport">
@@ -194,7 +195,7 @@ export default function TrialView(){
         {ready&&!introducing&&!error?<button className="race-start-button" onClick={start}>▶ カウント開始</button>:null}
         {waitingForLaunch&&!canViewResults&&!error&&<button className="race-start-button" onClick={start}>{counting?'▶ 発進（早出）':'▶ GO！ 発進'}</button>}
         {canViewResults&&<button className="race-start-button" onClick={showRaceResults}>{driving.status!=='finished'?'▶ レースを終了':'▶ 結果を見る'}</button>}
-        {(showResults||error)&&<button onClick={requestClose}>{gameOver?'ゲームオーバーへ':officialChallenge||isPracticeCourse(location)?'会場へ戻る':'模型店へ戻る'}</button>}
+        {(showResults||error)&&<button onClick={requestClose}>{gameOver?'ゲームオーバーへ':outdoor?'街へ戻る':officialChallenge||isPracticeCourse(location)?'会場へ戻る':'模型店へ戻る'}</button>}
         {!ready&&!finished&&!waitingForLaunch&&!canViewResults&&!error&&<span className="race-running">走行中<span>●</span></span>}
       </div>
     </footer>

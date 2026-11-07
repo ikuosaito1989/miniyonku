@@ -1,3 +1,4 @@
+import {isPracticeCourse,type PracticeCourseId} from '../data/practiceCourses';
 import type {CircuitId} from '../data/circuit';
 import {towaEscortLocation} from './towaEscort';
 import {KOYA_ESCORT_END,koyaEscortActive,koyaEscortLocation} from './koyaEscort';
@@ -44,7 +45,7 @@ export interface GameState extends Wallet {
   timeHistory:TimeHistory;legacyTimeHistory:TimeHistory;timeBoardCircuit:CircuitId|null;openTimeBoard:(id?:CircuitId)=>void;officialReplayActive:boolean;
   yuunagiUnlocked:boolean;yuunagiBestTime:number|null;finalQualified:boolean;
   wakabaCup:CupProgress;technicalCup:CupProgress;finalCup:CupProgress;grandprixCleared:boolean;zenithCup:CupProgress;zenithCleared:boolean;akatsukiRaceCount:number;zenithQualified:boolean;gameOver:boolean;wakabaUnlocked:boolean;thirdOfficialQualified:boolean;
-  enterOfficialVenue:(id?:'stadium-5'|'stadium-9'|'stadium-10'|'stadium-7')=>void;townReturnVenue:'library'|'stadium-5'|'stadium-9'|'stadium-10'|'stadium-7'|null;
+  enterOfficialVenue:(id?:'stadium-5'|'stadium-9'|'stadium-10'|'stadium-7')=>void;townReturnVenue:PracticeCourseId|'library'|'stadium-5'|'stadium-9'|'stadium-10'|'stadium-7'|null;
   officialQualified:boolean;officialWon:boolean;officialSpeedWon:boolean;officialDirtWon:boolean;officialRound:OfficialRound;officialChallengeActive:boolean;officialQualificationNotice:boolean;
   openOfficialRace:(round?:OfficialRound)=>void;startOfficialRace:()=>void;
   doctorGiftReceived:boolean;openLegendChallenge:()=>void;
@@ -53,6 +54,7 @@ export interface GameState extends Wallet {
   openVillainChallenge:()=>void;startVillainChallenge:()=>void;
   location:WorldLocation;lastShop:ShopId;legendRaceCompleted:boolean;
   leaveShop:()=>void;enterShop:(id:ShopId)=>void;
+  outdoorCourse:PracticeCourseId|null;startOutdoorRace:(id:PracticeCourseId)=>void;
   cheatUsed:boolean;cheatReturnToSettings:boolean;
   openCheat:(fromSettings?:boolean)=>void;applyCheat:(amount:'max'|1000)=>void;
   purchaseCount:number;
@@ -82,6 +84,10 @@ function activeRound(s:GameState):OfficialRound{return s.location==='stadium-7'?
 function updateCup(s:GameState,cup:CupProgress){
  const updated=cupProgression(s.location==='stadium-5'?cup:s.wakabaCup,s.location==='stadium-9'?cup:s.technicalCup,s.thirdOfficialQualified,s.location==='stadium-10'?cup:s.finalCup,s.location==='stadium-7'?cup:s.zenithCup);
  return {...updated,gameOver:s.gameOver||updated.gameOver};
+}
+function outdoorRaceState(s:GameState,id:PracticeCourseId):Partial<GameState>{
+ if(s.location!=='town'||s.overlay!==null||s.openingActive||s.gameOver||!isPracticeCourse(id))return {};
+ return {outdoorCourse:id,townReturnVenue:id,overlay:'race',officialChallengeActive:false,officialReplayActive:false,officialQualificationNotice:false,shopAfter:false,notice:'',legendChallengeActive:false,legendDebriefPending:false,villainChallengeActive:false,villainDebriefPending:false,raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,qualificationNotice:false};
 }
 export const useGame = create<GameState>((set) => ({
   adviceThinking:false,bodyPaint:null,setBodyPaint:color=>set({bodyPaint:decodeBodyPaint(color)}),tutorialStage:'pending',tutorialReturn:null,retryCheckpoint:null,
@@ -139,7 +145,7 @@ export const useGame = create<GameState>((set) => ({
     return {tutorialStage:s.tutorialStage==='pending'?'done':s.tutorialStage,openingStep:OPENING_END,openingActive:false,location:'komorebi',lastShop:'komorebi',townReturnVenue:null,overlay:showSetting?'setting':null,shopAfter:false,nearby:'',notice:''};
   }),
   legacyTimeHistory:{},timeBoardCircuit:null,officialReplayActive:false,
-  timeHistory:{},openTimeBoard:(id)=>set(s=>s.location==='town'||isSalesShop(s.location)||s.overlay==='race'||(s.overlay==='escort'||s.overlay==='towa-escort'||s.overlay==='podium')||s.overlay==='arrival'?s:{overlay:'time-board',shopAfter:false,timeBoardCircuit:id??null}),
+  timeHistory:{},openTimeBoard:(id)=>set(s=>s.location==='town'&&!isPracticeCourse(id??'')||isSalesShop(s.location)||s.overlay==='race'||(s.overlay==='escort'||s.overlay==='towa-escort'||s.overlay==='podium')||s.overlay==='arrival'?s:{overlay:'time-board',shopAfter:false,timeBoardCircuit:id??null}),
   yuunagiUnlocked:false,yuunagiBestTime:null,finalQualified:false,
   wakabaCup:emptyCup(),technicalCup:emptyCup(),finalCup:emptyCup(),grandprixCleared:false,zenithCup:emptyCup(),zenithCleared:false,akatsukiRaceCount:0,zenithQualified:false,gameOver:false,wakabaUnlocked:false,thirdOfficialQualified:false,
   townReturnVenue:null,enterOfficialVenue:(id='stadium-5')=>set(s=>s.gameOver||s.location!=='town'||!(id==='stadium-7'?s.zenithQualified:id==='stadium-10'?s.finalQualified:id==='stadium-5'?s.officialQualified:s.thirdOfficialQualified)||s.overlay==='race'||(s.overlay==='escort'||s.overlay==='towa-escort'||s.overlay==='podium')||s.overlay==='arrival'?s:{location:id,overlay:null,nearby:'',notice:'',shopAfter:false,townReturnVenue:null}),
@@ -182,7 +188,9 @@ export const useGame = create<GameState>((set) => ({
     if(s.location==='komorebi'&&s.legendRaceCompleted&&!s.doctorGiftReceived)return {overlay:'arrival',arrivalEvent:'doctor',dialogueStage:'none',shopAfter:false};
     return {location:'town',townReturnVenue:s.location==='library'||s.location==='stadium-5'||s.location==='stadium-9'||s.location==='stadium-10'||s.location==='stadium-7'?s.location:null,lastShop:s.location==='library'||s.location==='stadium-5'||s.location==='stadium-9'||s.location==='stadium-10'||s.location==='stadium-7'?s.lastShop:s.location,overlay:null,nearby:'',notice:'',shopAfter:false};
   }),
-  enterShop:id=>set(s=>(s.overlay==='escort'||s.overlay==='towa-escort'||s.overlay==='podium')||s.gameOver||s.location!=='town'||!canEnterShop(id,s)?s:{location:id,lastShop:id,townReturnVenue:null,overlay:null,nearby:'',notice:'',shopAfter:false}),
+  outdoorCourse:null,
+  startOutdoorRace:id=>set(s=>outdoorRaceState(s,id)),
+  enterShop:id=>set(s=>isPracticeCourse(id)?outdoorRaceState(s,id):(s.overlay==='escort'||s.overlay==='towa-escort'||s.overlay==='podium')||s.gameOver||s.location!=='town'||!canEnterShop(id,s)?s:{location:id,lastShop:id,townReturnVenue:null,overlay:null,nearby:'',notice:'',shopAfter:false}),
   hintBookIndex:0,unlockedRaces:[],qualificationNotice:false,legendEventSeen:false,legendEventPending:false,legendDebriefPending:false,legendChallengeActive:false,dialogueStage:'none',cheatUsed:false,cheatReturnToSettings:false,
   purchaseCount:0,lastRaceReview:null,
   exchangeReusable:slot=>set(s=>s.location==='town'||s.overlay==='race'||(s.overlay==='escort'||s.overlay==='towa-escort'||s.overlay==='podium')||s.overlay==='arrival'?s:{...replaceConsumable(s,slot==='motor'?'motor-rescue':'battery-recharge'),notice:slot==='motor'?'リユースモーターを装着しました。他の種類のモーターは保持しています。':'リチウムセルを装着しました。他の種類の電池は保持しています。'}),
@@ -270,6 +278,7 @@ export const useGame = create<GameState>((set) => ({
   close: () => set(s=>{
     if(s.openingActive)return s;
     if(s.overlay==='game-over')return s;
+    if(s.overlay==='race'&&s.outdoorCourse)return {overlay:null,outdoorCourse:null,shopAfter:false,notice:''};
     if(s.overlay==='race'&&s.officialReplayActive)return {overlay:null,officialReplayActive:false,officialChallengeActive:false,shopAfter:false,notice:''};
     if(s.overlay==='race'&&s.officialChallengeActive&&s.podiumPending)return {overlay:'podium'};
     if(s.overlay==='race'&&s.location==='yuunagi'&&s.towaEscortStep===1)return {overlay:'towa-escort',shopAfter:false,notice:''};

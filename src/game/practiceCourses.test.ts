@@ -31,10 +31,16 @@ test('full offroad is full offroad and hill courses have repeated real elevation
 });
 test('street entrances are reachable; independent races and records save without unlocking main-story events',()=>{
  const before=useGame.getState();try{const obstacles=[...townVenues,...townBlocks].map(v=>({x:v.x,y:v.y,width:v.w,height:v.h}));
- for(const id of practiceCourseIds){assert.ok(townVenues.some(v=>v.id===id&&v.kind==='stadium'));assert.ok(findWalkingPath(townSpawn('library'),townSpawn(id),obstacles,townWalkBounds).length>0,id);
-  useGame.setState({...useGame.getInitialState(),location:'town',openingStep:9,tutorialStage:'done'},true);useGame.getState().enterShop(id);assert.equal(useGame.getState().location,id);useGame.getState().startTrial();assert.equal(useGame.getState().overlay,'race');
+ for(const id of practiceCourseIds){assert.ok(townVenues.some(v=>v.id===id&&v.kind==='outdoor'));assert.ok(findWalkingPath(townSpawn('library'),townSpawn(id),obstacles,townWalkBounds).length>0,id);
+  useGame.setState({...useGame.getInitialState(),location:'town',openingStep:9,tutorialStage:'done'},true);useGame.getState().startOutdoorRace(id);assert.equal(useGame.getState().location,'town');assert.equal(useGame.getState().outdoorCourse,id);assert.equal(useGame.getState().overlay,'race');
   const state=useGame.getState(),race=createRaceState(practiceEquipment(id),42,undefined,false,id);race.phase='finished';race.playerStartOffset=0;race.racers[0].driving={...drive(id),status:'finished'};const history=recordRaceTimes({},race,state.raceAttempt,123);
-  assert.ok(history[id]?.length);assert.deepEqual(decodeTimeHistory(history),history);useGame.getState().settleRace(state.raceAttempt,race);assert.equal(useGame.getState().legendRaceCompleted,false);assert.equal(useGame.getState().officialQualified,false);useGame.setState({timeHistory:history});const saved=decodeSave({version:1,savedAt:1,game:snapshotGame(useGame.getState())}).game;assert.equal(saved.location,id);assert.equal(saved.legendRaceCompleted,false);assert.equal(saved.officialQualified,false);assert.equal(modelShops[id].exclusiveParts?.length,0);
+  assert.ok(history[id]?.length);assert.deepEqual(decodeTimeHistory(history),history);useGame.getState().settleRace(state.raceAttempt,race);assert.equal(useGame.getState().legendRaceCompleted,false);assert.equal(useGame.getState().officialQualified,false);useGame.setState({timeHistory:history});const saved=decodeSave({version:1,savedAt:1,game:snapshotGame(useGame.getState())}).game;assert.equal(saved.location,'town');assert.equal(saved.townReturnVenue,id);assert.equal(saved.lastShop,'komorebi');assert.ok(!('outdoorCourse' in saved));useGame.getState().close();assert.equal(useGame.getState().location,'town');assert.equal(useGame.getState().outdoorCourse,null);assert.equal(useGame.getState().overlay,null);assert.equal(saved.legendRaceCompleted,false);assert.equal(saved.officialQualified,false);assert.equal(modelShops[id].exclusiveParts?.length,0);
  }
  }finally{useGame.setState(before,true);}
+});
+
+test('random outdoor placement spans both axes, is stable by seed, and migrates old indoor saves to town',()=>{
+ const parks=townVenues.filter(v=>v.kind==='outdoor');assert.equal(parks.length,10);assert.ok(new Set(parks.map(v=>Math.floor(v.x/500))).size>=4);assert.ok(new Set(parks.map(v=>Math.floor(v.y/400))).size>=3);
+ const old={...snapshotGame(useGame.getInitialState()),location:'park-sand',lastShop:'park-sand'};
+ const migrated=decodeSave({version:1,savedAt:1,game:old}).game;assert.equal(migrated.location,'town');assert.equal(migrated.townReturnVenue,'park-sand');assert.equal(migrated.lastShop,'komorebi');
 });

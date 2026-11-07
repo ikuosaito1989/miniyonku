@@ -2,14 +2,15 @@ import {parts} from './data/parts';
 import {equipmentSlots} from './data/machine';
 import {officialVenueFor} from './data/officialVenue';
 import {useGame} from './game/store';
-import {currentShop} from './data/world';
+import {isPracticeCourse} from './data/practiceCourses';
+import {currentShop,modelShops} from './data/world';
 import {getCircuitTrack} from './data/circuit';
 import {formatRecordTime} from './game/timeRecords';
 import './time-board.css';
 export function TimeBoard(){
  const location=useGame(s=>s.location),history=useGame(s=>s.timeHistory),close=useGame(s=>s.close);
  const selected=useGame(s=>s.timeBoardCircuit),legacy=useGame(s=>s.legacyTimeHistory);
- const shop=currentShop(location),id=selected??shop.circuitId,circuit=getCircuitTrack(id).circuit,records=history[id]??[],old=legacy[id]??[],venue=location.startsWith('stadium-')?officialVenueFor(location).name:shop.name;
+ const shop=currentShop(location),id=selected??shop.circuitId,circuit=getCircuitTrack(id).circuit,records=history[id]??[],old=legacy[id]??[],venue=isPracticeCourse(id)?modelShops[id].name:location.startsWith('stadium-')?officialVenueFor(location).name:shop.name;
  return <div className="scrim"><section className="time-board" role="dialog" aria-modal="true" aria-labelledby="time-board-title" onKeyDown={event=>{if(event.key==='Tab'){const items=[...event.currentTarget.querySelectorAll<HTMLElement>('button, summary')],first=items[0],last=items.at(-1);if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}}}}>
   <header><div><small>{venue} · コース記録</small><h2 id="time-board-title">歴代ベストタイム TOP 3</h2></div><button autoFocus onClick={close}>閉じる</button></header>
   <p className="time-board-course">{circuit.name}</p>

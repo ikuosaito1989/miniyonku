@@ -1,10 +1,10 @@
-import {isPracticeCourse,practiceCourseIds} from '../data/practiceCourses';
 import type Phaser from 'phaser';
 import type {TownVenue,ShopId} from '../data/world';
 import {shopThemes} from '../data/shopThemes';
 import {SceneryPen} from './SceneryCanvas';
 
 export function paintVenueFacade(p:SceneryPen,v:TownVenue,open:boolean){
+ if(v.kind==='outdoor')return;
  const w=v.w,h=v.h,x=40,y=91,c=p.c;
  p.ellipse(x+w/2+10,y+h+9,w*.6,13,'#21323b33');
  if(v.kind==='library'){
@@ -16,16 +16,6 @@ export function paintVenueFacade(p:SceneryPen,v:TownVenue,open:boolean){
   p.round(x+w/2-22,y+48,44,h-49,3,'#475c65');p.gradient(x+w/2-18,y+53,36,h-57,'#b3d1c5','#5f8690');p.rect(x+w/2-1,y+53,2,h-57,'#d9d6ba');p.rect(x+w/2+10,y+h-24,3,11,'#dfc581');
   for(const col of [x+5,x+w-12]){p.gradient(col,y+13,7,h-14,'#ece2cb','#999e97');p.rect(col-2,y+12,11,4,'#c1b99d');}
   p.round(x-15,y+h-25,18,25,3,'#9e7c61');p.ellipse(x-6,y+h-29,15,12,'#66876a');p.round(x+w+1,y+h-25,18,25,3,'#9e7c61');p.ellipse(x+w+10,y+h-29,15,12,'#66876a');
- }else if(isPracticeCourse(v.id)){
-  const accent=['#86c8d6','#e2b875','#99bc83'][practiceCourseIds.indexOf(v.id)%3];
-  p.round(x-4,y+6,w+8,h-4,6,'#284454');p.gradient(x,y+10,w,h-10,'#abbec1','#526d7b');
-  p.poly([[x-9,y+12],[x+w/2,y-27],[x+w+9,y+12]],'#30475b');p.poly([[x-3,y+8],[x+w/2,y-20],[x+w+3,y+8]],accent);
-  p.round(x+13,y+19,w-26,45,5,'#142d3e');p.round(x+17,y+23,w-34,37,4,'#749392');
-  p.ellipse(x+w/2,y+41,w*.32,14,'#253e4c');p.ellipse(x+w/2,y+41,w*.26,9,'#81a77a');
-  for(let i=0;i<4;i++)p.line([[x+32,y+32+i*5],[x+w-32,y+32+i*5]],'#d4dfc0',.7);
-  p.checker(x+13,y+66,w-26,8,5);p.round(x+w/2-16,y+76,32,h-75,2,'#203744');
-  for(const tx of [x-3,x+w-4]){p.rect(tx,y-34,5,118,'#5a7583');p.round(tx-8,y-40,21,13,2,'#30495c');for(let i=0;i<3;i++)p.rect(tx-5+i*6,y-37,4,7,'#fff1bd');p.glow(tx+2,y-30,23,'#ffe7a43a');}
-  for(const fx of [x+9,x+w-10]){p.rect(fx,y-42,2,35,'#bbccc7');p.poly([[fx+2,y-42],[fx+18,y-37],[fx+2,y-25]],accent);}
  }else if(v.kind==='stadium'){
   const colors:Record<string,string[]>={'stadium-5':['#376f73','#91bdac'],'stadium-9':['#4e527f','#bd9ace'],'stadium-10':['#745153','#e5b97a'],'stadium-7':['#354968','#dcc080']};
   const [dark,accent]=colors[v.id]??colors['stadium-5'];

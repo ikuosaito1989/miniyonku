@@ -1,3 +1,4 @@
+import type {PracticeCourseId} from '../data/practiceCourses';
 import {story} from '../data/story';
 import {townSpawn,townVenues,townBlocks,townWalkBounds,type WorldLocation,type ShopId} from '../data/world';
 import {room} from '../data/shop';
@@ -14,7 +15,7 @@ export const openingScenes=[
  {kind:'dialogue',speaker:'佐伯 匠',portrait:'mechanic',text:'電池の残量とモーターの消耗は、パーツの上のメーターで確認できるよ。このあと一緒にセッティングを見て、ギアを買って装着して、レースまでやってみよう！ パーツの性能や特徴は、街の図書館でも最初から全部調べられるよ。困ったときは、いつでも僕に声をかけてね。',next:'マシンを見てみる'},
 ] as const;
 export const OPENING_END=openingScenes.length;
-export type OpeningTour={step:number;location:WorldLocation;lastShop:ShopId;townReturnVenue:'library'|'stadium-5'|'stadium-9'|'stadium-10'|'stadium-7'|null};
+export type OpeningTour={step:number;location:WorldLocation;lastShop:ShopId;townReturnVenue:PracticeCourseId|'library'|'stadium-5'|'stadium-9'|'stadium-10'|'stadium-7'|null};
 export type OpeningState={openingStep:number;openingTour:OpeningTour|null};
 export const openingIndex=(state:OpeningState)=>state.openingTour?.step??state.openingStep;
 export const openingIsWalk=(step:number)=>openingScenes[step]?.kind==='town-walk'||openingScenes[step]?.kind==='shop-walk';

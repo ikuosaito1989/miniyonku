@@ -1,3 +1,4 @@
+import {drawOutdoorCourse} from './OutdoorCourseArt';
 import {drawVenueFacade} from './VenueFacadeArt';
 import Phaser from 'phaser';
 import { isVenueOpen, townVenues, townSize, townRoads, townBlocks, type WorldProgress } from '../data/world';
@@ -19,9 +20,10 @@ export function drawTown(scene:Phaser.Scene,progress:WorldProgress){
   for(const x of townRoads.vertical)for(const y of townRoads.horizontal){r(x-52,y-52,104,104,'#777e87');for(let i=0;i<5;i++){r(x-44+i*19,y-64,9,30,'#d9d2b6');r(x-44+i*19,y+34,9,30,'#d9d2b6');}}
   for(const v of townVenues){
    const cx=v.x+v.w/2,cy=v.entrance==='south'?v.y+v.h+30:v.y-30,road=townRoads.horizontal.reduce((a,b)=>Math.abs(b-cy)<Math.abs(a-cy)?b:a);
-   r(v.x-24,v.y-65,v.w+48,v.h+118,v.kind==='stadium'?'#a7aaa0':'#b7b197');
+   if(v.kind==='outdoor')r(v.x-8,v.y-8,v.w+16,v.h+28,'#a3ad8b');else r(v.x-24,v.y-65,v.w+48,v.h+118,v.kind==='stadium'?'#a7aaa0':'#b7b197');
    r(cx-28,Math.min(cy,road),56,Math.abs(cy-road),'#b7b197');
    for(let yy=Math.min(cy,road);yy<Math.max(cy,road);yy+=13){r(cx-26,yy,52,1,'#d3c9a8');r(cx,yy,1,12,'#969b89');}
+   if(v.kind==='outdoor')continue;
    for(let yy=v.y-60;yy<v.y+v.h+45;yy+=14)for(let xx=v.x-20;xx<v.x+v.w+20;xx+=24){r(xx,yy,22,1,'#d0c8ae');r(xx+(yy%28===0?10:0),yy,1,12,'#93988b');}
   }
   // 公園の池と周回遊歩道。建物を置かず街に余白をつくる。
@@ -39,7 +41,7 @@ export function drawTown(scene:Phaser.Scene,progress:WorldProgress){
   r(x+w/2-9,y+h-22,18,21,0x525869);r(x+w/2-6,y+h-20,12,15,0x98b1af);
   tree(scene,x-21,y+h+8);tree(scene,x+w+20,y+h+8);
  }
- for(const venue of townVenues)drawVenueFacade(scene,venue,isVenueOpen(venue,progress));
+ for(const venue of townVenues)if(venue.kind==='outdoor')drawOutdoorCourse(scene,venue);else drawVenueFacade(scene,venue,isVenueOpen(venue,progress));
  // 並木・街灯・ベンチ。小物は通路の外へ寄せる。
  for(const x of townRoads.vertical)for(let y=160;y<2300;y+=180){
   if(townVenues.some(v=>Math.abs(x-v.x)<v.w+100&&y>v.y-80&&y<v.y+v.h+70))continue;
@@ -54,6 +56,7 @@ export function drawTown(scene:Phaser.Scene,progress:WorldProgress){
  for(const [x,y] of [[1440,1570],[1660,1570],[1440,1740],[1660,1740],[670,830],[2200,2040]]){tree(scene,x,y);const g=scene.add.graphics().setDepth(y+20);g.fillStyle(0x574d4c).fillRect(x+24,y+10,43,8);g.fillStyle(0xb59a74).fillRect(x+24,y+6,43,5);g.fillStyle(0x736556).fillRect(x+28,y+18,3,7).fillRect(x+60,y+18,3,7);}
 }
 function tree(scene:Phaser.Scene,x:number,y:number){
+ if(townVenues.some(v=>v.kind==='outdoor'&&x>v.x-55&&x<v.x+v.w+55&&y>v.y-20&&y<v.y+v.h+95))return;
  const g=scene.add.graphics().setDepth(y+10),r=(a:number,b:number,w:number,h:number,c:number)=>g.fillStyle(c).fillRect(a,b,w,h);
  g.fillStyle(0x35464a,.22).fillEllipse(x+8,y+8,56,17);r(x-5,y-35,11,45,0x62505a);r(x-2,y-32,4,39,0xa18364);
  for(let i=0;i<9;i++){const xx=x-35+(i*19)%45,yy=y-76+(i*13)%38,w=26+i%3*3;r(xx+6,yy,w-12,4,0x3d6357);r(xx+2,yy+4,w-3,23,0x3d6357);r(xx,yy+9,w,12,0x3d6357);r(xx+5,yy+2,w-10,8,0x9aaf72);r(xx+3,yy+9,w-8,13,0x72955f);for(let j=0;j<4;j++)r(xx+6+j*4,yy+7+j%2*5,3,2,0xb0bc7d);}

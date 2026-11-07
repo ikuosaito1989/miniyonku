@@ -30,7 +30,7 @@ export function currentShop(location:WorldLocation){return modelShops[location==
 export interface WorldProgress {legendRaceCompleted:boolean;villainDefeated:boolean;officialQualified?:boolean;wakabaUnlocked?:boolean;thirdOfficialQualified?:boolean;yuunagiUnlocked?:boolean;finalQualified?:boolean;grandprixCleared?:boolean;zenithQualified?:boolean;zenithCleared?:boolean}
 export function canEnterShop(id:ShopId,progress:WorldProgress){return id==='hoshikuzu'?progress.zenithCleared===true:id==='akatsuki'?progress.grandprixCleared===true:id==='yuunagi'?progress.yuunagiUnlocked===true:id==='wakaba'?progress.wakabaUnlocked===true:(id==='komorebi'||isSalesShop(id)||isPracticeCourse(id))||progress.legendRaceCompleted&&(id==='aozora'||progress.villainDefeated);}
 export function isVenueOpen(venue:TownVenue,progress:WorldProgress){return venue.kind==='library'?true:venue.id==='stadium-7'?progress.zenithQualified===true:venue.id==='stadium-10'?progress.finalQualified===true:venue.id==='stadium-9'?progress.thirdOfficialQualified===true:venue.id==='stadium-5'?progress.officialQualified===true:!!venue.shopId&&canEnterShop(venue.shopId,progress);}
-export interface TownVenue {id:string;name:string;kind:'shop'|'stadium'|'library';stage:number;x:number;y:number;w:number;h:number;entrance:'north'|'south';color:number;shopId?:ShopId}
+export interface TownVenue {id:string;name:string;kind:'shop'|'stadium'|'library'|'outdoor';stage:number;x:number;y:number;w:number;h:number;entrance:'north'|'south';color:number;shopId?:ShopId}
 const venueTemplates:TownVenue[]=[
   {id:'komorebi',name:'こもれび模型店',kind:'shop',stage:1,x:78,y:150,w:132,h:88,entrance:'south',color:0x528672,shopId:'komorebi'},
   {id:'aozora',name:'あおぞら模型店',kind:'shop',stage:2,x:246,y:150,w:132,h:88,entrance:'south',color:0x497eaf,shopId:'aozora'},
@@ -56,7 +56,20 @@ export function generateTownVenues(seed=19890421):TownVenue[]{
     const plot=plots[index],stadium=venue.kind==='stadium';
     return {...venue,entrance:'south',x:plot.x+Math.floor(random()*40)-20,y:plot.y+Math.floor(random()*50)-25,w:stadium?350:190,h:stadium?250:140};
   });
-  return [...venues,...practiceCourseIds.map((id,i):TownVenue=>({id,name:modelShops[id].name,kind:'stadium',stage:1,x:[100,550,770,990,1330,1550,1770,2150,2370,2590][i],y:1580,w:160,h:90,entrance:'south',color:modelShops[id].color,shopId:id})),...(['torque','velocity','terrain'] as const).map((id,i):TownVenue=>({id,name:modelShops[id].name,kind:'shop',stage:1,x:[1500,2260,2500][i],y:790,w:190,h:140,entrance:'south',color:modelShops[id].color,shopId:id})),{id:'atelier',name:'星霧模型工房',kind:'shop',stage:1,x:650,y:805,w:190,h:140,entrance:'south',color:0x77649c,shopId:'atelier'},{id:'library',name:'緑川町立図書館',kind:'library',stage:1,x:970,y:805,w:190,h:140,entrance:'south',color:0x657c88}];
+  const buildings:TownVenue[]=[...venues,...(['torque','velocity','terrain'] as const).map((id,i):TownVenue=>({id,name:modelShops[id].name,kind:'shop',stage:1,x:[1500,2260,2500][i],y:790,w:190,h:140,entrance:'south',color:modelShops[id].color,shopId:id})),{id:'atelier',name:'星霧模型工房',kind:'shop',stage:1,x:650,y:805,w:190,h:140,entrance:'south',color:0x77649c,shopId:'atelier'},{id:'library',name:'緑川町立図書館',kind:'library',stage:1,x:970,y:805,w:190,h:140,entrance:'south',color:0x657c88} ];
+  const outdoors:TownVenue[]=[];
+  const separate=(a:TownVenue,b:TownVenue)=>a.x+a.w+40<b.x||b.x+b.w+40<a.x||a.y+a.h+80<b.y||b.y+b.h+80<a.y;
+  for(const id of practiceCourseIds){
+    let placed=false;
+    for(let attempt=0;attempt<20000;attempt++){
+      const v:TownVenue={id,name:practiceCourses[id].name,kind:'outdoor',stage:1,x:100+Math.floor(random()*2600),y:200+Math.floor(random()*1900),w:180,h:110,entrance:'south',color:modelShops[id].color,shopId:id};
+      if(townRoads.vertical.some(x=>x>=v.x-75&&x<=v.x+v.w+75)||townRoads.horizontal.some(y=>y>=v.y-75&&y<=v.y+v.h+75))continue;
+      if([...buildings,...outdoors].some(b=>!separate(v,b)))continue;
+      outdoors.push(v);placed=true;break;
+    }
+    if(!placed)throw new Error('屋外コースの配置場所が足りません。');
+  }
+  return [...buildings,...outdoors];
 }
 export const townVenues=generateTownVenues();
 // 住宅・商店街の背景棟。入口を持たない建物も歩行障害物として扱う。
