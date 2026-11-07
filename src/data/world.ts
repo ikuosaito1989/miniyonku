@@ -80,6 +80,15 @@ for(let y=130;y<2150;y+=345)for(let x=100;x<2800;x+=370){
   if(townVenues.some(v=>x<v.x+v.w+90&&x+w>v.x-90&&y<v.y+v.h+90&&y+h>v.y-110))continue;
   townBlocks.push({x,y,w,h});
 }
+// 小さな住宅を空き区画に補充。既存施設、帰還地点、道路沿いの通路は維持する。
+for(let row=0,y=190;y<2210;y+=156,row++)for(let x=110+(row%2)*72;x<2770;x+=160){
+ const w=86+(row%3)*6,h=72;
+ if(townRoads.vertical.some(r=>r>x-94&&r<x+w+94)||townRoads.horizontal.some(r=>r>y-92&&r<y+h+92))continue;
+ if(townVenues.some(b=>x<b.x+b.w+72&&x+w>b.x-72&&y<b.y+b.h+110&&y+h>b.y-90))continue;
+ if(townBlocks.some(b=>x<b.x+b.w+45&&x+w>b.x-45&&y<b.y+b.h+65&&y+h>b.y-62))continue;
+ if(x<1700&&x+w>1390&&y<1790&&y+h>1520)continue; // 池の広場
+ townBlocks.push({x,y,w,h});
+}
 export const shopExit={x:440,y:575,w:80,h:7};
 export function townSpawn(shop:ShopId|'library'|'stadium-5'|'stadium-9'|'stadium-10'|'stadium-7'){const venue=townVenues.find(v=>v.id===shop)!;return {x:venue.x+venue.w/2,y:venue.entrance==='north'?venue.y-42:venue.y+venue.h+42};}
 export function venueMessage(venue:TownVenue){

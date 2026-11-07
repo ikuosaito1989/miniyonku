@@ -1,3 +1,5 @@
+import {drawTownCrowd} from './TownCrowdArt';
+import {townCrowdObstacles} from '../data/townCrowd';
 import {drawRecordBoard} from './RecordBoardArt';
 import {isPracticeCourse} from '../data/practiceCourses';
 import {drawLibraryRoom} from './LibraryRoomArt';
@@ -80,6 +82,7 @@ export class ShopScene extends Phaser.Scene {
   private arriving:{state:ArrivalActor;container:Phaser.GameObjects.Container;kind:string;solid:Phaser.Geom.Rectangle|null}[]=[];
   private eventAudio=new EventAudio();
   private isTown=false;
+  private updateTownCrowd:((time:number)=>void)|null=null;
   private approach(target:ShopTarget){
     if(this.isTown)return {x:target.x+target.w/2,y:target.y+target.h+(target.kind==='town-person'||target.kind==='mechanic-man'?20:28)};
     return {x:target.x+target.w/2,y:target.y+target.h/2};
@@ -104,11 +107,13 @@ export class ShopScene extends Phaser.Scene {
     this.fitCamera();
     this.scale.on(Phaser.Scale.Events.RESIZE,this.fitCamera,this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN,()=>this.scale.off(Phaser.Scale.Events.RESIZE,this.fitCamera,this));
-    this.solids=[];
+    this.solids=[];this.updateTownCrowd=null;
     createPeopleTextures(this);
     if(this.isTown){
       drawTown(this,useGame.getState());
+      this.updateTownCrowd=drawTownCrowd(this);
       this.solids=[...townVenues,...townBlocks].map(v=>new Phaser.Geom.Rectangle(v.x,v.y,v.w,v.h));
+      this.solids.push(...townCrowdObstacles.map(v=>new Phaser.Geom.Rectangle(v.x,v.y,v.width,v.height)));
       const hidden=this.person(hiddenMechanicSpot.x,hiddenMechanicSpot.y,'owner');
       const hiddenKey='mechanic-man-down';if(!this.textures.exists(hiddenKey))createPersonTexture(this,hiddenKey,mechanicManDrawing());
       (hidden.list[1] as Phaser.GameObjects.Image).setTexture(hiddenKey);
@@ -432,6 +437,7 @@ export class ShopScene extends Phaser.Scene {
   }
   update(_time:number,delta:number){
     if(!this.player)return;
+    this.updateTownCrowd?.(_time);
     if(useGame.getState().openingActive){this.updateOpening(delta);return;}
     this.openingPhase=-1;this.openingWalk=null;
     if(!useGame.getState().overlay&&koyaEscortActive(useGame.getState().koyaEscortStep))useGame.getState().resumeKoyaEscort();

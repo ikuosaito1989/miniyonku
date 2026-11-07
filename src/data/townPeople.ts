@@ -1,4 +1,5 @@
-import {townVenues} from './world';
+import {townVenues,townBlocks,townWalkBounds,townSpawn} from './world';
+import {canStand} from '../game/navigation';
 import type {NpcAppearanceId} from './npcAppearance';
 import {currentMission} from '../game/mission';
 import type {GameState} from '../game/store';
@@ -14,7 +15,11 @@ const residents=[
 // 入口の正面と出現地点を空け、建物の南側の歩ける場所に集まる。
 export const townPeople=residents.map(person=>{
  const venue=townVenues.find(v=>v.id===person.venue)!;
- return {...person,x:venue.x+venue.w/2+68,y:venue.y+venue.h+90};
+ const buildings=[...townVenues,...townBlocks].map(v=>({x:v.x,y:v.y,width:v.w,height:v.h}));
+ const candidates=[68,-68,110,-110,150,-150].flatMap(dx=>[90,126,164].map(dy=>({x:venue.x+venue.w/2+dx,y:venue.y+venue.h+dy})));
+ const spot=candidates.find(p=>canStand(p,buildings,townWalkBounds)&&canStand({x:p.x,y:p.y+32},buildings,townWalkBounds)&&townVenues.every(v=>Math.hypot(p.x-townSpawn(v.id as Parameters<typeof townSpawn>[0]).x,p.y-townSpawn(v.id as Parameters<typeof townSpawn>[0]).y)>56));
+ if(!spot)throw new Error(`街の案内人を配置できません: ${person.id}`);
+ return {...person,...spot};
 });
 export type TownPerson=typeof townPeople[number];
 export function townPersonAdvice(person:TownPerson,state:GameState):string{

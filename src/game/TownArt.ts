@@ -36,6 +36,13 @@ function ground(c:CanvasRenderingContext2D){
   const top=Math.min(cy,roadY),bottom=Math.max(cy,roadY);r(cx-30,top,60,bottom-top,'#788572');r(cx-28,top,56,bottom-top,'#aea98a');
   for(let yy=top;yy<bottom;yy+=14){for(let col=0;col<2;col++){const xx=cx-27+col*27,n=noise(xx,yy);r(xx+1,yy+1,25,12,n%3?'#beb89a':'#b4ae90');r(xx+1,yy+1,25,1,'#dbd0ac');r(xx+1,yy+12,25,1,'#929a80');if(n%4===0)r(xx+5,yy+4,4,1,'#d6c9a527');}r(cx-29,yy+3,1,4,'#7d9663');r(cx+28,yy+8,1,3,'#6f8a5b');}
  }
+ // House fronts have their own stone thresholds and planted yards.
+ for(const b of townBlocks){
+  const y=b.y+b.h,cx=b.x+b.w/2;
+  r(b.x-6,y+3,b.w+12,32,'#6c845b');r(b.x-5,y+4,b.w+10,1,'#a3ad7b');
+  for(let yy=y+6;yy<y+55;yy+=10){r(cx-10,yy,20,8,'#b8b496');r(cx-9,yy,18,1,'#d6caa7');r(cx-10,yy+7,20,1,'#8d977c');}
+  for(const x of [b.x+1,b.x+b.w-19]){r(x,y+18,18,6,'#3e624b');r(x+1,y+17,16,3,'#769364');r(x+3,y+17,3,1,'#acb681');r(x+11,y+18,2,1,'#c2ae83');}
+ }
  // Park pond: layered coping stones and reeds, instead of flat nested squares.
  r(1458,1588,184,136,'#6d826c');r(1460,1590,180,132,'#b1aa88');for(let x=1462;x<1640;x+=18){r(x,1591,16,5,'#d0c6a0');r(x,1715,16,5,'#999c83');}r(1470,1600,160,112,'#345e6b');r(1473,1603,154,106,'#578e92');r(1477,1606,146,98,'#6aa59f');
  for(let i=0;i<45;i++){const n=noise(i,42),x=1482+n%133,y=1610+(n>>>9)%84;r(x,y,6+n%10,1,'#a2c5b4');if(i%5===0){p.ellipse(x,y+6,4,2,'#527f62');r(x-1,y+5,2,1,'#a4b68a');}}
@@ -52,10 +59,17 @@ function house(scene:Phaser.Scene,block:typeof townBlocks[number],index:number){
   for(let ty=yy-25,row=0;ty<yy-3;ty+=5,row++)for(let tx=xx-1-row%2*6;tx<xx+w;tx+=12){p.rect(tx,ty,10,1,'#adbaa4');p.rect(tx+1,ty+1,8,2,'#82968a');p.rect(tx+9,ty+1,1,3,'#435c60');p.rect(tx,ty+4,10,1,'#42585a');}
   p.rect(xx+w/2-2,yy-33,4,3,'#b9bda5');p.rect(xx-6,yy+1,w+12,3,'#43565a');p.rect(xx-5,yy+1,w+10,1,'#d2c7a1');p.rect(xx+w-5,yy+3,2,h-6,'#617e7c');p.rect(xx+w-4,yy+4,1,h-9,'#b4baa4');
   p.rect(xx+w/2-10,yy+h-25,20,25,'#465958');p.gradient(xx+w/2-7,yy+h-23,14,20,'#8eaaa0','#5b7d82');p.rect(xx+w/2+4,yy+h-13,2,2,'#ddc69c');p.rect(xx+w/2-12,yy+h-2,24,3,'#c5bda0');p.plant(xx+10,yy+h-2,.6);
+  // Residential details: awnings, letterboxes, laundry, flower boxes and bicycles.
+  const door=xx+w/2;
+  if(index%3===0){p.poly([[door-16,yy+h-30],[door+15,yy+h-30],[door+20,yy+h-22],[door-21,yy+h-22]],'#455f61');for(let i=0;i<5;i++)p.rect(door-18+i*7,yy+h-26,4,4,i%2?'#cbbd91':'#8d9990');p.rect(door-21,yy+h-22,41,2,'#c2b597');}
+  p.rect(xx+w+5,yy+h-17,2,20,'#5c6b5c');p.rect(xx+w+1,yy+h-23,12,9,'#405d62');p.rect(xx+w+2,yy+h-22,10,6,index%2?'#a37a67':'#b5b9a0');p.rect(xx+w+3,yy+h-21,7,1,'#314b53');p.rect(xx+w+4,yy+h-19,3,1,'#e7d9af');
+  if(index%3===1){const lx=xx+6,ly=yy+h-43;p.line([[lx,ly],[lx+46,ly+2]],'#485e5a',.5);for(let i=0;i<4;i++){const x=lx+3+i*11;p.rect(x,ly+2,8,11,['#d6c7ab','#889eab','#bc8e87','#90aa92'][i]);p.rect(x+1,ly+2,6,1,'#eaddbd');p.rect(x+2,ly+4,1,7,'#344c4b22');p.rect(x+3,ly,1,3,'#dbbd80');}}
+  if(index%3===2){const bx=xx+w-18,by=yy+h+6;p.wheel(bx-9,by,7,'#a8b8ad');p.wheel(bx+12,by,7,'#a8b8ad');p.line([[bx-9,by],[bx-3,by-12],[bx+5,by],[bx-9,by],[bx+1,by-10],[bx+12,by]],'#7c4f57',1.5);p.line([[bx+12,by],[bx+9,by-15],[bx+14,by-15]],'#425e62',1);p.rect(bx-6,by-14,7,2,'#3a4f55');}
+  for(const fx of [xx+6,xx+w-30]){p.rect(fx,yy+h+4,23,7,'#69775d');p.rect(fx,yy+h+4,23,1,'#b0ac7a');for(let j=0;j<5;j++){const xx=fx+2+j*4;p.rect(xx,yy+h,1,5,'#46674e');p.rect(xx-1,yy+h-2,3,2,j%2?'#d3b787':'#c68c8f');p.rect(xx,yy+h-2,1,1,'#f0d8a0');}}
   t.refresh();t.setFilter(Phaser.Textures.FilterMode.LINEAR);
  }
  scene.add.image(x-15,y-40,key).setOrigin(0).setDisplaySize(w+40,h+64).setDepth(y+h);
- tree(scene,x-21,y+h+8);tree(scene,x+w+20,y+h+8);
+ if(w>=130){tree(scene,x-32,y+h+8);tree(scene,x+w+32,y+h+8);}else tree(scene,index%2?x-42:x+w+42,y+h-8);
 }
 export function drawTown(scene:Phaser.Scene,progress:WorldProgress){
  const key='midorikawa-ground-16';if(!scene.textures.exists(key)){const texture=scene.textures.createCanvas(key,townSize.width,townSize.height)!;ground(texture.context);texture.refresh();}
