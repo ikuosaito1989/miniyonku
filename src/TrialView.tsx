@@ -1,5 +1,5 @@
 import {tutorialActive} from './game/tutorial';
-import {queueOnlineRecord} from './game/onlineLeaderboard';
+import {queueOnlineRecord,useOnlineStatus} from './game/onlineLeaderboard';
 import {raceSubmission} from './game/onlineRecords';
 import {isPracticeCourse} from './data/practiceCourses';
 import {isRecordEquipmentEligible} from './game/timeRecords';
@@ -70,6 +70,7 @@ export default function TrialView(){
   const [cameraMode,setCameraMode]=useState<TrialCamera>('broadcast');
   const overview=cameraMode==='overview';
   const [error,setError]=useState('');
+  const onlineMessage=useOnlineStatus(s=>s.message);
   const sound=useAudioSettings(s=>s.enabled),volume=useAudioSettings(s=>s.volume);
 
   useEffect(()=>{
@@ -84,6 +85,7 @@ export default function TrialView(){
         submitted=true;
         const current=useGame.getState(),record=raceSubmission(race,'');
         if(record&&!current.cheatUsed&&!tutorialActive(current.tutorialStage))void queueOnlineRecord(record);
+        else useOnlineStatus.setState({message:current.cheatUsed?'裏技を使用したセーブのためオンライン登録対象外です。':tutorialActive(current.tutorialStage)?'チュートリアル中はオンライン登録対象外です。':'星皇装備、または対象外の記録のためオンライン登録しません。'});
       }
       setState(race);
     },setFinish,condition,stored.raceSeed,challenge,circuitId,setIntro,stored.bodyPaint,online?.records??null);}
@@ -184,6 +186,7 @@ export default function TrialView(){
         {winner&&<p className="result-winner">{timeTrial?'TIME ATTACK':'WINNER'} <strong>{winner.name}</strong> <b>{raceClock(officialTime(state,winner))}</b></p>}
         <table><thead><tr><th>{timeTrial?'判定':'順位'}</th><th>マシン</th><th>スタート</th><th>公式タイム</th></tr></thead><tbody>{standings.map((r,i)=><tr key={r.id} className={r.id==='player'?'result-player':''}><td style={{whiteSpace:'nowrap'}}>{r.driving.status==='out'?'—':timeTrial?officialTime(state,r)<=yuunagiTimeLimit?'クリア':'超過':i+1}</td><td><i style={{backgroundColor:`#${r.color.toString(16).padStart(6,'0')}`}}/>{r.name}</td><td>{r.lane+1}コース</td><td>{r.driving.status==='out'?(r.driving.stopReason==='retired'?'未完走':r.driving.stopReason==='lapped'?'周回遅れ':r.driving.stopReason==='battery'?'BATTERY EMPTY':'COURSE OUT'):raceClock(officialTime(state,r))}</td></tr>)}</tbody></table>
         <p className="result-note" role="status">{recordEligible?'星皇なしの完走は歴代タイムの記録対象です。':'星皇シリーズ装着：この走行は歴代タイムに記録されません。'}{replay?' クリア後の再走なので、大会結果・クリア状態は変わりません。':''}</p>
+        {driving.status==='finished'&&<p className="result-note" role="status">{onlineMessage}</p>}
         <p className="result-note">{penaltyText?`${penaltyText}を公式タイムに反映済み`:'公式タイムにはGO後の反応時間を含みます'}</p>
         <p className="result-note" role="status">{online?'オンライン対戦・賞金なし':legendChallenge?'特別レースのため賞金はありません。':prize>0?`${!timeTrial&&winner?.id==='player'?'優勝賞金':'完走賞'} +${prize}円！`:'今回の賞金はありません。'} 所持金 {money.toLocaleString('ja-JP')}円</p>
         {timeTrial&&<p className="result-note" role="status">{driving.status==='finished'&&playerTime<=yuunagiTimeLimit?'規定40秒クリア！ 第4公式大会・緑川グランプリの出場権を獲得しました。街の緑川グランプリ決勝会場へ向かいましょう。':driving.status==='finished'?'規定タイムを超えました。装備を変えて再挑戦できます。':'完走できませんでした。再挑戦できます。'}{bestTime!==null?` 自己ベスト ${(Math.ceil(bestTime*100-1e-7)/100).toFixed(2)}秒。`:''}</p>}

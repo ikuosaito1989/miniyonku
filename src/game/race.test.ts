@@ -172,6 +172,8 @@ test('オンライン投稿は自分の完走だけ。公式タイムと開始�
  assert.deepEqual(submission.condition,{motorSeconds:0,batterySeconds:0});
  const raw={...submission,playerId:'b'.repeat(64),recordedAt:new Date(0).toISOString()};
  assert.equal(decodeOnlineRecords({records:[raw]},'leaf').length,1);
+ assert.equal(decodeOnlineRecords({records:Array.from({length:5},(_,i)=>({...raw,playerId:i.toString(16).repeat(64)}))},'leaf').length,5);
+ assert.throws(()=>decodeOnlineRecords({records:Array(6).fill(raw)},'leaf'));
  assert.throws(()=>decodeOnlineRecords({records:[{...raw,circuitId:'wind'}]},'leaf'));
  assert.throws(()=>decodeOnlineRecords({records:[{...raw,equipment:{...raw.equipment,motor:'motor-sovereign'}}]},'leaf'));
  player.driving.status='out';assert.equal(raceSubmission(race,'自分'),null);

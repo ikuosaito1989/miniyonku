@@ -38,25 +38,32 @@ export function syncOnlineRecords():Promise<void>{
  if(!onlineEnabled)return Promise.resolve();
  if(sending)return sending;
  sending=(async()=>{
+  let outsideTopFive=false;
   const {token,pending}=await localState(s=>structuredClone(s));
   for(const [key,record] of Object.entries(pending)){
    if(record.rulesVersion!==raceRulesVersion){await localState(s=>{delete s.pending[key];});continue;}
    const response=await fetch(`${apiBase}/api/miniyonku/records`,{method:'POST',headers:{'Content-Type':'application/json','X-Miniyonku-Player-Token':token},body:JSON.stringify(record),signal:AbortSignal.timeout(10000),credentials:'omit'});
    if(!response.ok)throw new Error('オンライン記録を送信できません。未送信のベストは端末に保存しています。');
    const payload=await response.json();
+   if(payload&&typeof payload==='object'&&payload.record===null){
+    outsideTopFive=true;
+    await localState(s=>{if(JSON.stringify(s.pending[key])===JSON.stringify(record))delete s.pending[key];});
+    continue;
+   }
    const [saved]=decodeOnlineRecords({records:[payload.record]},record.circuitId);
    const digest=new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(token)));
    const playerId=Array.from(digest,b=>b.toString(16).padStart(2,'0')).join('');
    if(saved.playerId!==playerId||saved.time>record.time)throw new Error('保存結果を確認できません。記録は再送待ちです。');
    await localState(s=>{if(JSON.stringify(s.pending[key])===JSON.stringify(record))delete s.pending[key];});
   }
-  useOnlineStatus.setState({message:'オンライン記録を同期しました。'});
+  useOnlineStatus.setState({message:outsideTopFive?'オンライン上位5位に入らなかったため登録しませんでした。ローカル記録は保存しています。':'オンライン記録を登録・同期しました。'});
  })().catch(error=>{useOnlineStatus.setState({message:error instanceof Error?error.message:'オンライン記録は再送待ちです。'});}).finally(()=>{sending=null;});
  return sending;
 }
 export async function queueOnlineRecord(record:OnlineSubmission){
  if(!onlineEnabled)return;
  try{
+  useOnlineStatus.setState({message:'オンライン上位5位への登録を確認中です…'});
   await localState(s=>{const key=`${record.rulesVersion}:${record.circuitId}`,old=s.pending[key];if(!old||record.time<old.time)s.pending[key]={...record,displayName:s.displayName};});
   await syncOnlineRecords();
  }catch{useOnlineStatus.setState({message:'オンライン記録の端末保存に失敗しました。ゲームのセーブ状態を確認してください。'});}

@@ -17,8 +17,8 @@ export function OnlineTimeBoard({circuitId}:{circuitId:CircuitId}){
  },[circuitId,revision]);
  async function saveName(){try{await setOnlineDisplayName(name);setError('');}catch(error){setError(error instanceof Error?error.message:'表示名を保存できません。');}}
  return <section className="online-time-board" aria-labelledby="online-record-title">
-  <h3 id="online-record-title">オンライン タイムアタック TOP 4</h3>
-  <p>プレイヤーごとの自己ベストです。公開されるのは表示名・タイム・装備・走行開始時の状態です。ゲームのセーブはこのブラウザに保存します。</p>
+  <h3 id="online-record-title">オンライン タイムアタック TOP 5</h3>
+  <p>全プレイヤーのコース別上位5人です。上位5位に入る自己ベストだけを登録します。公開されるのは表示名・タイム・装備・走行開始時の状態です。ゲームのセーブはこのブラウザに保存します。</p>
   <label>投稿する表示名 <input value={name} maxLength={24} onChange={event=>setName(event.target.value)} /></label>
   <button onClick={()=>{void saveName();}}>表示名を保存</button>
   <button disabled={loading} onClick={()=>{void syncOnlineRecords().then(()=>setRevision(n=>n+1));}}>再送・ランキング更新</button>
@@ -29,7 +29,7 @@ export function OnlineTimeBoard({circuitId}:{circuitId:CircuitId}){
    <span className="time-board-rank">{index+1}</span><div className="time-board-entry"><strong>{record.displayName}</strong><small>{new Date(record.recordedAt).toLocaleDateString('ja-JP')}</small></div><span className="time-board-value">{formatRecordTime(record.time,circuitId==='trail')}</span>
   </li>)}</ol>
   {records.map(record=><details key={record.playerId}><summary>{record.displayName}の装備・開始時の状態</summary><dl>{Object.entries(equipmentSlots).map(([slot,meta])=><div key={slot}><dt>{meta.label}</dt><dd>{parts.find(p=>p.id===record.equipment[slot as keyof typeof equipmentSlots])?.name}</dd></div>)}</dl><p>モーター使用 {record.condition.motorSeconds.toFixed(1)}秒 / 電池使用 {record.condition.batterySeconds.toFixed(1)}秒</p></details>)}
-  <button disabled={loading||!records.length} onClick={()=>start(circuitId,records)}>上位の装備を使うCPUとレース</button>
+  <button disabled={loading||!records.length} onClick={()=>start(circuitId,records.slice(0,4))}>上位4人の装備を使うCPUとレース</button>
   <p>装備と開始時の状態を使ったCPUとの対戦です。記録時の走行を再現するゴーストではなく、発進やレーンによってタイムが変わります。賞金・大会進行への影響はありません。完走すると通常どおり電池・モーターを消耗します。</p>
  </section>;
 }

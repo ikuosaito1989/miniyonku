@@ -21,7 +21,7 @@ export function raceSubmission(race:RaceState,displayName:string):OnlineSubmissi
  return {circuitId:race.circuitId,rulesVersion:raceRulesVersion,time,equipment:{...player.equipment},condition:{motorSeconds:player.performance.motorSeconds,batterySeconds:player.performance.batterySeconds},displayName};
 }
 export function decodeOnlineRecords(value:unknown,circuitId:CircuitId):OnlineRecord[] {
- if(!value||typeof value!=='object'||!('records' in value)||!Array.isArray(value.records)||value.records.length>4)throw new Error('ランキングの形式が不正です。');
+ if(!value||typeof value!=='object'||!('records' in value)||!Array.isArray(value.records)||value.records.length>5)throw new Error('ランキングの形式が不正です。');
  return value.records.map((raw:unknown)=>{
   if(!raw||typeof raw!=='object')throw new Error('記録の形式が不正です。');
   const r=raw as OnlineRecord;
