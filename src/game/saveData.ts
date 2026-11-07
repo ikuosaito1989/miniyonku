@@ -13,7 +13,7 @@ import { createStarterInventory, equipmentSlots, type Equipment, type EquipmentS
 import { hintBooks, nextShopRace } from '../data/shopHints';
 import type { GameState } from './store';
 import type { UnitInventory } from './condition';
-import { modelShops, type WorldLocation, type ShopId } from '../data/world';
+import { isSalesShop, modelShops, type WorldLocation, type ShopId } from '../data/world';
 
 export type SavedGame=Pick<GameState,'podiumPending'|'towaEscortStep'|'koyaEscortStep'|'bodyPaint'|'tutorialStage'|'openingStep'|'lastLoginAt'|'legacyTimeHistory'|'timeHistory'|'yuunagiUnlocked'|'yuunagiBestTime'|'finalQualified'|'wakabaCup'|'technicalCup'|'finalCup'|'grandprixCleared'|'zenithCup'|'zenithCleared'|'akatsukiRaceCount'|'zenithQualified'|'gameOver'|'wakabaUnlocked'|'thirdOfficialQualified'|'townReturnVenue'|'officialQualified'|'officialWon'|'officialSpeedWon'|'officialDirtWon'|'money'|'inventory'|'equipment'|'units'|'selectedUnits'|'unitSerial'|'proficiencyPoints'|'unlockedRaces'|'hintBookIndex'|'legendEventSeen'|'cheatUsed'|'location'|'lastShop'|'legendRaceCompleted'|'aozoraWon'|'villainDefeated'|'lastRaceReview'|'doctorGiftReceived'>;
 export interface SaveData { version:1; savedAt:number; game:SavedGame; checkpoint?:SavedGame }
@@ -106,7 +106,7 @@ export function decodeSave(value:unknown):SaveData{
   if(game.doctorGiftReceived!==undefined&&typeof game.doctorGiftReceived!=='boolean')throw new Error('博士の贈呈記録が不正です。');
   const doctorGiftReceived=game.doctorGiftReceived===true;
   if(doctorGiftReceived&&(!legendRaceCompleted||!(inventory['body-champion']>=1)))throw new Error('博士の贈呈条件を満たしていません。');
-  if((legendRaceCompleted||(location!=='komorebi'&&location!=='atelier'&&location!=='town'&&location!=='library')||(lastShop!=='komorebi'&&lastShop!=='atelier'))&&(!game.unlockedRaces.includes(nextShopRace.id)||!legendRaceCompleted))throw new Error('街の解放条件を満たしていません。');
+  if((legendRaceCompleted||(location!=='komorebi'&&!isSalesShop(location)&&location!=='town'&&location!=='library')||(lastShop!=='komorebi'&&!isSalesShop(lastShop)))&&(!game.unlockedRaces.includes(nextShopRace.id)||!legendRaceCompleted))throw new Error('街の解放条件を満たしていません。');
   for(const key of ['finalQualified','yuunagiUnlocked','gameOver','wakabaUnlocked','thirdOfficialQualified','officialSpeedWon','officialDirtWon','officialQualified','officialWon','aozoraWon','villainDefeated'])if(game[key]!==undefined&&typeof game[key]!=='boolean')throw new Error('あおぞらのイベント記録が不正です。');
   const aozoraWon=game.aozoraWon===true,villainDefeated=game.villainDefeated===true;
   if(aozoraWon&&!legendRaceCompleted||villainDefeated&&!aozoraWon||(location==='hinata'||lastShop==='hinata')&&!villainDefeated)throw new Error('ひなた模型店の解放条件を満たしていません。');

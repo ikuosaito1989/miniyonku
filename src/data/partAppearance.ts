@@ -1,3 +1,4 @@
+import {specialtyParts} from './specialtyParts';
 import {postClearParts} from './postClearParts';
 import {sovereignPartIds} from './sovereignParts';
 import {mechanicMotorStages} from './mechanicMotor';
@@ -7,6 +8,7 @@ import { bodies } from './bodies';
 
 export interface PartAppearance { color:string; accent:string; detail:number; mark:string }
 export const partAppearances:Record<string,PartAppearance>={
+ ...Object.fromEntries(specialtyParts.map((p,i)=>[p.id,{color:p.category==='tire'?'#303b3c':p.id.includes('-torque-')?'#8d6049':p.id.includes('-velocity-')?'#427fa4':'#6c8050',accent:p.id.includes('-torque-')?'#e7b35e':p.id.includes('-velocity-')?'#bce6f2':'#dfcc86',detail:p.category==='wheel'?(p.id.includes('-velocity-')?7:p.id.includes('-terrain-')?8:6):6,mark:p.id.includes('-torque-')?'CLIMB':p.id.includes('-velocity-')?'JET':'TREK'}])),
  'accessory-brake-soft':{color:'#43586a',accent:'#7ec7df',detail:6,mark:'SOFT BRAKE'},
  'accessory-brake-hard':{color:'#36434e',accent:'#e28ca0',detail:8,mark:'GRIP BRAKE'},
  ...Object.fromEntries(mechanicMotorStages.map((stage,index)=>[stage.id,{color:index===8?'#6c4c92':'#315d78',accent:index===8?'#f4d77d':'#b9d4d5',detail:6,mark:`LINK ${stage.level}`} ])),

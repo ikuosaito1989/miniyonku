@@ -1,3 +1,4 @@
+import {specialtyParts} from './specialtyParts';
 import {postClearParts} from './postClearParts';
 import {sovereignParts} from './sovereignParts';
 import {mechanicMotorParts} from './mechanicMotor';
@@ -9,6 +10,7 @@ export const categories: Record<Category, string> = { body:'ボディ', chassis:
 export interface Part { id: string; level:number; category: Category; name: string; price: number; description: string; specs: Record<string, number>; performance: string }
 type PartDefinition=Omit<Part,'level'>;
 const definitions: PartDefinition[] = [
+  ...specialtyParts,
   ...sovereignParts,
   ...postClearParts,
   ...mechanicMotorParts,

@@ -1,3 +1,4 @@
+import {isSpecialtyShop} from '../data/specialtyParts';
 import {yuunagiTimeLimit} from '../data/yuunagiCircuit';
 import { parts } from '../data/parts';
 import { equipmentSlots, type Equipment, type EquipmentSlot } from '../data/machine';
@@ -40,6 +41,7 @@ function trial(equipment:Equipment,condition:MachineCondition,circuitId:CircuitI
 }
 export function raceAdvice(state:RaceAdviceContext){
   if(state.shopId==='hoshikuzu')return 'ほしくず模型店ではクリア後のタイムアタック用パーツを選べるよ。舗装は軽量・低摩擦、砂は追従性の高いタイヤとFM、坂はトルクと大きめのギア比、着地はダンパーを比べよう。1つずつ変えて看板のタイムと装備を見返すと違いが分かるよ。星皇パーツを1つでも使うと記録対象外です。';
+  if(isSpecialtyShop(state.shopId))return modelShops[state.shopId].welcome;
   if(state.shopId==='atelier')return '星霧模型工房は星皇シリーズ全11種類・13品の販売専門店。各250000円、全品3250000円です。モーターとシャーシの2品は500000円。基礎性能は最上位ですが、深い砂はデューンタイヤ、凹凸はフレックスシャーシ、急坂は高トルクギアなど、専門品を混ぜるとさらに速くできる余地があります。星皇モーター・電池は消耗なし。制振は合計90%が上限なので、十分ならダンパーを軽量品やスライドへ替える選択もあります。他の模型店で試走してみよう。';
   const shop=modelShops[state.shopId],lines=['レース相談は僕に任せて。'];
   if(state.review?.circuitId===shop.circuitId)lines.push(state.review.text);

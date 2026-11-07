@@ -54,6 +54,9 @@ export function paintVenueFacade(p:SceneryPen,v:TownVenue,open:boolean){
   if(v.id==='yuunagi')for(let i=0;i<3;i++)p.line([[x+15,y+57+i*4],[x+20,y+55+i*4],[x+25,y+59+i*4],[x+30,y+57+i*4]],'#a9b9d7',1);
   if(v.id==='akatsuki')p.trophy(x+w-21,y+49,.4);
   if(v.id==='hoshikuzu')for(const xx of [x+20,x+w-20]){p.line([[xx,y+49],[xx,y+68]],'#e7d5a2',2);p.line([[xx-7,y+58],[xx+7,y+58]],'#e7d5a2',2);}
+  if(v.id==='torque'){p.ellipse(x+23,y+58,10,10,t.ink);p.ellipse(x+23,y+58,5,5,t.accent);for(let i=0;i<8;i++){const a=i*Math.PI/4;p.line([[x+23+Math.cos(a)*8,y+58+Math.sin(a)*8],[x+23+Math.cos(a)*13,y+58+Math.sin(a)*13]],t.ink,3);}}
+  if(v.id==='velocity')for(let i=0;i<3;i++)p.line([[x+12+i*7,y+49],[x+20+i*7,y+57],[x+12+i*7,y+65]],t.light,2);
+  if(v.id==='terrain'){p.poly([[x+9,y+66],[x+22,y+46],[x+36,y+66]],t.ink);p.poly([[x+17,y+54],[x+22,y+46],[x+28,y+55]],t.light);}
   if(v.id==='atelier'){p.ellipse(x+23,y+58,7,7,'#a6a0bc');p.ellipse(x+23,y+58,3,3,t.ink);for(let i=0;i<8;i++){const a=i*Math.PI/4;p.line([[x+23+Math.cos(a)*6,y+58+Math.sin(a)*6],[x+23+Math.cos(a)*9,y+58+Math.sin(a)*9]],'#c7bed6',1.5);}}
  }
 

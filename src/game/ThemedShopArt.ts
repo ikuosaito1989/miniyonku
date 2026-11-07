@@ -1,3 +1,4 @@
+import {isSpecialtyShop} from '../data/specialtyParts';
 import {drawPaintedScenery,drawPaintedFixture} from './PaintedScenery';
 import type Phaser from 'phaser';
 import type {ShopId} from '../data/world';
@@ -15,7 +16,10 @@ function car(p:SceneryPen,x:number,y:number,s:number,color:string){
 }
 function icon(p:SceneryPen,x:number,y:number,id:ShopId){
  const t=shopThemes[id];p.ellipse(x,y,20,20,t.ink);p.ellipse(x,y,18,18,t.accent);
- if(id==='atelier'){for(let i=0;i<8;i++){const a=i*Math.PI/4;p.line([[x+Math.cos(a)*7,y+Math.sin(a)*7],[x+Math.cos(a)*14,y+Math.sin(a)*14]],t.light,2);}p.ellipse(x,y,5,5,t.light);}
+ if(id==='torque'){p.wheel(x,y,12,t.light);p.ellipse(x,y,4,4,t.ink);}
+ else if(id==='velocity'){for(let i=0;i<3;i++)p.line([[x-12+i*7,y-8],[x-4+i*7,y],[x-12+i*7,y+8]],t.light,2);}
+ else if(id==='terrain'){p.poly([[x-13,y+9],[x,y-12],[x+13,y+9]],t.light);p.poly([[x-6,y-2],[x,y-12],[x+6,y-2]],t.ink);}
+ else if(id==='atelier'){for(let i=0;i<8;i++){const a=i*Math.PI/4;p.line([[x+Math.cos(a)*7,y+Math.sin(a)*7],[x+Math.cos(a)*14,y+Math.sin(a)*14]],t.light,2);}p.ellipse(x,y,5,5,t.light);}
  else if(id==='wakaba'||id==='komorebi'){p.poly([[x,y+12],[x-10,y-3],[x-4,y-12],[x+9,y-11],[x+7,y+1]],'#e4e5b7');p.line([[x,y+12],[x+2,y-7]],t.ink,1.5);}
  else if(id==='hinata'){p.wheel(x,y,12,t.light);}
  else if(id==='yuunagi'){for(let i=0;i<3;i++)p.line([[x-12,y-6+i*6],[x-5,y-9+i*6],[x+4,y-3+i*6],[x+12,y-6+i*6]],t.light,2);}
@@ -37,6 +41,7 @@ export function paintShopRoom(p:SceneryPen,id:ShopId){
   for(let i=0;i<1600;i++){const x=42+(i*137%877),y=118+(i*79%481);p.rect(x,y,1.5,.7,i%3?'#f0ebd824':'#3d44401a');}for(let x=40;x<920;x+=110)p.line([[x,116],[x,603]],'#4b4d4b38',1);p.line([[40,355],[920,355]],'#4b4d4b30',1);
   for(const x of [74,870])for(let y=128;y<598;y+=24){p.poly([[x,y],[x+14,y],[x+4,y+12],[x-10,y+12]],'#d6af5f66');}
  }
+ if(isSpecialtyShop(id)){for(let i=0;i<2800;i++){const x=42+(i*137%877),y=118+(i*79%481);p.rect(x,y,i%4?1:.65,i%3?.6:1.2,i%3?'#f6f1db28':'#3e534125');}for(let y=116;y<604;y+=48)p.line([[40,y],[920,y]],'#4f605328',.7);}
  c.restore();
  // アーキテクチャ：柱・窓・梁・展示壁をスタイルごとに変更。
  p.gradient(40,35,880,80,t.wall,t.ink);p.rect(40,108,880,8,t.wood);p.rect(40,109,880,1,t.metal);

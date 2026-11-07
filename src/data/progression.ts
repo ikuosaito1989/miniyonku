@@ -1,3 +1,4 @@
+import {specialtyPartIds} from './specialtyParts';
 import {postClearPartIds} from './postClearParts';
 import {sovereignPartIds,isSovereignPart} from './sovereignParts';
 import {mechanicMotorStages} from './mechanicMotor';
@@ -6,6 +7,7 @@ export const MAX_PART_LEVEL=10;
 import { bodies } from './bodies';
 // レベルは単純な速度倍率ではなく、入手段階の目安。
 export const partLevels:Record<string,number>={
+  ...Object.fromEntries(specialtyPartIds.map(id=>[id,6])),
  'accessory-brake-soft':4,'accessory-brake-hard':6,
  ...Object.fromEntries(postClearPartIds.map(id=>[id,10])),
  ...Object.fromEntries(sovereignPartIds.map(id=>[id,10])),
@@ -32,6 +34,6 @@ export interface ShopStock { name:string; maxPartLevel:number;exclusiveParts?:re
 export const starterShop:ShopStock={name:'こもれび模型店',maxPartLevel:2};
 export function isStocked(part:{id:string;level:number},shop:ShopStock=starterShop){
   if(shop.exclusiveParts)return shop.exclusiveParts.includes(part.id);
-  if(isSovereignPart(part.id)||postClearPartIds.includes(part.id))return false;
+  if(specialtyPartIds.includes(part.id)||isSovereignPart(part.id)||postClearPartIds.includes(part.id))return false;
   return !part.id.startsWith('motor-mechanic-')&&!part.id.startsWith('body-legend-')&&part.id!=='body-entry'&&part.id!=='body-champion'&&part.id!=='accessory-none'&&part.id!=='battery-recharge'&&part.id!=='motor-rescue'&&part.level>=1&&part.level<=Math.min(MAX_PART_LEVEL,shop.maxPartLevel);
 }

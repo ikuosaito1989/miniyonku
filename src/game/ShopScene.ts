@@ -38,7 +38,7 @@ import { shopAdvice } from './shopAdvice';
 import { touchInput } from './touchInput';
 import { compactDevice, shopWorldZoom } from '../data/display';
 import { findWalkingPath, walkBounds, type Point } from './navigation';
-import { currentShop, isVenueOpen, shopExit, townSpawn, townVenues, venueMessage, townSize, townWalkBounds, townBlocks } from '../data/world';
+import { isSalesShop, currentShop, isVenueOpen, shopExit, townSpawn, townVenues, venueMessage, townSize, townWalkBounds, townBlocks } from '../data/world';
 import { shopCast } from '../data/shopCast';
 import { mirroredShop, shopLayout } from '../data/shopLayout';
 import { challenger, challengerSpot } from '../data/challenger';
@@ -136,7 +136,7 @@ export class ShopScene extends Phaser.Scene {
     }else{
     const shopId=currentShop(useGame.getState().location).id,layout=shopLayout(shopId),mirrored=mirroredShop(shopId);
     const fixtures=layout.map(f=>f.target);
-    drawShopRoom(this,mirrored,shopId==='atelier',shopId);
+    drawShopRoom(this,mirrored,isSalesShop(shopId),shopId);
     drawShopDetails(this,mirrored);
     for(const {source,target:fixture} of layout){
       drawShopFixture(this,fixture,source,mirrored,shopId);
@@ -157,8 +157,8 @@ export class ShopScene extends Phaser.Scene {
     {
       const f=fixtures.find(f=>f.kind==='track')!,g=this.add.graphics().setDepth(f.y+f.h+1);
 
-      if(shop.id==='atelier'&&!this.textures.exists(sceneryKey(shop.id))){
-        g.fillStyle(0x302f4b).fillRect(f.x+3,f.y+3,f.w-6,f.h-6);g.lineStyle(3,0xd5b779).strokeRect(f.x+8,f.y+8,f.w-16,f.h-16);
+      if(isSalesShop(shop.id)&&!this.textures.exists(sceneryKey(shop.id))){
+        g.fillStyle(shop.id==='torque'?0x594234:shop.id==='velocity'?0x304b61:shop.id==='terrain'?0x435337:0x302f4b).fillRect(f.x+3,f.y+3,f.w-6,f.h-6);g.lineStyle(3,0xd5b779).strokeRect(f.x+8,f.y+8,f.w-16,f.h-16);
         for(const i of [0,1]){
           const x=f.x+25+i*130;g.fillStyle(0x54456f).fillRect(x,f.y+30,105,75);g.lineStyle(2,0xe4c981).strokeRect(x,f.y+30,105,75);
           if(i===0){
@@ -174,14 +174,14 @@ export class ShopScene extends Phaser.Scene {
             g.fillStyle(0x7e62a3).fillRect(x+43,f.y+58,16,12);g.fillStyle(0xf5dfa1).fillRect(x+45,f.y+59,12,2);
           }
         }
-      }else if(shop.id!=='atelier'){
+      }else if(!isSalesShop(shop.id)){
       drawShopTrack(this,f,getCircuitTrack(shop.circuitId),f.y+f.h+1,this.textures.exists(sceneryKey(shop.id)));
       if(shop.id==='akatsuki'||shop.id==='hoshikuzu'){const layout=shopTrackLayout(getCircuitTrack('forge'),f.w,f.h).centerline,cars=[0x477de0,0xe5b839,0x15191f,0x612b3e].map(c=>this.add.rectangle(0,0,4,2,c).setDepth(f.y+f.h+3));this.time.addEvent({delay:90,loop:true,callback:()=>cars.forEach((car,i)=>{const j=(Math.floor(this.time.now/65)+i*280)%1200,p=layout[j],q=layout[(j+1)%1200];car.setPosition(f.x+p.x,f.y+p.y).setRotation(Math.atan2(q.y-p.y,q.x-p.x));})});}
       }
     }
     }
     if(this.isOfficial){for(const p of officialTimeBoards(useGame.getState().location))this.solids.push(new Phaser.Geom.Rectangle(p.x+8,p.y+p.h-10,p.w-16,10));this.drawTimeBoard();}
-    if(!this.isTown&&!this.isLibrary&&!this.isOfficial&&useGame.getState().location!=='atelier'){
+    if(!this.isTown&&!this.isLibrary&&!this.isOfficial&&!isSalesShop(useGame.getState().location)){
       const shop=currentShop(useGame.getState().location),obstacle=timeBoardObstacle(shop.id);
       this.solids.push(new Phaser.Geom.Rectangle(obstacle.x,obstacle.y,obstacle.width,obstacle.height));this.drawTimeBoard();
     }
@@ -508,9 +508,9 @@ export class ShopScene extends Phaser.Scene {
     const targets:ShopTarget[]=[...shopLayout(currentShop(useGame.getState().location).id).map(({target:f})=>({...f,speaker:f.label,shopAfter:f.kind==='counter'})),{x:cast.rival.x-16,y:cast.rival.y-42,w:32,h:54,label:`ライバル ${cast.rival.name}`,speaker:cast.rival.name,shopAfter:false,text:'湊くん、速いモーターだけじゃなく、ギアやタイヤの組み合わせも大事だよ。'}];
     const state=useGame.getState(),condition=equippedCondition(state.equipment,state.units,state.selectedUnits);
     const shop=currentShop(state.location);
-    if(shop.id!=='atelier')targets.push({...timeBoardPlacement(shop.id),kind:'time-records',label:'歴代ベストタイム TOP 3',speaker:'ベストタイムの看板',shopAfter:false,text:'コースのベストタイムを見る。'});
+    if(!isSalesShop(shop.id))targets.push({...timeBoardPlacement(shop.id),kind:'time-records',label:'歴代ベストタイム TOP 3',speaker:'ベストタイムの看板',shopAfter:false,text:'コースのベストタイムを見る。'});
     const counter=targets.find(t=>t.kind==='counter')!;counter.label=`店主 ${shop.owner}`;counter.speaker=shop.owner;counter.text=shop.welcome;
-    const track=targets.find(t=>t.kind==='track')!;track.label=shop.id==='atelier'?'究極パーツ展示':getCircuitTrack(shop.circuitId).circuit.name;
+    const track=targets.find(t=>t.kind==='track')!;track.label=isSalesShop(shop.id)?'パーツ展示':getCircuitTrack(shop.circuitId).circuit.name;
     targets.push({...shopExit,label:'緑川町への出口',speaker:shop.name,shopAfter:false,text:'外の町へ出よう。',kind:'exit'});
     if(shop.id==='komorebi'&&!state.legendRaceCompleted){
       for(const actor of this.arriving.filter(actor=>actor.state.arrived&&(actor.kind==='rei'||actor.kind==='gaku'))){
@@ -534,6 +534,7 @@ export class ShopScene extends Phaser.Scene {
       if(visitor.speaker==='佐伯 匠'){visitor.label='佐伯 匠（レース相談）';visitor.text='装備と前回のレースを見て、勝つための相談に乗るよ。';}
       else visitor.text+=' 負けた理由や、どのパーツを替えるとよいかは、整備役の佐伯 匠に相談してね。';
     }
+    if(isSalesShop(shop.id)&&shop.id!=='atelier'){for(const visitor of visitors)visitor.text=shop.welcome;for(const target of targets)if(target.speaker===cast.rival.name)target.text=shop.welcome;}
     if(shop.id==='atelier'){for(const visitor of visitors)visitor.text='星皇シリーズは全種類そろっているよ。各25万円、13品で325万円。砂地では悪路タイヤや追従するシャーシを混ぜると、もっと速くできるんだ。レースはほかの模型店で挑戦してね。';for(const target of targets)if(target.speaker===cast.rival.name)target.text='ここは最初から入れる特別な工房。星皇は全種類にある最上位シリーズ。硬いスリックと悪路タイヤ、ギア比の違いなど、得意な路面は組み合わせで変わるよ。';}
     return [...targets,...visitors];
   }
@@ -567,7 +568,7 @@ export class ShopScene extends Phaser.Scene {
       else if(target.kind==='official-speed'||target.kind==='official-dirt'||target.kind==='official-technical'||target.kind==='official-final'||target.kind==='official-zenith')useGame.getState().openOfficialRace(target.kind==='official-zenith'?'zenith':target.kind==='official-final'?'final':target.kind==='official-technical'?'technical':target.kind==='official-speed'?'speed':'dirt');
       else if(target.kind==='official-reception'||this.isOfficial&&target.speaker==='大会受付係')useGame.getState().openOfficialRace();
       else if(target.speaker==='森野 陸'){if(this.isOfficial)useGame.getState().talk(target.speaker,target.text);else useGame.getState().openOfficialRace();}
-      else if(useGame.getState().location==='atelier'&&target.kind==='track')useGame.getState().talk('星霧模型工房','ここは販売専門店です。星皇シリーズの全種類を店主から購入できます。レースはほかの模型店で楽しんでね。');
+      else if(isSalesShop(useGame.getState().location)&&target.kind==='track'){const shop=currentShop(useGame.getState().location);useGame.getState().talk(shop.name,shop.welcome);}
       else if(target.speaker==='佐伯 匠'&&useGame.getState().location==='hoshikuzu')useGame.getState().talk('佐伯 匠','ここからはタイムを詰める楽しみだね。舗装は軽量シャーシと低摩擦ローラー、砂は追従するタイヤ、立体はトルク・反発・ブレーキを比べよう。FMはジャンプが低くなる前寄り重心だから、飛距離も見て選ぼう。ギア比だけ変えて同じコースを走ると違いが分かりやすいよ。星皇を外した記録は、コース端の看板でセッティングごとに見られるよ。');
       else if(target.speaker==='佐伯 匠'){
         const state=useGame.getState();

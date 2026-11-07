@@ -1,14 +1,20 @@
+import {specialtyStock,isSpecialtyShop} from './specialtyParts';
+export const isSalesShop=(id:string)=>id==='atelier'||isSpecialtyShop(id);
 import {postClearPartIds,legendBodyIds} from './postClearParts';
 import {zenithParts} from './zenithParts';
 import {sovereignPartIds} from './sovereignParts';
 import { starterShop, type ShopStock } from './progression';
 import type { CircuitId } from './circuit';
 
-export type ShopId='hoshikuzu'|'atelier'|'komorebi'|'aozora'|'hinata'|'wakaba'|'yuunagi'|'akatsuki';
+export type ShopId='torque'|'velocity'|'terrain'|'hoshikuzu'|'atelier'|'komorebi'|'aozora'|'hinata'|'wakaba'|'yuunagi'|'akatsuki';
 export type WorldLocation=ShopId|'library'|'town'|'stadium-5'|'stadium-9'|'stadium-10'|'stadium-7';
 export interface ModelShop extends ShopStock { id:ShopId; owner:string; circuitId:CircuitId; stage:number; color:number; welcome:string }
 // 店の進行段階とパーツの入手段階は別。入門店の既存品揃えを維持する。
 export const modelShops:Record<ShopId,ModelShop>={
+ torque:{id:'torque',name:'くろがね駆動工房',owner:'鉄田 剛',maxPartLevel:10,exclusiveParts:specialtyStock('torque'),circuitId:'leaf',stage:1,color:11959640,welcome:'坂と立ち上がりを力で攻める店。高トルクモーターと減速ギアを比べよう。 作業台で自由に組み合わせて、レースは模型店や公式会場で試してね。'},
+ velocity:{id:'velocity',name:'はやてスピードラボ',owner:'風間 翔',maxPartLevel:10,exclusiveParts:specialtyStock('velocity'),circuitId:'leaf',stage:1,color:7186382,welcome:'舗装の直線を磨く店。回転数と大径タイヤの伸び、加速の弱点を見比べよう。 作業台で自由に組み合わせて、レースは模型店や公式会場で試してね。'},
+ terrain:{id:'terrain',name:'やまなみオフロード',owner:'山野 茂',maxPartLevel:10,exclusiveParts:specialtyStock('terrain'),circuitId:'leaf',stage:1,color:7902303,welcome:'砂・砂利・凹凸を走り抜く店。接地と制振を揃え、舗装の抵抗も見て選ぼう。 作業台で自由に組み合わせて、レースは模型店や公式会場で試してね。'},
+
  hoshikuzu:{id:'hoshikuzu',name:'ほしくず模型店',maxPartLevel:10,exclusiveParts:[...postClearPartIds,...legendBodyIds,...zenithParts.map(p=>p.id),'accessory-brake-soft','accessory-brake-hard','tire-trail','tire-sand'],owner:'星野 玄一',circuitId:'forge',stage:7,color:0x526b92,welcome:'天頂決戦のクリア、おめでとう！ レジェンド4人のボディ、FMの前置きモーターシャーシ、砂・砂利・舗装・着地の専門パーツを揃えたよ。組み合わせたマシンで各公式会場のタイムアタックへ。星皇を1つでも装着した走行はランキングに記録されないから、記録用のセッティングを作ろう！'},
   akatsuki:{id:'akatsuki',name:'あかつき模型店',maxPartLevel:10,owner:'暁堂 司',circuitId:'forge',stage:6,color:0xb56860,welcome:'緑川の入賞、おめでとう！ ここには怜・岳・斗和・昊也のレジェンド4人も試走に来ている。最上位パーツを22種入荷したぞ。縦ループ、横スパイラル、砂地、坂、ジャンプを制する組み合わせを探そう。勝敗に関係なく、途中で戻らず5回レースの結果まで走れば、天頂決戦・ゼニス・クラウンの出場権を渡す。'},
   yuunagi:{id:'yuunagi',name:'ゆうなぎ模型店',maxPartLevel:6,owner:'夕凪 慎吾',circuitId:'trail',stage:5,color:0x8074a8,welcome:'星空テクニカル杯の入賞、おめでとう！ 新作のリアウイング・スライドダンパー、セラミックローラー、低い二段ローラー、サージモーター、フローティングホイール、低反発タイヤを揃えたよ。ここはスタートとゴールが別の一本道タイムアタック。約172mの高架スパイラル・ジャンプ台・ロングストレートを越え、公式タイム40秒以内で完走すると第4公式大会・緑川グランプリの出場権を授けるよ。何度でもセッティングを変えて挑戦できる。'},
@@ -20,7 +26,7 @@ export const modelShops:Record<ShopId,ModelShop>={
 };
 export function currentShop(location:WorldLocation){return modelShops[location==='town'||location==='library'?'komorebi':location==='stadium-5'?'hinata':location==='stadium-9'?'wakaba':location==='stadium-10'?'yuunagi':location==='stadium-7'?'akatsuki':location];}
 export interface WorldProgress {legendRaceCompleted:boolean;villainDefeated:boolean;officialQualified?:boolean;wakabaUnlocked?:boolean;thirdOfficialQualified?:boolean;yuunagiUnlocked?:boolean;finalQualified?:boolean;grandprixCleared?:boolean;zenithQualified?:boolean;zenithCleared?:boolean}
-export function canEnterShop(id:ShopId,progress:WorldProgress){return id==='hoshikuzu'?progress.zenithCleared===true:id==='akatsuki'?progress.grandprixCleared===true:id==='yuunagi'?progress.yuunagiUnlocked===true:id==='wakaba'?progress.wakabaUnlocked===true:(id==='komorebi'||id==='atelier')||progress.legendRaceCompleted&&(id==='aozora'||progress.villainDefeated);}
+export function canEnterShop(id:ShopId,progress:WorldProgress){return id==='hoshikuzu'?progress.zenithCleared===true:id==='akatsuki'?progress.grandprixCleared===true:id==='yuunagi'?progress.yuunagiUnlocked===true:id==='wakaba'?progress.wakabaUnlocked===true:(id==='komorebi'||isSalesShop(id))||progress.legendRaceCompleted&&(id==='aozora'||progress.villainDefeated);}
 export function isVenueOpen(venue:TownVenue,progress:WorldProgress){return venue.kind==='library'?true:venue.id==='stadium-7'?progress.zenithQualified===true:venue.id==='stadium-10'?progress.finalQualified===true:venue.id==='stadium-9'?progress.thirdOfficialQualified===true:venue.id==='stadium-5'?progress.officialQualified===true:!!venue.shopId&&canEnterShop(venue.shopId,progress);}
 export interface TownVenue {id:string;name:string;kind:'shop'|'stadium'|'library';stage:number;x:number;y:number;w:number;h:number;entrance:'north'|'south';color:number;shopId?:ShopId}
 const venueTemplates:TownVenue[]=[
@@ -48,7 +54,7 @@ export function generateTownVenues(seed=19890421):TownVenue[]{
     const plot=plots[index],stadium=venue.kind==='stadium';
     return {...venue,entrance:'south',x:plot.x+Math.floor(random()*40)-20,y:plot.y+Math.floor(random()*50)-25,w:stadium?350:190,h:stadium?250:140};
   });
-  return [...venues,{id:'atelier',name:'星霧模型工房',kind:'shop',stage:1,x:650,y:805,w:190,h:140,entrance:'south',color:0x77649c,shopId:'atelier'},{id:'library',name:'緑川町立図書館',kind:'library',stage:1,x:970,y:805,w:190,h:140,entrance:'south',color:0x657c88}];
+  return [...venues,...(['torque','velocity','terrain'] as const).map((id,i):TownVenue=>({id,name:modelShops[id].name,kind:'shop',stage:1,x:[1500,2260,2500][i],y:790,w:190,h:140,entrance:'south',color:modelShops[id].color,shopId:id})),{id:'atelier',name:'星霧模型工房',kind:'shop',stage:1,x:650,y:805,w:190,h:140,entrance:'south',color:0x77649c,shopId:'atelier'},{id:'library',name:'緑川町立図書館',kind:'library',stage:1,x:970,y:805,w:190,h:140,entrance:'south',color:0x657c88}];
 }
 export const townVenues=generateTownVenues();
 // 住宅・商店街の背景棟。入口を持たない建物も歩行障害物として扱う。
@@ -62,6 +68,7 @@ for(let y=130;y<2150;y+=345)for(let x=100;x<2800;x+=370){
 export const shopExit={x:440,y:575,w:80,h:7};
 export function townSpawn(shop:ShopId|'library'|'stadium-5'|'stadium-9'|'stadium-10'|'stadium-7'){const venue=townVenues.find(v=>v.id===shop)!;return {x:venue.x+venue.w/2,y:venue.entrance==='north'?venue.y-42:venue.y+venue.h+42};}
 export function venueMessage(venue:TownVenue){
+  if(isSpecialtyShop(venue.id))return modelShops[venue.id].welcome;
   if(venue.kind==='library')return '最初から無料で入れる図書館。全種類のパーツの性能・特徴・入手先、ギア比やモーターの基礎を調べられます。未所持品・非売品も閲覧可能。';
   if(venue.id==='hoshikuzu')return 'ゲームクリア後に開放。レジェンドのボディ、FMシャーシ、路面別の専門パーツを豊富に販売。公式会場のタイムアタックへ向けてセッティングを磨こう。';
   if(venue.id==='stadium-7')return '最終大会・天頂決戦ゼニス・クラウン。あかつき模型店で5回レースを終えると出場権を獲得。全要素を詰め込んだ史上最長の一本道で、怜・岳・斗和・昊也のレジェンド4人と決戦。2位以内の完走でゲームクリア。';
