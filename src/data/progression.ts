@@ -1,10 +1,26 @@
+import {specialtyPartIds} from './specialtyParts';
+import {postClearPartIds} from './postClearParts';
+import {sovereignPartIds,isSovereignPart} from './sovereignParts';
+import {mechanicMotorStages} from './mechanicMotor';
+import {zenithParts} from './zenithParts';
 export const MAX_PART_LEVEL=10;
 import { bodies } from './bodies';
 // レベルは単純な速度倍率ではなく、入手段階の目安。
 export const partLevels:Record<string,number>={
+  ...Object.fromEntries(specialtyPartIds.map(id=>[id,6])),
+ 'accessory-brake-soft':4,'accessory-brake-hard':6,
+ ...Object.fromEntries(postClearPartIds.map(id=>[id,10])),
+ ...Object.fromEntries(sovereignPartIds.map(id=>[id,10])),
+ ...Object.fromEntries(mechanicMotorStages.map(stage=>[stage.id,stage.level])),
+  ...Object.fromEntries(zenithParts.map(p=>[p.id,9])),
+  'accessory-slide-rear':6,'roller-ceramic':6,'roller-lowdouble':6,'motor-surge':6,'wheel-floating':6,'tire-landing':6,
+  'motor-sovereign':10,'chassis-sovereign':10,
+  'wheel-aero':3,'wheel-rally':4,'wheel-carbon':5,'wheel-diff':5,
+  'motor-turn':5,'chassis-turn':5,'tire-turn':5,'roller-turn':5,'accessory-stabilizer':5,
+  'motor-trail':4,'motor-rally':4,'tire-trail':4,'tire-sand':4,'accessory-damper':4,'accessory-damper-light':4,'roller-double':4,'roller-trail':4,'chassis-trail':4,
   ...Object.fromEntries(bodies.map(body=>[body.id,body.grade])),
   'chassis-basic':1,'chassis-light':2,'chassis-low':3,
-  'motor-rescue':1,'motor-stock':1,'motor-rev':2,'motor-torque':2,'motor-apex':10,
+  'motor-rescue':1,'motor-stock':1,'motor-rev':2,'motor-torque':2,'motor-wind':3,'motor-apex':10,
   'gear-5':1,'gear-4':2,'gear-3.5':4,
   'battery-basic':1,'battery-recharge':1,'battery-entry':2,'battery-power':3,'battery-endurance':4,
   'tire-0':1,'tire-1':2,'tire-2':2,
@@ -14,8 +30,10 @@ export const partLevels:Record<string,number>={
   'terminal-0':1,'terminal-entry':2,'terminal-1':4,
   'accessory-none':1,'accessory-weight':2,'accessory-support':3,
 };
-export interface ShopStock { name:string; maxPartLevel:number }
+export interface ShopStock { name:string; maxPartLevel:number;exclusiveParts?:readonly string[] }
 export const starterShop:ShopStock={name:'こもれび模型店',maxPartLevel:2};
 export function isStocked(part:{id:string;level:number},shop:ShopStock=starterShop){
-  return !part.id.startsWith('body-legend-')&&part.id!=='body-entry'&&part.id!=='body-champion'&&part.id!=='accessory-none'&&part.id!=='battery-recharge'&&part.id!=='motor-rescue'&&part.level>=1&&part.level<=Math.min(MAX_PART_LEVEL,shop.maxPartLevel);
+  if(shop.exclusiveParts)return shop.exclusiveParts.includes(part.id);
+  if(specialtyPartIds.includes(part.id)||isSovereignPart(part.id)||postClearPartIds.includes(part.id))return false;
+  return !part.id.startsWith('motor-mechanic-')&&!part.id.startsWith('body-legend-')&&part.id!=='body-entry'&&part.id!=='body-champion'&&part.id!=='accessory-none'&&part.id!=='battery-recharge'&&part.id!=='motor-rescue'&&part.level>=1&&part.level<=Math.min(MAX_PART_LEVEL,shop.maxPartLevel);
 }

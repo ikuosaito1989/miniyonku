@@ -8,17 +8,18 @@ let session:ReturnType<typeof startAutoSave>|null=null;
 export async function initializeSave(){
   const savedAt=await loadSavedGame(indexedDbStorage);
   useSaveStatus.setState({phase:'saved',savedAt,message:savedAt?'セーブを読み込みました':'自動セーブを準備しています'});
+  useGame.getState().recordLogin();
   session=startAutoSave(indexedDbStorage,state=>useSaveStatus.setState(state));
   // 新規開始も直ちに保存。失敗しても初期化成功扱いにせず保存エラーを通知。
   void session.flush().catch(()=>{});
 }
-export function playWithoutSave(){useSaveStatus.setState({phase:'temporary',savedAt:null,message:'セーブなしでプレイ中です。再読み込みで進行が失われます。'});}
+export function playWithoutSave(){useGame.setState({...useGame.getInitialState(),location:'town',lastShop:'komorebi'});useSaveStatus.setState({phase:'temporary',savedAt:null,message:'セーブなしでプレイ中です。再読み込みで進行が失われます。'});}
 export async function saveNow(){await session?.flush();}
 export async function resetSave(){
   session?.stop();session=null;
   try{
     await indexedDbStorage.remove!();
-    useGame.setState(useGame.getInitialState());
+    useGame.setState({...useGame.getInitialState(),location:'town',lastShop:'komorebi'});
     useSaveStatus.setState({phase:'saved',savedAt:null,message:'初期化しました。新しいセーブを作成しています…'});
     session=startAutoSave(indexedDbStorage,state=>useSaveStatus.setState(state));
     await session.flush();
@@ -30,7 +31,7 @@ export async function resetSave(){
   }
 }
 if(typeof window!=='undefined'){
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')void saveNow().catch(()=>{});});
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')void saveNow().catch(()=>{});else if(session){useGame.getState().recordLogin();void saveNow().catch(()=>{});}});
   window.addEventListener('pagehide',()=>{void saveNow().catch(()=>{});});
 }
 if(import.meta.hot)import.meta.hot.dispose(()=>session?.stop());

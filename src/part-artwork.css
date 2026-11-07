@@ -2,3 +2,5 @@
 .part-icon:has(.part-artwork){width:94px;height:76px;background:linear-gradient(145deg,#233f59,#14253c);border:2px ridge #a7bdcb;border-radius:2px;padding:3px}
 .setting-options .part-cards .part-artwork{width:100%;height:90px}
 @media(max-width:600px){.part-icon:has(.part-artwork){display:flex;width:62px;height:60px}}
+
+.part-product-image{object-fit:contain;filter:none}.setting-options .part-cards .part-product-image{height:145px;min-height:115px}.part-icon .part-product-image{width:100%;height:100%;min-width:0}@media(max-width:600px){.setting-options .part-cards .part-product-image{height:130px;min-height:110px}}

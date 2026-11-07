@@ -28,7 +28,7 @@ test('初回操作後だけ再生。ロード中のシーン切替で旧BGMが�
   const contexts:FakeContext[]=[];
   const pending=new Map<string,(response:Response)=>void>();
   class FakeContext {
-    currentTime=0;destination={};state='suspended';sources:Array<{started:boolean;stopped:boolean;loop:boolean}>=[];
+    currentTime=0;destination={};state='suspended';onstatechange:(()=>void)|null=null;sources:Array<{started:boolean;stopped:boolean;loop:boolean}>=[];
     constructor(){contexts.push(this);}
     createGain(){return {gain:{value:0,setTargetAtTime(){}},connect(){}};}
     resume(){this.state='running';return Promise.resolve();}suspend(){this.state='suspended';return Promise.resolve();}close(){this.state='closed';return Promise.resolve();}
@@ -37,7 +37,7 @@ test('初回操作後だけ再生。ロード中のシーン切替で旧BGMが�
   }
   Object.defineProperty(globalThis,'AudioContext',{configurable:true,value:FakeContext});
   globalThis.fetch=(url)=>new Promise<Response>(resolve=>pending.set(String(url),resolve));
-  const player=new MusicPlayer({shop:{url:'shop'},race:{url:'race'}},()=>{});
+  const player=new MusicPlayer({shop:{url:'shop'},race:{url:'race'},event:{url:'event'}},()=>{});
   const settle=()=>new Promise(resolve=>setTimeout(resolve,25));
   try{
     assert.equal(contexts.length,0);player.unlock();await settle();
@@ -51,9 +51,39 @@ test('初回操作後だけ再生。ロード中のシーン切替で旧BGMが�
     player.setVisible(true);await settle();assert.equal(contexts[0].state,'running');
     player.setSettings(false,.2);player.setScene('shop');await settle();assert.equal(contexts[0].sources[0].stopped,true);
     player.setSettings(true,.2);await settle();assert.equal(contexts[0].sources.length,2);
-    player.dispose();assert.equal(contexts[0].state,'closed');assert.equal(contexts[0].sources[1].stopped,true);
+    contexts[0].state='interrupted';contexts[0].onstatechange?.();await settle();assert.equal(contexts[0].state,'running');
+    player.setScene('event');await settle();assert.ok(pending.has('event'));assert.equal(contexts[0].sources[1].stopped,true);
+    pending.get('event')!(new Response(packed));await settle();assert.equal(contexts[0].sources.length,3);assert.equal(contexts[0].sources[2].loop,true);
+    player.setScene('event');await settle();assert.equal(contexts[0].sources.length,3);
+    player.setScene('shop');await settle();assert.equal(contexts[0].sources[2].stopped,true);assert.equal(contexts[0].sources.length,4);
+    player.dispose();assert.equal(contexts[0].state,'closed');assert.equal(contexts[0].sources[3].stopped,true);
   }finally{
     player.dispose();globalThis.fetch=originalFetch;
     if(originalContext)Object.defineProperty(globalThis,'AudioContext',originalContext);else Reflect.deleteProperty(globalThis,'AudioContext');
   }
+});
+
+test('Safariで最初のresumeが未解決でも次の操作で再試行し、BGMを1本だけ再生する',async()=>{
+  const descriptor=Object.getOwnPropertyDescriptor(globalThis,'AudioContext'),originalFetch=globalThis.fetch;
+  let context:Context,firstResume:()=>void=()=>{};
+  const packed=await packMusic(new Uint8Array([1,2,3]));
+  class Context{
+    state='suspended';currentTime=0;destination={};onstatechange:(()=>void)|null=null;requests=0;starts=0;
+    constructor(){context=this;}
+    createGain(){return {gain:{value:0,setTargetAtTime(){}},connect(){}};}
+    resume(){this.requests++;if(this.requests===1)return new Promise<void>(resolve=>{firstResume=resolve;});this.state='running';return Promise.resolve();}
+    close(){this.state='closed';return Promise.resolve();}
+    decodeAudioData(){return Promise.resolve({});}
+    createBufferSource(){return {buffer:null,loop:false,onended:null,connect(){},disconnect(){},start(){context.starts++;},stop(){}};}
+  }
+  Object.defineProperty(globalThis,'AudioContext',{configurable:true,value:Context});
+  globalThis.fetch=async()=>new Response(packed);
+  const player=new MusicPlayer({shop:{url:'shop'},race:{url:'race'},event:{url:'event'}},()=>{});
+  const flush=()=>new Promise(resolve=>setTimeout(resolve,25));
+  try{
+    player.unlock();assert.equal(context!.requests,1);
+    player.unlock();await flush();assert.equal(context!.requests,2);assert.equal(context!.starts,1);
+    firstResume();await flush();assert.equal(context!.starts,1);
+    player.setSettings(false,.35);player.unlock();assert.equal(context!.requests,2);
+  }finally{player.dispose();globalThis.fetch=originalFetch;if(descriptor)Object.defineProperty(globalThis,'AudioContext',descriptor);else Reflect.deleteProperty(globalThis,'AudioContext');}
 });

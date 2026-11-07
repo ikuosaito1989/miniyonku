@@ -1,3 +1,5 @@
+import { starterEquipment } from '../data/machine';
+import { createRaceState, startRace, stepRace, launchPlayer } from './race';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { legends } from '../data/legends';
@@ -19,7 +21,8 @@ test('レジェンド4人の愛機は独自名・異なるボディ・有効な�
   assert.deepEqual(proficiencyStandings(peak).slice(0,4).map(p=>p.id),legends.map(l=>l.id));
   assert.ok(fixtures.some(f=>f.kind==='legends'));
 });
-test('レジェンド専用ボディは流麗・ウェッジ・国産GTを描き分け、上位店でも非売品',()=>{
+test('レジェンド専用ボディは4人の外観を描き分け、上位店でも非売品',()=>{
+  for(const legend of legends)assert.equal(isStocked(parts.find(p=>p.id===legend.equipment.body)!,{name:'上位店',maxPartLevel:10}),false);
   const expected={'legend-rei':'flow','legend-gaku':'wedge','legend-koya':'muscle'};
   for(const [id,shape]of Object.entries(expected)){
     const legend=legends.find(l=>l.id===id)!;
@@ -32,4 +35,20 @@ test('展示を開閉しても所持金・装備・進行は変化しない',()=
     const before=snapshotGame(previous);useGame.getState().openLegends();assert.equal(useGame.getState().overlay,'legends');
     useGame.getState().close();assert.deepEqual(snapshotGame(useGame.getState()),before);
   }finally{useGame.setState(previous);}
+});
+
+test('最強兄弟も強化後の星皇装備と共通の性能で走り、同装備のプレイヤーを周回遅れにしない',()=>{
+  for(const seed of [1,42,999]){
+    let race=startRace(createRaceState({...starterEquipment,motor:'motor-sovereign',chassis:'chassis-sovereign'},seed,undefined,true));
+    while(race.phase==='countdown')race=stepRace(race);
+    race=launchPlayer(race);
+    for(let i=0;i<120*120&&race.phase!=='finished';i++)race=stepRace(race);
+    assert.equal(race.phase,'finished');
+    assert.equal(race.racers[0].driving.status,'finished');
+    for(const brother of race.racers.filter(r=>r.id.startsWith('legend-'))){
+      assert.equal(brother.driving.status,'finished');
+      assert.ok(brother.driving.time>=14&&brother.driving.time<=18,`${brother.id}: ${brother.driving.time}`);
+      assert.ok(Math.abs(brother.driving.time-race.racers[0].driving.time)<5);
+    }
+  }
 });

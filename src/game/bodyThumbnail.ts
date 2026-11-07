@@ -1,8 +1,10 @@
+import { studioEnvironment } from './studioEnvironment';
 import * as THREE from 'three';
 import { starterEquipment } from '../data/machine';
 import { buildMachineModel } from './MachineModel';
 
 let renderer:THREE.WebGLRenderer|undefined;
+let environment:THREE.WebGLRenderTarget|undefined;
 const cache=new Map<string,string>();
 export function bodyThumbnail(id:string,color:string){
   const key=`${id}:${color}`,cached=cache.get(key);
@@ -11,8 +13,9 @@ export function bodyThumbnail(id:string,color:string){
     renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
     renderer.setSize(400,250,false);renderer.setPixelRatio(1);
     renderer.setClearColor(0x000000,0);renderer.outputColorSpace=THREE.SRGBColorSpace;
+    environment=studioEnvironment(renderer);
   }
-  const scene=new THREE.Scene();
+  const scene=new THREE.Scene();scene.environment=environment!.texture;
   scene.add(new THREE.HemisphereLight(0xe9f5ff,0x536477,2));
   const keyLight=new THREE.DirectionalLight(0xffffff,2.3);keyLight.position.set(-1,2,1);scene.add(keyLight);
   const rim=new THREE.DirectionalLight(0x86c8ff,1.2);rim.position.set(1,1,-1);scene.add(rim);
