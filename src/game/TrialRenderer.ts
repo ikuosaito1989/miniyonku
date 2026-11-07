@@ -1,3 +1,4 @@
+import {VenueAnimation} from './VenueAnimation';
 import {raceCourseDetails} from './RaceCourseDetails';
 import {isPracticeCourse} from '../data/practiceCourses';
 import {physicalRenderer,modelLighting} from './sceneLighting';
@@ -29,6 +30,7 @@ export class TrialRenderer {
   private renderer: THREE.WebGLRenderer;
   private environment:THREE.WebGLRenderTarget;
   private shadows:RaceShadows;
+  private venueAnimation:VenueAnimation;
   private scene = new THREE.Scene();
   private camera = new THREE.OrthographicCamera(-2,2,1,-1,0.01,1000);
   private cars = new Map<string,THREE.Group>();
@@ -73,8 +75,8 @@ export class TrialRenderer {
     grass.repeat.set(groundSize/1.5,groundSize/1.5);
     const ground=new THREE.Mesh(new THREE.PlaneGeometry(groundSize,groundSize),new THREE.MeshStandardMaterial((challenge==='official'||challenge==='time-attack')?{color:0x7c928f,roughness:.86,envMapIntensity:.35}:{map:grass,roughness:1,envMapIntensity:.25}));
     ground.rotation.x=-Math.PI/2;ground.position.y=-0.025;ground.receiveShadow=true;this.scene.add(ground);
-    this.scene.add(raceVenueScenery(this.track,(challenge==='official'||challenge==='time-attack'),isPracticeCourse(circuitId)));
-    this.buildTrack();this.scene.add(raceCourseDetails(this.track));this.buildObstacles();this.buildStart();
+    const venue=raceVenueScenery(this.track,(challenge==='official'||challenge==='time-attack'),isPracticeCourse(circuitId));this.scene.add(venue);this.venueAnimation=new VenueAnimation(venue);
+    this.buildTrack();this.scene.add(raceCourseDetails(this.track));this.buildObstacles();this.buildStart();this.venueAnimation.attachMarshal(this.scene);
     for(const racer of this.state.racers){
       const car=buildRaceMachineModel(racer);car.userData.handling=handlingProfile(racer.equipment,racer.performance);this.cars.set(racer.id,car);this.scene.add(car);this.shadows.add(racer.id,car);
       const canvas=document.createElement('canvas');canvas.width=144;canvas.height=54;
@@ -236,11 +238,11 @@ export class TrialRenderer {
     // 自作のスタート係。既存作品のキャラクターを使わない。
     const attendant=new THREE.Group();attendant.position.set(-circuit.laneWidth*circuit.lanes/2-0.23,0,-0.15);
     const block=(w:number,h:number,d:number,x:number,y:number,z:number,color:number)=>{
-      const mesh=this.mesh(new THREE.BoxGeometry(w,h,d),color);mesh.position.set(x,y,z);attendant.add(mesh);
+      const mesh=this.mesh(new THREE.BoxGeometry(w,h,d),color);mesh.position.set(x,y,z);attendant.add(mesh);return mesh;
     };
     block(0.11,0.15,0.08,0,0.16,0,0xe0a34c);block(0.09,0.09,0.08,0,0.28,0,0xefc09a);
     block(0.12,0.03,0.11,0,0.34,0,0x304461);block(0.04,0.1,0.06,-0.03,0.04,0,0x25364b);block(0.04,0.1,0.06,0.03,0.04,0,0x25364b);
-    block(0.025,0.15,0.025,-0.11,0.25,0,0xefc09a);block(0.12,0.08,0.008,-0.17,0.35,0,0xf8df79);
+    const arm=block(0.025,0.15,0.025,-0.11,0.25,0,0xefc09a),flag=block(0.12,0.08,0.008,-0.17,0.35,0,0xf8df79),gesture=new THREE.Group();gesture.name='marshal-flag-arm';gesture.position.set(-.11,.25,0);for(const part of [arm,flag]){part.position.sub(gesture.position);gesture.add(part);}attendant.add(gesture);
     const podium=this.mesh(new THREE.BoxGeometry(.3,startRampHeight(0),.4),0x526477);podium.position.set(attendant.position.x,-startRampHeight(0)/2,attendant.position.z);group.add(podium);
     group.add(attendant);this.scene.add(group);
   }
@@ -361,8 +363,9 @@ export class TrialRenderer {
     }
     this.playerMarker.scale.setScalar(overview?carScale:1);
     this.playerMarker.visible=this.intro.stage==='done';
-    this.audio.update(this.state);
-    this.updateCamera();this.renderer.render(this.scene,this.camera);
+    this.venueAnimation.update(now/1000,this.state.phase,this.reducedMotion);
+    this.updateCamera();const focus=this.cars.get('player')!.position,right=new THREE.Vector3(1,0,0).applyQuaternion(this.camera.quaternion);
+    this.audio.update(this.state,{track:this.track,listener:focus,right});this.renderer.render(this.scene,this.camera);
     if(now-this.lastReport>100){this.report({...this.state});this.reportFinish(this.finishPresentation);this.reportIntro(this.intro);this.lastReport=now;}
     this.frame=requestAnimationFrame(this.animate);
   };

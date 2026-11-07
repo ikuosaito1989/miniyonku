@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import type {CircuitTrack} from '../data/circuit';
 import {StaticInstances,fixtureMaterial} from './StaticInstances';
 import {contactShadowTexture} from './contactShadow';
+import type {SpectatorRig,StaffRig} from './VenueAnimation';
 
 function venueFloorTexture(official:boolean){
  const size=128,data=new Uint8Array(size*size*4);
@@ -17,6 +18,7 @@ function venueFloorTexture(official:boolean){
 /** All fixtures stay outside the measured course envelope. Repetition is instanced. */
 export function raceVenueScenery(track:CircuitTrack,official:boolean,outdoor=false){
  const group=new THREE.Group();group.name='race-event-scenery';const batch=new StaticInstances();
+ const spectators:SpectatorRig[]=[],capActors:number[]=[],pitStaff:StaffRig[]=[];
  const points=Array.from({length:1201},(_,i)=>track.sampleLanePath(i/1200*track.circuitLength,(track.circuit.lanes-1)/2));
  const half=track.circuit.lanes*track.circuit.laneWidth/2;
  const xs=points.map(p=>p.x),zs=points.map(p=>p.z),left=Math.min(...xs)-half-1.45,right=Math.max(...xs)+half+1.45,top=Math.min(...zs)-half-1.45,bottom=Math.max(...zs)+half+1.45;
@@ -50,16 +52,18 @@ export function raceVenueScenery(track:CircuitTrack,official:boolean,outdoor=fal
    box('venue-chair-backs',x,y+.25,z+sign*.08,.18,.17,.025,chair);
    // Torso, arms and bent legs replace the old sphere-on-cube silhouettes.
    const h=.16+(i%4===0?.025:0);
+   const actor=spectators.length;spectators.push({x,y:y+.25+h,z,sign,phase:(actor*1.73)%7});
    cylinder('venue-spectator-torsos',x,y+.21+h/2,z,.071,h,outfit);
    for(const side of [-1,1]){
     cylinder('venue-spectator-arms',x+side*.083,y+.25,z-sign*.025,.024,.14,outfit,false,new THREE.Quaternion().setFromAxisAngle(V(1,0,0),sign*.25));
+    sphere('venue-spectator-hands',x+side*.083,y+.177,z-sign*.044,.024,.025,.023,skin);
     box('venue-spectator-legs',x+side*.041,y+.125,z-sign*.085,.047,.055,.13,0x344b60);
     box('venue-spectator-shoes',x+side*.041,y+.095,z-sign*.15,.048,.035,.065,0x31424a);
    }
    sphere('venue-spectator-heads',x,y+.25+h,z,.061,.078,.061,skin);
    sphere('venue-spectator-hair',x,y+.29+h,z+sign*.009,.063,.044,.062,[0x4a3b39,0x313b49,0x9f998a,0x705043][(i+row)%4]);
    for(const side of [-1,1])sphere('venue-spectator-eyes',x+side*.022,y+.26+h,z-sign*.056,.005,.006,.004,0x28363f);
-   if(i%7===0){cylinder('venue-spectator-caps',x,y+.32+h,z,.067,.025,outfit);box('venue-cap-visors',x,y+.31+h,z-sign*.056,.09,.009,.07,outfit);}
+   if(i%7===0){capActors.push(actor);cylinder('venue-spectator-caps',x,y+.32+h,z,.067,.025,outfit);box('venue-cap-visors',x,y+.31+h,z-sign*.056,.09,.009,.07,outfit);}
   }
  }
  // Continuous rails and repeated upright posts; the pit gate stays open.
@@ -101,8 +105,15 @@ export function raceVenueScenery(track:CircuitTrack,official:boolean,outdoor=fal
   cylinder('pit-lamp-stems',pitX-.28,.61,z-.16,.012,.30,steel,true);
   cylinder('pit-lamp-shades',pitX-.28,.76,z-.16,.06,.055,0xb5af91);
   box('pit-storage-cases',pitX+.12,.19,z,.28,.12,.22,0x748983);
+  const sx=pitX-.53,skin=[0xd9ae8c,0xebc6a2,0xbc927b][index],shirt=[0x57788a,0x7e8e71,0x9b7d68][index];pitStaff.push({x:sx,z,phase:index*1.9});
+  for(const dz of [-.045,.045]){box('pit-staff-legs',sx,.14,z+dz,.065,.25,.055,0x334a58);box('pit-staff-shoes',sx+.015,.03,z+dz,.1,.045,.055,0x2a3943);}
+  cylinder('pit-staff-bodies',sx,.45,z,.09,.32,shirt);box('pit-staff-aprons',sx+.076,.39,z,.025,.24,.14,0x53646b);
+  sphere('pit-staff-heads',sx,.69,z,.066,.082,.064,skin);sphere('pit-staff-hair',sx-.013,.728,z,.061,.044,.065,[0x4b423d,0x9c978a,0x313d48][index]);
+  cylinder('pit-staff-working-arms',sx+.10,.49,z+.015,.024,.18,shirt,false,new THREE.Quaternion().setFromAxisAngle(V(0,0,1),1));sphere('pit-staff-working-hands',sx+.17,.445,z+.015,.026,.023,.024,skin);box('pit-staff-held-tools',sx+.21,.448,z+.015,.08,.008,.014,steel,true);
+  cylinder('pit-staff-resting-arms',sx,.43,z-.108,.025,.23,shirt);sphere('pit-staff-resting-hands',sx,.31,z-.108,.025,.026,.025,skin);
+
  }
  // Access lanes, aisle end signs and checker panels use symbols rather than words.
  for(const z of [top-.5,bottom+.5])for(let i=0;i<8;i++)box('venue-checker-panels',right+.35+i*.07,.7+Math.floor(i/4)*.07,z,.07,.07,.015,(i+Math.floor(i/4))%2?0xd9dac9:navy);
- batch.finish(group);group.getObjectByName('venue-fixture-contact')!.renderOrder=1;group.userData.courseBounds={left,right,top,bottom};group.userData.outdoor=outdoor;return group;
+ batch.finish(group);group.getObjectByName('venue-fixture-contact')!.renderOrder=1;group.userData.courseBounds={left,right,top,bottom};group.userData.outdoor=outdoor;group.userData.spectators=spectators;group.userData.capActors=capActors;group.userData.pitStaff=pitStaff;return group;
 }

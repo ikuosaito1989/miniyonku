@@ -38,7 +38,7 @@ export class MachinePreviewRenderer {
   setEquipment(equipment:Equipment,bodyPaint:number|null=null){
     if(this.model){this.scene.remove(this.model);disposeSceneResources(this.model);}
     this.model=buildMachineModel(Number.parseInt(bodyDesign(equipment.body).color.slice(1),16),equipment,'stock',bodyPaint??undefined);this.model.rotation.y=this.yaw;
-    this.model.traverse(object=>{if(object instanceof THREE.Mesh){const decal=object.userData.isAeroPaint===true;object.castShadow=!decal;object.receiveShadow=!decal;}});
+    this.model.traverse(object=>{if(object instanceof THREE.Mesh){const decal=object.userData.isAeroPaint===true||object.userData.noShadow===true;object.castShadow=!decal;object.receiveShadow=!decal;}});
     this.scene.add(this.model);this.render();
   }
   rotate(amount:number){this.yaw+=amount;if(this.model)this.model.rotation.y=this.yaw;this.contact.rotation.z=-this.yaw;this.render();}

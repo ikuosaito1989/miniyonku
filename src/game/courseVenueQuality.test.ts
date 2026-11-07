@@ -27,7 +27,7 @@ test('ジャンプの開口を下部構造で塞がず、高架は梁と接地�
 test('会場の観客席・柵・ピットはコース外へ配置し、長いコースでも描画バッチ数を増やさない',()=>{
  for(const id of ['leaf','grove','zenith'] as CircuitId[]){
   const track=getCircuitTrack(id),venue=raceVenueScenery(track,true),bounds=venue.userData.courseBounds;
-  assert.ok(venue.children.length<=42,id+' draw batches');assert.ok(venue.getObjectByName('venue-material-floor'));assert.ok(venue.getObjectByName('venue-spectator-arms'));assert.ok(venue.getObjectByName('pit-tools'));assert.ok(venue.getObjectByName('pit-spare-tires'));
+  assert.ok(venue.children.length<=54,id+' draw batches');assert.ok(venue.getObjectByName('venue-material-floor'));assert.ok(venue.getObjectByName('venue-spectator-arms'));assert.ok(venue.getObjectByName('pit-tools'));assert.ok(venue.getObjectByName('pit-spare-tires'));
   const points=Array.from({length:101},(_,i)=>track.sampleLanePath(i/100*track.circuitLength,2));const matrix=new THREE.Matrix4(),position=new THREE.Vector3();
   for(const name of ['pit-worktops','venue-chair-seats','venue-fence-posts']){
    const mesh=venue.getObjectByName(name) as THREE.InstancedMesh;
