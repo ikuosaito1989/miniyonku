@@ -1,5 +1,7 @@
 # TINY DRIVE — システム構成
 
+![チビ四駆 セイランのタイトル画面](docs/screenshots/title-screen.png)
+
 ```mermaid
 flowchart TD
   subgraph Development[開発・ビルド]
