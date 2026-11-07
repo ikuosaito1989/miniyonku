@@ -17,7 +17,7 @@ async function accessToken(env: Env): Promise<string> {
   loginPending = (async () => {
     const response = await fetch(`${backend}/api/auth/login`, {
       method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({email, password}), redirect: 'error',
+      body: JSON.stringify({email, password}), redirect: 'manual',
       signal: AbortSignal.timeout(10000),
     });
     if (!response.ok) throw new Error('Service unavailable');
@@ -65,7 +65,7 @@ async function records(request: Request, env: Env): Promise<Response> {
   url.search = new URL(request.url).search;
   const send = async () => {
     headers.set('Authorization', `Bearer ${await accessToken(env)}`);
-    return fetch(url, {method: request.method, headers, body, redirect: 'error', signal: AbortSignal.timeout(10000)});
+    return fetch(url, {method: request.method, headers, body, redirect: 'manual', signal: AbortSignal.timeout(10000)});
   };
   let response = await send();
   if (response.status === 401) {

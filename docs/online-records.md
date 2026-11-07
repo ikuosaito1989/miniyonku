@@ -56,3 +56,15 @@ voice-clone側の専用D1と専用ロールの導入手順は `docs/miniyonku-re
 - Workerを含む型チェック・ゲームビルド・Worker deploy dry-run・関連31テスト成功。
 - バックエンド全体のビルドは既存piper-plusの `../../assets/` 解決エラーで失敗。
   そのため新コードの本番公開、アカウント有効化、実サービス間の疎通確認は未実施。
+
+## プレビュー公開・実接続確認
+
+CloudflareのPreviewは本番WorkerとSecretsを別管理します。`preview`へも専用ログイン情報を設定し、
+本番Workerと同じ専用アカウントへ接続します。専用アカウントは有効化済みです。
+パスワードを変更するときは本番Worker・PreviewのSecretsとユーザーDBのbcryptハッシュを同期します。
+
+Workerの外部fetchは `redirect: "manual"` とし、リダイレクト応答も成功扱いしません。
+Cloudflare Workersで未対応の `redirect: "error"` は使いません。
+
+プレビュー公開: `pnpm deploy:preview`（`wrangler preview --name preview`）。
+URL: https://preview-shiningscorpion.ikuosaito1989.workers.dev
