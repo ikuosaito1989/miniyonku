@@ -44,9 +44,9 @@ voice-clone側の専用D1と専用ロールの導入手順は `docs/miniyonku-re
 - 全329テスト中328件成功。`townPeople.test.ts`の「土屋 大地」の配置判定が1件失敗し、変更前の`origin/Preview`（`29a56c8`）でも同じ失敗を再現。
 - ChromiumでAPIレスポンスを模擬し、ランキング取得・表示名保存・上位4台のCPU対戦開始・記録画面への復帰を確認。390px幅で横方向のはみ出しなし、ページ例外なし。
 - IndexedDBの未送信キューで、オフライン時のベスト保持・再送成功時の削除・不正な保存応答を受けた場合の記録保持をブラウザで確認。
-- 実際のCloudflare D1への接続・本番APIへの投稿は、認証と接続設定後に確認が必要です。
+- 初期実装時は実D1・本番API未確認。現在の実接続結果は末尾を参照してください。
 
-## 2026-11-07の認証切り替え状況
+## 2026-11-07 初期実装時点の状況（履歴）
 
 - Cloudflareアカウント用APIトークンの認証成功。
 - 専用D1 `miniyonku` を作成しmigration適用済み（voice-clone側にbinding設定を追加）。
@@ -68,3 +68,7 @@ Cloudflare Workersで未対応の `redirect: "error"` は使いません。
 
 プレビュー公開: `pnpm deploy:preview`（`wrangler preview --name preview`）。
 URL: https://preview-shiningscorpion.ikuosaito1989.workers.dev
+
+公開プレビューでGET・POSTの200応答、匿名プレイヤーIDと保存内容の一致、
+専用D1への保存を確認済みです。疎通確認用の仮レコードだけを検証後に削除しました。
+voice-clone本番の専用アカウントでのログイン・記録取得は200、音声APIは403を確認しました。
