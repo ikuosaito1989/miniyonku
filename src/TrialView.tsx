@@ -84,8 +84,8 @@ export default function TrialView(){
       if(!submitted&&race.racers.find(r=>r.id==='player')?.driving.status==='finished'){
         submitted=true;
         const current=useGame.getState(),record=raceSubmission(race,'');
-        if(record&&!current.cheatUsed&&!tutorialActive(current.tutorialStage))void queueOnlineRecord(record);
-        else useOnlineStatus.setState({message:current.cheatUsed?'裏技を使用したセーブのためオンライン登録対象外です。':tutorialActive(current.tutorialStage)?'チュートリアル中はオンライン登録対象外です。':'星皇装備、または対象外の記録のためオンライン登録しません。'});
+        if(record&&!tutorialActive(current.tutorialStage))void queueOnlineRecord(record);
+        else useOnlineStatus.setState({message:tutorialActive(current.tutorialStage)?'チュートリアル中はオンライン登録対象外です。':'星皇装備、または対象外の記録のためオンライン登録しません。'});
       }
       setState(race);
     },setFinish,condition,stored.raceSeed,challenge,circuitId,setIntro,stored.bodyPaint,online?.records??null);}
