@@ -1,3 +1,5 @@
+import {raceCourseDetails} from './RaceCourseDetails';
+import {isPracticeCourse} from '../data/practiceCourses';
 import {physicalRenderer,modelLighting} from './sceneLighting';
 import {RaceShadows} from './RaceShadows';
 import {disposeSceneResources} from './modelFinish';
@@ -71,8 +73,8 @@ export class TrialRenderer {
     grass.repeat.set(groundSize/1.5,groundSize/1.5);
     const ground=new THREE.Mesh(new THREE.PlaneGeometry(groundSize,groundSize),new THREE.MeshStandardMaterial((challenge==='official'||challenge==='time-attack')?{color:0x7c928f,roughness:.86,envMapIntensity:.35}:{map:grass,roughness:1,envMapIntensity:.25}));
     ground.rotation.x=-Math.PI/2;ground.position.y=-0.025;ground.receiveShadow=true;this.scene.add(ground);
-    this.scene.add(raceVenueScenery(this.track,(challenge==='official'||challenge==='time-attack')));
-    this.buildTrack();this.buildObstacles();this.buildStart();
+    this.scene.add(raceVenueScenery(this.track,(challenge==='official'||challenge==='time-attack'),isPracticeCourse(circuitId)));
+    this.buildTrack();this.scene.add(raceCourseDetails(this.track));this.buildObstacles();this.buildStart();
     for(const racer of this.state.racers){
       const car=buildRaceMachineModel(racer);car.userData.handling=handlingProfile(racer.equipment,racer.performance);this.cars.set(racer.id,car);this.scene.add(car);this.shadows.add(racer.id,car);
       const canvas=document.createElement('canvas');canvas.width=144;canvas.height=54;
@@ -179,12 +181,6 @@ export class TrialRenderer {
   }
   private buildObstacles(){
     const {obstacles,circuit,circuitLength,sampleLanePath}=this.track;if(!obstacles&&!this.track.hasHills)return;
-    for(let d=0;d<circuitLength;d+=(this.circuitId==='forge'||this.circuitId==='zenith'?6:2.2))for(const lane of [0,4]){
-      if(this.track.isJumpGap(d))continue;
-      const p=sampleLanePath(d,lane);if(p.y<.18)continue;
-      const support=this.mesh(new THREE.BoxGeometry(.07,p.y,.07),0x5b7380);
-      support.position.set(p.x+p.tangentZ*(lane===0?-.15:.15),p.y/2,p.z-p.tangentX*(lane===0?-.15:.15));support.name='elevated-course-support';this.scene.add(support);
-    }
     for(const jump of this.track.jumps){
     for(let lane=0;lane<5;lane++)for(let i=0;i<4;i++){
       const p=sampleLanePath(jump.takeoff-.3-i*.42,lane),mark=this.mesh(new THREE.BoxGeometry(circuit.laneWidth*.65,.018,.09),i%2?0xf3a34e:0xffe8a1);
@@ -257,7 +253,7 @@ export class TrialRenderer {
       this.camera.up.set(0,1,0);
       const frame=this.introFrame??(this.introFrame=overviewFrame(this.track,this.aspect,false));
       const age=this.intro.age,start=sampleLanePath(0,(circuit.lanes-1)/2);
-      const wide=frame.height*1.12;
+      const wide=frame.height*1.12+Math.max(4,5/this.aspect);
       const tourHeight=Math.max(3.2,4.5/this.aspect),gridHeight=Math.max(raceCamera.start.height,raceCamera.start.minWidth/this.aspect);
       const smooth=(v:number)=>{const t=THREE.MathUtils.clamp(v,0,1);return t*t*(3-2*t);};
       let target=new THREE.Vector3(frame.target.x,frame.target.y,frame.target.z),height=wide;

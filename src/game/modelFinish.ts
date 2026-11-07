@@ -37,6 +37,7 @@ export function finishMachineMaterials(model:THREE.Group){
 export function disposeSceneResources(root:THREE.Object3D,extraTextures:Iterable<THREE.Texture>=[]){
  const geometries=new Set<THREE.BufferGeometry>(),materials=new Set<THREE.Material>(),textures=new Set<THREE.Texture>(extraTextures);
  root.traverse(object=>{
+  if(object instanceof THREE.InstancedMesh)object.dispose();
   if(object instanceof THREE.Mesh)geometries.add(object.geometry);
   if(object instanceof THREE.Mesh||object instanceof THREE.Sprite)for(const material of Array.isArray(object.material)?object.material:[object.material]){
    materials.add(material);for(const value of Object.values(material))if(value instanceof THREE.Texture)textures.add(value);
