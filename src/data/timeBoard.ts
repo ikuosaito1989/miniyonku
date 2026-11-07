@@ -11,3 +11,5 @@ export function officialTimeBoards(location:string){
  const courses=location==='stadium-5'?['sprint','sun'] as const:location==='stadium-9'?['comet'] as const:location==='stadium-10'?['grandprix'] as const:location==='stadium-7'?['zenith'] as const:[];
  return courses.map((circuitId,index)=>({circuitId,x:index===0?90:730,y:465,w:130,h:64}));
 }
+
+export function outdoorTimeBoardPlacement(v:{x:number;y:number;w:number;h:number}){return {x:v.x+v.w-54,y:v.y+v.h+7,w:76,h:44};}

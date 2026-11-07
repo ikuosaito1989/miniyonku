@@ -72,7 +72,7 @@ export function paintShopRoom(p:SceneryPen,id:ShopId){
 }
 function paintFixture(p:SceneryPen,f:Fixture,t:ShopTheme){
  const w=f.w,h=f.h;p.shadow(1,0,w-6,h-7);
- const casework=()=>{p.round(0,0,w,h,4,t.ink);p.gradient(2,2,w-4,h-6,t.metal,t.wood);p.rect(4,3,w-8,2,'#f9efd999');p.rect(5,h-6,w-10,3,t.ink);};
+ const casework=()=>{p.round(0,0,w,h,4,t.ink);p.gradient(2,2,w-4,h-6,t.metal,t.wood);p.rect(4,3,w-8,2,'#f9efd999');p.rect(5,h-6,w-10,3,t.ink);p.material(4,3,w-8,h-8,'wood',Math.round(w+h));for(const x of [4,w-5])for(const y of [4,h-8]){p.rect(x,y,1,1,t.light);p.rect(x+.5,y+.5,.5,.5,t.ink);}};
  if(f.kind==='plant'){p.plant(w/2,h*.65,1.2);return;}
  if(f.kind==='track'){casework();p.round(6,6,w-12,h-12,5,t.ink);p.line([[8,h-9],[w-8,h-9]],t.metal,1);return;}
  if(f.kind==='legends'){casework();p.gradient(6,5,w-12,h-12,t.ink,'#152f40');for(let i=0;i<4;i++){const x=16+i*(w-26)/4;p.glow(x+24,31,28,t.light+'30');p.round(x,12,52,46,4,'#173543');car(p,x+26,35,.62,['#5d95d5','#d4ad5e','#b2bdc5','#6778a8'][i]);p.rect(x+3,12,45,1,t.light);p.line([[x+2,14],[x+7,52],[x+16,52],[x+12,14]],'#e3f8ec33',1);}return;}

@@ -168,3 +168,15 @@ kbd { font-family: inherit; font-size: 10px; padding: 2px 5px; border: 1px solid
 .time-trial-target{display:flex;flex-wrap:wrap;gap:2px 12px;padding:10px 12px;background:#1d334a;color:#f6e5ab;font-size:12px;line-height:1.7;border-bottom:2px solid #91a5b6}.time-trial-target>span{white-space:nowrap}.time-trial-target strong{color:#ffe177}
 
 .login-bonus{position:absolute;z-index:30;top:100px;left:12px;right:12px;max-width:480px;margin:auto;display:flex;align-items:center;gap:12px;padding:16px;background:#153846;color:#fff2bd;border:2px solid #e6c775;box-shadow:0 4px 16px #0008;font-size:14px;line-height:1.6}.login-bonus span{min-width:0;overflow-wrap:anywhere}.login-bonus button{flex-shrink:0;min-height:44px;padding:6px 12px}
+
+/* Shared 16-bit material finish: crisp inset edges, warm paper and dark enamel. */
+.world canvas{image-rendering:pixelated}
+.modal{border-radius:3px;border-color:#5c7369;box-shadow:inset 0 0 0 2px #e2cf9c,inset 0 0 0 4px #fff9e9,4px 5px 0 #102a2b55,0 14px 38px #102a2b77;background-color:#f1eddd;background-image:repeating-linear-gradient(0deg,#998d6505 0 1px,transparent 1px 4px)}
+.modal h2{color:#294952;text-shadow:0 1px #fffbed}
+.primary{border:1px solid #304b4b;border-radius:2px;background:linear-gradient(#53786a,#36594f);box-shadow:inset 1px 1px #afc2a477,inset -1px -2px #213f4166,0 2px #203b3d}
+.close{border-color:#969d87;border-radius:2px;box-shadow:inset 1px 1px #fffbed,inset -1px -1px #b4b69a55}
+.world-toolbar{background-color:#192e38;background-image:repeating-linear-gradient(90deg,#c8d2b706 0 1px,transparent 1px 5px);box-shadow:inset 0 -1px #bda97d,inset 0 -3px #314c50,0 2px #0e2631}
+.world-toolbar .mission-hud,.mission-panel,.town-map-panel,.time-board,.proficiency-board{border-radius:2px;box-shadow:inset 1px 1px #fff0c333,inset -1px -1px #0a213c77,3px 4px 0 #0b263955}
+.game-settings-open,.audio-controls button,.town-map-button{border-radius:2px;box-shadow:inset 1px 1px #e9dfbc44,inset -1px -2px #0a263b66,2px 2px #10273266}
+.interaction,.game-bottom{border-radius:2px;border-color:#a9b797;box-shadow:inset 0 0 0 1px #456156,2px 3px #172c3255}
+.online-time-board{border-top:2px solid #a4ac8c;padding-top:12px}

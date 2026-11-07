@@ -1,3 +1,4 @@
+import {drawRoomFinish} from './WorldDetailArt';
 import {drawPaintedScenery,drawPaintedFixture} from './PaintedScenery';
 import type Phaser from 'phaser';
 import {officialFixturesFor} from '../data/officialVenue';
@@ -29,6 +30,7 @@ export function drawOfficialVenue(scene:Phaser.Scene,id='stadium-5'){
  const key=`arena-v3-${id}`;
  if(!scene.textures.exists(key)){const texture=scene.textures.createCanvas(key,1920,1280)!;texture.context.scale(2,2);paintArena(new SceneryPen(texture.context),id);texture.refresh();}
  if(!drawPaintedScenery(scene,id))scene.add.image(0,0,key).setOrigin(0).setDisplaySize(960,640).setDepth(-20);
+ drawRoomFinish(scene,id,officialFixturesFor(id),id==='stadium-9'?'#b19bd2':'#d5c08e');
  const accent=id==='stadium-5'?0x77b79f:id==='stadium-9'?0xb19bd2:id==='stadium-10'?0xdf9c83:0xe7c783;
  for(const f of officialFixturesFor(id)){
   const {x,y,w,h}=f,tk=`arena-fixture-${id}-${f.id}`;

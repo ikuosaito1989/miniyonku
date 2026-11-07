@@ -4,7 +4,7 @@ export interface ShopTrackPoint {x:number;y:number;elevation:number}
 export function shopTrackLayout(track:CircuitTrack,width:number,height:number){
  const points=Array.from({length:1201},(_,i)=>{const p=track.sampleCircuit(i/1200*track.circuitLength);return {x:p.x,y:p.z-p.elevation*.65,elevation:p.elevation};});
  const left=Math.min(...points.map(p=>p.x)),right=Math.max(...points.map(p=>p.x)),top=Math.min(...points.map(p=>p.y)),bottom=Math.max(...points.map(p=>p.y));
- const laneWidth=2.3,margin=17,caption=17,scale=Math.min((width-2*margin)/(right-left),(height-2*margin-caption)/(bottom-top));
+ const laneWidth=Math.max(2.7,Math.min(4,width/90)),margin=Math.max(17,Math.min(26,height*.16)),caption=10,scale=Math.min((width-2*margin)/(right-left),(height-2*margin-caption)/(bottom-top));
  const center={x:(left+right)/2,y:(top+bottom)/2};
  const centerline=points.map(p=>({...p,x:width/2+(p.x-center.x)*scale,y:(height-caption)/2+(p.y-center.y)*scale}));
  const paths=Array.from({length:track.circuit.lanes+1},(_,lane)=>centerline.map((p,i)=>{

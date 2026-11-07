@@ -1,3 +1,4 @@
+import {drawRecordBoard} from './RecordBoardArt';
 import {isPracticeCourse} from '../data/practiceCourses';
 import {drawLibraryRoom} from './LibraryRoomArt';
 import {libraryShelves,libraryObstacles,librarySpawn,libraryExit,libraryReadingDesk} from '../data/libraryRoom';
@@ -14,7 +15,7 @@ import {npcAppearanceId} from '../data/npcAppearance';
 import {npcDrawing} from './NpcPeopleArt';
 import {walkingSpeed} from '../data/shopThemes';
 import {legendPersonDrawing} from './LegendPeopleArt';
-import {timeBoardPlacement,timeBoardObstacle,officialTimeBoards} from '../data/timeBoard';
+import {timeBoardPlacement,timeBoardObstacle,officialTimeBoards,outdoorTimeBoardPlacement} from '../data/timeBoard';
 import type {TimeHistory} from './timeRecords';
 import {shopTrackLayout} from './shopTrackLayout';
 import {drawShopTrack} from './ShopTrackArt';
@@ -138,7 +139,7 @@ export class ShopScene extends Phaser.Scene {
     const shopId=currentShop(useGame.getState().location).id,layout=shopLayout(shopId),mirrored=mirroredShop(shopId);
     const fixtures=layout.map(f=>f.target);
     drawShopRoom(this,mirrored,isSalesShop(shopId),shopId);
-    drawShopDetails(this,mirrored);
+    drawShopDetails(this,mirrored,shopId);
     for(const {source,target:fixture} of layout){
       drawShopFixture(this,fixture,source,mirrored,shopId);
       this.solids.push(new Phaser.Geom.Rectangle(fixture.x,fixture.y,fixture.w,fixture.h));
@@ -495,7 +496,7 @@ export class ShopScene extends Phaser.Scene {
     if(this.isLibrary)return [...libraryShelves.map(s=>({...s,y:s.y-42,h:s.h+60,kind:'library-shelf' as const,libraryCategory:s.category,speaker:s.label,shopAfter:false,text:'本棚の資料を読む。'})),{...libraryReadingDesk,x:libraryReadingDesk.x-10,y:libraryReadingDesk.y-36,w:100,h:92,kind:'library-catalogue' as const,libraryCategory:'all' as const,speaker:'閲覧台',shopAfter:false,text:'全パーツの資料を読む。'},{...libraryExit,h:40,kind:'exit' as const,label:'図書館の出口',speaker:'図書館',shopAfter:false,text:'街へ戻る。'}];
     if(this.isTown)return [
       {x:hiddenMechanicSpot.x-16,y:hiddenMechanicSpot.y-42,w:32,h:54,label:mechanicManName,speaker:mechanicManName,shopAfter:false,text:'……よく見つけたな。',kind:'mechanic-man'},
-      ...townVenues.filter(v=>v.kind==='outdoor').map(v=>({x:v.x+v.w-38,y:v.y+v.h+8,w:44,h:20,label:'歴代ベストタイム TOP 3',speaker:v.name,shopAfter:false,text:'タイムを見る。',kind:'time-records' as const,circuitId:v.id as import('../data/practiceCourses').PracticeCourseId})),
+      ...townVenues.filter(v=>v.kind==='outdoor').map(v=>({...outdoorTimeBoardPlacement(v),label:'歴代ベストタイム TOP 3',speaker:v.name,shopAfter:false,text:'タイムを見る。',kind:'time-records' as const,circuitId:v.id as import('../data/practiceCourses').PracticeCourseId})),
       ...townVenues.map(v=>({x:v.x,y:v.y,w:v.w,h:v.h,label:v.name,speaker:v.name,shopAfter:false,text:venueMessage(v),kind:'venue' as const,venueId:v.id})),
       ...townPeople.map(p=>({x:p.x-16,y:p.y-42,w:32,h:54,label:p.name,speaker:p.name,shopAfter:false,text:townPersonAdvice(p,useGame.getState()),kind:'town-person' as const})),
     ];
@@ -547,19 +548,7 @@ export class ShopScene extends Phaser.Scene {
     this.timeBoardHistory=state.timeHistory;
     const root=this.add.container(0,0).setDepth(Math.max(...boards.map(p=>p.y+p.h)));this.timeBoardContainer=root;
     for(const p of boards){const records=state.timeHistory[p.circuitId]??[];
-    const board=this.add.container(p.x,p.y).setDepth(p.y+p.h);root.add(board);
-    const g=this.add.graphics();board.add(g);
-    g.fillStyle(0x06131d,.3).fillEllipse(p.w/2,p.h+2,p.w,10);
-    g.fillStyle(0x6c543b).fillRect(12,p.h-18,7,20).fillRect(p.w-19,p.h-18,7,20);
-    g.fillStyle(0xc0a46c).fillRoundedRect(0,0,p.w,p.h-8,3);g.fillStyle(0x132e3a).fillRoundedRect(3,3,p.w-6,p.h-14,2);
-    g.lineStyle(1,0x6c8c8f).lineBetween(8,20,p.w-8,20);
-    // 記録そのものはタップで開くモーダルに表示。マップでは表彰台の絵で示す。
-    for(let i=0;i<3;i++){
-      const x=15+i*(p.w-30)/3,h=[14,22,9][i];
-      g.fillStyle([0xa8bbc0,0xe5c278,0xbb9274][i]).fillRoundedRect(x,p.h-25-h,(p.w-37)/3,h,1);
-      if(records[i])g.fillStyle(0xb2d8ca).fillCircle(x+8,p.h-30-h,2);
-    }
-    g.fillStyle(0xe8c879).fillRect(p.w/2-7,9,14,8).fillRect(p.w/2-2,17,4,5).fillRect(p.w/2-7,22,14,2);
+    const image=drawRecordBoard(this,p,p.y+p.h,records.length>0);root.add(image);
     }
   }
 

@@ -61,6 +61,16 @@ export function paintVenueFacade(p:SceneryPen,v:TownVenue,open:boolean){
   if(v.id==='atelier'){p.ellipse(x+23,y+58,7,7,'#a6a0bc');p.ellipse(x+23,y+58,3,3,t.ink);for(let i=0;i<8;i++){const a=i*Math.PI/4;p.line([[x+23+Math.cos(a)*6,y+58+Math.sin(a)*6],[x+23+Math.cos(a)*9,y+58+Math.sin(a)*9]],'#c7bed6',1.5);}}
  }
 
+ // Roof grain, masonry corners, drainpipes and contact shading share the town palette.
+ p.material(x-4,y-27,w+8,27,'stone',w+h);
+ p.rect(x+3,y+6,1,h-12,'#fff0cf66');p.rect(x+w-5,y+7,2,h-12,'#334c4c33');
+ for(let yy=y+8;yy<y+h-9;yy+=9){p.rect(x+4,yy,4,.5,'#efe3bd60');p.rect(x+w-9,yy+3,5,.5,'#334b4e22');}
+ if(v.kind==='shop'){
+  p.rect(x+w+1,y+7,2,h-11,'#476364');p.rect(x+w+1,y+8,.5,h-14,'#c4c9af');
+  for(const yy of [y+28,y+67,y+h-10])p.rect(x+w,yy,4,1,'#344d57');
+  p.material(x+5,y+40,w-10,5,'wood',3);p.material(x+5,y+h-11,w-10,7,'stone',7);
+ }
+ p.rect(x+3,y+h-4,w-6,1,'#e5d3a177');
  // 入口の視覚的な案内。閉鎖時は鎖と鍵、開放時は床の三角形。
  if(open){p.poly([[x+w/2-7,y+h+14],[x+w/2+7,y+h+14],[x+w/2,y+h+22]],'#e5d8a4');}
  else{p.round(x+w/2-17,y+h-30,34,22,3,'#26394be8');p.round(x+w/2-6,y+h-37,12,13,6,'#c9b87d');p.round(x+w/2-9,y+h-29,18,14,3,'#ebd99d');p.ellipse(x+w/2,y+h-23,2,2,'#596174');}
