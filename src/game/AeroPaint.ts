@@ -24,7 +24,17 @@ export function addAeroPaint(group:THREE.Group,points:number[][],material:THREE.
   subdivide(a,ab,ca,depth-1);subdivide(ab,b,bc,depth-1);subdivide(ca,bc,c,depth-1);subdivide(ab,bc,ca,depth-1);
  };
  for(const [a,b,c] of triangles)subdivide(points[a],points[b],points[c],projected?3:0);
+ // Match winding to projected normals. Double-sided PBR otherwise flips the light
+ // to the underside of a decal whose contour was triangulated in the XZ plane.
+ if(projected)for(let i=0;i<vertices.length;i+=9){
+  const a=new THREE.Vector3().fromArray(vertices,i),b=new THREE.Vector3().fromArray(vertices,i+3),c=new THREE.Vector3().fromArray(vertices,i+6);
+  const geometric=b.sub(a).cross(c.sub(a)),normal=new THREE.Vector3().fromArray(normals,i);
+  if(geometric.dot(normal)<0)for(let k=0;k<3;k++){
+   [vertices[i+3+k],vertices[i+6+k]]=[vertices[i+6+k],vertices[i+3+k]];
+   [normals[i+3+k],normals[i+6+k]]=[normals[i+6+k],normals[i+3+k]];
+  }
+ }
  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.computeVertexNormals();
  if(projected)geometry.setAttribute('normal',new THREE.Float32BufferAttribute(normals,3));
- const mesh=new THREE.Mesh(geometry,material);mesh.name=name;group.add(mesh);return mesh;
+ const mesh=new THREE.Mesh(geometry,material);mesh.name=name;mesh.userData.isAeroPaint=true;group.add(mesh);return mesh;
 }

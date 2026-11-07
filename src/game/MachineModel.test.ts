@@ -31,7 +31,9 @@ test('コハクK660はモブ車と同じ箱型軽ワゴンで、ウイングの�
   const body=model.getObjectByName('body-shell') as THREE.Mesh;
   assert.ok(body.geometry instanceof THREE.BoxGeometry);
   assert.equal((body.material as THREE.MeshPhongMaterial).color.getHex(),0xb4b09a);
-  assert.equal((body.material as THREE.MeshPhongMaterial).shininess,12);
+  assert.ok(body.material instanceof THREE.MeshStandardMaterial);
+  assert.ok(body.material.roughness>=.45);
+  assert.ok(body.material.metalness<=.18);
   assert.ok(model.getObjectByName('mob-kei-yellow-plate'));
   assert.ok(model.getObjectByName('mob-kei-plastic-bumper'));
   assert.ok(model.getObjectByName('mob-kei-square-headlight'));

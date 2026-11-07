@@ -1,3 +1,6 @@
+import {physicalRenderer,modelLighting} from './sceneLighting';
+import {RaceShadows} from './RaceShadows';
+import {disposeSceneResources} from './modelFinish';
 import {withOnlineRivals} from './onlineRace';
 import type {OnlineRecord} from './onlineRecords';
 import {raceVenueScenery} from './RaceVenueScenery';
@@ -23,6 +26,7 @@ export type { TrialCamera } from '../data/raceCamera';
 export class TrialRenderer {
   private renderer: THREE.WebGLRenderer;
   private environment:THREE.WebGLRenderTarget;
+  private shadows:RaceShadows;
   private scene = new THREE.Scene();
   private camera = new THREE.OrthographicCamera(-2,2,1,-1,0.01,1000);
   private cars = new Map<string,THREE.Group>();
@@ -56,20 +60,21 @@ export class TrialRenderer {
     this.renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});
     this.renderer.setPixelRatio(1);
     this.renderer.setClearColor((challenge==='official'||challenge==='time-attack')?0x344d5b:0x315b2a);
-    this.renderer.outputColorSpace=THREE.SRGBColorSpace;
+    physicalRenderer(this.renderer);
     this.environment=studioEnvironment(this.renderer);this.scene.environment=this.environment.texture;
     this.renderer.domElement.style.width='100%';
     this.renderer.domElement.style.height='100%';
     host.append(this.renderer.domElement);
-    this.scene.add(new THREE.HemisphereLight(0xe4efff,0x45653b,2));
-    const sun=new THREE.DirectionalLight(0xffffff,1.3);sun.position.set(-3,8,4);this.scene.add(sun);
+    const sun=modelLighting(this.scene);this.shadows=new RaceShadows(this.scene,sun,compactDevice());
     const grass=this.grassTexture();
-    const ground=new THREE.Mesh(new THREE.PlaneGeometry(this.track.open?600:Math.max(100,this.track.circuit.radiusX*2+40),this.track.open?600:Math.max(100,this.track.circuit.radiusZ*2+40)),new THREE.MeshLambertMaterial((challenge==='official'||challenge==='time-attack')?{color:0x7c928f}:{map:grass}));
-    ground.rotation.x=-Math.PI/2;ground.position.y=-0.025;this.scene.add(ground);
+    const groundSize=this.track.open?600:Math.max(100,this.track.circuit.radiusX*2+40,this.track.circuit.radiusZ*2+40);
+    grass.repeat.set(groundSize/1.5,groundSize/1.5);
+    const ground=new THREE.Mesh(new THREE.PlaneGeometry(groundSize,groundSize),new THREE.MeshStandardMaterial((challenge==='official'||challenge==='time-attack')?{color:0x7c928f,roughness:.86,envMapIntensity:.35}:{map:grass,roughness:1,envMapIntensity:.25}));
+    ground.rotation.x=-Math.PI/2;ground.position.y=-0.025;ground.receiveShadow=true;this.scene.add(ground);
     this.scene.add(raceVenueScenery(this.track,(challenge==='official'||challenge==='time-attack')));
     this.buildTrack();this.buildObstacles();this.buildStart();
     for(const racer of this.state.racers){
-      const car=buildRaceMachineModel(racer);car.userData.handling=handlingProfile(racer.equipment,racer.performance);this.cars.set(racer.id,car);this.scene.add(car);
+      const car=buildRaceMachineModel(racer);car.userData.handling=handlingProfile(racer.equipment,racer.performance);this.cars.set(racer.id,car);this.scene.add(car);this.shadows.add(racer.id,car);
       const canvas=document.createElement('canvas');canvas.width=144;canvas.height=54;
       const ctx=canvas.getContext('2d')!;ctx.fillStyle=racer.id==='player'?'#ffe16d':'#18293e';ctx.strokeStyle=racer.id==='player'?'#fff5d7':`#${racer.color.toString(16).padStart(6,'0')}`;ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(3,3,138,48,12);ctx.fill();ctx.stroke();
       ctx.font='bold 30px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=racer.id==='player'?'#18293e':'#fff4db';ctx.fillText(racer.id==='player'?'▼ 自分':racer.name.split(/[ 　]/).at(-1)!,72,28);
@@ -128,18 +133,19 @@ export class TrialRenderer {
   private grassTexture(){
     const canvas=document.createElement('canvas');canvas.width=64;canvas.height=64;
     const context=canvas.getContext('2d')!;
-    context.fillStyle='#38772c';context.fillRect(0,0,64,64);
-    for(let y=0;y<64;y+=2)for(let x=0;x<64;x+=2){
-      const shade=(x*13+y*7)%19;
-      context.fillStyle=shade<5?'#3f802f':shade>14?'#316c27':'#39762b';context.fillRect(x,y,2,2);
+    context.fillStyle='#738064';context.fillRect(0,0,64,64);
+    for(let y=0;y<64;y++)for(let x=0;x<64;x++){
+      const n=(Math.imul(x+73,374761393)^Math.imul(y+41,668265263))>>>0;
+      context.fillStyle=['#768468','#6b7b5e','#7c886b','#718061','#6f7c60'][n%5];context.fillRect(x,y,1,1);
+      if(n%37===0){context.fillStyle='#8e9677';context.fillRect(x,y,1,2);}
     }
     const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;
-    texture.magFilter=THREE.NearestFilter;texture.minFilter=THREE.NearestFilter;
+    texture.magFilter=THREE.LinearFilter;texture.minFilter=THREE.LinearMipmapLinearFilter;texture.anisotropy=Math.min(4,this.renderer.capabilities.getMaxAnisotropy());
     texture.wrapS=texture.wrapT=THREE.RepeatWrapping;texture.repeat.set(80,80);
     this.textures.push(texture);return texture;
   }
   private mesh(geometry:THREE.BufferGeometry,color:number){
-    return new THREE.Mesh(geometry,new THREE.MeshLambertMaterial({color,flatShading:true}));
+    return new THREE.Mesh(geometry,new THREE.MeshStandardMaterial({color,roughness:.5,metalness:.04,envMapIntensity:.55}));
   }
   private buildTrack(){
     const {circuit,circuitLength,sampleLanePath}=this.track;
@@ -157,7 +163,7 @@ export class TrialRenderer {
       }
       const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.setIndex(indices);geometry.computeVertexNormals();
       if(circuit.surface.roughness>0)geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
-      const mesh=this.mesh(geometry,circuit.surface.roughness>0?0xffffff:lane%2?0x8d91bb:0xaaaed0);mesh.material.vertexColors=circuit.surface.roughness>0;mesh.material.side=THREE.DoubleSide;this.scene.add(mesh);
+      const mesh=this.mesh(geometry,circuit.surface.roughness>0?0xffffff:lane%2?0x8d91bb:0xaaaed0);mesh.material.vertexColors=circuit.surface.roughness>0;mesh.material.side=THREE.DoubleSide;mesh.receiveShadow=true;this.scene.add(mesh);
       for(const side of [-1,1]){
       const offset=side*circuit.laneWidth/2;
       const vertices:number[]=[],indices:number[]=[];
@@ -167,7 +173,7 @@ export class TrialRenderer {
         if(i<circuit.samples&&!this.track.isJumpGap((i+.5)/circuit.samples*circuitLength)){const a=i*4;indices.push(a,a+4,a+2,a+2,a+4,a+6,a+1,a+3,a+5,a+3,a+7,a+5,a+2,a+6,a+3,a+3,a+6,a+7);}
       }
       const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.setIndex(indices);geometry.computeVertexNormals();
-      const rail=this.mesh(geometry,0xd7e5ed);rail.material.side=THREE.DoubleSide;this.scene.add(rail);
+      const rail=this.mesh(geometry,0xd7e5ed);rail.material.side=THREE.DoubleSide;rail.receiveShadow=true;this.scene.add(rail);
       }
     }
   }
@@ -200,7 +206,7 @@ export class TrialRenderer {
         if(i<steps){const a=i*2;indices.push(a,a+1,a+2,a+1,a+3,a+2);}
       }
       const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.setIndex(indices);geometry.computeVertexNormals();
-      const mesh=this.mesh(geometry,color);mesh.material.side=THREE.DoubleSide;this.scene.add(mesh);
+      const mesh=this.mesh(geometry,color);mesh.material.side=THREE.DoubleSide;mesh.receiveShadow=true;this.scene.add(mesh);
     };
     for(let lane=0;lane<circuit.lanes;lane++){
       const half=circuit.laneWidth/2-.01;
@@ -217,7 +223,7 @@ export class TrialRenderer {
     const canvas=document.createElement('canvas');canvas.width=160;canvas.height=32;
     const context=canvas.getContext('2d')!;context.font='bold 28px monospace';context.textAlign='center';
     context.fillStyle='#463e23';context.fillText(this.track.open?'START':'G O A L',82,27);context.fillStyle='#f8dc65';context.fillText(this.track.open?'START':'G O A L',80,25);
-    const texture=new THREE.CanvasTexture(canvas);texture.magFilter=THREE.NearestFilter;texture.minFilter=THREE.NearestFilter;texture.colorSpace=THREE.SRGBColorSpace;this.textures.push(texture);
+    const texture=new THREE.CanvasTexture(canvas);texture.magFilter=THREE.LinearFilter;texture.minFilter=THREE.LinearMipmapLinearFilter;texture.anisotropy=Math.min(4,this.renderer.capabilities.getMaxAnisotropy());texture.colorSpace=THREE.SRGBColorSpace;this.textures.push(texture);
     const goalLabel=new THREE.Mesh(new THREE.PlaneGeometry(0.85,0.17),new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false}));
     goalLabel.rotation.x=-Math.PI/2-sampleLanePath(.4,2).pitch;goalLabel.position.set(0,startRampHeight(.4)-startRampHeight(0)+.02,.4);group.add(goalLabel);
     if(this.track.open){
@@ -350,7 +356,9 @@ export class TrialRenderer {
         marker.position.x+=car.position.x-p.x;marker.position.z+=car.position.z-p.z;
         marker.position.y+=pose.height;
       }
+      this.shadows.update(racer.id,p,racer.driving.flightY,!crashed&&racer.driving.status!=='out'&&!this.track.isJumpGap(finishTrackDistance(racer,this.finishPresentation)),carScale);
       if(racer.id==='player'){
+        this.shadows.follow(car.position,overview);
         this.playerMarker.position.copy(car.position).add(overview?new THREE.Vector3(frame.up.x,frame.up.y,frame.up.z).multiplyScalar(.16*carScale):new THREE.Vector3(0,.24,0));
         if(overview)this.playerMarker.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(-frame.up.x,-frame.up.y,-frame.up.z));else this.playerMarker.rotation.set(0,0,Math.PI);
       }
@@ -367,8 +375,7 @@ export class TrialRenderer {
     this.audio.dispose();
     this.report({...this.state});
     cancelAnimationFrame(this.frame);this.observer.disconnect();
-    this.scene.traverse(object=>{if(object instanceof THREE.Mesh){object.geometry.dispose();for(const material of Array.isArray(object.material)?object.material:[object.material])material.dispose();}});
-    for(const texture of this.textures)texture.dispose();
+    disposeSceneResources(this.scene,this.textures);
     this.environment.dispose();
     this.renderer.dispose();this.renderer.forceContextLoss();this.renderer.domElement.remove();
   }

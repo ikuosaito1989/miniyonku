@@ -1,3 +1,4 @@
+import {finishMachineMaterials} from './modelFinish';
 import {parts} from '../data/parts';
 import { buildTowaBody, buildKoyaBody } from './LegendBodies';
 import {buildKuroiwaBody} from './KuroiwaBody';
@@ -344,5 +345,6 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
   }
   car.userData.rotatingWheels=rotatingWheels;car.userData.rotatingRollers=rotatingRollers;
   car.userData.rearSlideCarriages=slideCarriages;
+  finishMachineMaterials(car);
   car.scale.setScalar(.85);return car;
 }
