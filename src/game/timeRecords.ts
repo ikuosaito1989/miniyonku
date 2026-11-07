@@ -1,3 +1,4 @@
+import {practiceCourseIds} from '../data/practiceCourses';
 import {isSovereignPart} from '../data/sovereignParts';
 import {equipmentSlots,type Equipment} from '../data/machine';
 import {parts} from '../data/parts';
@@ -7,7 +8,7 @@ import {officialTime,type RaceState} from './race';
 export const raceRulesVersion=2;
 export interface TimeRecord {rulesVersion?:number;id:string;racerId:string;racerName:string;machineName:string;time:number;recordedAt:number;equipment?:Equipment}
 export type TimeHistory=Partial<Record<CircuitId,TimeRecord[]>>;
-const circuits:CircuitId[]=['leaf','wind','sun','sprint','grove','comet','trail','grandprix','forge','zenith'];
+const circuits:CircuitId[]=[...practiceCourseIds,'leaf','wind','sun','sprint','grove','comet','trail','grandprix','forge','zenith'];
 export function formatRecordTime(seconds:number,roundUp=false){const cs=roundUp?Math.ceil(seconds*100-1e-7):Math.floor(seconds*100);return `${String(Math.floor(cs/6000)).padStart(2,'0')}:${String(Math.floor(cs/100)%60).padStart(2,'0')}.${String(cs%100).padStart(2,'0')}`;}
 export const isRecordEquipmentEligible=(equipment:Equipment)=>!Object.values(equipment).some(isSovereignPart);
 export function recordRaceTimes(history:TimeHistory,race:RaceState,attempt:number,recordedAt=Date.now()):TimeHistory{

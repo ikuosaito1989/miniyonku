@@ -1,3 +1,5 @@
+import {isPracticeCourse} from '../data/practiceCourses';
+import {practiceRivals} from '../data/practiceRivals';
 import {zenithRivals} from '../data/zenithRace';
 import { grandprixRivals, officialRivals, officialSpeedRivals, technicalRivals, wakabaRivals } from '../data/officialRace';
 import { starterEquipment, type Equipment } from '../data/machine';
@@ -34,7 +36,7 @@ export function createRaceState(equipment:Equipment,seed=0x5eed,condition:Machin
   for(let i=lanes.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[lanes[i],lanes[j]]=[lanes[j],lanes[i]];}
   const entrants:Entrant[]=legendChallenge
     ?[{id:'player',name:story.player,lane:2,color:0xd94232,equipment:{...equipment}},...legends.slice(0,2).map((legend,index)=>({id:legend.id,name:legend.name,lane:index,color:index?0xe5b839:0x477de0,motorSeconds:90,equipment:{...legend.equipment}})),...rivals.slice(0,2).map(r=>({...r,equipment:{...r.equipment}}))]
-    :[{id:'player',name:story.player,lane:2,color:0xd94232,equipment:{...equipment}},...(challenge==='time-attack'?[]:(circuitId==='forge'||circuitId==='zenith')?zenithRivals:circuitId==='trail'?[]:challenge==='official'?(circuitId==='grandprix'?grandprixRivals:circuitId==='comet'?technicalRivals:circuitId==='sprint'?officialSpeedRivals:officialRivals):challenge==='villain'?[challenger,...aozoraRivals.slice(0,3)]:circuitId==='grove'?wakabaRivals:circuitId==='sun'?hinataRivals:circuitId==='wind'?aozoraRivals:rivals).map(r=>({...r,equipment:{...r.equipment}}))];
+    :[{id:'player',name:story.player,lane:2,color:0xd94232,equipment:{...equipment}},...(challenge==='time-attack'?[]:isPracticeCourse(circuitId)?practiceRivals(circuitId):(circuitId==='forge'||circuitId==='zenith')?zenithRivals:circuitId==='trail'?[]:challenge==='official'?(circuitId==='grandprix'?grandprixRivals:circuitId==='comet'?technicalRivals:circuitId==='sprint'?officialSpeedRivals:officialRivals):challenge==='villain'?[challenger,...aozoraRivals.slice(0,3)]:circuitId==='grove'?wakabaRivals:circuitId==='sun'?hinataRivals:circuitId==='wind'?aozoraRivals:rivals).map(r=>({...r,equipment:{...r.equipment}}))];
   if(bodyPaint!==null){const player=entrants.find(e=>e.id==='player')!;player.bodyPaint=bodyPaint;player.color=bodyPaint;}
   return {event:challenge==='official'||challenge==='time-attack'?'official':'shop',circuitId,phase:'ready',countdownTicks:COUNTDOWN_TICKS,time:0,seed,playerStartOffset:null,falseStartPenalty:0,racers:entrants.map((entry,index)=>{
     const entrant={...entry,lane:circuitId==='trail'||challenge==='time-attack'?2:lanes[index]};

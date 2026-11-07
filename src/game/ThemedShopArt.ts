@@ -1,3 +1,4 @@
+import {isPracticeCourse} from '../data/practiceCourses';
 import {isSpecialtyShop} from '../data/specialtyParts';
 import {drawPaintedScenery,drawPaintedFixture} from './PaintedScenery';
 import type Phaser from 'phaser';
@@ -42,6 +43,7 @@ export function paintShopRoom(p:SceneryPen,id:ShopId){
   for(const x of [74,870])for(let y=128;y<598;y+=24){p.poly([[x,y],[x+14,y],[x+4,y+12],[x-10,y+12]],'#d6af5f66');}
  }
  if(isSpecialtyShop(id)){for(let i=0;i<2800;i++){const x=42+(i*137%877),y=118+(i*79%481);p.rect(x,y,i%4?1:.65,i%3?.6:1.2,i%3?'#f6f1db28':'#3e534125');}for(let y=116;y<604;y+=48)p.line([[40,y],[920,y]],'#4f605328',.7);}
+ if(isPracticeCourse(id)){p.checker(44,117,872,9,8);for(let i=0;i<16;i++){const x=66+i*54;p.line([[x,124],[x,137]],t.metal,1);p.poly([[x,125],[x+20,129],[x,137]],i%2?t.accent:t.light);}}
  c.restore();
  // アーキテクチャ：柱・窓・梁・展示壁をスタイルごとに変更。
  p.gradient(40,35,880,80,t.wall,t.ink);p.rect(40,108,880,8,t.wood);p.rect(40,109,880,1,t.metal);
@@ -83,4 +85,4 @@ function paintFixture(p:SceneryPen,f:Fixture,t:ShopTheme){
  car(p,w*.43,h*.39,1.05,'#c25e66');for(let i=0;i<3;i++){const x=w-42+i*10;p.round(x,13,5,23,2,'#b8c6bf');p.round(x-1,31,7,9,2,['#bb716a','#63899a','#c5ac6e'][i]);p.rect(x+1,14,1,12,'#f3ecdb');}p.round(11,12,17,32,2,'#b1beb5');p.ellipse(19,21,5,5,'#55747a');p.rect(14,35,10,3,'#e2cf9e');p.rect(12,h-19,w-24,10,t.metal);for(const x of [w*.25,w*.7])p.round(x,h-17,18,3,1,t.ink);
 }
 export function drawThemedRoom(scene:Phaser.Scene,id:ShopId){if(drawPaintedScenery(scene,id))return;const key=texture(scene,`room-v3-${id}`,960,640,p=>paintShopRoom(p,id));scene.add.image(0,0,key).setOrigin(0).setDisplaySize(960,640).setDepth(-100);}
-export function drawThemedFixture(scene:Phaser.Scene,f:Fixture,id:ShopId){if(drawPaintedFixture(scene,id,f))return;const key=texture(scene,`fixture-v3-${id}-${f.kind}-${f.w}-${f.h}`,f.w+9,f.h+10,p=>paintFixture(p,f,shopThemes[id]));scene.add.image(f.x,f.y,key).setOrigin(0).setDisplaySize(f.w+9,f.h+10).setDepth(f.y+f.h);}
+export function drawThemedFixture(scene:Phaser.Scene,f:Fixture,id:ShopId){if(drawPaintedFixture(scene,id,f))return;const key=texture(scene,`fixture-v3-${id}-${f.kind}-${f.w}-${f.h}`,f.w+9,f.h+10,p=>{if(isPracticeCourse(id)&&f.kind==='shelf'){const t=shopThemes[id];p.rect(0,0,f.w,f.h,t.ink);for(let row=0;row<6;row++){const y=row*29;p.gradient(2,y+1,f.w-4,26,t.metal,t.ink);for(let col=0;col<3;col++){const x=10+col*(f.w-20)/3;p.round(x,y+4,15,13,2,row%2?t.accent:t.wood);p.ellipse(x+7,y+4,4,4,['#d4b991','#bd9277','#e6c89d'][col]);p.rect(x+4,y+15,7,7,'#354e65');}}}else paintFixture(p,f,shopThemes[id]);});scene.add.image(f.x,f.y,key).setOrigin(0).setDisplaySize(f.w+9,f.h+10).setDepth(f.y+f.h);}

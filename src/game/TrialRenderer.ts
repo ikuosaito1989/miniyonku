@@ -61,7 +61,7 @@ export class TrialRenderer {
     this.scene.add(new THREE.HemisphereLight(0xe4efff,0x45653b,2));
     const sun=new THREE.DirectionalLight(0xffffff,1.3);sun.position.set(-3,8,4);this.scene.add(sun);
     const grass=this.grassTexture();
-    const ground=new THREE.Mesh(new THREE.PlaneGeometry(this.track.open?600:100,this.track.open?600:100),new THREE.MeshLambertMaterial((challenge==='official'||challenge==='time-attack')?{color:0x7c928f}:{map:grass}));
+    const ground=new THREE.Mesh(new THREE.PlaneGeometry(this.track.open?600:Math.max(100,this.track.circuit.radiusX*2+40),this.track.open?600:Math.max(100,this.track.circuit.radiusZ*2+40)),new THREE.MeshLambertMaterial((challenge==='official'||challenge==='time-attack')?{color:0x7c928f}:{map:grass}));
     ground.rotation.x=-Math.PI/2;ground.position.y=-0.025;this.scene.add(ground);
     this.scene.add(raceVenueScenery(this.track,(challenge==='official'||challenge==='time-attack')));
     this.buildTrack();this.buildObstacles();this.buildStart();
@@ -169,7 +169,7 @@ export class TrialRenderer {
     }
   }
   private buildObstacles(){
-    const {obstacles,circuit,circuitLength,sampleLanePath}=this.track;if(!obstacles)return;
+    const {obstacles,circuit,circuitLength,sampleLanePath}=this.track;if(!obstacles&&!this.track.hasHills)return;
     for(let d=0;d<circuitLength;d+=(this.circuitId==='forge'||this.circuitId==='zenith'?6:2.2))for(const lane of [0,4]){
       if(this.track.isJumpGap(d))continue;
       const p=sampleLanePath(d,lane);if(p.y<.18)continue;

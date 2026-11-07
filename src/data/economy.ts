@@ -1,3 +1,4 @@
+import {isPracticeCourse} from './practiceCourses';
 // 参加費なし。わかばの優勝2,500円を基準に、進行と難度に合わせて完走賞を設定。
 export const INITIAL_MONEY = 2000;
 export const RACE_PRIZES = [800,500,350,300,250] as const;
@@ -10,4 +11,4 @@ export const ZENITH_PRIZES=[12000,9000,6000,4500,3000] as const;
 export const FORGE_PRIZES=[8000,6500,5000,4000,3000] as const;
 export const GRANDPRIX_PRIZES=[6000,4000,2500,1800,1200] as const;
 export const YUUNAGI_PRIZES=[3000,0,0,0,0] as const;
-export const prizesForCircuit=(id:string)=>id==='zenith'?ZENITH_PRIZES:id==='forge'?FORGE_PRIZES:id==='grandprix'?GRANDPRIX_PRIZES:id==='trail'?YUUNAGI_PRIZES:id==='leaf'?RACE_PRIZES:id==='wind'?AOZORA_PRIZES:id==='sun'?HINATA_PRIZES:id==='grove'?WAKABA_PRIZES:id==='comet'?TECHNICAL_PRIZES:OFFICIAL_PRIZES;
+export const prizesForCircuit=(id:string)=>isPracticeCourse(id)?[800,500,350,250,200]:id==='zenith'?ZENITH_PRIZES:id==='forge'?FORGE_PRIZES:id==='grandprix'?GRANDPRIX_PRIZES:id==='trail'?YUUNAGI_PRIZES:id==='leaf'?RACE_PRIZES:id==='wind'?AOZORA_PRIZES:id==='sun'?HINATA_PRIZES:id==='grove'?WAKABA_PRIZES:id==='comet'?TECHNICAL_PRIZES:OFFICIAL_PRIZES;

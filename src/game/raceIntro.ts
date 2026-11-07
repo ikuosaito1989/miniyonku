@@ -1,3 +1,4 @@
+import {practiceCourses} from '../data/practiceCourses';
 import {prizesForCircuit,OFFICIAL_PRIZES} from '../data/economy';
 import {getCircuitTrack,type CircuitId} from '../data/circuit';
 export const raceIntroTiming={overview:4,tour:11,grid:5};
@@ -13,6 +14,7 @@ export function stepRaceIntro(intro:RaceIntro,seconds:number,visible=true){
 export function courseIntroduction(id:CircuitId,official=false){
  const {circuit,circuitLength}=getCircuitTrack(id);
  const details={
+  ...practiceCourses,
   forge:{feature:'怜・岳・斗和・昊也のレジェンド4人と走る最上位の混合ロングコース。縦ループ・横スパイラル・砂地・坂・ジャンプをすべて備える。',advice:'新作の高トルクモーター・接地シャーシ・制振を組み合わせよう。結果まで5回走ると天頂決戦の出場権を獲得。勝利数は条件ではない。'},
   zenith:{feature:'最後の舞台、天頂決戦・ゼニス・クラウン。すべての要素に加え終盤に連続S字を追加した史上最長の一本道。',advice:'怜・岳・斗和・昊也のレジェンド4人との最終決戦。縦ループの駆動力、砂地の追従、旋回と着地を両立し、2位以内をつかもう。'},
   grandprix:{feature:'全4大会の決勝。夕凪を発展させた高架スパイラル・ジャンプ・連続S字を5台で駆け抜ける一本道。',advice:'橘 斗和、黒岩 豪、石川 蒼、高橋 蓮と勝負。2位以内の完走であかつき模型店へ進む。3位以下はゲームオーバー。一度限りの決勝だ。'},

@@ -1,6 +1,8 @@
+import {practiceCourseIds,type PracticeCourseId} from './practiceCourses';
 import { shopPeople, shopVisitors, story } from './story';
 import { modelShops, type ShopId } from './world';
 export const shopCasts={
+ ...Object.fromEntries(practiceCourseIds.map(id=>[id,{owner:{x:160,y:139},rival:{x:550,y:245},visitors:[{x:425,y:275,name:'佐伯 匠',kind:'mechanic' as const}]}])) as Record<PracticeCourseId,{owner:{x:number;y:number};rival:{x:number;y:number};visitors:{x:number;y:number;name:string;kind:'mechanic'}[]}>,
  torque:{owner:{x:160,y:139},rival:{x:550,y:245},visitors:[{x:425,y:275,name:'佐伯 匠',kind:'mechanic' as const}]},
  velocity:{owner:{x:160,y:139},rival:{x:550,y:245},visitors:[{x:425,y:275,name:'佐伯 匠',kind:'mechanic' as const}]},
  terrain:{owner:{x:160,y:139},rival:{x:550,y:245},visitors:[{x:425,y:275,name:'佐伯 匠',kind:'mechanic' as const}]},

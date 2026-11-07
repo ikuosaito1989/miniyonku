@@ -1,3 +1,4 @@
+import {isPracticeCourse} from '../data/practiceCourses';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { useGame } from './store';
@@ -85,17 +86,17 @@ test('旧セーブで兄弟に挑戦済みでも完走済みとは推定せず�
   }finally{useGame.setState(original);}
 });
 
-test('街の11模型店・大会会場4か所は通路からすべて調べられ、未開放店は準備中',()=>{
+test('街の11模型店・大会会場4か所・練習場10か所は通路からすべて調べられ、未開放店は準備中',()=>{
   assert.equal(townVenues.filter(v=>v.kind==='shop').length,11);
   assert.equal(townVenues.filter(v=>v.kind==='shop'&&!isVenueOpen(v,{legendRaceCompleted:true,villainDefeated:false})).length,5);
   assert.equal(townVenues.filter(v=>v.kind==='shop'&&!isVenueOpen(v,{legendRaceCompleted:true,villainDefeated:true})).length,4);
-  assert.deepEqual(townVenues.filter(v=>v.kind==='stadium').map(v=>v.stage),[5,7,9,10]);
+  assert.deepEqual(townVenues.filter(v=>v.kind==='stadium'&&!isPracticeCourse(v.id)).map(v=>v.stage),[5,7,9,10]);
   const obstacles=townVenues.map(v=>({x:v.x,y:v.y,width:v.w,height:v.h})),spawn=townSpawn('komorebi');
   for(const venue of townVenues){
     const route=findWalkingPath(spawn,{x:venue.x+venue.w/2,y:venue.y+venue.h/2},obstacles,townWalkBounds);assert.ok(route.length>0);
     let before=spawn;for(const p of route){assert.ok(canTravel(before,p,obstacles,townWalkBounds));before=p;}
     assert.ok(Math.hypot(before.x-Math.max(venue.x,Math.min(before.x,venue.x+venue.w)),before.y-Math.max(venue.y,Math.min(before.y,venue.y+venue.h)))<62);
-    if(venue.kind!=='library'&&!venue.shopId&&venue.id!=='stadium-9'&&venue.id!=='stadium-5'&&venue.id!=='stadium-10'&&venue.id!=='stadium-7')assert.match(venueMessage(venue),/準備中/);
+    if(venue.kind!=='library'&&!venue.shopId&&venue.id!=='stadium-9'&&venue.id!=='stadium-5'&&venue.id!=='stadium-10'&&venue.id!=='stadium-7'&&!isPracticeCourse(venue.id))assert.match(venueMessage(venue),/準備中/);
     if(venue.id==='stadium-9')assert.match(venueMessage(venue),/第3公式大会/);
   }
 });

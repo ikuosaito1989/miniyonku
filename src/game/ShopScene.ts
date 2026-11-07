@@ -1,3 +1,4 @@
+import {isPracticeCourse} from '../data/practiceCourses';
 import {drawLibraryRoom} from './LibraryRoomArt';
 import {libraryShelves,libraryObstacles,librarySpawn,libraryExit,libraryReadingDesk} from '../data/libraryRoom';
 import type {Category} from '../data/parts';
@@ -509,7 +510,7 @@ export class ShopScene extends Phaser.Scene {
     const state=useGame.getState(),condition=equippedCondition(state.equipment,state.units,state.selectedUnits);
     const shop=currentShop(state.location);
     if(!isSalesShop(shop.id))targets.push({...timeBoardPlacement(shop.id),kind:'time-records',label:'歴代ベストタイム TOP 3',speaker:'ベストタイムの看板',shopAfter:false,text:'コースのベストタイムを見る。'});
-    const counter=targets.find(t=>t.kind==='counter')!;counter.label=`店主 ${shop.owner}`;counter.speaker=shop.owner;counter.text=shop.welcome;
+    const counter=targets.find(t=>t.kind==='counter')!;counter.label=`店主 ${shop.owner}`;counter.speaker=shop.owner;counter.text=shop.welcome;if(isPracticeCourse(shop.id)){counter.shopAfter=false;counter.label='受付係';}
     const track=targets.find(t=>t.kind==='track')!;track.label=isSalesShop(shop.id)?'パーツ展示':getCircuitTrack(shop.circuitId).circuit.name;
     targets.push({...shopExit,label:'緑川町への出口',speaker:shop.name,shopAfter:false,text:'外の町へ出よう。',kind:'exit'});
     if(shop.id==='komorebi'&&!state.legendRaceCompleted){
@@ -534,7 +535,8 @@ export class ShopScene extends Phaser.Scene {
       if(visitor.speaker==='佐伯 匠'){visitor.label='佐伯 匠（レース相談）';visitor.text='装備と前回のレースを見て、勝つための相談に乗るよ。';}
       else visitor.text+=' 負けた理由や、どのパーツを替えるとよいかは、整備役の佐伯 匠に相談してね。';
     }
-    if(isSalesShop(shop.id)&&shop.id!=='atelier'){for(const visitor of visitors)visitor.text=shop.welcome;for(const target of targets)if(target.speaker===cast.rival.name)target.text=shop.welcome;}
+    if(isPracticeCourse(shop.id)||isSalesShop(shop.id)&&shop.id!=='atelier'){for(const visitor of visitors)visitor.text=shop.welcome;for(const target of targets)if(target.speaker===cast.rival.name)target.text=shop.welcome;}
+    if(isPracticeCourse(shop.id)){for(let i=targets.length-1;i>=0;i--)if(targets[i].kind==='legends'||targets[i].kind==='bookshelf')targets.splice(i,1);}
     if(shop.id==='atelier'){for(const visitor of visitors)visitor.text='星皇シリーズは全種類そろっているよ。各25万円、13品で325万円。砂地では悪路タイヤや追従するシャーシを混ぜると、もっと速くできるんだ。レースはほかの模型店で挑戦してね。';for(const target of targets)if(target.speaker===cast.rival.name)target.text='ここは最初から入れる特別な工房。星皇は全種類にある最上位シリーズ。硬いスリックと悪路タイヤ、ギア比の違いなど、得意な路面は組み合わせで変わるよ。';}
     return [...targets,...visitors];
   }

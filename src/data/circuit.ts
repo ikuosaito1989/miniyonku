@@ -1,9 +1,11 @@
+import {practiceCourses,practiceCourseIds,isPracticeCourse,type PracticeCourseId} from './practiceCourses';
 import {buildZenithTrack} from './zenithCircuit';
 import {yuunagiPoint} from './yuunagiCircuit';
 import {wakabaPoint} from './wakabaCircuit';
 import { pavedSurface, dirtSurface } from './surfaces';
-export type CircuitId='leaf'|'wind'|'sun'|'sprint'|'grove'|'comet'|'trail'|'grandprix'|'forge'|'zenith';
+export type CircuitId=PracticeCourseId|'leaf'|'wind'|'sun'|'sprint'|'grove'|'comet'|'trail'|'grandprix'|'forge'|'zenith';
 export const circuitDefinitions={
+  ...practiceCourses,
   grandprix:{cornerLoad:1.9,surface:pavedSurface,name:'緑川ツイスト・スパイラル',laps:1,laneWidth:.22,lanes:5,radiusX:38,radiusZ:18,asymmetry:0,chicane:0,samples:3600},
   trail:{cornerLoad:1.8,surface:pavedSurface,name:'夕凪ワンウェイ・スパイラル',laps:1,laneWidth:.22,lanes:5,radiusX:22,radiusZ:15,asymmetry:0,chicane:0,samples:2400},
   grove:{cornerLoad:3,surface:pavedSurface,name:'若葉スパイラル・ジャンプ',laps:5,laneWidth:.22,lanes:5,radiusX:17,radiusZ:10,asymmetry:.36,chicane:.48,samples:1920},
@@ -15,17 +17,18 @@ export const circuitDefinitions={
 };
 function buildCircuit(id:Exclude<CircuitId,'forge'|'zenith'>){
   const circuit=circuitDefinitions[id],open=id==='trail'||id==='grandprix';
+  const practice=isPracticeCourse(id)?practiceCourses[id]:null;
   const weave=id==='sun'?.48:0;
   const waves=id==='grove'?.696:id==='comet'?.95:0;
   const stadiumPoint=(t:number)=>{
-    const straight=28,radius=4,total=straight*2+2*Math.PI*radius;
+    const straight=id==='park-velocity'?100:id==='park-hairpin'?60:28,radius=id==='park-velocity'?8:id==='park-hairpin'?2.5:4,half=straight/2,total=straight*2+2*Math.PI*radius;
     let d=((t/(2*Math.PI)*total)%total+total)%total;
-    if(d<straight)return {x:-14+d,z:-radius};d-=straight;
-    if(d<Math.PI*radius){const a=-Math.PI/2+d/radius;return {x:14+radius*Math.cos(a),z:radius*Math.sin(a)};}d-=Math.PI*radius;
-    if(d<straight)return {x:14-d,z:radius};d-=straight;
-    const a=Math.PI/2+d/radius;return {x:-14+radius*Math.cos(a),z:radius*Math.sin(a)};
+    if(d<straight)return {x:-half+d,z:-radius};d-=straight;
+    if(d<Math.PI*radius){const a=-Math.PI/2+d/radius;return {x:half+radius*Math.cos(a),z:radius*Math.sin(a)};}d-=Math.PI*radius;
+    if(d<straight)return {x:half-d,z:radius};d-=straight;
+    const a=Math.PI/2+d/radius;return {x:-half+radius*Math.cos(a),z:radius*Math.sin(a)};
   };
-  const point=(t:number)=>open?yuunagiPoint(t,id==='grandprix'):id==='grove'?wakabaPoint(t):id==='sprint'?stadiumPoint(t):({x:Math.cos(t)*circuit.radiusX+Math.cos(t*2)*circuit.asymmetry+Math.cos(t*4)*weave,z:Math.sin(t)*circuit.radiusZ+Math.sin(t*3)*circuit.chicane+Math.sin(t*7)*waves});
+  const point=(t:number)=>id==='park-velocity'||id==='park-hairpin'?stadiumPoint(t):practice?{x:Math.cos(t)*circuit.radiusX*(1+practice.wave*Math.cos(practice.turns*t)),z:Math.sin(t)*circuit.radiusZ*(1+practice.wave*Math.cos(practice.turns*t)),elevation:practice.height*(1-Math.cos(practice.hills*t))/2}:open?yuunagiPoint(t,id==='grandprix'):id==='grove'?wakabaPoint(t):id==='sprint'?stadiumPoint(t):({x:Math.cos(t)*circuit.radiusX+Math.cos(t*2)*circuit.asymmetry+Math.cos(t*4)*weave,z:Math.sin(t)*circuit.radiusZ+Math.sin(t*3)*circuit.chicane+Math.sin(t*7)*waves});
   const points=Array.from({length:circuit.samples+1},(_,i)=>point(i/circuit.samples*Math.PI*2)),lengths=[0];
   for(let i=1;i<points.length;i++)lengths.push(lengths[i-1]+Math.hypot(points[i].x-points[i-1].x,points[i].z-points[i-1].z));
   const circuitLength=lengths.at(-1)!;
@@ -36,7 +39,7 @@ function buildCircuit(id:Exclude<CircuitId,'forge'|'zenith'>){
     let low=0,high=lengths.length-1;
     while(low+1<high){const mid=(low+high)>>>1;if(lengths[mid]<=wrapped)low=mid;else high=mid;}
     const f=(wrapped-lengths[low])/(lengths[high]-lengths[low]),t=(low+f)/circuit.samples*Math.PI*2;
-    if(open||id==='sprint'||id==='grove'){
+    if(practice||open||id==='sprint'||id==='grove'){
       const e=.0001,q=open?Math.max(e,Math.min(2*Math.PI-e,t)):t,p=point(t),derivativeCenter=point(q),before=point(Math.max(open?0:-Infinity,q-e)),after=point(Math.min(open?2*Math.PI:Infinity,q+e)),dx=(after.x-before.x)/(2*e),dz=(after.z-before.z)/(2*e),ddx=(after.x-2*derivativeCenter.x+before.x)/e**2,ddz=(after.z-2*derivativeCenter.z+before.z)/e**2,m=Math.hypot(dx,dz);
       const extension=open?distance-wrapped:0;
       return {...p,x:p.x+dx/m*extension,z:p.z+dz/m*extension,elevation:'elevation' in p?Number(p.elevation):0,tangentX:dx/m,tangentZ:dz/m,curvature:Math.abs(dx*ddz-dz*ddx)/m**3};
@@ -56,7 +59,7 @@ function buildCircuit(id:Exclude<CircuitId,'forge'|'zenith'>){
     if(position<startRamp.descentStart)return startRamp.height;
     return startRamp.height*(1-smooth((position-startRamp.descentStart)/(startRamp.descentEnd-startRamp.descentStart)));
   }
-  const obstacles=open?{hill:{start:circuitLength*.12,length:5,height:.35},jump:{takeoff:circuitLength*.80,rise:3.2,height:.38,gap:.55,landingLength:3}}:id==='grove'?{hill:{start:circuitLength*.10,length:6,height:.65},jump:{takeoff:circuitLength*.64,rise:3.8,height:.46,gap:.65,landingLength:3}}:null;
+  const obstacles=practice?.jump?{hill:{start:0,length:1,height:0},jump:{takeoff:circuitLength*.63,rise:3.5,height:.3,gap:.4,landingLength:3.5}}:open?{hill:{start:circuitLength*.12,length:5,height:.35},jump:{takeoff:circuitLength*.80,rise:3.2,height:.38,gap:.55,landingLength:3}}:id==='grove'?{hill:{start:circuitLength*.10,length:6,height:.65},jump:{takeoff:circuitLength*.64,rise:3.8,height:.46,gap:.65,landingLength:3}}:null;
   const courseProgress=(distance:number)=>open?distance:((distance%circuitLength)+circuitLength)%circuitLength;
   function obstacleHeight(distance:number){
     if(!obstacles)return 0;
@@ -85,10 +88,10 @@ function buildCircuit(id:Exclude<CircuitId,'forge'|'zenith'>){
     return progress<.18?{name:'締まった土',roughness:.45,grip:.9}:progress<.4?{name:'砂利ストレート',roughness:.95,grip:.72}:progress<.7?{name:'荒れたダート連続コーナー',roughness:1,grip:.76}:{name:'砂地のS字',roughness:.8,grip:.65};
   };
   // 連続した切り返しで姿勢を戻す余裕が少なく、旋回時の負荷が増す。
-  return {fairLanes:true,jumps:obstacles?[obstacles.jump]:[],open,obstacles,courseProgress,isJumpGap,obstacleHeight,cornerLoad:'cornerLoad' in circuit?circuit.cornerLoad:1,surfaceAt,circuit,circuitLength,startDistance,laneOffset,sampleCircuit,laneChange,sampleLanePath,startRamp,startRampHeight};
+  return {hasHills:!!practice?.hills,fairLanes:true,jumps:obstacles?[obstacles.jump]:[],open,obstacles,courseProgress,isJumpGap,obstacleHeight,cornerLoad:'cornerLoad' in circuit?circuit.cornerLoad:1,surfaceAt,circuit,circuitLength,startDistance,laneOffset,sampleCircuit,laneChange,sampleLanePath,startRamp,startRampHeight};
 }
 export type CircuitTrack=ReturnType<typeof buildCircuit>;
-const tracks:Record<CircuitId,CircuitTrack>={leaf:buildCircuit('leaf'),wind:buildCircuit('wind'),sun:buildCircuit('sun'),sprint:buildCircuit('sprint'),grove:buildCircuit('grove'),comet:buildCircuit('comet'),trail:buildCircuit('trail'),grandprix:buildCircuit('grandprix'),forge:buildZenithTrack(buildCircuit('trail'),true),zenith:buildZenithTrack(buildCircuit('trail'))};
+const tracks:Record<CircuitId,CircuitTrack>={...Object.fromEntries(practiceCourseIds.map(id=>[id,buildCircuit(id)])) as Record<PracticeCourseId,CircuitTrack>,leaf:buildCircuit('leaf'),wind:buildCircuit('wind'),sun:buildCircuit('sun'),sprint:buildCircuit('sprint'),grove:buildCircuit('grove'),comet:buildCircuit('comet'),trail:buildCircuit('trail'),grandprix:buildCircuit('grandprix'),forge:buildZenithTrack(buildCircuit('trail'),true),zenith:buildZenithTrack(buildCircuit('trail'))};
 export const getCircuitTrack=(id:CircuitId='leaf')=>tracks[id];
 // 既存の計算・テストのデフォルトは入門コースのまま。
 export const {circuit,circuitLength,startDistance,laneOffset,sampleCircuit,laneChange,sampleLanePath}=tracks.leaf;

@@ -1,3 +1,4 @@
+import {isPracticeCourse} from '../data/practiceCourses';
 import {isSpecialtyShop} from '../data/specialtyParts';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -12,6 +13,7 @@ test('各店にレース相談の整備役がいて、その店で買える具�
   for(const shopId of Object.keys(modelShops) as ShopId[]){
     assert.ok(shopCast(shopId).visitors.some(v=>v.kind==='mechanic'&&v.name==='佐伯 匠'));
     const text=raceAdvice({shopId,equipment:starterEquipment,inventory:createStarterInventory(),money:0,motorSeconds:0,batterySeconds:0,review:null});
+    if(isPracticeCourse(shopId)){assert.equal(text,modelShops[shopId].welcome);continue;}
     if(isSpecialtyShop(shopId)){assert.equal(text,modelShops[shopId].welcome);assert.match(text,/レースは模型店や公式会場/);continue;}
     if(shopId==='hoshikuzu'){assert.match(text,/タイムアタック/);assert.match(text,/星皇/);continue;}
     if(shopId==='atelier'){assert.match(text,/販売専門店/);assert.match(text,/500000円/);assert.doesNotMatch(text,/あと約60秒ならそう/);continue;}

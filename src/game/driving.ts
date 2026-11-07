@@ -76,11 +76,11 @@ export function stepDriving(state: DrivingState, performance: Performance, laneO
   const brakeResistance=path&&!path.loopRadius?performance.mass*9.81*performance.brake*Math.max(0,Math.min(1,(path.pitch-.035)/.16)):0;
   const resistance=performance.mass*9.81*0.025+(performance.drag+road.rollingDrag)*state.speed**2+road.resistance+cornerResistance+brakeResistance;
   const wheelResistance=state.speed**2*sampleCircuit(startDistance+state.distance).curvature*.002*performance.cornerDrag;
-  const slope=track.obstacles&&!airborne&&path?performance.mass*9.81*Math.sin(path.pitch):0;
+  const slope=(track.obstacles||track.hasHills)&&!airborne&&path?performance.mass*9.81*Math.sin(path.pitch):0;
   let speed=Math.max(0,state.speed+(force-(airborne?performance.drag*state.speed**2*.25:resistance+wheelResistance)-slope)/performance.mass*FIXED_STEP);
   // 平坦なダートは、駆動力が残っていれば空転しながら超低速で前進する。
   // 舗装・ジャンプ・縦ループには適用せず、電池切れは上で停止する。
-  if(track.circuit.surface.roughness>0&&!track.obstacles&&!airborne&&force>0&&road.traction>0){
+  if(track.circuit.surface.roughness>0&&!track.obstacles&&!track.hasHills&&!airborne&&force>0&&road.traction>0){
     const crawlSpeed=DIRT_CRAWL_SPEED*charge*motor;
     speed=Math.max(speed,Math.min(crawlSpeed,state.speed+.25*charge*FIXED_STEP));
   }

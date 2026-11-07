@@ -23,6 +23,6 @@ export const npcAppearances={
 export type NpcAppearanceId=keyof typeof npcAppearances;
 export function npcAppearanceId(name:string):NpcAppearanceId|null{
  const normalized=name.replace(/[\s　]/g,'');
- const names:Record<string,NpcAppearanceId>={'鉄田剛':'hinataOwner','風間翔':'aozoraOwner','山野茂':'wakabaOwner','小坂歩':'ren','白石芽衣':'guide','土屋大地':'offroader','水野澪':'momo','久保悠':'sou','望月律':'rival','小野寺春夫':'owner','青井晴彦':'aozoraOwner','日向誠二':'hinataOwner','若松修一':'wakabaOwner','夕凪慎吾':'yuunagiOwner','暁堂司':'akatsukiOwner','星野玄一':'atelierOwner','大会受付係':'venueStaff','早瀬凪':'rival','三浦結衣':'guide','佐伯匠':'mechanic','高橋蓮':'ren','石川蒼':'sou','桃香':'momo','森野陸':'offroader'};
+ const names:Record<string,NpcAppearanceId>={'コース係':'venueStaff','鉄田剛':'hinataOwner','風間翔':'aozoraOwner','山野茂':'wakabaOwner','小坂歩':'ren','白石芽衣':'guide','土屋大地':'offroader','水野澪':'momo','久保悠':'sou','望月律':'rival','小野寺春夫':'owner','青井晴彦':'aozoraOwner','日向誠二':'hinataOwner','若松修一':'wakabaOwner','夕凪慎吾':'yuunagiOwner','暁堂司':'akatsukiOwner','星野玄一':'atelierOwner','大会受付係':'venueStaff','早瀬凪':'rival','三浦結衣':'guide','佐伯匠':'mechanic','高橋蓮':'ren','石川蒼':'sou','桃香':'momo','森野陸':'offroader'};
  return Object.entries(names).find(([key])=>normalized.includes(key))?.[1]??null;
 }
