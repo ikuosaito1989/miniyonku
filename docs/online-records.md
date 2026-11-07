@@ -14,15 +14,23 @@
 
 ## 接続
 
-ビルド環境に `VITE_MINIYONKU_API_URL=https://neglegere.com` を設定します。
-未設定ではオンライン投稿をせず、ローカルセーブと記録を継続します。
-Cloudflareの認証情報・D1の接続情報・共有秘密鍵はゲームへ含めません。
+ブラウザは同一オリジンのゲームWorker `/api/miniyonku/records` に接続します。
+Workerだけが `https://neglegere.com/api/auth/login` へ専用サービスアカウントでログインし、
+取得した15分JWTを使ってneglegereの記録APIを呼び出します。JWTは14分までメモリに保持し、401時は再取得します。
+`VITE_MINIYONKU_API_URL` は使用しません。旧設定が残っていてもブラウザからneglegereへ直接接続しません。
+本番ビルドはオンライン対応、Vite開発時は `VITE_MINIYONKU_ONLINE_ENABLED=true` で有効化できます。
+開発時も同一オリジンにWorker中継が必要です。`wrangler dev` はビルド済みアプリと中継を同時に提供します。
 
-voice-clone側の専用D1・API・許可オリジンの設定が必要です。
-設定手順はvoice-cloneリポジトリの`docs/miniyonku-records.md`を参照してください。
+Worker Secretsに `MINIYONKU_SERVICE_EMAIL` と `MINIYONKU_SERVICE_PASSWORD` を保存します。
+これらやJWTをViteの環境変数、ブラウザ、Gitへ渡してはいけません。
+Workerは固定の記録APIだけを中継し、ブラウザ指定のAuthorization・Cookie・プレイヤーIDは転送しません。
+POSTの `X-Miniyonku-Player-Token` からSHA-256の匿名IDを生成して、JWTと別のヘッダーでバックエンドに渡します。
+既存の端末トークンと公開IDは保持され、全プレイヤーがサービスアカウント1人分に統合されることはありません。
+
+voice-clone側の専用D1と専用ロールの導入手順は `docs/miniyonku-records.md` を参照してください。
 
 - `GET /api/miniyonku/records?circuitId=leaf&rulesVersion=2`：上位4件。
-- `POST /api/miniyonku/records`：端末単位の自己ベスト更新。
+- `POST /api/miniyonku/records`：匿名プレイヤー単位の自己ベスト更新。
 - デバイスの投稿トークンと未送信ベストは、ゲームセーブとは別のIndexedDB `tiny-drive-online`に保存します。
 - 送信に失敗した場合は再接続・再起動・「再送・ランキング更新」で再送します。コースごとに未送信の最速記録を保持します。
 - サイトデータ削除や別オリジン・別端末では別プレイヤーになります。端末トークンは自分の記録を更新するための情報なので共有しないでください。
@@ -37,3 +45,14 @@ voice-clone側の専用D1・API・許可オリジンの設定が必要です。
 - ChromiumでAPIレスポンスを模擬し、ランキング取得・表示名保存・上位4台のCPU対戦開始・記録画面への復帰を確認。390px幅で横方向のはみ出しなし、ページ例外なし。
 - IndexedDBの未送信キューで、オフライン時のベスト保持・再送成功時の削除・不正な保存応答を受けた場合の記録保持をブラウザで確認。
 - 実際のCloudflare D1への接続・本番APIへの投稿は、認証と接続設定後に確認が必要です。
+
+## 2026-11-07の認証切り替え状況
+
+- Cloudflareアカウント用APIトークンの認証成功。
+- 専用D1 `miniyonku` を作成しmigration適用済み（voice-clone側にbinding設定を追加）。
+- ゲームWorker `shiningscorpion` に専用ログイン情報をSecretsとして保存済み。
+- サービスアカウントは無効状態で作成。バックエンドの権限制限をデプロイ・確認してから有効化する。
+- 中継のJWT再取得・キャッシュ、匿名ID分離、Cookie遮断、本文サイズ・Origin・method制限を手動確認。
+- Workerを含む型チェック・ゲームビルド・Worker deploy dry-run・関連31テスト成功。
+- バックエンド全体のビルドは既存piper-plusの `../../assets/` 解決エラーで失敗。
+  そのため新コードの本番公開、アカウント有効化、実サービス間の疎通確認は未実施。

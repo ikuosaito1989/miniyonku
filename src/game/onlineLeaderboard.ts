@@ -4,8 +4,9 @@ import {decodeOnlineRecords, type OnlineRecord, type OnlineSubmission} from './o
 import type {CircuitId} from '../data/circuit';
 import {story} from '../data/story';
 
-const apiBase=(import.meta.env.VITE_MINIYONKU_API_URL as string|undefined)?.replace(/\/$/,'');
-export const useOnlineStatus=create<{message:string}>(()=>({message:apiBase?'オンライン記録を利用できます。':'オンライン記録は接続準備中です。'}));
+const apiBase='';
+const onlineEnabled=import.meta.env.PROD || import.meta.env.VITE_MINIYONKU_ONLINE_ENABLED==='true';
+export const useOnlineStatus=create<{message:string}>(()=>({message:onlineEnabled?'オンライン記録を利用できます。':'オンライン記録は接続準備中です。'}));
 interface LocalState {token:string; displayName:string; pending:Record<string,OnlineSubmission>}
 function localState<T>(update:(state:LocalState)=>T):Promise<T>{
  return new Promise((resolve,reject)=>{
@@ -27,20 +28,20 @@ export async function setOnlineDisplayName(value:string){
  await localState(s=>{s.displayName=name;});
 }
 export async function loadLeaderboard(circuitId:CircuitId):Promise<OnlineRecord[]>{
- if(!apiBase)throw new Error('オンライン記録は接続準備中です。');
+ if(!onlineEnabled)throw new Error('オンライン記録は接続準備中です。');
  const response=await fetch(`${apiBase}/api/miniyonku/records?circuitId=${encodeURIComponent(circuitId)}&rulesVersion=${raceRulesVersion}`,{signal:AbortSignal.timeout(10000),credentials:'omit'});
  if(!response.ok)throw new Error('ランキングを取得できません。時間をおいて再試行してください。');
  return decodeOnlineRecords(await response.json(),circuitId);
 }
 let sending:Promise<void>|null=null;
 export function syncOnlineRecords():Promise<void>{
- if(!apiBase)return Promise.resolve();
+ if(!onlineEnabled)return Promise.resolve();
  if(sending)return sending;
  sending=(async()=>{
   const {token,pending}=await localState(s=>structuredClone(s));
   for(const [key,record] of Object.entries(pending)){
    if(record.rulesVersion!==raceRulesVersion){await localState(s=>{delete s.pending[key];});continue;}
-   const response=await fetch(`${apiBase}/api/miniyonku/records`,{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify(record),signal:AbortSignal.timeout(10000),credentials:'omit'});
+   const response=await fetch(`${apiBase}/api/miniyonku/records`,{method:'POST',headers:{'Content-Type':'application/json','X-Miniyonku-Player-Token':token},body:JSON.stringify(record),signal:AbortSignal.timeout(10000),credentials:'omit'});
    if(!response.ok)throw new Error('オンライン記録を送信できません。未送信のベストは端末に保存しています。');
    const payload=await response.json();
    const [saved]=decodeOnlineRecords({records:[payload.record]},record.circuitId);
@@ -54,7 +55,7 @@ export function syncOnlineRecords():Promise<void>{
  return sending;
 }
 export async function queueOnlineRecord(record:OnlineSubmission){
- if(!apiBase)return;
+ if(!onlineEnabled)return;
  try{
   await localState(s=>{const key=`${record.rulesVersion}:${record.circuitId}`,old=s.pending[key];if(!old||record.time<old.time)s.pending[key]={...record,displayName:s.displayName};});
   await syncOnlineRecords();
