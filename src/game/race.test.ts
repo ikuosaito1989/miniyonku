@@ -147,3 +147,33 @@ test('フライング加算を最終順位に反映し、再レースで加算�
   assert.equal(launchPlayer(race),race);
   const reset=createRaceState(starterEquipment);assert.equal(reset.falseStartPenalty,0);assert.equal(reset.playerStartOffset,null);
 });
+
+test('オンラインCPUは保存装備・開始時の消耗をそのまま使い、通常CPUの補正を掛けない',async()=>{
+ const {withOnlineRivals}=await import('./onlineRace');
+ const {raceRulesVersion}=await import('./timeRecords');
+ const condition={motorSeconds:75,batterySeconds:30};
+ const record={circuitId:'leaf' as const,rulesVersion:raceRulesVersion,time:30,equipment:{...starterEquipment},condition,displayName:'記録プレイヤー',playerId:'a'.repeat(64),recordedAt:new Date(0).toISOString()};
+ const base=createRaceState(starterEquipment,123,undefined,'time-attack');
+ const race=withOnlineRivals(base,[record]);
+ assert.equal(race.racers.length,2);assert.equal(new Set(race.racers.map(r=>r.lane)).size,2);
+ assert.deepEqual(race.racers[1].performance,machinePerformance(starterEquipment,condition));
+ assert.equal(race.racers[1].name,record.displayName);assert.equal(race.racers[1].driving.status,'ready');
+ assert.equal(base.racers.length,1);assert.notEqual(race.racers[1].equipment,record.equipment);
+});
+
+test('オンライン投稿は自分の完走だけ。公式タイムと開始時の装備・コンディションを保存する',async()=>{
+ const {raceSubmission,decodeOnlineRecords}=await import('./onlineRecords');
+ const race=createRaceState(starterEquipment);
+ assert.equal(raceSubmission(race,'自分'),null);
+ const player=race.racers[0];race.phase='finished';player.driving={...player.driving,status:'finished',time:25};race.playerStartOffset=.25;race.falseStartPenalty=.5;
+ const submission=raceSubmission(race,'自分')!;
+ race.phase='running';assert.equal(raceSubmission(race,'自分')?.time,25.75);race.phase='finished';
+ assert.equal(submission.time,25.75);assert.deepEqual(submission.equipment,starterEquipment);
+ assert.deepEqual(submission.condition,{motorSeconds:0,batterySeconds:0});
+ const raw={...submission,playerId:'b'.repeat(64),recordedAt:new Date(0).toISOString()};
+ assert.equal(decodeOnlineRecords({records:[raw]},'leaf').length,1);
+ assert.throws(()=>decodeOnlineRecords({records:[{...raw,circuitId:'wind'}]},'leaf'));
+ assert.throws(()=>decodeOnlineRecords({records:[{...raw,equipment:{...raw.equipment,motor:'motor-sovereign'}}]},'leaf'));
+ player.driving.status='out';assert.equal(raceSubmission(race,'自分'),null);
+ player.driving.status='finished';player.equipment={...starterEquipment,motor:'motor-sovereign'};assert.equal(raceSubmission(race,'自分'),null);
+});

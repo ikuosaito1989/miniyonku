@@ -1,3 +1,4 @@
+import type {OnlineChallenge, OnlineRecord} from './onlineRecords';
 import {isPracticeCourse,type PracticeCourseId} from '../data/practiceCourses';
 import type {CircuitId} from '../data/circuit';
 import {towaEscortLocation} from './towaEscort';
@@ -34,6 +35,7 @@ import { isSalesShop, canEnterShop, currentShop, type ShopId, type WorldLocation
 import { challenger, challengerInvitation } from '../data/challenger';
 export type DialogueStage='none'|'legend-intro'|'legend-invite'|'legend-debrief'|'villain-intro'|'villain-win'|'villain-loss'|'doctor-gift'|'official-invite';
 export interface GameState extends Wallet {
+  onlineChallenge:OnlineChallenge|null;startOnlineTrial:(circuitId:CircuitId,records:OnlineRecord[])=>void;
   adviceThinking:boolean;bodyPaint:number|null;setBodyPaint:(color:number|null)=>void;tutorialStage:TutorialStage;tutorialReturn:SavedGame|null;retryCheckpoint:SavedGame|null;retryFromSave:()=>void;
   startTutorial:(practice?:boolean)=>void;resumeTutorial:()=>void;inspectTutorial:(slot:EquipmentSlot)=>void;openTutorialShop:()=>void;finishTutorial:()=>void;
   podiumPending:boolean;
@@ -145,6 +147,8 @@ export const useGame = create<GameState>((set) => ({
     return {tutorialStage:s.tutorialStage==='pending'?'done':s.tutorialStage,openingStep:OPENING_END,openingActive:false,location:'komorebi',lastShop:'komorebi',townReturnVenue:null,overlay:showSetting?'setting':null,shopAfter:false,nearby:'',notice:''};
   }),
   legacyTimeHistory:{},timeBoardCircuit:null,officialReplayActive:false,
+  onlineChallenge:null,
+  startOnlineTrial:(circuitId,records)=>set(s=>s.overlay!=='time-board'||!records.length||records.length>4?{}:{onlineChallenge:{circuitId,records:structuredClone(records)},overlay:'race',officialChallengeActive:false,officialReplayActive:false,legendChallengeActive:false,villainChallengeActive:false,raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,notice:''}),
   timeHistory:{},openTimeBoard:(id)=>set(s=>s.location==='town'&&!isPracticeCourse(id??'')||isSalesShop(s.location)||s.overlay==='race'||(s.overlay==='escort'||s.overlay==='towa-escort'||s.overlay==='podium')||s.overlay==='arrival'?s:{overlay:'time-board',shopAfter:false,timeBoardCircuit:id??null}),
   yuunagiUnlocked:false,yuunagiBestTime:null,finalQualified:false,
   wakabaCup:emptyCup(),technicalCup:emptyCup(),finalCup:emptyCup(),grandprixCleared:false,zenithCup:emptyCup(),zenithCleared:false,akatsukiRaceCount:0,zenithQualified:false,gameOver:false,wakabaUnlocked:false,thirdOfficialQualified:false,
@@ -238,6 +242,7 @@ export const useGame = create<GameState>((set) => ({
       const id=player.equipment[slot];units[id]=(units[id]??[]).map(u=>u.id===s.selectedUnits[slot]?{...u,seconds:u.seconds+delta}:u);
     }
     const reward=race.phase==='finished'&&s.settledAttempt!==attempt;
+    if(s.onlineChallenge)return !delta&&!reward?s:{units,usageSeconds:Math.max(s.usageSeconds,seconds),...(reward?{timeHistory:recordRaceTimes(s.timeHistory,race,attempt),settledAttempt:attempt,lastPrize:0}:{})};
     const prize=reward&&!s.legendChallengeActive?racePrize(race):0;
     const firstWin=reward&&s.location==='komorebi'&&!s.legendChallengeActive&&player?.driving.status==='finished'&&rankRacers(race)[0]?.id==='player'&&!s.unlockedRaces.includes(nextShopRace.id);
     const completedLegend=reward&&s.legendChallengeActive&&(player?.driving.status==='finished'||player?.driving.stopReason==='lapped')&&rankRacers(race)[0]?.id.startsWith('legend-')===true;
@@ -276,6 +281,7 @@ export const useGame = create<GameState>((set) => ({
   talk: (speaker, dialogue, shopAfter = false) => set({ overlay:'dialogue',speaker,dialogue,shopAfter,dialogueStage:'none',adviceThinking:false }),
   advance: () => set(s => s.dialogueStage==='legend-intro'?{overlay:'dialogue',speaker:'火野 岳',dialogue:'優勝したばかりで悪いが、僕たちとも走ってくれないか？ 速さの世界を見せてあげるよ。',dialogueStage:'legend-invite'}:{ overlay: s.shopAfter ? 'shop' : null, shopAfter:false,notice:'',dialogueStage:'none' }),
   close: () => set(s=>{
+    if(s.overlay==='race'&&s.onlineChallenge)return {overlay:'time-board',onlineChallenge:null,notice:''};
     if(s.openingActive)return s;
     if(s.overlay==='game-over')return s;
     if(s.overlay==='race'&&s.outdoorCourse)return {overlay:null,outdoorCourse:null,shopAfter:false,notice:''};

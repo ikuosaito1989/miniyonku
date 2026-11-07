@@ -134,3 +134,19 @@ test('先頭がゴールしたら砂で停止中・未発進でも即座に終�
   assert.equal(rankRacers(result)[0].id,race.racers[1].id);assert.equal(racePrize(result),0);assert.equal(completeRaceAfterPlayerFinish(result),result);
  }
 });
+
+test('オンライン対戦は完走しても賞金・進行・熟練度を変更せず、消耗と記録だけを保存する',()=>{
+ const original=useGame.getState();
+ try{
+  useGame.setState({...useGame.getInitialState(),location:'komorebi',overlay:'time-board'});
+  const record={circuitId:'leaf' as const,rulesVersion:2,time:30,equipment:{...starterEquipment},condition:{motorSeconds:60,batterySeconds:0},displayName:'記録',playerId:'a'.repeat(64),recordedAt:new Date(0).toISOString()};
+  useGame.getState().startOnlineTrial('leaf',[record]);
+  const before=useGame.getState();
+  const race=createRaceState(starterEquipment,123,undefined,'time-attack');race.phase='finished';race.playerStartOffset=0;race.racers[0].driving={...race.racers[0].driving,status:'finished',time:30};
+  useGame.getState().settleRace(before.raceAttempt,race);
+  const after=useGame.getState();assert.equal(after.money,before.money);assert.equal(after.proficiencyPoints,before.proficiencyPoints);assert.deepEqual(after.unlockedRaces,before.unlockedRaces);assert.equal(after.lastPrize,0);assert.equal(after.qualificationNotice,false);
+  assert.equal(after.units['motor-stock'][0].seconds,30);assert.equal(after.timeHistory.leaf?.[0].time,30);
+  useGame.getState().settleRace(before.raceAttempt,race);assert.equal(useGame.getState().units['motor-stock'][0].seconds,30);
+  useGame.getState().close();assert.equal(useGame.getState().overlay,'time-board');assert.equal(useGame.getState().onlineChallenge,null);
+ }finally{useGame.setState(original);}
+});
