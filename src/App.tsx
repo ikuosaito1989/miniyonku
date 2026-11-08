@@ -1,3 +1,4 @@
+import {setOnlineDisplayName} from './game/onlineLeaderboard';
 import {RaceOpponentChoice} from './RaceOpponentChoice';
 import {Library} from './Library';
 import {PodiumCeremony} from './PodiumCeremony';
@@ -36,6 +37,14 @@ const TrialView=lazy(()=>import('./TrialView'));
 export function App(){
   const game=useGame();
   const [started,setStarted]=useState(false);
+  useEffect(()=>{
+    if(!started)return;
+    let visible=document.visibilityState==='visible',last=performance.now();
+    const update=()=>{const now=performance.now(),seconds=visible?Math.max(0,(now-last)/1000):0;last=now;if(seconds>0)useGame.setState(s=>({playSeconds:s.playSeconds+seconds}));};
+    const visibility=()=>{update();visible=document.visibilityState==='visible';};
+    const timer=window.setInterval(update,10000);document.addEventListener('visibilitychange',visibility);window.addEventListener('pagehide',update);
+    return()=>{update();window.clearInterval(timer);document.removeEventListener('visibilitychange',visibility);window.removeEventListener('pagehide',update);};
+  },[started]);
   useEffect(()=>{if(started&&!game.openingActive&&game.openingStep<OPENING_END)game.startOpening();},[started,game.openingActive,game.openingStep,game.startOpening]);
   useEffect(()=>{if(started)return keepScreenAwake();},[started]);
   const shop=currentShop(game.location);
@@ -74,7 +83,7 @@ export function App(){
   },[]);
   return <main>
     <GameAudio/>
-    {!started ? <TitleScreen onStart={()=>{useGame.getState().startOpening();useGame.getState().resumeTutorial();useGame.getState().resumeKoyaEscort();useGame.getState().resumeTowaEscort();setStarted(true);}}/> : <section className="game-shell" aria-label="ゲーム画面">
+    {!started ? <TitleScreen needsName={!game.playerName} onName={name=>{useGame.getState().setPlayerName(name);void setOnlineDisplayName(name).catch(()=>{});}} onStart={()=>{useGame.getState().startOpening();useGame.getState().resumeTutorial();useGame.getState().resumeKoyaEscort();useGame.getState().resumeTowaEscort();setStarted(true);}}/> : <section className="game-shell" aria-label="ゲーム画面">
       <div className="stage"><ShopWorld/>
         {game.overlay===null&&<div className="world-toolbar"><button className="game-settings-open" onClick={game.openSettings}>設定</button>{game.location==='library'?<div className="library-room-guide"><div><strong>緑川町立図書館</strong><span>{game.nearby||'本棚をタップして近づくと読めます'}</span></div><button onClick={()=>game.openLibrary()}>全蔵書</button></div>:!tutorialActive(game.tutorialStage)&&<MissionGuide/>}<AudioControls floating/></div>}
         <SaveWarning/>

@@ -15,7 +15,7 @@ export function recordRaceTimes(history:TimeHistory,race:RaceState,attempt:numbe
  const entries=race.racers.filter(r=>r.driving.status==='finished'&&isRecordEquipmentEligible(r.equipment)&&Number.isFinite(officialTime(race,r))&&officialTime(race,r)>0).map(r=>({id:`${recordedAt}:${race.seed}:${attempt}:${r.id}`,racerId:r.id,racerName:r.name,machineName:bodyDesign(r.equipment.body).name,time:officialTime(race,r),recordedAt,rulesVersion:raceRulesVersion,equipment:{...r.equipment}}));
  if(!entries.length)return history;
  const byId=new Map([...(history[race.circuitId]??[]).filter(r=>r.rulesVersion===raceRulesVersion&&r.equipment&&isRecordEquipmentEligible(r.equipment)),...entries].map(record=>[record.id,record]));
- const top=[...byId.values()].sort((a,b)=>a.time-b.time||a.recordedAt-b.recordedAt||a.id.localeCompare(b.id)).slice(0,3);
+ const top=[...byId.values()].sort((a,b)=>a.time-b.time||a.recordedAt-b.recordedAt||a.id.localeCompare(b.id)).slice(0,5);
  return {...history,[race.circuitId]:top};
 }
 export function decodeTimeHistory(value:unknown):TimeHistory{
@@ -24,7 +24,7 @@ export function decodeTimeHistory(value:unknown):TimeHistory{
  if(!value||typeof value!=='object'||Array.isArray(value))return fail();
  const result:TimeHistory={};
  for(const [key,raw] of Object.entries(value)){
-  if(!circuits.includes(key as CircuitId)||!Array.isArray(raw)||raw.length>3)return fail();
+  if(!circuits.includes(key as CircuitId)||!Array.isArray(raw)||raw.length>5)return fail();
   const ids=new Set<string>();const entries:TimeRecord[]=raw.map(value=>{
    if(!value||typeof value!=='object'||Array.isArray(value))return fail();const r=value as Record<string,unknown>;
    for(const key of ['id','racerId','racerName','machineName'])if(typeof r[key]!=='string'||!r[key]||(r[key] as string).length>200)return fail();
@@ -43,7 +43,7 @@ export function migrateTimeHistory(history:TimeHistory,old:TimeHistory={}){
  const clean:TimeHistory={},legacy:TimeHistory={...old};
  for(const [id,records] of Object.entries(history)){
   const circuit=id as CircuitId;clean[circuit]=records.filter(r=>r.rulesVersion===raceRulesVersion&&r.equipment&&isRecordEquipmentEligible(r.equipment));
-  const unknown=records.filter(r=>r.rulesVersion!==raceRulesVersion||!r.equipment);if(unknown.length)legacy[circuit]=[...new Map([...(legacy[circuit]??[]),...unknown].map(r=>[r.id,r])).values()].sort((a,b)=>a.time-b.time).slice(0,3);
+  const unknown=records.filter(r=>r.rulesVersion!==raceRulesVersion||!r.equipment);if(unknown.length)legacy[circuit]=[...new Map([...(legacy[circuit]??[]),...unknown].map(r=>[r.id,r])).values()].sort((a,b)=>a.time-b.time).slice(0,5);
  }
  return {timeHistory:clean,legacyTimeHistory:legacy};
 }

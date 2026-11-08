@@ -1,3 +1,4 @@
+import {story} from './data/story';
 import mechanicManPortrait from './assets/portraits/mechanic-man-pop.webp';
 import {NpcPortrait} from './NpcPortrait';
 import {npcAppearanceId,npcAppearances,type NpcAppearanceId} from './data/npcAppearance';
@@ -18,7 +19,7 @@ import './dialogue.css';
 
 const portraits:Record<DialoguePersonId,string>={ren:mechanic,sou:mechanic,momo:guide,akatsukiOwner:owner,senior:rival,yuunagiOwner:owner,atelierOwner:owner,wakabaOwner:owner,venueStaff:owner,offroader:mechanic,owner,aozoraOwner:owner,hinataOwner:owner,villain:rival,rival,guide,mechanic,legendRei:rei,legendGaku:gaku,legendKoya:koya,doctor:owner};
 export function DialogueView(){
-  const {speaker,dialogue,adviceThinking,shopAfter,advance,close,dialogueStage,zenithCleared,startLegendChallenge,startVillainChallenge,startOfficialRace,openSetting}=useGame();
+  const {playerName,speaker,dialogue,adviceThinking,shopAfter,advance,close,dialogueStage,zenithCleared,startLegendChallenge,startVillainChallenge,startOfficialRace,openSetting}=useGame();
   const [selected,setSelected]=useState(0);
   const panel=useRef<HTMLElement>(null),buttons=useRef<Array<HTMLButtonElement|null>>([]);
   const id=dialoguePerson(speaker),person=id?dialoguePeople[id]:null,appearance=npcAppearanceId(speaker);
@@ -54,7 +55,7 @@ export function DialogueView(){
       </div>
       <div className="conversation-body">
         <header><div>{person&&<p className="conversation-role">{person.role}</p>}<h2 id="conversation-speaker">{person?.name??speaker}</h2></div><button className="conversation-close" onClick={close} aria-label="会話を閉じる">閉じる</button></header>
-        <p className="conversation-message" id="conversation-message">{adviceThinking&&<span className="advice-thinking" role="status">匠がセッティングを考え中<span className="advice-thinking-dots" aria-hidden="true"><i/><i/><i/></span></span>}{dialogueStage==='villain-intro'&&<span className="challenge-letter"><strong>挑戦状</strong><span>黒岩 豪が、机に挑戦状を叩きつけた！</span><small>あおぞら模型店の優勝者へ ─ 勝てば、ひなた模型店への紹介状を渡す。</small></span>}{dialogue}</p>
+        <p className="conversation-message" id="conversation-message">{adviceThinking&&<span className="advice-thinking" role="status">匠がセッティングを考え中<span className="advice-thinking-dots" aria-hidden="true"><i/><i/><i/></span></span>}{dialogueStage==='villain-intro'&&<span className="challenge-letter"><strong>挑戦状</strong><span>黒岩 豪が、机に挑戦状を叩きつけた！</span><small>あおぞら模型店の優勝者へ ─ 勝てば、ひなた模型店への紹介状を渡す。</small></span>}{dialogue.replaceAll('朝倉湊くん',`${playerName||story.player}さん`).replaceAll('朝倉 湊',playerName||story.player).replaceAll('湊くん',`${playerName||story.player}さん`)}</p>
         <nav className="conversation-choices" aria-label="返答を選ぶ">{choices.map((choice,index)=><button key={choice.action} ref={node=>{buttons.current[index]=node;}} className={selected===index?'is-selected':''} onFocus={()=>setSelected(index)} onClick={()=>choose(index)}><span aria-hidden="true">{selected===index?'▶':'　'}</span>{choice.label}</button>)}</nav>
       </div>
     </section>

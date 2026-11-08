@@ -62,9 +62,9 @@ export class TrialRenderer {
   private resetIntroClock=()=>{this.introLastTime=0;};
   private reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  constructor(private host: HTMLElement, private equipment: Equipment, private report: (state: RaceState) => void, private reportFinish:(state:FinishPresentation)=>void, private condition:MachineCondition=freshCondition, private seed=0x5eed,private challenge:RaceChallenge=false,private circuitId:CircuitId='leaf',private reportIntro:(intro:RaceIntro)=>void=()=>{},private bodyPaint:number|null=null,onlineRecords:OnlineRecord[]|null=null,mobRace=false) {
+  constructor(private host: HTMLElement, private equipment: Equipment, private report: (state: RaceState) => void, private reportFinish:(state:FinishPresentation)=>void, private condition:MachineCondition=freshCondition, private seed=0x5eed,private challenge:RaceChallenge=false,private circuitId:CircuitId='leaf',private reportIntro:(intro:RaceIntro)=>void=()=>{},private bodyPaint:number|null=null,onlineRecords:OnlineRecord[]|null=null,mobRace=false,private playerName?:string) {
     this.track=getCircuitTrack(circuitId);
-    this.state=createRaceState(equipment,seed,condition,challenge,circuitId,this.bodyPaint);
+    this.state=createRaceState(equipment,seed,condition,challenge,circuitId,this.bodyPaint,this.playerName);
     if(onlineRecords)this.state=withOnlineRivals(this.state,onlineRecords);
     else if(mobRace)this.state=withMobRivals(this.state);
     this.renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});
@@ -126,7 +126,7 @@ export class TrialRenderer {
   restart(){
     this.lappedAges.clear();
     for(const car of this.cars.values())delete car.userData.motionDistance;
-    this.state=createRaceState(this.equipment,this.seed,this.condition,this.challenge,this.circuitId,this.bodyPaint);this.accumulator=0;this.lastTime=0;this.lastReport=-1;this.cameraMode='broadcast';this.director.reset();this.startShotBlend=1;
+    this.state=createRaceState(this.equipment,this.seed,this.condition,this.challenge,this.circuitId,this.bodyPaint,this.playerName);this.accumulator=0;this.lastTime=0;this.lastReport=-1;this.cameraMode='broadcast';this.director.reset();this.startShotBlend=1;
     this.intro=raceIntroAt(0);this.introLastTime=0;this.reportIntro(this.intro);
     this.finishPresentation=createFinishPresentation();this.reportFinish(this.finishPresentation);
     this.report({...this.state});

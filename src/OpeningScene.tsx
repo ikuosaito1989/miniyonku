@@ -1,3 +1,4 @@
+import {story} from './data/story';
 import {useEffect,useRef} from 'react';
 import {useGame} from './game/store';
 import {openingScenes,openingIndex,openingIsWalk,OPENING_END} from './game/opening';
@@ -19,7 +20,7 @@ export function OpeningScene(){
   <header className="opening-chapter"><span>はじまりの一歩</span><button onClick={()=>state.finishOpening(false)}>導入を省略</button></header>
   {walking?<div className="opening-walk-status" role="status"><span className="opening-footsteps" aria-hidden="true">● ● ●</span><span>{scene.text}</span><button ref={next} onClick={proceed}>歩く場面を省略</button></div>:<section className="opening-dialogue" key={step} aria-labelledby="opening-speaker" aria-describedby="opening-message">
    <div className="opening-face">{scene.portrait==='player'?<PlayerPortrait/>:<NpcPortrait id={scene.portrait}/>}</div>
-   <div className="opening-words"><h2 id="opening-speaker">{scene.speaker}</h2><p id="opening-message">{scene.text}</p><nav>
+   <div className="opening-words"><h2 id="opening-speaker">{scene.speaker===story.player?(state.playerName||story.player):scene.speaker}</h2><p id="opening-message">{scene.text.replaceAll('湊くん',`${state.playerName||story.player}さん`)}</p><nav>
     <button ref={next} onClick={proceed}>{last?'実際にやってみよう':scene.next}<span aria-hidden="true"> ▸</span></button>
     {last&&<button className="opening-look-around" onClick={()=>state.finishOpening(false)}>{state.openingTour?'設定に戻る':'案内を省略して遊ぶ'}</button>}
    </nav></div>

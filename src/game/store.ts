@@ -38,6 +38,7 @@ import { isSalesShop, canEnterShop, currentShop, type ShopId, type WorldLocation
 import { challenger, challengerInvitation } from '../data/challenger';
 export type DialogueStage='none'|'legend-intro'|'legend-invite'|'legend-debrief'|'villain-intro'|'villain-win'|'villain-loss'|'doctor-gift'|'official-invite';
 export interface GameState extends Wallet {
+  playerName:string;playSeconds:number;setPlayerName:(name:string)=>void;
   raceChoiceCircuit:CircuitId|null;raceChoiceFromBoard:boolean;mobChallenge:CircuitId|null;openRaceChoice:(id:CircuitId)=>void;startMobTrial:(id:CircuitId)=>void;
   onlineChallenge:OnlineChallenge|null;startOnlineTrial:(circuitId:CircuitId,records:OnlineRecord[])=>void;
   adviceThinking:boolean;bodyPaint:number|null;setBodyPaint:(color:number|null)=>void;tutorialStage:TutorialStage;tutorialReturn:SavedGame|null;retryCheckpoint:SavedGame|null;retryFromSave:()=>void;
@@ -96,11 +97,12 @@ function outdoorRaceState(s:GameState,id:PracticeCourseId):Partial<GameState>{
  return {raceChoiceCircuit:null,raceChoiceFromBoard:false,mobChallenge:null,onlineChallenge:null,outdoorCourse:id,townReturnVenue:id,overlay:'race',officialChallengeActive:false,officialReplayActive:false,officialQualificationNotice:false,shopAfter:false,notice:'',legendChallengeActive:false,legendDebriefPending:false,villainChallengeActive:false,villainDebriefPending:false,raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,qualificationNotice:false};
 }
 export const useGame = create<GameState>((set) => ({
+  playerName:'',playSeconds:0,setPlayerName:name=>set({playerName:name.trim().slice(0,24)}),
   adviceThinking:false,bodyPaint:null,setBodyPaint:color=>set({bodyPaint:decodeBodyPaint(color)}),tutorialStage:'pending',tutorialReturn:null,retryCheckpoint:null,
   retryFromSave:()=>set(s=>{
     if(!s.gameOver)return {};
     const checkpoint=s.retryCheckpoint??legacyRetrySnapshot(snapshotGame(s));
-    return {...useGame.getInitialState(),...structuredClone(checkpoint),retryCheckpoint:structuredClone(checkpoint),overlay:null,gameOver:false,legendEventPending:checkpoint.unlockedRaces.includes(nextShopRace.id)&&!checkpoint.legendRaceCompleted,villainArrivalPending:checkpoint.aozoraWon&&!checkpoint.villainDefeated};
+    return {...useGame.getInitialState(),...structuredClone(checkpoint),playerName:s.playerName,playSeconds:s.playSeconds,retryCheckpoint:structuredClone(checkpoint),overlay:null,gameOver:false,legendEventPending:checkpoint.unlockedRaces.includes(nextShopRace.id)&&!checkpoint.legendRaceCompleted,villainArrivalPending:checkpoint.aozoraWon&&!checkpoint.villainDefeated};
   }),
   startTutorial:(practice=false)=>set(s=>tutorialStart(s,practice)),
   resumeTutorial:()=>set(s=>{
@@ -111,7 +113,7 @@ export const useGame = create<GameState>((set) => ({
   inspectTutorial:slot=>set(s=>s.tutorialStage==='motor'&&slot==='motor'?{tutorialStage:'tire'}:s.tutorialStage==='tire'&&slot==='tire'?{tutorialStage:'shop'}:{}),
   openTutorialShop:()=>set(s=>!tutorialActive(s.tutorialStage)?{}:(s.inventory[TUTORIAL_PART]??0)>0?{tutorialStage:'equip',overlay:'setting',location:'komorebi',lastShop:'komorebi'}:{tutorialStage:'purchase',overlay:'shop',location:'komorebi',lastShop:'komorebi',shopAfter:false}),
   finishTutorial:()=>set(s=>{
-    if(s.tutorialReturn)return {...s.tutorialReturn,tutorialReturn:null,openingActive:false,openingTour:null,overlay:'settings',notice:'',shopAfter:false,dialogueStage:'none',legendEventPending:s.tutorialReturn.unlockedRaces.includes(nextShopRace.id)&&!s.tutorialReturn.legendRaceCompleted,villainArrivalPending:s.tutorialReturn.aozoraWon&&!s.tutorialReturn.villainDefeated,arrivalEvent:null};
+    if(s.tutorialReturn)return {...s.tutorialReturn,playerName:s.playerName,playSeconds:s.playSeconds,tutorialReturn:null,openingActive:false,openingTour:null,overlay:'settings',notice:'',shopAfter:false,dialogueStage:'none',legendEventPending:s.tutorialReturn.unlockedRaces.includes(nextShopRace.id)&&!s.tutorialReturn.legendRaceCompleted,villainArrivalPending:s.tutorialReturn.aozoraWon&&!s.tutorialReturn.villainDefeated,arrivalEvent:null};
     return {tutorialStage:'done',overlay:null,shopAfter:false,notice:''};
   }),
   podiumPending:false,
@@ -329,7 +331,7 @@ export const useGame = create<GameState>((set) => ({
 
 function tutorialStart(state:GameState,practice:boolean):Partial<GameState>{
  if(tutorialActive(state.tutorialStage))return {};
- if(practice){const baseline=snapshotGame(state);return {...useGame.getInitialState(),openingStep:OPENING_END,openingActive:false,openingTour:null,tutorialReturn:baseline,retryCheckpoint:state.retryCheckpoint,tutorialStage:'motor',location:'komorebi',lastShop:'komorebi',overlay:'setting'};}
+ if(practice){const baseline=snapshotGame(state);return {...useGame.getInitialState(),playerName:state.playerName,playSeconds:state.playSeconds,openingStep:OPENING_END,openingActive:false,openingTour:null,tutorialReturn:baseline,retryCheckpoint:state.retryCheckpoint,tutorialStage:'motor',location:'komorebi',lastShop:'komorebi',overlay:'setting'};}
  return {tutorialStage:'motor',openingActive:false,openingTour:null,location:'komorebi',lastShop:'komorebi',overlay:'setting',shopAfter:false};
 }
 

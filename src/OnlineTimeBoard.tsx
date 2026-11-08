@@ -17,7 +17,7 @@ export function OnlineTimeBoard({circuitId}:{circuitId:CircuitId}){
   void onlineDisplayName().then(value=>{if(active)setName(value);}).catch(()=>{if(active)setError('投稿用の端末情報を保存できません。');});
   return()=>{active=false;};
  },[circuitId,revision]);
- async function saveName(){try{await setOnlineDisplayName(name);setError('');}catch(error){setError(error instanceof Error?error.message:'表示名を保存できません。');}}
+ async function saveName(){try{await setOnlineDisplayName(name);useGame.getState().setPlayerName(name);setError('');}catch(error){setError(error instanceof Error?error.message:'表示名を保存できません。');}}
  return <section className="online-time-board" aria-labelledby="online-record-title">
   <h3 id="online-record-title">オンライン タイムアタック TOP 5</h3>
   <p>全プレイヤーのコース別上位5人です。上位5位に入る自己ベストだけを登録します。公開されるのは表示名・タイム・装備・走行開始時の状態です。ゲームのセーブはこのブラウザに保存します。</p>
@@ -32,7 +32,7 @@ export function OnlineTimeBoard({circuitId}:{circuitId:CircuitId}){
   </li>)}</ol>
   {records.map(record=><details key={record.playerId}><summary>{record.displayName}の装備・開始時の状態</summary><dl>{Object.entries(equipmentSlots).map(([slot,meta])=><div key={slot}><dt>{meta.label}</dt><dd>{parts.find(p=>p.id===record.equipment[slot as keyof typeof equipmentSlots])?.name}</dd></div>)}</dl><p>モーター使用 {record.condition.motorSeconds.toFixed(1)}秒 / 電池使用 {record.condition.batterySeconds.toFixed(1)}秒</p></details>)}
   <button disabled={!unlocked||loading||!records.length} onClick={()=>start(circuitId,records.slice(0,4))}>上位4人の装備を使うCPUとレース</button>
-  {unlocked?<button onClick={()=>choose(circuitId)}>対戦相手を選ぶ（モブ／記録保持者）</button>:<p className="record-opponent-lock">このストーリーコースの記録保持者対戦は、天頂決戦をクリアすると解放されます。</p>}
+  {unlocked?<button onClick={()=>choose(circuitId)}>対戦相手を選ぶ（CPU／記録保持者）</button>:<p className="record-opponent-lock">このストーリーコースの記録保持者対戦は、天頂決戦をクリアすると解放されます。</p>}
   <p>装備と開始時の状態を使ったCPUとの対戦です。記録時の走行を再現するゴーストではなく、発進やレーンによってタイムが変わります。賞金・大会進行への影響はありません。完走すると通常どおり電池・モーターを消耗します。</p>
  </section>;
 }

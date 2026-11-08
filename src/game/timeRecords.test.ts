@@ -21,12 +21,12 @@ test('完走のみを記録し、主人公の反応時間と早出ペナルテ�
  const history=recordRaceTimes({},penalized,1,1000);assert.equal(history.leaf!.length,1);assert.equal(history.leaf![0].time,54.75);
  assert.equal(formatRecordTime(65.129),'01:05.12');assert.equal(formatRecordTime(59.999,true),'01:00.00');
 });
-test('過去レースを含め短い公式タイム3件を保存し、コースを分ける',()=>{
+test('過去レースを含め短い公式タイム5件を保存し、コースを分ける',()=>{
  const race=finishedRace(),first=recordRaceTimes({},race,1,1000);
- assert.deepEqual(first.leaf!.map(r=>r.time),[50,51,52]);assert.equal(formatRecordTime(first.leaf![0].time),'00:50.00');
+ assert.deepEqual(first.leaf!.map(r=>r.time),[50,51,52,53,54]);assert.equal(formatRecordTime(first.leaf![0].time),'00:50.00');
  const next={...race,racers:race.racers.map(r=>({...r,driving:{...r.driving,time:50.5}}))};
- const second=recordRaceTimes(first,next,2,2000);assert.deepEqual(second.leaf!.map(r=>r.time),[50,50.5,50.5]);
- const other=recordRaceTimes(second,finishedRace('wind'),3,3000);assert.deepEqual(other.leaf,second.leaf);assert.equal(other.wind!.length,3);
+ const second=recordRaceTimes(first,next,2,2000);assert.deepEqual(second.leaf!.map(r=>r.time),[50,50.5,50.5,50.5,50.5]);
+ const other=recordRaceTimes(second,finishedRace('wind'),3,3000);assert.deepEqual(other.leaf,second.leaf);assert.equal(other.wind!.length,5);
  assert.deepEqual(recordRaceTimes(first,race,1,1000),first);
 });
 test('記録の保存復元・旧セーブ・不正値の検証。二重精算では記録を増やさない',()=>{

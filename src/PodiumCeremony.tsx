@@ -12,8 +12,8 @@ export function PodiumCeremony(){
   <div className="podium-spotlights" aria-hidden="true"/><header><p>{title}{!overall?'・第1戦':''}</p><h1 id="podium-title">{overall?'総合表彰式':'レース表彰式'}</h1><span className="podium-laurel" aria-hidden="true">✦　✧　✦</span></header>
   <div className="podium-stage" aria-label="表彰台">{[2,1,3].map(place=>{const racer=winners.find(r=>r.place===place);return <div key={place} className={`podium-column podium-place-${place}`} style={{'--medal':place===1?'#edc65b':place===2?'#d6e4ed':'#c99165'} as React.CSSProperties}>
    <div className="podium-racer">{racer&&<><RacerPortrait id={racer.id} color={0x317d91} facing="down"/><svg className="podium-medal" viewBox="0 0 40 48" role="img" aria-label={`${place===1?'金':place===2?'銀':'銅'}メダル`}><path d="m5 0 15 23L35 0" fill="none" stroke="#af3448" strokeWidth="7"/><path d="m8 0 12 18L32 0" fill="none" stroke="#f0e6bf" strokeWidth="2"/><circle cx="20" cy="32" r="13" fill="var(--medal)" stroke="#fff0be" strokeWidth="2"/><text x="20" y="37" textAnchor="middle" fill="#624c29" fontSize="15" fontWeight="bold">{place}</text></svg>{place===1&&<Trophy/>}</>}</div>
-   <div className="podium-block"><strong>{place}</strong><span>{racer?.name??'—'}{racer?.id==='player'?'（あなた）':''}</span></div>
+   <div className="podium-block"><strong>{place}</strong><span>{racer?.id==='player'?(state.playerName||racer.name):(racer?.name??'—')}{racer?.id==='player'?'（あなた）':''}</span></div>
   </div>;})}</div>
-  <footer><p>{player?`湊：${player.finishes>0?`${overall?'総合':''}${player.place}位${player.place<=3?' 入賞おめでとう！':'。次の走りにつなげよう。'}`:'リタイア。最後まで挑んだ走りに拍手。'}`:''}</p><button ref={button} onClick={state.close}>表彰式を終える ▸</button></footer>
+  <footer><p>{player?`${state.playerName||'朝倉 湊'}：${player.finishes>0?`${overall?'総合':''}${player.place}位${player.place<=3?' 入賞おめでとう！':'。次の走りにつなげよう。'}`:'リタイア。最後まで挑んだ走りに拍手。'}`:''}</p><button ref={button} onClick={state.close}>表彰式を終える ▸</button></footer>
  </section>;
 }

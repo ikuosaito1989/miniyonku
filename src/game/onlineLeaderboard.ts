@@ -64,7 +64,7 @@ export async function queueOnlineRecord(record:OnlineSubmission){
  if(!onlineEnabled)return;
  try{
   useOnlineStatus.setState({message:'オンライン上位5位への登録を確認中です…'});
-  await localState(s=>{const key=`${record.rulesVersion}:${record.circuitId}`,old=s.pending[key];if(!old||record.time<old.time)s.pending[key]={...record,displayName:s.displayName};});
+  await localState(s=>{const key=`${record.rulesVersion}:${record.circuitId}`,old=s.pending[key];if(!old||record.time<old.time)s.pending[key]={...record,displayName:record.displayName.trim()||s.displayName};});
   await syncOnlineRecords();
  }catch{useOnlineStatus.setState({message:'オンライン記録の端末保存に失敗しました。ゲームのセーブ状態を確認してください。'});}
 }

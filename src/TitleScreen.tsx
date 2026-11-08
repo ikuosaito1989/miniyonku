@@ -1,15 +1,17 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import garage from './assets/title/garage.svg';
 import machine from './assets/title/seiran-machine.webp';
 import './title.css';
 
-export function TitleScreen({ onStart }: { onStart: () => void }) {
+export function TitleScreen({ onStart,needsName,onName }: { onStart: () => void;needsName:boolean;onName:(name:string)=>void }) {
+  const [naming,setNaming]=useState(false),[name,setName]=useState('朝倉 湊');
+  const start=()=>{if(needsName){setNaming(true);return;}onStart();};
   const startButton = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     startButton.current?.focus();
     const startWithZ = (event: KeyboardEvent) => {
       if (event.key.toLowerCase() === 'z' && document.activeElement === startButton.current) {
-        event.preventDefault();onStart();
+        event.preventDefault();start();
       }
     };
     window.addEventListener('keyup', startWithZ);
@@ -35,10 +37,11 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
         <p className="title-tagline">走れ、きみだけの一台。</p>
       </div>
       <img className="title-machine" src={machine} alt="青と白のボディに金色のラインが入ったセイラン" fetchPriority="high"/>
-      <button className="title-start" aria-label="ゲーム開始" ref={startButton} onClick={onStart}>
+      <button className="title-start" aria-label="ゲーム開始" ref={startButton} onClick={start}>
         <span className="title-start-coins" aria-hidden="true">{'START'.split('').map((letter,i)=><span key={i}>{letter}</span>)}</span>
         <span className="title-start-caption">ゲーム開始</span>
       </button>
+      {naming&&<div className="title-name-scrim"><form className="title-name" onSubmit={event=>{event.preventDefault();const value=name.trim();if(!value)return;onName(value);setNaming(false);onStart();}}><h2>名前を決めよう</h2><p>レースやオンライン記録に表示されます。</p><label>プレイヤー名<input autoFocus value={name} maxLength={24} onChange={event=>setName(event.target.value)} /></label><div><button type="submit" disabled={!name.trim()}>この名前で始める</button><button type="button" onClick={()=>setNaming(false)}>戻る</button></div></form></div>}
       <footer className="title-footer"><span>CHIBI 4WD · SEIRAN</span><small>進行はこのブラウザに自動保存されます</small></footer>
     </div>
   </section>;
