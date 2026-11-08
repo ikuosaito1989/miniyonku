@@ -31,23 +31,21 @@ test('消耗を含め同じ状態なら再現でき、新品より消耗品は�
   };
   assert.deepEqual(drive(200),drive(200));assert.ok(drive(200).distance<drive(0).distance);
 });
-test('消耗は個体別。中断相当の途中報告と慣らしを引継ぎ、重複通知や再装着で回復しない',()=>{
+test('途中報告と慣らしは重複せず、再購入時だけ古いモーターを新品に交換する',()=>{
   const original=useGame.getState();
   try{
     useGame.setState({units:createStarterUnits(),equipment:{...starterEquipment},selectedUnits:{motor:'starter-motor',battery:'starter-battery'},unitSerial:0,money:3000});
     useGame.getState().openSetting();useGame.getState().breakIn();useGame.getState().breakIn();
-    let s=useGame.getState();assert.equal(equippedCondition(s.equipment,s.units,s.selectedUnits).motorSeconds,60);
+    let s=useGame.getState();assert.equal(equippedCondition(s.equipment,s.units,s.selectedUnits).motorSeconds,60);assert.equal(s.units['battery-basic'][0].seconds,0);
     s.startTrial();let race=createRaceState(starterEquipment);race={...race,phase:'running',racers:race.racers.map(r=>r.id==='player'?{...r,driving:{...r.driving,time:10,status:'running'}}:r)};
     const attempt=useGame.getState().raceAttempt;
     useGame.getState().settleRace(attempt,race);useGame.getState().settleRace(attempt,race);
     s=useGame.getState();assert.equal(equippedCondition(s.equipment,s.units,s.selectedUnits).motorSeconds,70);
     s.close();s=useGame.getState();s.buy('motor-stock');
-    s=useGame.getState();assert.equal(s.units['motor-stock'].length,2);assert.equal(s.units['motor-stock'][1].seconds,0);
-    assert.equal(equippedCondition(s.equipment,s.units,s.selectedUnits).motorSeconds,70);
-    s.selectUnit('motor',s.units['motor-stock'][1].id);s=useGame.getState();
+    s=useGame.getState();assert.equal(s.units['motor-stock'].length,1);assert.equal(s.units['motor-stock'][0].seconds,0);
     assert.equal(equippedCondition(s.equipment,s.units,s.selectedUnits).motorSeconds,0);
-    s.selectUnit('motor','starter-motor');s=useGame.getState();assert.equal(equippedCondition(s.equipment,s.units,s.selectedUnits).motorSeconds,70);
-    s.openSetting();useGame.setState({units:{...s.units,'battery-basic':[{id:'starter-battery',seconds:360}]}});
-    const before=useGame.getState().units['motor-stock'][0].seconds;useGame.getState().breakIn();assert.equal(useGame.getState().units['motor-stock'][0].seconds,before);
+    s.selectUnit('motor','starter-motor');s=useGame.getState();assert.equal(equippedCondition(s.equipment,s.units,s.selectedUnits).motorSeconds,0);
+    s.openSetting();useGame.setState({units:{...s.units,'battery-basic':[{id:'starter-battery',seconds:batteryCapacity('battery-basic')}]}});
+    const before=useGame.getState().units['motor-stock'][0].seconds;useGame.getState().breakIn();assert.equal(useGame.getState().units['motor-stock'][0].seconds,before+30);assert.equal(useGame.getState().units['battery-basic'][0].seconds,batteryCapacity('battery-basic'));
   }finally{useGame.setState(original);}
 });

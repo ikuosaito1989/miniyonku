@@ -1,10 +1,50 @@
+import {specialtyParts} from './specialtyParts';
+import {postClearParts} from './postClearParts';
+import {sovereignPartIds} from './sovereignParts';
+import {mechanicMotorStages} from './mechanicMotor';
+import {zenithParts} from './zenithParts';
 import type { Part } from './parts';
 import { bodies } from './bodies';
 
 export interface PartAppearance { color:string; accent:string; detail:number; mark:string }
 export const partAppearances:Record<string,PartAppearance>={
+ ...Object.fromEntries(specialtyParts.map((p,i)=>[p.id,{color:p.category==='tire'?'#303b3c':p.id.includes('-torque-')?'#8d6049':p.id.includes('-velocity-')?'#427fa4':'#6c8050',accent:p.id.includes('-torque-')?'#e7b35e':p.id.includes('-velocity-')?'#bce6f2':'#dfcc86',detail:p.category==='wheel'?(p.id.includes('-velocity-')?7:p.id.includes('-terrain-')?8:6):6,mark:p.id.includes('-torque-')?'CLIMB':p.id.includes('-velocity-')?'JET':'TREK'}])),
+ 'accessory-brake-soft':{color:'#43586a',accent:'#7ec7df',detail:6,mark:'SOFT BRAKE'},
+ 'accessory-brake-hard':{color:'#36434e',accent:'#e28ca0',detail:8,mark:'GRIP BRAKE'},
+ ...Object.fromEntries(mechanicMotorStages.map((stage,index)=>[stage.id,{color:index===8?'#6c4c92':'#315d78',accent:index===8?'#f4d77d':'#b9d4d5',detail:6,mark:`LINK ${stage.level}`} ])),
+  ...Object.fromEntries(zenithParts.map((p,i)=>[p.id,{color:i%3?'#42577b':'#665078',accent:'#e6cb79',detail:p.category==='wheel'?8:6,mark:p.id.includes('slide')?'CROWN SLIDE':p.id.includes('motor')?'ZENITH':'CROWN'}])),
+  'accessory-slide-rear':{color:'#3d4559',accent:'#c6a4f0',detail:6,mark:'REAR SLIDE'},
+  'roller-ceramic':{color:'#d1dce4',accent:'#9b7bd3',detail:6,mark:'CERAMIC'},
+  'roller-lowdouble':{color:'#5c597b',accent:'#c8cbe4',detail:8,mark:'LOW DOUBLE'},
+  'motor-surge':{color:'#775b9e',accent:'#e4d39a',detail:6,mark:'SURGE'},
+  'wheel-floating':{color:'#77709a',accent:'#dbe3ed',detail:6,mark:'FLOAT 6'},
+  'tire-landing':{color:'#282d37',accent:'#b3a4d1',detail:6,mark:'LOW REBOUND'},
+
+  'motor-sovereign':{color:'#73549e',accent:'#f5d87d',detail:8,mark:'SOVEREIGN'},
+  'chassis-sovereign':{color:'#343b52',accent:'#f5d87d',detail:5,mark:'ZERO LIMIT'},
+  'motor-turn':{color:'#92c7b5',accent:'#d5b56f',detail:5,mark:'SWIFT'},
+  'chassis-turn':{color:'#354a58',accent:'#83cfb2',detail:4,mark:'K4-T'},
+  'tire-turn':{color:'#35464b',accent:'#88c6ac',detail:6,mark:'SOFT PRO'},
+  'roller-turn':{color:'#477f73',accent:'#e3c77b',detail:8,mark:'TURN PRO'},
+  'accessory-stabilizer':{color:'#47576c',accent:'#b4d3bd',detail:4,mark:'LOW MOUNT'},
+  'wheel-aero':{color:'#99c6e3',accent:'#e5e4c2',detail:7,mark:'AERO 7'},
+  'wheel-rally':{color:'#c8a36d',accent:'#5b6655',detail:8,mark:'RALLY 8'},
+  'wheel-carbon':{color:'#404859',accent:'#d0ae78',detail:5,mark:'CARBON'},
+  'wheel-diff':{color:'#7cc6b1',accent:'#e6c97b',detail:3,mark:'DUAL PRO'},
+  'motor-trail':{color:'#b58a4e',accent:'#f3ce62',detail:4,mark:'TRAIL'},
+  'motor-rally':{color:'#b58a4e',accent:'#f3ce62',detail:4,mark:'TRAIL'},
+  'tire-trail':{color:'#b58a4e',accent:'#f3ce62',detail:4,mark:'TRAIL'},
+  'tire-sand':{color:'#b58a4e',accent:'#f3ce62',detail:4,mark:'TRAIL'},
+  'accessory-damper':{color:'#b58a4e',accent:'#f3ce62',detail:4,mark:'TRAIL'},
+  'accessory-damper-light':{color:'#b58a4e',accent:'#f3ce62',detail:4,mark:'TRAIL'},
+  'roller-double':{color:'#b58a4e',accent:'#f3ce62',detail:4,mark:'TRAIL'},
+  'roller-trail':{color:'#b58a4e',accent:'#f3ce62',detail:4,mark:'TRAIL'},
+  'chassis-trail':{color:'#b58a4e',accent:'#f3ce62',detail:4,mark:'TRAIL'},
+  'motor-wind':{color:'#b8d5df',accent:'#3987bd',detail:4,mark:'BREEZE'},
   'motor-rescue':{color:'#8fb5a5',accent:'#365c54',detail:0,mark:'REUSE'},
   ...Object.fromEntries(bodies.map(body=>[body.id,{color:body.color,accent:'#edf3de',detail:body.grade,mark:body.className}])),
+  ...Object.fromEntries(sovereignPartIds.map(id=>[id,{color:id.startsWith('tire-')?'#282536':'#6e5399',accent:'#f4d77d',detail:id.startsWith('wheel-')?10:8,mark:'SOVEREIGN'}])),
+  ...Object.fromEntries(postClearParts.map((p,i)=>[p.id,{color:p.category==='tire'?'#303d42':['#4e7187','#658d91','#596888'][i%3],accent:'#cde6c2',detail:p.category==='wheel'?(p.id.includes('small')?6:p.id.includes('diff')?8:10):6+i%3,mark:p.id.includes('-fm')?'HOSHI FM':'HOSHI PRO'}])),
   'battery-entry':{color:'#9bcde4',accent:'#4b7e91',detail:1,mark:'PLUS'},
   'shaft-entry':{color:'#c8d3dc',accent:'#66889c',detail:0,mark:'LIGHT'},
   'terminal-entry':{color:'#c5dfe3',accent:'#7098a1',detail:0,mark:'CONTACT'},

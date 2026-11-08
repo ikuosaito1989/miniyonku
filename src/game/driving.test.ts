@@ -11,11 +11,11 @@ function run(equipment=starterEquipment){
   for(let i=0;i<120*120&&state.status==='running';i++)state=stepDriving(state,performance);
   return state;
 }
-test('無料の初期装備は13枠すべて所持し、そのまま完走できる',()=>{
+test('無料の初期装備は15枠すべて所持し、そのまま完走できる',()=>{
   const inventory=createStarterInventory();
-  assert.equal(Object.keys(starterEquipment).length,13);
+  assert.equal(Object.keys(starterEquipment).length,15);
   for(const [slot,id] of Object.entries(starterEquipment)){
-    assert.equal(inventory[id],slot.startsWith('roller')?3:1);assert.equal(parts.find(p=>p.id===id)?.category,equipmentSlots[slot as EquipmentSlot].category);
+    assert.equal(inventory[id],1);assert.equal(parts.find(p=>p.id===id)?.category,equipmentSlots[slot as EquipmentSlot].category);
   }
   const result=run();assert.equal(result.status,'finished');assert.equal(result.distance,circuitLength*circuit.laps);assert.ok(result.time>0);
 });
@@ -54,7 +54,7 @@ test('追加カテゴリの全パーツが有限の走行性能を持ち、重�
   assert.ok(machinePerformance({...starterEquipment,wheel:'wheel-oneway'}).cornerDrag<baseline.cornerDrag);
   assert.ok(machinePerformance({...starterEquipment,accessory:'accessory-weight'}).lateralLimit>baseline.lateralLimit);
   assert.ok(machinePerformance({...starterEquipment,accessory:'accessory-support'}).stallForce>baseline.stallForce);
-  for(const slot of ['rollerFront','rollerSide','rollerRear'] as const)assert.ok(machinePerformance({...starterEquipment,[slot]:'roller-2'}).drag<baseline.drag);
+  for(const slot of ['rollerFront','rollerSide','rollerRear'] as const)assert.ok(machinePerformance({...starterEquipment,[slot]:'roller-2'}).rollerFriction<baseline.rollerFriction);
 });
 test('電池の持続特性が走行時間に応じた出力低下を変える',()=>{
   const baseline=machinePerformance(starterEquipment);

@@ -7,7 +7,7 @@ import { dirtSurface, pavedSurface } from '../data/surfaces';
 import { createDrivingState, machinePerformance, startDriving, stepDriving, surfacePerformance } from './driving';
 
 test('軽→コンパクト→1.5Lの入手段階、全ボディの図柄と性能データが一致する',()=>{
-  assert.equal(bodies[0].className,'軽ハッチ');assert.equal(bodies[1].className,'コンパクト');
+  assert.equal(bodies[0].className,'入門用軽ワゴン');assert.equal(bodies[1].className,'コンパクト');
   assert.equal(bodies.find(b=>b.id==='body-sedan')?.grade,3);
   for(const b of bodies){
     const p=parts.find(p=>p.id===b.id)!;
@@ -30,9 +30,9 @@ test('SUVは舗装でスポーツより不利だが、悪路の接地と抵抗�
 });
 test('路面は表示用の適性だけでなく固定刻みの速度・安定性に作用し再現できる',()=>{
   function run(body:string,rough:boolean){
-    const p=machinePerformance({...starterEquipment,body,motor:'motor-torque',tire:'tire-1'});
+    const p=machinePerformance({...starterEquipment,body,motor:rough?'motor-trail':'motor-torque',tire:rough?'tire-trail':'tire-1'});
     let state=startDriving(createDrivingState());
-    for(let tick=0;tick<14400&&state.status==='running';tick++)state=stepDriving(state,p,0,2,rough?dirtSurface:pavedSurface);
+    for(let tick=0;tick<120*360&&state.status==='running';tick++)state=stepDriving(state,p,0,2,rough?dirtSurface:pavedSurface);
     return state;
   }
   const suv=run('body-manta',true),sport=run('body-arrow',true);

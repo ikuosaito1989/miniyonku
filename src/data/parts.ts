@@ -1,3 +1,8 @@
+import {specialtyParts} from './specialtyParts';
+import {postClearParts} from './postClearParts';
+import {sovereignParts} from './sovereignParts';
+import {mechanicMotorParts} from './mechanicMotor';
+import {zenithParts} from './zenithParts';
 import { partLevels } from './progression';
 import { bodies } from './bodies';
 export type Category = 'body' | 'chassis' | 'battery' | 'accessory' | 'wheel' | 'motor' | 'gear' | 'tire' | 'roller' | 'shaft' | 'terminal';
@@ -5,18 +10,51 @@ export const categories: Record<Category, string> = { body:'ボディ', chassis:
 export interface Part { id: string; level:number; category: Category; name: string; price: number; description: string; specs: Record<string, number>; performance: string }
 type PartDefinition=Omit<Part,'level'>;
 const definitions: PartDefinition[] = [
-  {id:'motor-rescue',category:'motor',name:'リユースモーター',price:0,description:'初期所持の救済用。消耗せず、慣らし不要で性能一定。標準より低出力。非売品。',specs:{rpm:11000,torque:.95,weight:18,wear:0},performance:'11,000 rpm / 0.95 mN·m / 18 g / 消耗なし・慣らし不要 / 非売品'},
+  ...specialtyParts,
+  ...sovereignParts,
+  ...postClearParts,
+  ...mechanicMotorParts,
+  ...zenithParts,
+  {id:'accessory-brake-soft',category:'accessory',name:'ソフト・リヤブレーキ',price:900,description:'坂の入口で路面に当たる低いパッド。ジャンプの飛びすぎを抑えるが、効かせすぎると飛距離不足になる。直線と縦ループでは制動しない。',specs:{weight:3,stability:1,efficiency:1,brake:.3},performance:'3 g / 制動0.30 / スロープ接触時のみ'},
+  {id:'accessory-brake-hard',category:'accessory',name:'ハイグリップ・リヤブレーキ',price:1900,description:'高速マシン向けの強めの制動パッド。飛びすぎる立体コース向け。低速車や大きい減速比ではソフトへ替えるか外そう。',specs:{weight:4,stability:1,efficiency:1,brake:.65},performance:'4 g / 制動0.65 / スロープ接触時のみ'},
+  {id:'accessory-slide-rear',category:'accessory',name:'リアウイング・スライドダンパー',price:2600,description:'ゆうなぎの新作。ウイング下の左右スライドステーへリヤローラーを取り付ける補助ユニット。横方向の衝撃と着地の揺れを逃がす。ローラーはリヤ欄で別に選択する。',specs:{weight:5,stability:1.2,efficiency:1,damping:.38,cornerDrag:.92},performance:'5 g / 安定性 ×1.20 / 制振38% / 旋回抵抗 ×0.92'},
+  {id:'roller-ceramic',category:'roller',name:'セラミック・エアロベアリングローラー',price:1900,description:'ゆうなぎの新作。軽量な低摩擦リングとセラミック軸受けで、スパイラルでも速度を残す。リヤへ装着すればスライドダンパーの両端にも取り付けられる。1セットで前・中・後へ設定可能。',specs:{friction:.035,weight:6,stability:1.08,damping:.04},performance:'摩擦0.035 / 6 g / 安定性 ×1.08 / 制振4%'},
+  {id:'roller-lowdouble',category:'roller',name:'ロープロファイル・二段ローラー',price:2300,description:'ゆうなぎの新作。低い二段リングで壁からの衝撃を分散し、ジャンプ着地後の横揺れを抑える。速さより安定性を重視するセット。前・中・後共用。',specs:{friction:.045,weight:7,stability:1.16,damping:.1},performance:'摩擦0.045 / 7 g / 安定性 ×1.16 / 制振10%'},
+  {id:'motor-surge',category:'motor',name:'サージ・スプリントトルクモーター',price:2600,description:'ゆうなぎの一本道向け上位型。スパイラルの出口やジャンプ後で素早く再加速する。新作のローラー・スライドダンパーと組み合わせよう。',specs:{rpm:18500,torque:2.7,weight:19.5},performance:'18,500 rpm / 2.70 mN·m / 19.5 g'},
+  {id:'wheel-floating',category:'wheel',name:'フローティング・ワンウェイ6',price:2100,description:'ゆうなぎの新作。内外輪の回転差を逃がす軽量フローティングハブ。スパイラルでの回転抵抗を低減し、立ち上がりにも強い。',specs:{weight:4,diameter:17,cornerDrag:.46},performance:'4本 4 g / リム径17 mm / コーナー抵抗 ×0.46'},
+  {id:'tire-landing',category:'tire',name:'リバウンドレス・ローハイトタイヤ',price:1700,description:'ゆうなぎの新作。舗装グリップを保ちながら、低反発の素材でジャンプ着地の跳ねを吸収。スライドダンパーと併用できる。悪路用ではない。',specs:{diameter:26,grip:1.45,weight:8,damping:.14,rebound:.08},performance:'径26 mm / グリップ1.45 / 8 g / 制振14%'},
+
+  {id:'motor-turn',category:'motor',name:'スイフトトルクモーター',price:1800,description:'わかばの連続コーナー向け上位型。回転数を上げすぎず、立ち上がりの力を強化。低重心シャーシとグリップタイヤを合わせよう。',specs:{rpm:18000,torque:2.5,weight:19},performance:'18,000 rpm / 2.50 mN·m / 19 g'},
+  {id:'chassis-turn',category:'chassis',name:'K4 テクニカルローダウン',price:1900,description:'K2より軽く、低重心と高剛性を両立した上位シャーシ。連続コーナーで姿勢を保ち、駆動ロスも抑える。',specs:{weight:20,efficiency:1.03,stability:1.2},performance:'20 g / 駆動効率 ×1.03 / 安定性 ×1.20'},
+  {id:'tire-turn',category:'tire',name:'ハイグリップ・ソフトスポンジ',price:1100,description:'スポンジタイヤを強化した舗装用。軽さを残しながら高いグリップで連続コーナーを支える。砂地専用タイヤではない。',specs:{diameter:26,grip:1.35,weight:8},performance:'径26 mm / グリップ1.35 / 8 g'},
+  {id:'roller-turn',category:'roller',name:'テクニカルリングローラー',price:1300,description:'ゴムローラーより低い摩擦で速度を残し、壁を捉えるリングで旋回を支える上位セット。1セットで前・中・後へそれぞれ装着できる。',specs:{friction:.1,weight:7.5,stability:1.25,damping:.08},performance:'摩擦0.10 / 7.5 g / 安定×1.25 / 前・中・後共用'},
+  {id:'accessory-stabilizer',category:'accessory',name:'ローマウント・スタビライザー',price:1200,description:'バランスウェイトより軽く、旋回の安定性を強化。駆動サポートと併用し、速さとコースアウト対策を両立させよう。',specs:{weight:4,stability:1.15,efficiency:1},performance:'4 g / 安定性 ×1.15'},
+  {id:'wheel-aero',category:'wheel',name:'エアロ7スポーク',price:900,description:'あおぞらから買える新作。ライト6スポークより軽く、コーナー抵抗も低い、舗装の加速を重視したセット。',specs:{weight:3.5,diameter:17,cornerDrag:0.9},performance:'4本 3.5 g / リム径17 mm / コーナー抵抗 ×0.90'},
+  {id:'wheel-rally',category:'wheel',name:'ラリークロス8スポーク',price:1100,description:'ひなたから買える新作。悪路用の重いタイヤと組み合わせやすい中量型。標準より軽く、旋回中の回転抵抗も低い。接地はタイヤとダンパーで確保しよう。',specs:{weight:5.5,diameter:17,cornerDrag:0.86},performance:'4本 5.5 g / リム径17 mm / コーナー抵抗 ×0.86'},
+  {id:'wheel-carbon',category:'wheel',name:'カーボンフェザー5スポーク',price:1500,description:'わかばの超軽量ホイール。発進と再加速に強く、高速舗装や軽量セッティング向け。旋回抵抗はデュアルワンウェイの方が低い。',specs:{weight:2.8,diameter:17,cornerDrag:0.88},performance:'4本 2.8 g / リム径17 mm / コーナー抵抗 ×0.88'},
+  {id:'wheel-diff',category:'wheel',name:'デュアルワンウェイ・プロ',price:1700,description:'わかばの連続コーナー向け。従来のワンウェイより軽く、内外輪の回転差による抵抗をさらに低減。タイヤと低重心シャーシも合わせよう。',specs:{weight:6,diameter:17,cornerDrag:0.58},performance:'4本 6 g / リム径17 mm / コーナー抵抗 ×0.58'},
+  {"id": "motor-trail", "category": "motor", "name": "トレイルトルクモーター", "price": 1600, "description": "低回転・高トルクの悪路専用。砂利や砂地で失速しにくい。", "specs": {"rpm": 15500, "torque": 2.7, "weight": 22}, "performance": "15,500 rpm / 2.70 mN·m / 22 g"},
+  {"id": "motor-rally", "category": "motor", "name": "ラリードライブモーター", "price": 2100, "description": "荒れた路面の再加速と直線の伸びを両立。タイヤと制振装備を合わせよう。", "specs": {"rpm": 18000, "torque": 2.3, "weight": 21}, "performance": "18,000 rpm / 2.30 mN·m / 21 g"},
+  {"id": "tire-trail", "category": "tire", "name": "ブロックトレッドタイヤ", "price": 850, "description": "深いブロックで砂利をつかみ、凹凸に追従。舗装では転がり抵抗が大きく、高速戦には不向き。", "specs": {"diameter": 28, "grip": 1.15, "weight": 15, "pavedDrag": 0.035, "compliance": 2.1, "roughResistance": 0.55}, "performance": "径28 mm / 接地追従 ×2.10 / 悪路抵抗 ×0.55 / 15 g"},
+  {"id": "tire-sand", "category": "tire", "name": "ソフトサンドタイヤ", "price": 950, "description": "柔らかい幅広タイヤ。砂地の接地を重視。重量と舗装での転がり抵抗は増える。", "specs": {"diameter": 27, "grip": 1.3, "weight": 17, "pavedDrag": 0.04, "compliance": 2.3, "roughResistance": 0.6}, "performance": "径27 mm / 接地追従 ×2.30 / 悪路抵抗 ×0.60 / 17 g"},
+  {"id": "accessory-damper", "category": "accessory", "name": "ツインマスダンパー", "price": 1100, "description": "左右の重りで凹凸の振動を吸収。悪路の接地と旋回を保つ。", "specs": {"weight": 10, "stability": 1.12, "efficiency": 1, "damping": 0.65}, "performance": "10 g / 安定性 ×1.12 / 制振 65%"},
+  {"id": "accessory-damper-light", "category": "accessory", "name": "ライトスプリングダンパー", "price": 850, "description": "軽さを残しながら路面の振動を抑える。", "specs": {"weight": 6, "stability": 1.06, "efficiency": 1, "damping": 0.45}, "performance": "6 g / 安定性 ×1.06 / 制振 45%"},
+  {"id": "roller-double", "category": "roller", "name": "ポール式ダブルローラー", "price": 1200, "description": "高い支柱の上下2段で姿勢を支える。前・中・後へ同じ1セットを装着できる。", "specs": {"weight": 10, "friction": 0.1, "damping": 0.28}, "performance": "上下2段 / 摩擦0.10 / 制振28% / 10 g"},
+  {"id": "roller-trail", "category": "roller", "name": "ダートガイドローラー", "price": 750, "description": "荒れた路面での横揺れを吸収する弾性リング。", "specs": {"weight": 8, "friction": 0.13, "damping": 0.18}, "performance": "摩擦0.13 / 制振18% / 8 g"},
+  {"id": "chassis-trail", "category": "chassis", "name": "K3 フレックストレイル", "price": 1500, "description": "しなやかな悪路用シャーシ。接地を保ち振動を逃がす。", "specs": {"weight": 24, "efficiency": 1, "stability": 1.1, "damping": 0.18, "roughGrip": 1.3, "roughResistance": 0.65, "compliance": 1.5}, "performance": "24 g / 安定性 ×1.10 / 制振18%"},
+  {id:'motor-wind',category:'motor',name:'ブリーズモーター',price:1400,description:'あおぞら模型店の中級向け。連続コーナーの立ち上がりと伸びを両立。ギア・重心の調整で走りが変わる。',specs:{rpm:18000,torque:1.45,weight:19},performance:'18,000 rpm / トルク 1.45 mN·m / 19 g'},
+  {id:'motor-rescue',category:'motor',name:'リユースモーター',price:0,description:'作業台で無料交換できる救済用。消耗せず、慣らし不要で性能一定。標準より低出力。非売品。',specs:{rpm:11000,torque:.95,weight:18,wear:0},performance:'11,000 rpm / 0.95 mN·m / 18 g / 消耗なし・慣らし不要 / 非売品'},
   ...bodies.map((body):PartDefinition=>({id:body.id,category:'body',name:body.name,price:body.price,description:`${body.className}：${body.description}`,specs:{weight:body.weight,drag:body.drag,stability:body.cornering,roughGrip:body.roughGrip,roughResistance:body.roughResistance},performance:`${body.weight} g / 空気抵抗 ×${body.drag.toFixed(2)} / 旋回 ×${body.cornering.toFixed(2)} / 悪路接地 ×${body.roughGrip.toFixed(2)} / 悪路抵抗 ×${body.roughResistance.toFixed(2)}`})),
   {id:'battery-entry',category:'battery',name:'プラスセル',price:250,description:'初めての強化に適したバランス型電池2本。',specs:{weight:42,power:1.04,endurance:110},performance:'2本 42 g / 出力 ×1.04 / 持続係数110秒'},
   {id:'shaft-entry',category:'shaft',name:'ライトスチールシャフト',price:250,description:'標準シャフトより少し軽い入門用。',specs:{weight:5},performance:'重量 5 g'},
   {id:'terminal-entry',category:'terminal',name:'高接触ターミナル',price:300,description:'接触を改善した入門用端子。',specs:{weight:2,efficiency:0.91},performance:'伝達効率 91% / 2 g'},
-  {id:'motor-apex',category:'motor',name:'アペックス・プロト',price:8000,description:'将来の上位店向け、最高段階の試作モーター。',specs:{rpm:28000,torque:1.8,weight:19},performance:'28,000 rpm / トルク 1.8 mN·m / 19 g'},
+  {id:'motor-apex',category:'motor',name:'アペックス・プロト',price:8000,description:'旧型の高回転試作モーター。舗装の高速向け。縦ループと砂地では新作の高トルク型を選ぼう。',specs:{rpm:28000,torque:1.8,weight:19},performance:'28,000 rpm / トルク 1.8 mN·m / 19 g'},
   {id:'chassis-basic',category:'chassis',name:'K1 ベーシック',price:450,description:'扱いやすい標準シャーシ。',specs:{weight:20,efficiency:1,stability:1},performance:'20 g / 駆動効率 ×1.00 / 安定性 ×1.00'},
   {id:'chassis-light',category:'chassis',name:'K1 ライト',price:1000,description:'肉抜きで軽量化。加速重視の設計。',specs:{weight:16,efficiency:1.02,stability:0.97},performance:'16 g / 駆動効率 ×1.02 / 安定性 ×0.97'},
   {id:'chassis-low',category:'chassis',name:'K2 ローセンター',price:1100,description:'低重心でコーナーの安定性を高める。',specs:{weight:23,efficiency:0.98,stability:1.08},performance:'23 g / 駆動効率 ×0.98 / 安定性 ×1.08'},
   {id:'battery-basic',category:'battery',name:'ベーシックセル',price:150,description:'出力は控えめだが軽い入門用電池2本。',specs:{weight:40,power:1,endurance:90},performance:'2本 40 g / 出力 ×1.00 / 持続係数90秒'},
-  {id:'battery-recharge',category:'battery',name:'リチャージセル',price:0,description:'最初から持っている救済用の充電電池2本。残量は減らず、交換・充電の費用も不要。通常電池より出力が少し弱い。非売品。',specs:{weight:40,power:.95,endurance:90,consumption:0},performance:'2本 40 g / 出力 ×0.95 / 残量100%固定・充電不要 / 非売品'},
-  {id:'battery-power',category:'battery',name:'スパークセル',price:450,description:'高出力の短距離向け電池2本。後半の電圧低下に注意。',specs:{weight:45,power:1.12,endurance:55},performance:'2本 45 g / 出力 ×1.12 / 持続係数55秒'},
+  {id:'battery-recharge',category:'battery',name:'リチウムセル',price:0,description:'作業台で無料交換できる救済用のリチウム電池2本。残量は減らず、交換・充電の費用も不要。通常電池より出力が少し弱い。非売品。',specs:{weight:40,power:.95,endurance:90,consumption:0},performance:'2本 40 g / 出力 ×0.95 / 残量100%固定・充電不要 / 非売品'},
+  {id:'battery-power',category:'battery',name:'スパークセル',price:450,description:'高出力の短距離向け電池2本。後半の電圧低下に注意。',specs:{weight:45,power:1.12,endurance:24},performance:'2本 45 g / 出力 ×1.12 / 持続係数24秒'},
   {id:'battery-endurance',category:'battery',name:'ロングランセル',price:650,description:'出力低下の緩やかな長距離向け電池2本。',specs:{weight:43,power:1.02,endurance:180},performance:'2本 43 g / 出力 ×1.02 / 持続係数180秒'},
   {id:'wheel-basic',category:'wheel',name:'スタンダード5スポーク',price:250,description:'タイヤとは別に交換するホイール4本セット。',specs:{weight:6,diameter:17,cornerDrag:1},performance:'4本 6 g / リム径17 mm / コーナー抵抗 ×1.00'},
   {id:'wheel-light',category:'wheel',name:'ライト6スポーク',price:650,description:'軽いスポーク構造で加速を助ける。',specs:{weight:4,diameter:17,cornerDrag:0.97},performance:'4本 4 g / リム径17 mm / コーナー抵抗 ×0.97'},
@@ -28,7 +66,7 @@ const definitions: PartDefinition[] = [
   { id:'motor-rev', category:'motor', name:'スカイリブモーター', price:850, description:'入門向け高回転型。ギアとの組み合わせを学ぼう。', specs:{rpm:16000,torque:1.1,weight:18}, performance:'16,000 rpm / トルク 1.1 mN·m / 18 g' },
   { id:'motor-torque', category:'motor', name:'グリットモーター', price:800, description:'入門向け高トルク型。立ち上がりを少し強化。', specs:{rpm:14500,torque:1.4,weight:20}, performance:'14,500 rpm / トルク 1.4 mN·m / 20 g' },
   ...[5,4,3.5].map((ratio,i ):PartDefinition=>({id:`gear-${ratio}`,category:'gear',name:`精密ギア ${ratio}:1`,price:200+i*150,description:'減速比で最高速と駆動力のバランスを調整。',specs:{ratio,weight:4},performance:`減速比 ${ratio}:1 / 4 g`})),
-  ...['ノーマル','スポンジ','ハード'].map((name,i ):PartDefinition=>({id:`tire-${i}`,category:'tire',name:`${name}タイヤ`,price:250+i*150,description:'グリップと重量で走りを変える。',specs:{diameter:26,grip:[0.85,1.1,0.7][i],weight:[12,8,11][i]},performance:`直径 26 mm / グリップ ${[0.85,1.1,0.7][i]} / ${[12,8,11][i]} g`})),
+  ...['ノーマル','スポンジ','ハード'].map((name,i ):PartDefinition=>({id:`tire-${i}`,category:'tire',name:`${name}タイヤ`,price:250+i*150,description:i===2?'低グリップでコーナーの横擦れと着地の反発を抑える。安定性はローラーとシャーシで補おう。':i===1?'軽くて高グリップ。旋回の安定を得る代わりに横擦れと着地の反発が増える。':'標準的なグリップと反発。タイヤ径・重さ・ローラーと組み合わせて調整。',specs:{diameter:26,grip:[0.85,1.1,0.7][i],weight:[12,8,11][i],rebound:[.5,.65,.2][i]},performance:`直径 26 mm / グリップ ${[0.85,1.1,0.7][i]} / ${[12,8,11][i]} g`})),
   ...['樹脂','ゴム','ベアリング'].map((name,i ):PartDefinition=>({id:`roller-${i}`,category:'roller',name:`${name}ローラー`,price:200+i*300,description:'コーナーでマシンの姿勢を支える。',specs:{friction:[0.12,0.24,0.05][i],weight:6+i},performance:`摩擦係数 ${[0.12,0.24,0.05][i]} / ${6+i} g`})),
   ...['ノーマル','中空'].map((name,i ):PartDefinition=>({id:`shaft-${i}`,category:'shaft',name:`${name}シャフト`,price:150+i*350,description:'駆動をタイヤへ伝える足回りの芯。',specs:{weight:i?3:6},performance:`重量 ${i?3:6} g`})),
   ...['ノーマル','ゴールド'].map((name,i ):PartDefinition=>({id:`terminal-${i}`,category:'terminal',name:`${name}ターミナル`,price:150+i*450,description:'電池からモーターへの電力を届ける。',specs:{efficiency:i?0.97:0.88,weight:2},performance:`伝達効率 ${i?97:88}% / 2 g`})),

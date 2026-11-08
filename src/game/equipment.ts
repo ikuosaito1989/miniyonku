@@ -7,8 +7,9 @@ export function equipPart(equipment: Equipment, inventory: Record<string, number
   if (!part || !(inventory[id] > 0)) return equipment;
   const slot=target??(Object.keys(equipmentSlots) as EquipmentSlot[]).find(s=>equipmentSlots[s].category===part.category);
   if(!slot||equipmentSlots[slot].category!==part.category)return equipment;
-  if(part.category==='roller')return {...equipment,rollerFront:id,rollerSide:id,rollerRear:id};
+  if(part.id==='accessory-none')return {...equipment,[slot]:id};
+  if(part.category==='roller')return {...equipment,[slot]:id};
   const used=Object.entries(equipment).filter(([key,value])=>key!==slot&&value===id).length;
-  if(used>=inventory[id])return equipment;
+  if(used>=1)return equipment;
   return { ...equipment, [slot]: id };
 }

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { personDrawing, personSpriteSize, type Facing, type PersonKind } from './PeopleArt';
+import { seniorDrawing, challengerDrawing, personDrawing, personSpriteSize, type Facing, type PersonKind } from './PeopleArt';
 import { counterDrawing, counterSpriteSize } from './CounterArt';
 import type { PixelShape } from './pixelDrawing';
 function inside(shapes:PixelShape[],width:number,height:number){
@@ -20,10 +20,23 @@ test('全80人物スプライトは原画範囲内に収まり、服装・向き
     assert.notDeepEqual(personDrawing(kind,'right',0),personDrawing(kind,'left',0));
     assert.notDeepEqual(personDrawing(kind,'down',1),personDrawing(kind,'down',3));
   }
-  assert.equal(looks.size,5);assert.equal(personSpriteSize.displayWidth,39.6);assert.equal(personSpriteSize.displayHeight,52.8);
+  assert.equal(looks.size,5);assert.equal(personSpriteSize.displayWidth,48);assert.equal(personSpriteSize.displayHeight,64);
 });
 test('専用カウンターの面・小物・ガラスの透過レイヤーは原画内に収まる',()=>{
   const shapes=counterDrawing();inside(shapes,counterSpriteSize.width,counterSpriteSize.height);
   assert.ok(shapes.some(shape=>shape.kind==='polygon'));assert.ok(shapes.some(shape=>shape.alpha<1));
   assert.deepEqual(shapes,counterDrawing());
+});
+
+test('黒岩は元の短髪と体格・表情を保ち、全方向・歩行が原画内に収まる',()=>{
+  for(const facing of ['down','up','left','right'] as const)for(let frame=0;frame<4;frame++)inside(challengerDrawing(facing,frame),60,80);
+  const xs=challengerDrawing('down').flatMap(s=>s.kind==='rect'?[s.x,s.x+s.w]:s.points.map(p=>p[0]));assert.ok(Math.max(...xs)-Math.min(...xs)>40);
+  assert.notDeepEqual(challengerDrawing('down'),personDrawing('rival','down',0));
+  assert.notDeepEqual(challengerDrawing('left'),challengerDrawing('right'));
+});
+
+test('迅が肩までの長髪で、全方向・歩行フレームが原画に収まる',()=>{
+ for(const facing of ['down','up','left','right'] as const)for(let frame=0;frame<4;frame++)inside(seniorDrawing(facing,frame),60,80);
+ assert.ok(seniorDrawing('down').some(s=>s.kind==='polygon'&&s.color==='#242532'&&s.points.some(([,y])=>y>=43)));
+ assert.notDeepEqual(seniorDrawing('down'),challengerDrawing('down'));
 });

@@ -3,5 +3,13 @@ export const raceCamera = {
   start: { offset: [-7,8,7] as const, height:0.85, minWidth:1.35, lookBehind:0.15 },
   running: { offset: [-7,8,7] as const, height:.85, minWidth:1.1, lookAhead:0.035 },
   finish: { offset: [-7,7,7] as const, height:1.25, minWidth:1.65, lookBehind:0.25 },
+  machineViewScale:1.5,
   transitionSeconds:0.9,
 };
+
+export const raceCameraViews=[
+  {id:'zoom',label:'拡大'},
+  {id:'overview',label:'全体'},
+  {id:'broadcast',label:'マシンを見る'},
+] as const;
+export type TrialCamera=typeof raceCameraViews[number]['id'];
