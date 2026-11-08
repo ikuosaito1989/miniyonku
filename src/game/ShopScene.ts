@@ -165,7 +165,7 @@ export class ShopScene extends Phaser.Scene {
     {
       const f=fixtures.find(f=>f.kind==='track')!,g=this.add.graphics().setDepth(f.y+f.h+1);
 
-      if(isSalesShop(shop.id)&&!this.textures.exists(sceneryKey(shop.id))){
+      if(isSalesShop(shop.id)&&(!this.textures.exists(sceneryKey(shop.id))||shop.id!=='atelier')){
         g.fillStyle(shop.id==='torque'?0x594234:shop.id==='velocity'?0x304b61:shop.id==='terrain'?0x435337:0x302f4b).fillRect(f.x+3,f.y+3,f.w-6,f.h-6);g.lineStyle(3,0xd5b779).strokeRect(f.x+8,f.y+8,f.w-16,f.h-16);
         for(const i of [0,1]){
           const x=f.x+25+i*130;g.fillStyle(0x54456f).fillRect(x,f.y+30,105,75);g.lineStyle(2,0xe4c981).strokeRect(x,f.y+30,105,75);

@@ -27,3 +27,15 @@
 2026-11-04の追加指定：店舗は以前のinterior-v1の雰囲気を保ち、店別の色と控えめな小物で描き分ける。豪華な大理石・金装飾・大きな窓での店舗改装は撤回。会場の原画は維持。
 
 追加調整の検証：typecheck・buildと関連13テスト成功。全7店舗・全4会場・町の表示を再確認し、背景Textオブジェクト0件・実行時エラー0件。スマホでも内外の倍率、約2割速い移動、設定画面への操作を再確認した。
+
+## 専門店の原画と今後の制作
+
+2026-11-08の調査：`interior-v1.webp` 自体は削除されていない。通常店は `07b2686` 以降 `scenery/` の店別原画を使用しているが、`2d0aaf9` の専門店追加時に専用WebPが用意されず、店内は `ThemedShopArt` の図形フォールバックになっていた。耐久店も同じ状態だった。
+
+専門店は同じ960×640の家具配置を使うため、駆動店はひなた、速度店はあおぞら、悪路店はわかばの高精細原画を参照し、耐久店は同じ配置を基準に画像生成した `scenery/endurance.webp` を使用する。背景と家具の前景は施設IDごとに同じ画像を参照し、当たり判定・タップ範囲を変更しない。専門店の展示は従来の表示を維持する。既存の星霧工房・通常店の画像と表示は変えない。
+
+専門店ごとの完全な専用背景、街の建物外観・広域地面、全方向・全歩行フレームの人物原画は今後の課題。原画制作時は各施設の現行画面と `docs/art/shop-layout-reference.png` を入力し、同じ画角・縮尺・家具の矩形と出口を固定する。背景と前景を同一画像から切り出し、家具と人物の前後関係、タップ箇所、進入不能箇所を確認してからWebPにする。街は3200×2400の既存施設・道路・衝突矩形を座標参照として保ち、広域画像を一括生成せず、建物・樹木・地面を透過素材または複数タイルとして配置検証する。人物は `pixel-art-direction.md` の方向・歩行フレーム仕様に従う。
+
+専用背景用プロンプト例：
+
+> Repaint the supplied original 960×640 overhead game-room layout as a detailed original 16-bit miniature racing specialist shop. Preserve every fixture's exact position, size, silhouette, floor paths and exit; use the supplied high-detail model shop image as a palette and pixel-density reference. Depict distinctive individually illustrated motor, gear, tire and tool packages, realistic wood and metal shelves, glass reflections and soft upper-left light. Keep the existing right-hand display footprint empty for the game's live overlay. No characters, UI, legible text, extra floor objects or changes to camera or projection.
