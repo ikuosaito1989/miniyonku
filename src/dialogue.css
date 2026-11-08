@@ -2,6 +2,7 @@
 .conversation{width:100%;display:grid;grid-template-columns:clamp(128px,16vw,190px) minmax(0,1fr);gap:24px;padding:18px 22px 18px 18px;max-height:calc(100dvh - 64px);background-color:#173f43f5;background-image:linear-gradient(90deg,#91b5ab0b 1px,transparent 1px),linear-gradient(#91b5ab0b 1px,transparent 1px);background-size:48px 48px;border:3px solid #e0e8df;border-radius:3px;box-shadow:0 0 0 2px #4b647d,inset 0 0 0 2px #72978b,0 8px 32px #15293359;box-sizing:border-box;text-shadow:1px 2px #102d35}
 .conversation-portrait{align-self:start;aspect-ratio:1;overflow:hidden;background:#244c4e;border:2px solid #769c96;box-shadow:inset 0 0 0 2px #102f3b}
 .conversation-portrait img{width:100%;height:100%;object-fit:cover;display:block;image-rendering:pixelated}
+.conversation-portrait .shared-character-portrait,.opening-face .shared-character-portrait{display:block;width:100%;height:100%;shape-rendering:auto;image-rendering:auto}
 .conversation-body{min-width:0;min-height:0;display:flex;flex-direction:column;gap:10px}.conversation-body header{display:flex;justify-content:space-between;align-items:center;gap:12px}
 .conversation-role{margin:0 0 4px;color:#adcfc4;font-size:11px;letter-spacing:1px}.conversation h2{font-size:19px;letter-spacing:2px;line-height:1.5;margin:0;color:#fff0b9}
 .conversation .conversation-close{flex-shrink:0;min-height:44px;min-width:64px;border:0;background:transparent;color:#b6d1cc;font-size:12px;padding:4px}.conversation-close small{font-size:9px;margin-left:5px}

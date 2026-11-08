@@ -1,5 +1,5 @@
-import portrait from './assets/portraits/doctor-pop.webp';
-
+import {doctorDrawing} from './game/PeopleArt';
+import {CharacterPortrait} from './CharacterPortrait';
 export function DoctorPortrait(){
-  return <img src={portrait} alt="" decoding="async"/>;
+  return <CharacterPortrait draw={()=>doctorDrawing('down')} label="博士"/>;
 }

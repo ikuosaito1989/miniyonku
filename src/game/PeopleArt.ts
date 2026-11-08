@@ -2,7 +2,7 @@ import {playerDrawing} from './PlayerArt';
 import { pixelPen, type PixelShape } from './pixelDrawing';
 export type Facing='down'|'up'|'left'|'right';
 export type PersonKind='player'|'owner'|'rival'|'guide'|'mechanic';
-export const personSpriteSize={width:60,height:80,displayWidth:48,displayHeight:64} as const;
+export const personSpriteSize={width:60,height:80,displayWidth:54,displayHeight:72} as const;
 const outfits={
   player:{ink:'#25334d',shirt:'#3868bd',light:'#89b7ed',shade:'#264782',hair:'#51404a',hairLight:'#98706b',pants:'#455d84'},
   owner:{ink:'#35374e',shirt:'#607ca0',light:'#b0c8de',shade:'#415674',hair:'#656176',hairLight:'#ada0ac',pants:'#414f67'},
