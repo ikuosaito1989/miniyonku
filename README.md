@@ -89,23 +89,52 @@ pnpm preview
 
 ## 構成
 
-- `src/data/parts.ts`: パーツ分類・価格・説明・性能値
-- `src/data/shop.ts`: 店内レイアウトと調査対象
-- `src/game/ShopScene.ts`: Phaser描画、入力、衝突、調査
-- `src/game/purchase.ts`: UIに依存しない購入ロジック
-- `src/game/store.ts`: Zustand共通ゲーム状態
-- `src/data/machine.ts`: 無料の初期装備とインベントリ
-- `src/data/circuit.ts`: 描画と計算が共有するコースデータ
-- `src/game/driving.ts`: 描画に依存しない1/120秒固定刻み走行計算
-- `src/game/race.ts`: カウントダウン・5台の進行・順位・シード管理
-- `src/game/finishPresentation.ts`: ゴール通過・余走・集計・結果画面の演出進行（走行計算から独立）
-- `src/data/rivals.ts`: CPUの名前・色・初期レーン・装備
-- `src/game/TrialRenderer.ts`: Three.jsコース・マシン描画と描画ループ
-- `src/TrialView.tsx`: 試走の操作・結果UI
-- `src/trial.css`: レトロなレース画面・メッセージ枠のスタイル
-- `src/App.tsx`: HUD・会話・ショップUI
-- `SPEC.md`: 全体仕様と次段階の設計方針
-- `TASKS.md`: マイルストーン別の作業状況
+```mermaid
+flowchart LR
+  player[プレイヤー]
+  subgraph browser[ブラウザ]
+    direction LR
+    subgraph ui[React UI]
+      app[App.tsx<br/>タイトル・HUD・会話・ショップ]
+      setup[SettingView.tsx<br/>セッティング]
+      trial[TrialView.tsx<br/>試走操作・結果]
+    end
+    subgraph scenes[ゲーム画面]
+      shop[Phaser<br/>2D模型店・街]
+      race[Three.js<br/>3Dレース]
+    end
+    state[Zustand<br/>共有ゲーム状態]
+    logic[ゲームロジック<br/>購入・進行・走行・順位]
+    data[ゲームデータ<br/>パーツ・車体・コース・ライバル]
+    save[(IndexedDB<br/>セーブデータ)]
+    audio[Web Audio<br/>BGM・効果音]
+  end
+  player --> app
+  app --> shop
+  app --> setup
+  app --> trial
+  setup --> state
+  trial --> race
+  shop --> state
+  state <--> logic
+  logic --> data
+  state <--> save
+  app --> audio
+  trial --> audio
+```
+
+Reactが画面UIを組み立て、Phaserが店内・街の2D探索、Three.jsが3Dレースを描画します。購入・走行計算などのゲームロジックは描画から分離し、Zustandの共有状態を通して画面間で連携します。進行データはIndexedDBへ保存され、音声はWeb Audioで再生します。
+
+主要な実装ファイル：
+
+- `src/App.tsx`: タイトル・HUD・会話・ショップUI
+- `src/SettingView.tsx`: パーツのセッティングUI
+- `src/TrialView.tsx`, `src/game/TrialRenderer.ts`: 試走UIとThree.js描画
+- `src/game/ShopScene.ts`: Phaserによる店内描画・入力・衝突
+- `src/game/store.ts`, `src/game/saveStorage.ts`: 共有状態とIndexedDB保存
+- `src/game/purchase.ts`, `src/game/driving.ts`, `src/game/race.ts`: 購入・走行計算・レース進行
+- `src/data/`: パーツ・マシン・コース・ライバルなどのデータ
+- `SPEC.md`, `TASKS.md`: 全体仕様とマイルストーン別の作業状況
 
 店内右上の作業台でZ / Enterを押すとセッティング画面が開きます。部位を選び、所持パーツをクリック（またはTabで選んでEnter）すると即時交換します。重量・3Dマシンプレビュー・性能比較に反映され、次のレースで使用されます。Escで店へ戻ります。
 
