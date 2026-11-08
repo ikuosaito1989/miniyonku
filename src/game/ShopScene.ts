@@ -115,11 +115,12 @@ export class ShopScene extends Phaser.Scene {
       this.solids=[...townVenues,...townBlocks].map(v=>new Phaser.Geom.Rectangle(v.x,v.y,v.w,v.h));
       this.solids.push(...townCrowdObstacles.map(v=>new Phaser.Geom.Rectangle(v.x,v.y,v.width,v.height)));
       const hidden=this.person(hiddenMechanicSpot.x,hiddenMechanicSpot.y,'owner');
+      this.addConversationMarker(hidden);
       const hiddenKey='mechanic-man-down';if(!this.textures.exists(hiddenKey))createPersonTexture(this,hiddenKey,mechanicManDrawing());
       (hidden.list[1] as Phaser.GameObjects.Image).setTexture(hiddenKey);
       this.solids.push(new Phaser.Geom.Rectangle(hiddenMechanicSpot.x-12,hiddenMechanicSpot.y-9,24,21));
       for(const npc of townPeople){
-        this.person(npc.x,npc.y,'rival',npc.name);
+        this.addConversationMarker(this.person(npc.x,npc.y,'rival',npc.name));
         this.solids.push(new Phaser.Geom.Rectangle(npc.x-12,npc.y-9,24,21));
       }
     }else if(this.isLibrary){
@@ -287,6 +288,17 @@ export class ShopScene extends Phaser.Scene {
     this.cameras.main.stopFollow();this.cameras.main.removeBounds();
     this.cameras.main.setZoom(zoom.x,zoom.y);
     this.cameras.main.centerOn(roomView.x+roomView.width/2,roomView.y+roomView.height/2);
+  }
+  // 会話できる街の住人だけに、文字を使わない吹き出しを表示する。
+  private addConversationMarker(person:Phaser.GameObjects.Container){
+    const marker=this.add.graphics();
+    marker.fillStyle(0x273e48,.45).fillRoundedRect(-13,-78,26,18,6);
+    marker.fillStyle(0xfff8de,1).fillRoundedRect(-12,-80,24,17,6);
+    marker.lineStyle(2,0x35535a,1).strokeRoundedRect(-12,-80,24,17,6);
+    marker.fillStyle(0xfff8de,1).fillTriangle(-4,-64,1,-58,3,-65);
+    marker.lineStyle(2,0x35535a,1).lineBetween(-4,-64,1,-58).lineBetween(1,-58,3,-64);
+    marker.fillStyle(0x547e7d,1).fillCircle(-6,-72,1.5).fillCircle(0,-72,1.5).fillCircle(6,-72,1.5);
+    person.add(marker);
   }
   private person(x:number,y:number,kind:PersonKind,name?:string){
     const shadow=this.add.graphics();shadow.fillStyle(0x343847,.22).fillEllipse(0,8,29,9);
@@ -501,10 +513,10 @@ export class ShopScene extends Phaser.Scene {
   private getTargets():ShopTarget[]{
     if(this.isLibrary)return [...libraryShelves.map(s=>({...s,y:s.y-42,h:s.h+60,kind:'library-shelf' as const,libraryCategory:s.category,speaker:s.label,shopAfter:false,text:'本棚の資料を読む。'})),{...libraryReadingDesk,x:libraryReadingDesk.x-10,y:libraryReadingDesk.y-36,w:100,h:92,kind:'library-catalogue' as const,libraryCategory:'all' as const,speaker:'閲覧台',shopAfter:false,text:'全パーツの資料を読む。'},{...libraryExit,h:40,kind:'exit' as const,label:'図書館の出口',speaker:'図書館',shopAfter:false,text:'街へ戻る。'}];
     if(this.isTown)return [
-      {x:hiddenMechanicSpot.x-16,y:hiddenMechanicSpot.y-42,w:32,h:54,label:mechanicManName,speaker:mechanicManName,shopAfter:false,text:'……よく見つけたな。',kind:'mechanic-man'},
+      {x:hiddenMechanicSpot.x-16,y:hiddenMechanicSpot.y-80,w:32,h:92,label:mechanicManName,speaker:mechanicManName,shopAfter:false,text:'……よく見つけたな。',kind:'mechanic-man'},
       ...townVenues.filter(v=>v.kind==='outdoor').map(v=>({...outdoorTimeBoardPlacement(v),label:'歴代ベストタイム TOP 3',speaker:v.name,shopAfter:false,text:'タイムを見る。',kind:'time-records' as const,circuitId:v.id as import('../data/practiceCourses').PracticeCourseId})),
       ...townVenues.map(v=>({x:v.x,y:v.y,w:v.w,h:v.h,label:v.name,speaker:v.name,shopAfter:false,text:venueMessage(v),kind:'venue' as const,venueId:v.id})),
-      ...townPeople.map(p=>({x:p.x-16,y:p.y-42,w:32,h:54,label:p.name,speaker:p.name,shopAfter:false,text:townPersonAdvice(p,useGame.getState()),kind:'town-person' as const})),
+      ...townPeople.map(p=>({x:p.x-16,y:p.y-80,w:32,h:92,label:p.name,speaker:p.name,shopAfter:false,text:townPersonAdvice(p,useGame.getState()),kind:'town-person' as const})),
     ];
     if(this.isOfficial)return [
       ...officialTimeBoards(useGame.getState().location).map(p=>({...p,kind:'time-records' as const,label:`${getCircuitTrack(p.circuitId).circuit.name}・歴代タイム`,speaker:'コース記録の看板',shopAfter:false,text:'歴代タイムを見る。'})),
