@@ -2,6 +2,59 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8"/>
+  <script data-startup-recovery>
+  // This must run before the versioned app bundle; an old bundle can disappear after deployment.
+  (() => {
+    const retryKey = 'miniyonku-startup-retry';
+    let appStarted = false;
+    window.addEventListener('miniyonku:startup', () => { appStarted = true; document.getElementById('startup-recovery')?.remove(); });
+    const showRecovery = () => {
+      if (document.getElementById('startup-recovery')) return;
+      const box = document.createElement('aside');
+      box.id = 'startup-recovery';
+      box.setAttribute('role', 'alert');
+      box.style.cssText = 'position:fixed;inset:auto 12px 16px;z-index:2147483647;padding:16px;background:#173247;color:#fff;border:2px solid #e7d18c;border-radius:8px;font:16px/1.5 system-ui,sans-serif;box-shadow:0 4px 24px #0008';
+      const message = document.createElement('p');
+      message.textContent = '画面の読み込みに失敗しました。通信を確認して、もう一度読み込んでください。';
+      message.style.margin = '0 0 10px';
+      const retry = document.createElement('button');
+      retry.type = 'button';retry.textContent = 'もう一度読み込む';
+      retry.style.cssText = 'padding:9px 14px;background:#f1d78f;color:#142a38;border:0;border-radius:4px;font:inherit';
+      retry.addEventListener('click', () => location.reload());
+      box.append(message, retry);
+      (document.body || document.documentElement).append(box);
+    };
+    const recoverStartup = () => {
+      const root = document.getElementById('root');
+      // Do not reload an active game: a race or unsaved operation may be in progress.
+      if (root && root.hasChildNodes()) { showRecovery(); return; }
+      try {
+        const now = Date.now(), last = Number(sessionStorage.getItem(retryKey));
+        if (!last || now - last > 60000) {
+          sessionStorage.setItem(retryKey, String(now));
+          location.reload();
+          return;
+        }
+      } catch (_) { /* Storage may be unavailable in private browsing. */ }
+      showRecovery();
+    };
+    window.addEventListener('error', event => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      const isModule = target.tagName === 'SCRIPT' && target.getAttribute('type') === 'module';
+      const isPreload = target.tagName === 'LINK' && target.getAttribute('rel') === 'modulepreload';
+      if (!isModule && !isPreload) return;
+      try {
+        const url = new URL(target.getAttribute(isModule ? 'src' : 'href'), location.href);
+        if (url.origin === location.origin) recoverStartup();
+      } catch (_) { showRecovery(); }
+    }, true);
+    // Dynamic imports may fail after a deployment while the current game is open.
+    // Leave the existing game and its in-memory state alone until the user chooses to reload.
+    window.addEventListener('vite:preloadError', showRecovery);
+    window.setTimeout(() => { const root = document.getElementById('root'); if (!appStarted && root && !root.hasChildNodes()) showRecovery(); }, 12000);
+  })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <meta name="theme-color" content="#172b31"/>
   <link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
