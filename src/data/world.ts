@@ -7,7 +7,7 @@ import {sovereignPartIds} from './sovereignParts';
 import { starterShop, type ShopStock } from './progression';
 import type { CircuitId } from './circuit';
 
-export type ShopId=PracticeCourseId|'torque'|'velocity'|'terrain'|'hoshikuzu'|'atelier'|'komorebi'|'aozora'|'hinata'|'wakaba'|'yuunagi'|'akatsuki';
+export type ShopId=PracticeCourseId|'torque'|'velocity'|'terrain'|'endurance'|'hoshikuzu'|'atelier'|'komorebi'|'aozora'|'hinata'|'wakaba'|'yuunagi'|'akatsuki';
 export type WorldLocation=ShopId|'library'|'town'|'stadium-5'|'stadium-9'|'stadium-10'|'stadium-7';
 export interface ModelShop extends ShopStock { id:ShopId; owner:string; circuitId:CircuitId; stage:number; color:number; welcome:string }
 // 店の進行段階とパーツの入手段階は別。入門店の既存品揃えを維持する。
@@ -17,6 +17,7 @@ export const modelShops:Record<ShopId,ModelShop>={
  velocity:{id:'velocity',name:'はやてスピードラボ',owner:'風間 翔',maxPartLevel:10,exclusiveParts:specialtyStock('velocity'),circuitId:'leaf',stage:1,color:7186382,welcome:'舗装の直線を磨く店。回転数と大径タイヤの伸び、加速の弱点を見比べよう。 作業台で自由に組み合わせて、レースは模型店や公式会場で試してね。'},
  terrain:{id:'terrain',name:'やまなみオフロード',owner:'山野 茂',maxPartLevel:10,exclusiveParts:specialtyStock('terrain'),circuitId:'leaf',stage:1,color:7902303,welcome:'砂・砂利・凹凸を走り抜く店。接地と制振を揃え、舗装の抵抗も見て選ぼう。 作業台で自由に組み合わせて、レースは模型店や公式会場で試してね。'},
 
+ endurance:{id:'endurance',name:'ながみち耐久工房',owner:'長谷川 守',maxPartLevel:10,exclusiveParts:specialtyStock('endurance'),circuitId:'leaf',stage:1,color:0x627e8e,welcome:'長い距離を走りきるための店。大容量電池と安定した足まわりを揃えたよ。重さや出力との違いを比べてみよう。'},
  hoshikuzu:{id:'hoshikuzu',name:'ほしくず模型店',maxPartLevel:10,exclusiveParts:[...postClearPartIds,...legendBodyIds,...zenithParts.map(p=>p.id),'accessory-brake-soft','accessory-brake-hard','tire-trail','tire-sand'],owner:'星野 玄一',circuitId:'forge',stage:7,color:0x526b92,welcome:'天頂決戦のクリア、おめでとう！ レジェンド4人のボディ、FMの前置きモーターシャーシ、砂・砂利・舗装・着地の専門パーツを揃えたよ。組み合わせたマシンで各公式会場のタイムアタックへ。星皇を1つでも装着した走行はランキングに記録されないから、記録用のセッティングを作ろう！'},
   akatsuki:{id:'akatsuki',name:'あかつき模型店',maxPartLevel:10,owner:'暁堂 司',circuitId:'forge',stage:6,color:0xb56860,welcome:'緑川の入賞、おめでとう！ ここには怜・岳・斗和・昊也のレジェンド4人も試走に来ている。最上位パーツを22種入荷したぞ。縦ループ、横スパイラル、砂地、坂、ジャンプを制する組み合わせを探そう。勝敗に関係なく、途中で戻らず5回レースの結果まで走れば、天頂決戦・ゼニス・クラウンの出場権を渡す。'},
   yuunagi:{id:'yuunagi',name:'ゆうなぎ模型店',maxPartLevel:6,owner:'夕凪 慎吾',circuitId:'trail',stage:5,color:0x8074a8,welcome:'星空テクニカル杯の入賞、おめでとう！ 新作のリアウイング・スライドダンパー、セラミックローラー、低い二段ローラー、サージモーター、フローティングホイール、低反発タイヤを揃えたよ。ここはスタートとゴールが別の一本道タイムアタック。約172mの高架スパイラル・ジャンプ台・ロングストレートを越え、公式タイム40秒以内で完走すると第4公式大会・緑川グランプリの出場権を授けるよ。何度でもセッティングを変えて挑戦できる。'},
@@ -69,7 +70,16 @@ export function generateTownVenues(seed=19890421):TownVenue[]{
     }
     if(!placed)throw new Error('屋外コースの配置場所が足りません。');
   }
-  return [...buildings,...outdoors];
+  // 既存施設と既存コースの配置を変えず、追加店は空き区画に置く。
+  let endurance:TownVenue|undefined;
+  for(let y=180;y<2150&&!endurance;y+=50)for(let x=100;x<2750&&!endurance;x+=50){
+    const v:TownVenue={id:'endurance',name:modelShops.endurance.name,kind:'shop',stage:1,x,y,w:190,h:140,entrance:'south',color:modelShops.endurance.color,shopId:'endurance'};
+    if(townRoads.vertical.some(r=>r>=x-75&&r<=x+v.w+75)||townRoads.horizontal.some(r=>r>=y-75&&r<=y+v.h+75))continue;
+    if([...buildings,...outdoors].some(b=>!separate(v,b)))continue;
+    endurance=v;
+  }
+  if(!endurance)throw new Error('耐久工房の配置場所が足りません。');
+  return [...buildings,...outdoors,endurance];
 }
 export const townVenues=generateTownVenues();
 // 住宅・商店街の背景棟。入口を持たない建物も歩行障害物として扱う。

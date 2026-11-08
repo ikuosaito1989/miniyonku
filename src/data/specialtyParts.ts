@@ -1,5 +1,5 @@
 import type {Category} from './parts';
-export const specialtyShopIds=['torque','velocity','terrain'] as const;
+export const specialtyShopIds=['torque','velocity','terrain','endurance'] as const;
 export type SpecialtyShopId=typeof specialtyShopIds[number];
 export const isSpecialtyShop=(id:string):id is SpecialtyShopId=>(specialtyShopIds as readonly string[]).includes(id);
 export const specialtyParts: {id:string;category:Category;name:string;price:number;description:string;specs:Record<string,number>;performance:string}[]=
@@ -33,7 +33,17 @@ export const specialtyParts: {id:string;category:Category;name:string;price:numb
  {"id":"roller-special-terrain-flex","category":"roller","name":"トレック・フレックスリング","price":2800,"description":"凹凸の横揺れを制振。軽量リングより重い。","specs":{"weight":7.5,"friction":0.06,"stability":1.25,"damping":0.23},"performance":"重量7.5 g / 摩擦0.06 / 安定1.25倍 / 制振23%"},
  {"id":"battery-special-terrain-long","category":"battery","name":"トレック・ロングセル","price":2000,"description":"砂で時間が掛かる走行用。出力と軽さは控えめ。","specs":{"weight":47,"power":1.05,"endurance":500},"performance":"重量47 g / 出力1.05倍 / 持続係数500秒"},
  {"id":"accessory-special-terrain-damper","category":"accessory","name":"トレック・ロングダンパー","price":2900,"description":"着地と振動を吸収。増える重量に注意。","specs":{"weight":7,"efficiency":1,"stability":1.12,"damping":0.5},"performance":"重量7 g / 駆動効率1倍 / 安定1.12倍 / 制振50%"},
- {"id":"terminal-special-terrain-seal","category":"terminal","name":"トレック・保護接点","price":1700,"description":"通電を確保する端子。軽量型より重い。","specs":{"weight":2.4,"efficiency":0.98},"performance":"重量2.4 g / 駆動効率0.98倍"}
+ {"id":"terminal-special-terrain-seal","category":"terminal","name":"トレック・保護接点","price":1700,"description":"通電を確保する端子。軽量型より重い。","specs":{"weight":2.4,"efficiency":0.98},"performance":"重量2.4 g / 駆動効率0.98倍"},
+ {"id":"motor-special-endurance-steady","category":"motor","name":"マラソン・ステディ","price":3600,"description":"長距離向けの穏やかな回転。最高速は高回転型に譲る。","specs":{"rpm":20000,"torque":2.4,"weight":21},"performance":"回転数20000 rpm / トルク2.4 mN·m / 重量21 g"},
+ {"id":"motor-special-endurance-pace","category":"motor","name":"マラソン・ペース","price":6200,"description":"長丁場の巡航を重視。高回転型より伸びは控えめ。","specs":{"rpm":24000,"torque":2.5,"weight":23},"performance":"回転数24000 rpm / トルク2.5 mN·m / 重量23 g"},
+ {"id":"gear-special-endurance-cruise","category":"gear","name":"マラソンギア 4.2:1","price":1800,"description":"巡航と加速を両立。最高速は高速ギアに譲る。","specs":{"ratio":4.2,"weight":3.4},"performance":"減速比4.2:1 / 重量3.4 g"},
+ {"id":"chassis-special-endurance-stable","category":"chassis","name":"RM エンデュランス","price":4900,"description":"長時間の安定性を重視。軽量型より重い。","specs":{"weight":22,"efficiency":1.14,"stability":1.48,"compliance":1.35,"damping":0.15},"performance":"重量22 g / 駆動効率1.14倍 / 安定1.48倍 / 路面追従1.35倍 / 制振15%"},
+ {"id":"tire-special-endurance-steady","category":"tire","name":"マラソン・ミディアム","price":2200,"description":"安定した接地を優先。軽いスリックより重い。","specs":{"diameter":26,"weight":10,"grip":1.1,"compliance":1.25,"rebound":0.2},"performance":"径26 mm / 重量10 g / グリップ1.1 / 路面追従1.25倍 / 反発0.2"},
+ {"id":"wheel-special-endurance-cruise","category":"wheel","name":"マラソン・リム6","price":1900,"description":"旋回抵抗を抑える巡航向けリム。軽量型より重い。","specs":{"diameter":17,"weight":4,"cornerDrag":0.72},"performance":"径17 mm / 重量4 g / 旋回抵抗0.72倍"},
+ {"id":"roller-special-endurance-steady","category":"roller","name":"マラソン・ベアリング","price":2800,"description":"摩擦を抑えながら安定性を確保。軽量型より重い。","specs":{"weight":6.5,"friction":0.04,"stability":1.2,"damping":0.1},"performance":"重量6.5 g / 摩擦0.04 / 安定1.2倍 / 制振10%"},
+ {"id":"battery-special-endurance-ultralong","category":"battery","name":"マラソン・ウルトラセル","price":2600,"description":"大容量の耐久電池。短距離型より重く出力は控えめ。","specs":{"weight":52,"power":1.02,"endurance":900},"performance":"重量52 g / 出力1.02倍 / 持続係数900秒"},
+ {"id":"accessory-special-endurance-brace","category":"accessory","name":"マラソン・安定ブレース","price":2500,"description":"長周回の姿勢を安定させる。重量は増える。","specs":{"weight":4.5,"efficiency":1.04,"stability":1.12,"damping":0.12},"performance":"重量4.5 g / 駆動効率1.04倍 / 安定1.12倍 / 制振12%"},
+ {"id":"terminal-special-endurance-contact","category":"terminal","name":"マラソン・接点","price":1800,"description":"通電効率を確保する厚い端子。重量は増える。","specs":{"weight":2.3,"efficiency":0.985},"performance":"重量2.3 g / 駆動効率0.985倍"}
 ];
 export const specialtyPartIds=specialtyParts.map(p=>p.id);
 export const specialtyStock=(id:SpecialtyShopId)=>specialtyParts.filter(p=>p.id.includes('-special-'+id+'-')).map(p=>p.id);

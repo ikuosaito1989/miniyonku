@@ -3,6 +3,7 @@ import {zenithEquipment} from './zenithRace';
 import {rivals} from './rivals';
 import type {Equipment} from './machine';
 export function practiceEquipment(id:PracticeCourseId):Equipment{
+ if(id==='park-endurance')return {...zenithEquipment,body:'body-manta',motor:'motor-special-endurance-pace',gear:'gear-special-endurance-cruise',tire:'tire-special-endurance-steady',chassis:'chassis-special-endurance-stable',battery:'battery-special-endurance-ultralong'};
  const course=practiceCourses[id],dirt=course.surface.roughness>0;
  return {...zenithEquipment,body:'body-manta',motor:dirt?'motor-special-terrain-dune':course.hills?'motor-special-torque-pull':'motor-special-velocity-rev',gear:course.hills?'gear-special-terrain-rally':'gear-4',tire:dirt?'tire-special-terrain-block':'tire-2',chassis:dirt?'chassis-special-terrain-flex':'chassis-eclipse',battery:'battery-special-terrain-long'};
 }

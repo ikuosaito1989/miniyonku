@@ -13,8 +13,8 @@ import {useGame} from './store';
 import {decodeSave,snapshotGame} from './saveData';
 import {canStand,findWalkingPath} from './navigation';
 import {buildMachineModel} from './MachineModel';
-test('three specialty shops have exclusive stock, catalog entries and reachable street entrances',()=>{
- assert.equal(specialtyParts.length,30);
+test('four specialty shops have exclusive stock, catalog entries and reachable street entrances',()=>{
+ assert.equal(specialtyParts.length,40);
  const obstacles=[...townVenues.map(v=>({x:v.x,y:v.y,width:v.w,height:v.h})),...townBlocks.map(v=>({x:v.x,y:v.y,width:v.w,height:v.h}))];
  for(const id of specialtyShopIds){
   assert.equal(specialtyStock(id).length,10);assert.ok(canEnterShop(id,{legendRaceCompleted:false,villainDefeated:false}));

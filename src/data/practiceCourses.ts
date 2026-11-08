@@ -12,6 +12,7 @@ export const practiceCourses={
  'park-ridge':course('山稜ダートクロス','砂地と坂が重なる全面オフロードの山岳コース。','悪路の接地と登坂力の両方が必要。舗装用の軽量装備とは使い分けよう。',32,22,4,.06,4,1.6,{name:'山岳ダート',roughness:.9,grip:.72}),
  'park-velocity':course('流線ハイスピード','非常に長い直線と緩いカーブをつなぐ高速コース。','高回転モーターや高速ギア、大径タイヤの伸びを比べよう。',55,13,0,0,0,0,pavedSurface,2),
  'park-jump':course('翼丘ジャンプラリー','舗装の連続カーブに坂とジャンプ台を組み合わせた立体コース。','着地の反発と制振、ブレーキを調整。減速しすぎると飛距離が不足する。',30,22,4,.07,2,.8,pavedSurface,3,true),
+ 'park-endurance':course('翠風エンデュランス','長い周回を走る屋外耐久コース。電池の残量と後半の速度が勝負を分ける。','高出力の短距離電池と、重い長距離電池の走りを比べよう。',43,25,3,.035,0,0,pavedSurface,8),
 };
 export type PracticeCourseId=keyof typeof practiceCourses;
 export const practiceCourseIds=Object.keys(practiceCourses) as PracticeCourseId[];

@@ -13,14 +13,14 @@ import {recordRaceTimes,decodeTimeHistory} from './timeRecords';
 import {courseIntroduction} from './raceIntro';
 function drive(id:CircuitId,e=practiceEquipment(id as keyof typeof practiceCourses),lane=2){const t=getCircuitTrack(id),p=machinePerformance(e,{motorSeconds:60,batterySeconds:0});let s=startDriving(createDrivingState());for(let i=0;i<120*400&&s.status==='running';i++)s=stepDriving(s,p,0,lane,t.circuit.surface,t);return s;}
 test('ten distinct course geometries are finite, lane-fair, and completable by real non-sovereign builds',()=>{
- assert.equal(practiceCourseIds.length,10);const shapes=new Set<string>();
+ assert.equal(practiceCourseIds.length,11);const shapes=new Set<string>();
  for(const id of practiceCourseIds){const t=getCircuitTrack(id);shapes.add(Array.from({length:20},(_,i)=>{const p=t.sampleCircuit(i/20*t.circuitLength);return `${p.x.toFixed(2)},${p.z.toFixed(2)},${p.elevation.toFixed(2)}`;}).join('|'));
   for(let i=0;i<120;i++){const p=t.sampleLanePath(i/120*t.circuitLength,2);for(const n of [p.x,p.y,p.z,p.curvature,p.pathScale,p.pitch])assert.ok(Number.isFinite(n),id);}
   const result=drive(id);assert.equal(result.status,'finished',id);assert.deepEqual(drive(id,practiceEquipment(id),0),drive(id,practiceEquipment(id),4),id);
   for(const r of practiceRivals(id))assert.equal(drive(id,r.equipment).status,'finished',`${id}/${r.id}`);
   const race=createRaceState(practiceEquipment(id),42,undefined,false,id);assert.equal(race.racers.length,5);assert.ok(race.racers.every(r=>!Object.values(r.equipment).some(id=>id.includes('sovereign'))));assert.ok(courseIntroduction(id).feature);
  }
- assert.equal(shapes.size,10);
+ assert.equal(shapes.size,11);
 });
 test('full offroad is full offroad and hill courses have repeated real elevation and slope forces',()=>{
  for(const id of ['park-sand','park-gravel','park-ridge'] as const){const t=getCircuitTrack(id);for(let i=0;i<100;i++)assert.ok(t.surfaceAt(i/100*t.circuitLength).roughness>0);}
@@ -40,7 +40,7 @@ test('street entrances are reachable; independent races and records save without
 });
 
 test('random outdoor placement spans both axes, is stable by seed, and migrates old indoor saves to town',()=>{
- const parks=townVenues.filter(v=>v.kind==='outdoor');assert.equal(parks.length,10);assert.ok(new Set(parks.map(v=>Math.floor(v.x/500))).size>=4);assert.ok(new Set(parks.map(v=>Math.floor(v.y/400))).size>=3);
+ const parks=townVenues.filter(v=>v.kind==='outdoor');assert.equal(parks.length,11);assert.ok(new Set(parks.map(v=>Math.floor(v.x/500))).size>=4);assert.ok(new Set(parks.map(v=>Math.floor(v.y/400))).size>=3);
  const old={...snapshotGame(useGame.getInitialState()),location:'park-sand',lastShop:'park-sand'};
  const migrated=decodeSave({version:1,savedAt:1,game:old}).game;assert.equal(migrated.location,'town');assert.equal(migrated.townReturnVenue,'park-sand');assert.equal(migrated.lastShop,'komorebi');
 });
