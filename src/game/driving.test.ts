@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createStarterInventory, starterEquipment, equipmentSlots, type EquipmentSlot } from '../data/machine';
 import { parts } from '../data/parts';
-import { circuit, circuitLength } from '../data/circuit';
+import { circuit, circuitLength, getCircuitTrack } from '../data/circuit';
 import { createDrivingState, machinePerformance, startDriving, stepDriving } from './driving';
 
 function run(equipment=starterEquipment){
@@ -60,4 +60,16 @@ test('電池の持続特性が走行時間に応じた出力低下を変える',
   const baseline=machinePerformance(starterEquipment);
   const driving={...startDriving(createDrivingState()),time:60,speed:1};
   assert.ok(stepDriving(driving,{...baseline,batteryEndurance:180}).speed>stepDriving(driving,{...baseline,batteryEndurance:55}).speed);
+});
+test('コースアウトは高速超過・進行不能・登坂失敗を別の理由で判定する',()=>{
+  const track=getCircuitTrack('leaf'),performance=machinePerformance(starterEquipment);
+  const tightest=Array.from({length:1000},(_,i)=>i/1000*track.circuitLength).sort((a,b)=>track.sampleLanePath(b,2).curvature-track.sampleLanePath(a,2).curvature)[0];
+  const fast=stepDriving({time:0,distance:tightest,speed:30,stress:.18,status:'running'},performance,0,2,track.circuit.surface,track);
+  assert.equal(fast.stopReason,'overspeed');
+  const powerless={...performance,stallForce:0};
+  const blocked=stepDriving({time:0,distance:0,speed:0,stress:0,status:'running'},powerless,0,2,track.circuit.surface,track);
+  assert.equal(blocked.stopReason,'blocked');
+  const hill=getCircuitTrack('park-climb'),uphill=Array.from({length:1000},(_,i)=>i/1000*hill.circuitLength).find(d=>hill.sampleLanePath(d,2).pitch>.13)!;
+  const climb=stepDriving({time:0,distance:uphill,speed:.1,stress:0,status:'running'},powerless,0,2,hill.circuit.surface,hill);
+  assert.equal(climb.stopReason,'climb');assert.ok(climb.distance<uphill);
 });

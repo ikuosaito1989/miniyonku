@@ -46,6 +46,7 @@ export class TrialRenderer {
   private accumulator = 0;
   private lastReport = -1;
   private lappedAges=new Map<string,number>();
+  private crashAges=new Map<string,number>();
   private introFrame:ReturnType<typeof overviewFrame>|null=null;
   private overviewFrame:ReturnType<typeof overviewFrame>|null=null;
   private overviewMarkers=new Map<string,THREE.Sprite>();
@@ -323,6 +324,7 @@ export class TrialRenderer {
     }
     for(const racer of this.state.racers){
       if(racer.driving.status==='out'&&racer.driving.stopReason==='lapped')this.lappedAges.set(racer.id,(this.lappedAges.get(racer.id)??0)+(document.hidden?0:elapsed));
+      if(racer.driving.status==='out'&&['overspeed','blocked','climb','jump','loop'].includes(racer.driving.stopReason??''))this.crashAges.set(racer.id,(this.crashAges.get(racer.id)??0)+(document.hidden?0:elapsed));
     }
     const player=this.state.racers.find(r=>r.id==='player');
     if(player?.driving.status==='out'&&player.driving.stopReason==='lapped')this.showResults();
@@ -353,12 +355,19 @@ export class TrialRenderer {
         }
         const q=marker.position.clone().project(this.camera);labelBoxes.push({x:q.x,y:q.y});
       }
-      const crashed=racer.driving.status==='out'&&(!racer.driving.stopReason||racer.driving.stopReason==='jump'||racer.driving.stopReason==='loop');
-      car.position.set(p.x+p.upX*.015,(racer.driving.flightY??p.y)+(crashed?0.14:p.upY*.015),p.z+p.upZ*.015);
-      car.rotation.order='YXZ';car.rotation.set(racer.driving.flightY!==undefined?-Math.atan2(racer.driving.flightVelocity??0,Math.max(.1,racer.driving.speed)):-p.pitch,Math.atan2(p.tangentX,p.tangentZ),crashed?0.9:0);
+      const reason=racer.driving.stopReason;
+      const crashed=racer.driving.status==='out'&&['jump','loop','overspeed'].includes(reason??'');
+      const stopped=reason==='blocked'||reason==='climb'||reason==='loop';
+      const sideSign=racer.lane<this.track.circuit.lanes/2?-1:1;
+      const blowOut=reason==='overspeed'||reason==='jump';
+      const presentationAge=this.crashAges.get(racer.id)??0;
+      const blowSide=blowOut?sideSign*Math.min(1,presentationAge/.7)*(reason==='overspeed'?.75:.45):0;
+      const backDistance=reason==='climb'||reason==='loop'?Math.min(.8,presentationAge*1.15):0;
+      car.position.set(p.x+p.upX*.015+p.sideX*blowSide-p.tangentX*backDistance,(racer.driving.flightY??p.y)+(crashed?0.14+Math.sin(Math.min(1,presentationAge/.7)*Math.PI)*.55:p.upY*.015),p.z+p.upZ*.015+p.sideZ*blowSide-p.tangentZ*backDistance);
+      car.rotation.order='YXZ';car.rotation.set(racer.driving.flightY!==undefined?-Math.atan2(racer.driving.flightVelocity??0,Math.max(.1,racer.driving.speed)):-p.pitch,Math.atan2(p.tangentX,p.tangentZ)+(blowOut?sideSign*Math.min(1,presentationAge/.7)*.7:reason==='climb'||reason==='loop'?-Math.min(.22,presentationAge*.25):0),crashed?0.9:stopped?-.16:0);
       if((this.circuitId==='forge'||this.circuitId==='zenith')&&racer.driving.flightY===undefined&&!crashed)car.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(new THREE.Vector3(p.sideX,p.sideY,p.sideZ),new THREE.Vector3(p.upX,p.upY,p.upZ),new THREE.Vector3(p.forwardX,p.forwardY,p.forwardZ)));
       const direction=sign<0?-1:1;
-      const grounded=racer.driving.flightY===undefined&&!crashed&&racer.driving.status!=='out';
+      const grounded=racer.driving.flightY===undefined&&!crashed&&!stopped&&racer.driving.status!=='out';
       animateRunningGear(car,finishTrackDistance(racer,this.finishPresentation),elapsed,direction,p.curvature,grounded);
       if(grounded&&racer.driving.speed>.01){
         const motion=handlingPose(car.userData.handling,racer.driving.speed,p.curvature*this.track.cornerLoad,this.track.surfaceAt(racer.driving.distance).roughness,racer.driving.time,racer.driving.distance,direction);

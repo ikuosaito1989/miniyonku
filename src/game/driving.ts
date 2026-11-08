@@ -6,7 +6,7 @@ import type { TrackSurface } from '../data/surfaces';
 
 export const FIXED_STEP = 1/120;
 export const DIRT_CRAWL_SPEED=.12;
-export interface DrivingState { time: number; distance: number; speed: number; stress: number; status: 'ready'|'running'|'finished'|'out'; stopReason?:'retired'|'battery'|'lapped'|'jump'|'loop'; flightY?:number;flightVelocity?:number;flightLandingEnd?:number;landings?:number; }
+export interface DrivingState { time: number; distance: number; speed: number; stress: number; status: 'ready'|'running'|'finished'|'out'; stopReason?:'retired'|'battery'|'lapped'|'jump'|'loop'|'overspeed'|'blocked'|'climb'; flightY?:number;flightVelocity?:number;flightLandingEnd?:number;landings?:number; }
 export function machinePerformance(equipment: Equipment, condition:MachineCondition=freshCondition) {
   const get = (category: keyof Equipment) => {
     const part = parts.find(p => p.id === equipment[category] && p.category === equipmentSlots[category].category);
@@ -114,10 +114,18 @@ export function stepDriving(state: DrivingState, performance: Performance, laneO
     }
   }
   if(path?.loopRadius&&path.loopAngle>.3&&speed<.5)return {...state,time:state.time+FIXED_STEP,distance,speed:0,status:'out',stopReason:'loop'};
+  if(path&&!airborne&&path.pitch>.12&&speed<.16&&force<=slope+resistance){
+    const rollback=Math.min(state.distance,Math.max(.015,speed*FIXED_STEP));
+    return {...state,time:state.time+FIXED_STEP,distance:state.distance-rollback,speed:0,status:'out',stopReason:'climb'};
+  }
+  if(!airborne&&speed<.035&&force<resistance+wheelResistance+slope){
+    return {...state,time:state.time+FIXED_STEP,distance:state.distance,speed:0,status:'out',stopReason:'blocked'};
+  }
   if(path?.loopRadius&&Math.cos(path.loopAngle)<-.25&&speed**2/path.loopRadius<9.81*.92)stress+=FIXED_STEP*2;
   if(path&&!path.loopRadius&&Math.cos(path.bank)<-.5&&speed<2.5)stress+=FIXED_STEP*2;
   const finish=circuitLength*circuit.laps;
   const finished=distance>=finish;
   const fraction=finished?(finish-state.distance)/(distance-state.distance):1;
-  return {...(track.obstacles?{flightY,flightVelocity,flightLandingEnd,landings}:{}),time:state.time+FIXED_STEP*fraction,distance:Math.min(distance,finish),speed,stress,status:stress>0.18?'out':finished?'finished':'running'};
+  const overspeed=stress>0.18&&lateral>road.lateralLimit*1.45;
+  return {...(track.obstacles?{flightY,flightVelocity,flightLandingEnd,landings}:{}),time:state.time+FIXED_STEP*fraction,distance:Math.min(distance,finish),speed,stress,status:stress>0.18?'out':finished?'finished':'running',...(stress>0.18?{stopReason:overspeed?'overspeed':'blocked' as const}:{})};
 }
