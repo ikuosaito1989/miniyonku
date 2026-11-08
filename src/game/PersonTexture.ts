@@ -5,8 +5,10 @@ import { paintPixels, type PixelShape } from './pixelDrawing';
 /** 1/2ドットの描き込みと斜線を保持した高解像度原画。全人物・全歩行方向で共用。 */
 export function createPersonTexture(scene:Phaser.Scene,key:string,drawing:readonly PixelShape[]){
   if(scene.textures.exists(key))return;
-  const scale=3,texture=scene.textures.createCanvas(key,personSpriteSize.width*scale,personSpriteSize.height*scale)!;
+  const scale=6,texture=scene.textures.createCanvas(key,personSpriteSize.width,personSpriteSize.height)!;
   texture.context.scale(scale,scale);
+  texture.context.imageSmoothingEnabled=true;
+  texture.context.lineJoin='round';texture.context.lineCap='round';
   paintPixels(texture.context,drawing);
   texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
 }
