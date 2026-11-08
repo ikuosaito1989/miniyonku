@@ -3,11 +3,11 @@ import {personDrawing,type Facing} from './PeopleArt';
 import {pixelPen,type PixelShape} from './pixelDrawing';
 /** 名前で固定された別々の輪郭・眼・髪型。方向と歩行が変わっても同じ人物を保つ。 */
 export function npcDrawing(id:NpcAppearanceId,direction:Facing,frame=0):PixelShape[]{
- const a:NpcAppearance=npcAppearances[id],facing=direction==='left'?'right':direction,bob=frame===1||frame===3?1:0;
+ const a:NpcAppearance=npcAppearances[id],facing=direction==='left'?'right':direction,bob=frame===1||frame===3?.5:0;
  const original=a.kind==='owner'?['#607ca0','#b0c8de','#415674']:a.kind==='guide'?['#9c568c','#e6a6c5','#693f73']:a.kind==='mechanic'?['#317d91','#9bd3cc','#24536f']:['#b14b67','#ec9aa2','#7f3757'];
  const colors:Record<string,string>={[original[0]]:a.shirt,[original[1]]:a.light,[original[2]]:a.shade};
  const body=personDrawing(a.kind,facing,frame).filter(s=>(s.kind==='rect'?s.y:Math.min(...s.points.map(([,y])=>y)))>=35).map(s=>({...s,color:colors[s.color]??s.color}));
- const pen=pixelPen(),ink='#293341',shadow='#ba8575',skin=a.skin;
+ const pen=pixelPen(),ink='#42505a',shadow='#ba8575',skin=a.skin;
  const r=(x:number,y:number,w:number,h:number,c:string)=>pen.rect(x,y+bob,w,h,c);
  const p=(points:number[][],c:string)=>pen.polygon(points.map(([x,y])=>[x,y+bob] as const),c);
  r(26,33,9,7,shadow);r(28,34,5,4,skin);
@@ -46,6 +46,26 @@ export function npcDrawing(id:NpcAppearanceId,direction:Facing,frame=0):PixelSha
  }
  if(a.haircut==='cap'){
   const color=id==='sou'?'#e4e8db':id==='starter'?'#354f70':'#e0c382';p([[16,14],[19,5],[27,2],[36,4],[42,13]],color);p([[13,14],[43,12],[48,16],[38,18],[16,16]],color);r(20,8,17,1,'#fff0c8');
+ }
+ // 左上からの光を全住人で揃え、髪の束と服の縫い目を半ドットで描く。
+ // 帽子・髪型・顔の輪郭を塗り替えず、方向と歩行の上下動に追従する。
+ if(facing==='up'){
+  for(const [x,y] of [[20,17],[25,13],[31,15],[37,18]]){
+   r(x,y,1,6,a.highlight);r(x+1,y+5,.5,2,a.hair);
+  }
+ }else{
+  for(const [x,y] of (facing==='right'?[[20,15],[25,12],[30,10]]:[[18,16],[23,12],[29,10],[35,13]])){
+   r(x,y,1.5,.5,a.highlight);r(x+1,y+1,.5,2,a.highlight);
+  }
+  if(!a.glasses){
+   const eyeXs=facing==='right'?[36]:[21,34];
+   for(const x of eyeXs){r(x+2,23,1,.5,'#fff9e7');r(x+1,28,2,.5,'#d49c83');}
+  }
+  r(facing==='right'?38:26,34,3,.5,'#edc0a0');
+ }
+ // Fine fabric seams sit below the portrait and move with the torso.
+ for(const [x,y,w] of [[22,44,3],[34,47,3],[24,54,4]]){
+  r(x,y,w,.5,a.light);r(x+1,y+1,1,.5,a.shade);
  }
  const shapes=[...body,...pen.shapes];return direction==='left'?shapes.map(s=>s.kind==='rect'?{...s,x:60-s.x-s.w}:{...s,points:s.points.map(([x,y])=>[60-x,y] as const)}):shapes;
 }

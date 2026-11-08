@@ -23,7 +23,8 @@ export function paintPixelTree(c:CanvasRenderingContext2D,variant:number){
  const lobes=[[34,32,23,20],[58,28,22,19],[22,48,18,18],[47,48,28,24],[70,48,18,20],[33,66,21,18],[59,66,22,19]];
  for(const [i,[x,y,rx,ry]] of lobes.entries()){
   oval(x,y,rx+1,ry+1,'#2d4940');oval(x-1,y-2,rx,ry-1,['#4c7150','#557e52','#608654'][variant%3]);
-  oval(x-5,y-6,rx*.72,ry*.65,'#76985e');oval(x-8,y-9,rx*.42,ry*.37,'#9eb477');
+  oval(x+3,y+5,rx*.75,ry*.58,'#3d6247');oval(x-5,y-6,rx*.72,ry*.65,'#76985e');oval(x-8,y-9,rx*.42,ry*.37,'#9eb477');
+  for(let k=0;k<5;k++){const n=artNoise(i,k,variant+29),lx=x-rx/2+n%Math.max(2,rx),ly=y-ry/2+(n>>>5)%Math.max(2,ry);r(lx,ly,3,1,'#c2cc922e');r(lx+2,ly+2,2,1,'#304c3d3d');}
   for(let j=0;j<48;j++){const n=artNoise(i*53+j,variant,17),px=x-rx+3+n%Math.max(1,rx*2-6),py=y-ry+3+(n>>>8)%Math.max(1,ry*2-6);if((px-x)**2/(rx*rx)+(py-y)**2/(ry*ry)>.85)continue;
    const light=py<y-2&&px<x+6;r(px,py,2+n%3,1,light?'#b1c188':'#36593f');r(px+1,py+1,2,1,light?'#89a56c':'#66875a');
   }

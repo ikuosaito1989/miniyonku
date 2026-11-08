@@ -21,7 +21,7 @@ export function drawTownCrowd(scene:Phaser.Scene){
    }
    return key;
   };
-  const shadow=scene.add.graphics().fillStyle(0x273e43,.22).fillEllipse(0,8,29,9);
+  const shadow=scene.add.graphics().fillStyle(0x344d48,.10).fillEllipse(1,9,35,11).fillStyle(0x263f40,.20).fillEllipse(0,8,23,6);
   const sprite=scene.add.image(0,12,key(p.facing)).setOrigin(.5,1).setDisplaySize(personSpriteSize.displayWidth,personSpriteSize.displayHeight);
   const root=scene.add.container(p.x,p.y,[shadow,sprite]).setDepth(p.y);
   return {p,index,sprite,root,key};

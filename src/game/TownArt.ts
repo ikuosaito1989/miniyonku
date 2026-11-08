@@ -21,6 +21,8 @@ function ground(c:CanvasRenderingContext2D){
  const road=(x:number,y:number,w:number,h:number)=>{
   r(x+3,y+4,w,h,'#3d55574d');r(x,y,w,h,'#495860');r(x+7,y+7,w-14,h-14,'#667377');
   for(let yy=y+10;yy<y+h-7;yy+=11)for(let xx=x+10;xx<x+w-7;xx+=13){const n=noise(xx,yy);if(n%3===0)r(xx,yy,2,1,n%2?'#85918a':'#51646a');}
+  // Broken edge highlights and small aggregate clusters keep long asphalt strips organic.
+  for(let yy=y+18;yy<y+h-10;yy+=31)for(let xx=x+18;xx<x+w-10;xx+=37){const n=noise(xx,yy,91);if(n%4)continue;const px=xx+n%9,py=yy+(n>>>5)%8;r(px,py,3,1,'#a5aaa01f');r(px+2,py+2,2,1,'#344d5524');}
   r(x,y,w,2,'#e0d3a5');r(x,y,2,h,'#c8c39c');r(x+w-4,y,4,h,'#8e9988');r(x,y+h-4,w,4,'#84928a');
  };
  for(const x of townRoads.vertical){road(x-70,72,140,2250);for(let y=88;y<2320;y+=30){r(x-2,y,4,13,'#c9bd8d');r(x-1,y,1,11,'#e4d5a5');for(const xx of [x-70,x+63]){r(xx,y,7,1,'#6e8279');r(xx,y+1,7,1,'#d8cfaa');}}

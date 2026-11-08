@@ -301,7 +301,7 @@ export class ShopScene extends Phaser.Scene {
     person.add(marker);
   }
   private person(x:number,y:number,kind:PersonKind,name?:string){
-    const shadow=this.add.graphics();shadow.fillStyle(0x343847,.22).fillEllipse(0,8,29,9);
+    const shadow=this.add.graphics();shadow.fillStyle(0x344d48,.10).fillEllipse(1,9,35,11);shadow.fillStyle(0x263f40,.20).fillEllipse(0,8,23,6);
     const appearance=name?npcAppearanceId(name):null;
     const key=appearance?`npc-${appearance}-down-0`:`person-${kind}-down-0`;
     if(appearance&&!this.textures.exists(key))createPersonTexture(this,key,npcDrawing(appearance,'down'));

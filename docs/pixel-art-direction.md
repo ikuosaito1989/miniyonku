@@ -19,3 +19,11 @@
 `townCrowd.ts` はコースを見る観客、店先・歩道・住宅前の住民を座標固定で配置する。入口・帰還地点・看板前・案内人の会話位置を確保し、足元の障害物を `ShopScene` の経路探索と衝突判定へ渡す。`TownCrowdArt.ts` は共通人物原画で子ども・大人・年配の外観を使い、模型や袋を持たせる。足元の位置を動かさず、ときどき顔を向ける仕草を付け、画面外は描画しない。進行や保存データに群衆を追加しない。
 
 `townLife.test.ts` は全コースの観客、配置の再現性、施設・看板・案内人・職人までの実歩行経路を検証する。
+
+## 人物と屋外コースの仕上げ
+
+人物の60×80原画は各キャラクターと方向の形状を維持し、住人の髪の束・目元・衣服の縫い目に半ドットの明暗を加える。歩行の足運びと上下動は原画のフレームで表現し、歩行速度・接触判定は変えない。街・店内の人物は左上からの光と二段階の接地影を共有する。道路の骨材、樹冠の葉群、コース外壁とレーン縁の明暗は既存のキャッシュ済み描画に焼き込み、毎フレームのオブジェクトを増やさない。
+
+画像生成を使った将来の原画更新では、単発のイラストを歩行画像に置き換えず、同一人物の4方向×4歩行フレーム、60×80の範囲、足元位置、半ドット格子、透過背景を揃えてから個別に検証する。生成用の指示例：
+
+> Create an original Japanese 16-bit RPG character sprite sheet using the supplied existing character as an identity and costume reference. Four directions (front, left, back, right), four walk frames per direction, same exact head size, proportions, foot anchor and costume in every frame. Refined clusters for hair, fabric folds, shoes and warm upper-left light; restrained blue-green and warm stone palette matching the supplied model-shop background. Transparent background, no labels, no ground shadow, no blur, no glow, no perspective change. Preserve the character's defining hair, facial features and clothing; do not copy any existing franchise character.

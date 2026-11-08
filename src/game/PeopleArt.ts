@@ -45,7 +45,7 @@ export function personDrawing(kind:PersonKind,direction:Facing,frame:number):Pix
   if(['player'].includes(kind))return playerDrawing(direction,frame);
   const pen=pixelPen(),r=pen.rect,p=pen.polygon,c=outfits[kind];
   const side=direction==='left'||direction==='right',back=direction==='up';
-  const step=frame===1?2:frame===3?-2:0,bob=step?1:0;
+  const step=frame===1?2.5:frame===3?-2.5:0,bob=step?.5:0;
   const adult=kind==='owner',wide=kind==='owner'?2:0;
   const skin='#f3c5a0',skinLight='#ffe2b6',skinShadow='#ca8d79';
   // 後ろ側の腕、左右に分かれたズボンと踵。横顔では遠い足を暗くする。

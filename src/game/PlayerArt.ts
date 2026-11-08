@@ -1,10 +1,10 @@
 import {pixelPen,type PixelShape} from './pixelDrawing';
 import type {Facing} from './PeopleArt';
-export const playerPalette={ink:'#20283e',hair:'#50372d',hairLight:'#987047',white:'#f2f4eb',whiteShade:'#9daebe',blue:'#267fc4',blueLight:'#67c5ed',blueShade:'#164877',skin:'#f0bf91',skinLight:'#ffdcab',skinShade:'#be8064'};
+export const playerPalette={ink:'#354653',hair:'#50372d',hairLight:'#987047',white:'#f2f4eb',whiteShade:'#9daebe',blue:'#267fc4',blueLight:'#67c5ed',blueShade:'#164877',skin:'#f0bf91',skinLight:'#ffdcab',skinShade:'#be8064'};
 /** 白青のキャップ、半袖ジャージ、短パンの小学生レーサー。既存の48×64表示を維持。 */
 export function playerDrawing(direction:Facing,frame=0):PixelShape[]{
  const c=playerPalette,pen=pixelPen(),r=pen.rect,p=pen.polygon;
- const side=direction==='right'||direction==='left',back=direction==='up',step=frame===1?2:frame===3?-2:0,bob=step?1:0;
+ const side=direction==='right'||direction==='left',back=direction==='up',step=frame===1?2.5:frame===3?-2.5:0,bob=step?.5:0;
  for(let leg=0;leg<2;leg++){
   const x=side?25+leg*5:21+leg*11,offset=leg?step:-step;
   p([[x,54],[x+7,54],[x+7,69+offset],[x+9,74+offset],[x+8,77+offset],[x-2,77+offset],[x-2,73+offset],[x,68+offset]],c.ink);
