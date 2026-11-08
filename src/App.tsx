@@ -1,3 +1,4 @@
+import {RaceOpponentChoice} from './RaceOpponentChoice';
 import {Library} from './Library';
 import {PodiumCeremony} from './PodiumCeremony';
 import {KoyaEscort} from './KoyaEscort';
@@ -92,6 +93,7 @@ export function App(){
         {game.overlay==='proficiency'&&<ProficiencyBoard/>}
         {game.overlay==='legends'&&<LegendGallery/>}
         {game.overlay==='time-board'&&<TimeBoard/>}
+        {game.overlay==='race-opponents'&&<RaceOpponentChoice/>}
         {game.overlay==='settings'&&<GameSettings/>}
         {game.overlay==='cheat'&&<CheatPanel/>}
         {game.overlay==='setting'&&<SettingView/>}

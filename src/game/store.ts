@@ -1,3 +1,6 @@
+import {opponentCourseAvailable} from './raceOpponents';
+import {officialTimeBoards} from '../data/timeBoard';
+import {raceRulesVersion} from './timeRecords';
 import type {OnlineChallenge, OnlineRecord} from './onlineRecords';
 import {isPracticeCourse,type PracticeCourseId} from '../data/practiceCourses';
 import type {CircuitId} from '../data/circuit';
@@ -35,6 +38,7 @@ import { isSalesShop, canEnterShop, currentShop, type ShopId, type WorldLocation
 import { challenger, challengerInvitation } from '../data/challenger';
 export type DialogueStage='none'|'legend-intro'|'legend-invite'|'legend-debrief'|'villain-intro'|'villain-win'|'villain-loss'|'doctor-gift'|'official-invite';
 export interface GameState extends Wallet {
+  raceChoiceCircuit:CircuitId|null;raceChoiceFromBoard:boolean;mobChallenge:CircuitId|null;openRaceChoice:(id:CircuitId)=>void;startMobTrial:(id:CircuitId)=>void;
   onlineChallenge:OnlineChallenge|null;startOnlineTrial:(circuitId:CircuitId,records:OnlineRecord[])=>void;
   adviceThinking:boolean;bodyPaint:number|null;setBodyPaint:(color:number|null)=>void;tutorialStage:TutorialStage;tutorialReturn:SavedGame|null;retryCheckpoint:SavedGame|null;retryFromSave:()=>void;
   startTutorial:(practice?:boolean)=>void;resumeTutorial:()=>void;inspectTutorial:(slot:EquipmentSlot)=>void;openTutorialShop:()=>void;finishTutorial:()=>void;
@@ -74,7 +78,7 @@ export interface GameState extends Wallet {
   selectUnit:(slot:'motor'|'battery',id:string)=>void; breakIn:()=>void;
   raceAttempt: number; settledAttempt: number; lastPrize: number;
   settleRace: (attempt: number, race: RaceState) => void;
-  overlay: 'library' | 'podium' | 'towa-escort' | 'escort' | 'opening' | 'time-board' | 'mission' | 'town-map' | 'arrival' | 'dialogue' | 'shop' | 'race' | 'setting' | 'settings' | 'proficiency' | 'legends' | 'cheat' | 'game-over' | null; speaker: string; dialogue: string; shopAfter: boolean; notice: string; nearby: string;
+  overlay: 'race-opponents' | 'library' | 'podium' | 'towa-escort' | 'escort' | 'opening' | 'time-board' | 'mission' | 'town-map' | 'arrival' | 'dialogue' | 'shop' | 'race' | 'setting' | 'settings' | 'proficiency' | 'legends' | 'cheat' | 'game-over' | null; speaker: string; dialogue: string; shopAfter: boolean; notice: string; nearby: string;
   openSetting: () => void; equip: (id: string,slot?:EquipmentSlot) => void;
   openSettings:()=>void;libraryShelf:Category|'all';enterLibrary:()=>void;openLibrary:(category?:Category|'all')=>void;
   startTrial: () => void;
@@ -89,7 +93,7 @@ function updateCup(s:GameState,cup:CupProgress){
 }
 function outdoorRaceState(s:GameState,id:PracticeCourseId):Partial<GameState>{
  if(s.location!=='town'||s.overlay!==null||s.openingActive||s.gameOver||!isPracticeCourse(id))return {};
- return {outdoorCourse:id,townReturnVenue:id,overlay:'race',officialChallengeActive:false,officialReplayActive:false,officialQualificationNotice:false,shopAfter:false,notice:'',legendChallengeActive:false,legendDebriefPending:false,villainChallengeActive:false,villainDebriefPending:false,raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,qualificationNotice:false};
+ return {raceChoiceCircuit:null,raceChoiceFromBoard:false,mobChallenge:null,onlineChallenge:null,outdoorCourse:id,townReturnVenue:id,overlay:'race',officialChallengeActive:false,officialReplayActive:false,officialQualificationNotice:false,shopAfter:false,notice:'',legendChallengeActive:false,legendDebriefPending:false,villainChallengeActive:false,villainDebriefPending:false,raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,qualificationNotice:false};
 }
 export const useGame = create<GameState>((set) => ({
   adviceThinking:false,bodyPaint:null,setBodyPaint:color=>set({bodyPaint:decodeBodyPaint(color)}),tutorialStage:'pending',tutorialReturn:null,retryCheckpoint:null,
@@ -147,8 +151,15 @@ export const useGame = create<GameState>((set) => ({
     return {tutorialStage:s.tutorialStage==='pending'?'done':s.tutorialStage,openingStep:OPENING_END,openingActive:false,location:'komorebi',lastShop:'komorebi',townReturnVenue:null,overlay:showSetting?'setting':null,shopAfter:false,nearby:'',notice:''};
   }),
   legacyTimeHistory:{},timeBoardCircuit:null,officialReplayActive:false,
+  raceChoiceCircuit:null,raceChoiceFromBoard:false,mobChallenge:null,
+  openRaceChoice:id=>set(s=>!opponentCourseAvailable(s,id)||s.overlay!==null&&s.overlay!=='time-board'&&s.overlay!=='race-opponents'&&s.overlay!=='dialogue'?s:{raceChoiceCircuit:id,raceChoiceFromBoard:s.overlay==='time-board',overlay:'race-opponents',timeBoardCircuit:id,shopAfter:false,notice:''}),
+  startMobTrial:id=>set(s=>{
+    if(s.overlay!=='race-opponents'||s.raceChoiceCircuit!==id||!opponentCourseAvailable(s,id))return s;
+    if(isPracticeCourse(id))return {...outdoorRaceState({...s,overlay:null},id),raceChoiceCircuit:null,mobChallenge:null,onlineChallenge:null};
+    return {qualificationNotice:false,officialQualificationNotice:false,thirdShopNotice:false,legendDebriefPending:false,villainDebriefPending:false,mobChallenge:id,onlineChallenge:null,outdoorCourse:null,overlay:'race',officialChallengeActive:false,officialReplayActive:false,legendChallengeActive:false,villainChallengeActive:false,podiumPending:false,shopAfter:false,dialogueStage:'none',raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,notice:''};
+  }),
   onlineChallenge:null,
-  startOnlineTrial:(circuitId,records)=>set(s=>s.overlay!=='time-board'||!records.length||records.length>4?{}:{onlineChallenge:{circuitId,records:structuredClone(records)},overlay:'race',officialChallengeActive:false,officialReplayActive:false,legendChallengeActive:false,villainChallengeActive:false,raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,notice:''}),
+  startOnlineTrial:(circuitId,records)=>set(s=>(s.overlay!=='time-board'&&s.overlay!=='race-opponents')||!opponentCourseAvailable(s,circuitId)||s.overlay==='race-opponents'&&s.raceChoiceCircuit!==circuitId||!records.length||records.length>4||records.some(r=>r.circuitId!==circuitId||r.rulesVersion!==raceRulesVersion||!Number.isFinite(r.time)||r.time<=0)?s:{qualificationNotice:false,officialQualificationNotice:false,thirdShopNotice:false,legendDebriefPending:false,villainDebriefPending:false,shopAfter:false,dialogueStage:'none',onlineChallenge:{circuitId,records:structuredClone(records)},mobChallenge:null,outdoorCourse:null,overlay:'race',officialChallengeActive:false,officialReplayActive:false,legendChallengeActive:false,villainChallengeActive:false,podiumPending:false,raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,notice:''}),
   timeHistory:{},openTimeBoard:(id)=>set(s=>s.location==='town'&&!isPracticeCourse(id??'')||isSalesShop(s.location)||s.overlay==='race'||(s.overlay==='escort'||s.overlay==='towa-escort'||s.overlay==='podium')||s.overlay==='arrival'?s:{overlay:'time-board',shopAfter:false,timeBoardCircuit:id??null}),
   yuunagiUnlocked:false,yuunagiBestTime:null,finalQualified:false,
   wakabaCup:emptyCup(),technicalCup:emptyCup(),finalCup:emptyCup(),grandprixCleared:false,zenithCup:emptyCup(),zenithCleared:false,akatsukiRaceCount:0,zenithQualified:false,gameOver:false,wakabaUnlocked:false,thirdOfficialQualified:false,
@@ -157,7 +168,7 @@ export const useGame = create<GameState>((set) => ({
   openOfficialRace:round=>set(s=>{
     if(s.gameOver||s.overlay==='race'||(s.overlay==='escort'||s.overlay==='towa-escort'||s.overlay==='podium')||s.overlay==='arrival')return s;
     if(s.location!=='stadium-5'&&s.location!=='stadium-9'&&s.location!=='stadium-10'&&s.location!=='stadium-7')return {overlay:'dialogue',speaker:'森野 陸',dialogue:'公式戦は各公式会場のコースで開催するよ。若葉杯の総合入賞でわかば模型店、優勝で第3公式大会への出場権が得られる。一度限りの勝負に向けて準備しよう。',dialogueStage:'none',shopAfter:false};
-    if(s.zenithCleared){const selected=s.location==='stadium-5'?(round==='dirt'?'dirt':'speed'):s.location==='stadium-9'?'technical':s.location==='stadium-10'?'final':'zenith';return {officialRound:selected,overlay:'dialogue',speaker:'大会受付係',dialogue:'クリア後の公式コース・タイムアタックです。1台で何度でも挑戦できます。本編の大会結果は変わりません。星皇パーツを1つでも装着した走行は記録対象外です。準備ができたらスタートしましょう。',dialogueStage:'official-invite',shopAfter:false};}
+    if(s.zenithCleared){const selected=s.location==='stadium-5'?(round==='dirt'?'dirt':'speed'):s.location==='stadium-9'?'technical':s.location==='stadium-10'?'final':'zenith';return {officialRound:selected,raceChoiceCircuit:officialTimeBoards(s.location).find(b=>b.circuitId===(selected==='speed'?'sprint':selected==='dirt'?'sun':selected==='technical'?'comet':selected==='final'?'grandprix':'zenith'))!.circuitId,raceChoiceFromBoard:false,overlay:'race-opponents',speaker:'大会受付係',dialogue:'クリア後の公式コース・タイムアタックです。1台で何度でも挑戦できます。本編の大会結果は変わりません。星皇パーツを1つでも装着した走行は記録対象外です。準備ができたらスタートしましょう。',dialogueStage:'official-invite',shopAfter:false};}
     const cup=activeCup(s),kind=cupKind(s),next=activeRound(s);
     if(cupComplete(cup,kind))return {overlay:'dialogue',speaker:'大会受付係',dialogue:`この大会は出場済みです。総合${cupPlayerPlace(cup)}位。公式大会は一度限りで、再出場はできません。`,dialogueStage:'none',shopAfter:false};
     if(round&&round!==next)return {overlay:'dialogue',speaker:'大会受付係',dialogue:next==='speed'?'まずは第1戦の高速コースから出場してください。':'第1戦は終了しました。ピットで装備を組み直し、第2戦のダートへ進んでください。',dialogueStage:'none',shopAfter:false};
@@ -166,7 +177,7 @@ export const useGame = create<GameState>((set) => ({
   startOfficialRace:()=>set(s=>{
     if(s.gameOver||s.overlay==='race'||(s.overlay==='escort'||s.overlay==='towa-escort'||s.overlay==='podium')||s.overlay==='arrival'||s.location!=='stadium-5'&&s.location!=='stadium-9'&&s.location!=='stadium-10'&&s.location!=='stadium-7')return s;
     if(!(s.location==='stadium-7'?s.zenithQualified:s.location==='stadium-10'?s.finalQualified:s.location==='stadium-9'?s.thirdOfficialQualified:s.officialQualified))return s;
-    if(s.zenithCleared)return {officialRound:s.location==='stadium-5'?(s.officialRound==='speed'?'speed':'dirt'):s.location==='stadium-9'?'technical':s.location==='stadium-10'?'final':'zenith',overlay:'race',officialChallengeActive:true,officialReplayActive:true,legendChallengeActive:false,villainChallengeActive:false,podiumPending:false,shopAfter:false,dialogueStage:'none',notice:'',raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0};
+    if(s.zenithCleared)return {raceChoiceCircuit:null,raceChoiceFromBoard:false,mobChallenge:null,onlineChallenge:null,officialRound:s.location==='stadium-5'?(s.raceChoiceCircuit?(s.raceChoiceCircuit==='sun'?'dirt':'speed'):(s.officialRound==='speed'?'speed':'dirt')):s.location==='stadium-9'?'technical':s.location==='stadium-10'?'final':'zenith',overlay:'race',officialChallengeActive:true,officialReplayActive:true,legendChallengeActive:false,villainChallengeActive:false,podiumPending:false,shopAfter:false,dialogueStage:'none',notice:'',raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0};
     const round=activeRound(s),id=round==='zenith'?'zenith':round==='final'?'grandprix':round==='technical'?'comet':round==='speed'?'sprint':'sun',old=activeCup(s),cup=enterCupHeat(old,id,cupKind(s));
     if(cup===old)return s;
     return {retryCheckpoint:snapshotGame(s),...(s.location==='stadium-7'?{zenithCup:cup}:s.location==='stadium-10'?{finalCup:cup}:s.location==='stadium-9'?{technicalCup:cup}:{wakabaCup:cup}),overlay:'race',officialChallengeActive:true,officialRound:round,legendChallengeActive:false,villainChallengeActive:false,legendDebriefPending:false,villainDebriefPending:false,shopAfter:false,dialogueStage:'none',notice:'',raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,officialQualificationNotice:false,qualificationNotice:false,thirdShopNotice:false};
@@ -232,7 +243,7 @@ export const useGame = create<GameState>((set) => ({
     const practice=breakInPractice(motor?.seconds??0,duration);
     return {units,proficiencyPoints:s.proficiencyPoints+practice,notice:`${duration.toFixed(0)}秒の慣らし運転を行いました。電池の残量は減りません。${practice>0?' 整備の熟練度が上がりました。':''}`};
   }),
-  startTrial: () => set(s=>(s.overlay==='escort'||s.overlay==='towa-escort'||s.overlay==='podium')||s.gameOver||s.location==='library'||isSalesShop(s.location)||s.location==='town'||s.location==='stadium-5'||s.location==='stadium-9'||s.location==='stadium-10'||s.location==='stadium-7'?s:({tutorialStage:s.tutorialStage==='start'||s.tutorialStage==='racing'?'racing':s.tutorialStage,overlay:'race',officialChallengeActive:false,officialQualificationNotice:false,shopAfter:false,notice:'',legendChallengeActive:false,legendDebriefPending:false,villainChallengeActive:false,villainDebriefPending:false,thirdShopNotice:false,raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,qualificationNotice:false})),
+  startTrial: () => set(s=>(s.overlay==='escort'||s.overlay==='towa-escort'||s.overlay==='podium')||s.gameOver||s.location==='library'||isSalesShop(s.location)||s.location==='town'||s.location==='stadium-5'||s.location==='stadium-9'||s.location==='stadium-10'||s.location==='stadium-7'?s:({raceChoiceCircuit:null,raceChoiceFromBoard:false,mobChallenge:null,onlineChallenge:null,tutorialStage:s.tutorialStage==='start'||s.tutorialStage==='racing'?'racing':s.tutorialStage,overlay:'race',officialChallengeActive:false,officialQualificationNotice:false,shopAfter:false,notice:'',legendChallengeActive:false,legendDebriefPending:false,villainChallengeActive:false,villainDebriefPending:false,thirdShopNotice:false,raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,qualificationNotice:false})),
   settleRace: (attempt,race) => set(s=>{
     if(attempt!==s.raceAttempt)return s;
     const player=race.racers.find(r=>r.id==='player');
@@ -242,7 +253,7 @@ export const useGame = create<GameState>((set) => ({
       const id=player.equipment[slot];units[id]=(units[id]??[]).map(u=>u.id===s.selectedUnits[slot]?{...u,seconds:u.seconds+delta}:u);
     }
     const reward=race.phase==='finished'&&s.settledAttempt!==attempt;
-    if(s.onlineChallenge)return !delta&&!reward?s:{units,usageSeconds:Math.max(s.usageSeconds,seconds),...(reward?{timeHistory:recordRaceTimes(s.timeHistory,race,attempt),settledAttempt:attempt,lastPrize:0}:{})};
+    if(s.onlineChallenge||s.mobChallenge&&s.location.startsWith('stadium-'))return !delta&&!reward?s:{units,usageSeconds:Math.max(s.usageSeconds,seconds),...(reward?{timeHistory:recordRaceTimes(s.timeHistory,race,attempt),settledAttempt:attempt,lastPrize:0}:{})};
     const prize=reward&&!s.legendChallengeActive?racePrize(race):0;
     const firstWin=reward&&s.location==='komorebi'&&!s.legendChallengeActive&&player?.driving.status==='finished'&&rankRacers(race)[0]?.id==='player'&&!s.unlockedRaces.includes(nextShopRace.id);
     const completedLegend=reward&&s.legendChallengeActive&&(player?.driving.status==='finished'||player?.driving.stopReason==='lapped')&&rankRacers(race)[0]?.id.startsWith('legend-')===true;
@@ -281,7 +292,8 @@ export const useGame = create<GameState>((set) => ({
   talk: (speaker, dialogue, shopAfter = false) => set({ overlay:'dialogue',speaker,dialogue,shopAfter,dialogueStage:'none',adviceThinking:false }),
   advance: () => set(s => s.dialogueStage==='legend-intro'?{overlay:'dialogue',speaker:'火野 岳',dialogue:'優勝したばかりで悪いが、僕たちとも走ってくれないか？ 速さの世界を見せてあげるよ。',dialogueStage:'legend-invite'}:{ overlay: s.shopAfter ? 'shop' : null, shopAfter:false,notice:'',dialogueStage:'none' }),
   close: () => set(s=>{
-    if(s.overlay==='race'&&s.onlineChallenge)return {overlay:'time-board',onlineChallenge:null,notice:''};
+    if(s.overlay==='race'&&(s.onlineChallenge||s.mobChallenge))return {overlay:s.raceChoiceCircuit?'race-opponents':'time-board',onlineChallenge:null,mobChallenge:null,notice:''};
+    if(s.overlay==='race-opponents')return {overlay:s.raceChoiceFromBoard?'time-board':null,raceChoiceCircuit:null,raceChoiceFromBoard:false,notice:''};
     if(s.openingActive)return s;
     if(s.overlay==='game-over')return s;
     if(s.overlay==='race'&&s.outdoorCourse)return {overlay:null,outdoorCourse:null,shopAfter:false,notice:''};

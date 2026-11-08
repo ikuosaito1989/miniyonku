@@ -138,7 +138,7 @@ test('先頭がゴールしたら砂で停止中・未発進でも即座に終�
 test('オンライン対戦は完走しても賞金・進行・熟練度を変更せず、消耗と記録だけを保存する',()=>{
  const original=useGame.getState();
  try{
-  useGame.setState({...useGame.getInitialState(),location:'komorebi',overlay:'time-board'});
+  useGame.setState({...useGame.getInitialState(),location:'komorebi',overlay:'time-board',zenithCleared:true,openingActive:false});
   const record={circuitId:'leaf' as const,rulesVersion:2,time:30,equipment:{...starterEquipment},condition:{motorSeconds:60,batterySeconds:0},displayName:'記録',playerId:'a'.repeat(64),recordedAt:new Date(0).toISOString()};
   useGame.getState().startOnlineTrial('leaf',[record]);
   const before=useGame.getState();

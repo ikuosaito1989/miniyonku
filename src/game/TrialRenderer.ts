@@ -1,3 +1,4 @@
+import {withMobRivals} from './mobRace';
 import {VenueAnimation} from './VenueAnimation';
 import {raceCourseDetails} from './RaceCourseDetails';
 import {isPracticeCourse} from '../data/practiceCourses';
@@ -57,10 +58,11 @@ export class TrialRenderer {
   private resetIntroClock=()=>{this.introLastTime=0;};
   private reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  constructor(private host: HTMLElement, private equipment: Equipment, private report: (state: RaceState) => void, private reportFinish:(state:FinishPresentation)=>void, private condition:MachineCondition=freshCondition, private seed=0x5eed,private challenge:RaceChallenge=false,private circuitId:CircuitId='leaf',private reportIntro:(intro:RaceIntro)=>void=()=>{},private bodyPaint:number|null=null,onlineRecords:OnlineRecord[]|null=null) {
+  constructor(private host: HTMLElement, private equipment: Equipment, private report: (state: RaceState) => void, private reportFinish:(state:FinishPresentation)=>void, private condition:MachineCondition=freshCondition, private seed=0x5eed,private challenge:RaceChallenge=false,private circuitId:CircuitId='leaf',private reportIntro:(intro:RaceIntro)=>void=()=>{},private bodyPaint:number|null=null,onlineRecords:OnlineRecord[]|null=null,mobRace=false) {
     this.track=getCircuitTrack(circuitId);
     this.state=createRaceState(equipment,seed,condition,challenge,circuitId,this.bodyPaint);
     if(onlineRecords)this.state=withOnlineRivals(this.state,onlineRecords);
+    else if(mobRace)this.state=withMobRivals(this.state);
     this.renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});
     this.renderer.setPixelRatio(1);
     this.renderer.setClearColor((challenge==='official'||challenge==='time-attack')?0x344d5b:0x315b2a);

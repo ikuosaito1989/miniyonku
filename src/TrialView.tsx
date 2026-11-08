@@ -47,17 +47,17 @@ export default function TrialView(){
   const villainChallenge=useGame(s=>s.villainChallengeActive),thirdShopNotice=useGame(s=>s.thirdShopNotice);
   const aozoraWon=useGame(s=>s.aozoraWon),villainDefeated=useGame(s=>s.villainDefeated);
   const officialChallenge=useGame(s=>s.officialChallengeActive),officialQualificationNotice=useGame(s=>s.officialQualificationNotice);
-  const online=useGame(s=>s.onlineChallenge);
+  const online=useGame(s=>s.onlineChallenge),mob=useGame(s=>s.mobChallenge),raceChoice=useGame(s=>s.raceChoiceCircuit),exhibition=!!online||!!mob;
   const replay=useGame(s=>s.officialReplayActive),recordEligible=isRecordEquipmentEligible(equipment);
   const challenge=online||replay?'time-attack' as const:officialChallenge?'official' as const:legendChallenge?true:villainChallenge?'villain' as const:false;
   const outdoor=useGame(s=>s.outdoorCourse);
-  const location=useGame(s=>s.location),shop=outdoor?modelShops[outdoor]:officialChallenge?modelShops.hinata:currentShop(location);
+  const location=useGame(s=>s.location),noRewards=!!online||!!mob&&location.startsWith('stadium-'),shop=outdoor?modelShops[outdoor]:officialChallenge?modelShops.hinata:currentShop(location);
   const officialRound=useGame(s=>s.officialRound),wakabaCup=useGame(s=>s.wakabaCup),technicalCup=useGame(s=>s.technicalCup),finalCup=useGame(s=>s.finalCup),zenithCup=useGame(s=>s.zenithCup),gameOver=useGame(s=>s.gameOver),thirdQualified=useGame(s=>s.thirdOfficialQualified);
   const grandprix=location==='stadium-10',zenith=location==='stadium-7';
   const cup=zenith?zenithCup:grandprix?finalCup:location==='stadium-9'?technicalCup:wakabaCup,kind=zenith?'zenith' as const:grandprix?'final' as const:location==='stadium-9'?'technical' as const:'wakaba' as const;
-  const circuitId=online?.circuitId??(officialChallenge?officialRounds[officialRound].circuitId:shop.circuitId);
-  const raceName=online?'オンライン上位装備との対戦':officialChallenge?(zenith?officialRounds.zenith.name:grandprix?officialRounds.final.name:location==='stadium-9'?officialRounds.technical.name:`${officialRace.name}・${officialRounds[officialRound].name}`):'';
-  const timeTrial=circuitId==='trail',finalQualified=useGame(s=>s.finalQualified),bestTime=useGame(s=>s.yuunagiBestTime);
+  const circuitId=online?.circuitId??mob??(officialChallenge?officialRounds[officialRound].circuitId:shop.circuitId);
+  const raceName=online?'オンライン上位装備との対戦':mob?'モブCPUとの対戦':officialChallenge?(zenith?officialRounds.zenith.name:grandprix?officialRounds.final.name:location==='stadium-9'?officialRounds.technical.name:`${officialRace.name}・${officialRounds[officialRound].name}`):'';
+  const timeTrial=circuitId==='trail'&&!exhibition,finalQualified=useGame(s=>s.finalQualified),bestTime=useGame(s=>s.yuunagiBestTime);
   const pointToPoint=getCircuitTrack(circuitId).open;
   const raceClock=(seconds:number)=>clock(seconds,timeTrial);
   const prizes=prizesForCircuit(circuitId);
@@ -88,16 +88,16 @@ export default function TrialView(){
         else useOnlineStatus.setState({message:tutorialActive(current.tutorialStage)?'チュートリアル中はオンライン登録対象外です。':'星皇装備、または対象外の記録のためオンライン登録しません。'});
       }
       setState(race);
-    },setFinish,condition,stored.raceSeed,challenge,circuitId,setIntro,stored.bodyPaint,online?.records??null);}
+    },setFinish,condition,stored.raceSeed,challenge,circuitId,setIntro,stored.bodyPaint,online?.records??null,!!mob);}
     catch{setError('3D表示を開始できませんでした。WebGL対応ブラウザで再試行してください。');}
     return()=>{renderer.current?.dispose();renderer.current=null;};
-  },[equipment,challenge,circuitId,online]);
+  },[equipment,challenge,circuitId,online,mob]);
   useEffect(()=>{renderer.current?.setSound(sound,volume);},[sound,volume,equipment]);
 
   const requestClose=useCallback(()=>{
-    if(!error&&state.phase!=='finished'&&!window.confirm(`レースを終了して${online?'コース記録':outdoor?'街':officialChallenge||isPracticeCourse(location)?'会場':'模型店'}に戻りますか？\n${officialChallenge&&!replay?'公式戦は一度限りです。このレースは棄権として記録され、やり直せません。':'途中で戻ると、このレースの賞金は受け取れません。'}`))return;
+    if(!error&&state.phase!=='finished'&&!window.confirm(`レースを終了して${exhibition?(raceChoice?'対戦相手の選択':'コース記録'):outdoor?'街':officialChallenge||isPracticeCourse(location)?'会場':'模型店'}に戻りますか？\n${officialChallenge&&!replay?'公式戦は一度限りです。このレースは棄権として記録され、やり直せません。':'途中で戻ると、このレースの賞金は受け取れません。'}`))return;
     close();
-  },[close,error,state.phase,officialChallenge,replay,online,outdoor,location]);
+  },[close,error,state.phase,officialChallenge,replay,exhibition,raceChoice,outdoor,location]);
   const skipIntro=useCallback(()=>renderer.current?.skipIntro(),[]);
   const start=useCallback(()=>renderer.current?.start(),[]);
   const showRaceResults=useCallback(()=>renderer.current?.showResults(true),[]);
@@ -151,24 +151,24 @@ export default function TrialView(){
     finish.stage==='approach'?'いよいよ最終ストレート！ 先頭のマシンがゴールへ飛び込んでくる！':
     state.time<2?'スタート！ GOからの反応時間も記録に含まれるよ。':timeTrial?`ゴールまで残り${Math.max(0,circuitLength-driving.distance).toFixed(0)}m。規定40秒以内を目指そう！`:playerPath.changing?`レーンチェンジ！ ${playerPath.from+1}コースから ${playerPath.to+1}コースへ。５周で全レーンを走るよ。`:`あなたは現在 ${position}位！ 自分のマシンの上の黄色い印が目印だよ。`);
 
-  return <section className="trial retro-race" data-camera={cameraMode} data-time-trial={timeTrial||replay} aria-label={online?'オンライン対戦・賞金なし':legendChallenge?'レジェンド挑戦レース':villainChallenge?'黒岩 豪との挑戦レース':replay?'公式コースのタイムアタック':timeTrial?'一本道タイムアタック':'5台の3Dレース'} data-phase={introducing?'introduction':state.phase} data-intro-stage={intro.stage} data-finish-stage={finish.stage} onClick={event=>{
+  return <section className="trial retro-race" data-camera={cameraMode} data-time-trial={timeTrial||replay} aria-label={mob?'モブCPUとの対戦':noRewards?(online?'オンライン対戦・賞金なし':'モブ対戦・賞金なし'):legendChallenge?'レジェンド挑戦レース':villainChallenge?'黒岩 豪との挑戦レース':replay?'公式コースのタイムアタック':timeTrial?'一本道タイムアタック':'5台の3Dレース'} data-phase={introducing?'introduction':state.phase} data-intro-stage={intro.stage} data-finish-stage={finish.stage} onClick={event=>{
     // 操作ボタン自身の処理と二重発火させない。カメラ・音・退出も発進しない。
     if(event.target instanceof Element&&event.target.closest('button,a,input,select,textarea,[data-audio-controls]'))return;
     if(canViewResults)showRaceResults();
     else if(!error&&(ready||waitingForLaunch))start();
   }}>
-    <header className="race-header"><h2>{online?raceName:officialChallenge?raceName:legendChallenge?'レジェンド挑戦':villainChallenge?'黒岩 豪からの挑戦':circuit.name}<span>{online?`${state.racers.length}台・オンライン上位装備との対戦`:replay?'公式コース・1台タイムアタック':timeTrial?'一本道・1台タイムアタック':pointToPoint?'一本道・5台レース':`${circuit.lanes}レーン・${circuit.laps}周レース`}</span></h2><nav aria-label="レース操作">
+    <header className="race-header"><h2>{exhibition?raceName:officialChallenge?raceName:legendChallenge?'レジェンド挑戦':villainChallenge?'黒岩 豪からの挑戦':circuit.name}<span>{exhibition?`${state.racers.length}台・${online?'オンライン上位装備との対戦':'モブCPUとの対戦'}`:replay?'公式コース・1台タイムアタック':timeTrial?'一本道・1台タイムアタック':pointToPoint?'一本道・5台レース':`${circuit.lanes}レーン・${circuit.laps}周レース`}</span></h2><nav aria-label="レース操作">
       <AudioControls/>
       <div className="race-camera-choices" role="group" aria-label="レースの視点">{raceCameraViews.map(view=><button key={view.id} className="race-camera-button" disabled={introducing} aria-pressed={cameraMode===view.id} onClick={()=>{renderer.current?.setCamera(view.id);setCameraMode(view.id);}}>{view.label}</button>)}</div>
-      <button onClick={requestClose}>{online?'記録へ':outdoor?'街へ':officialChallenge||isPracticeCourse(location)?'会場へ':'模型店へ'}</button>
+      <button onClick={requestClose}>{exhibition?(raceChoice?'相手選択へ':'記録へ'):outdoor?'街へ':officialChallenge||isPracticeCourse(location)?'会場へ':'模型店へ'}</button>
     </nav></header>
     {!introducing&&(online?<RaceRanking race={state}/>:replay?<div className="time-trial-target"><span>クリア後・タイムアタック</span><span>{recordEligible?'記録対象：星皇なし':'星皇装着・記録対象外'}</span></div>:timeTrial?<div className="time-trial-target"><span>規定 <strong>{yuunagiTimeLimit.toFixed(2)}秒以内</strong></span><span>{bestTime!==null?`自己ベスト ${(Math.ceil(bestTime*100-1e-7)/100).toFixed(2)}秒`:'初挑戦'}</span><span>{finalQualified?'出場権獲得済み':'クリアで第4大会出場権'}</span></div>:<RaceRanking race={state}/>)}
     <div className="race-viewport">
       <div className="trial-canvas" ref={host}/>
       <div className="race-scanlines"/>
       {introducing&&!error&&<section className={`race-intro race-intro-${intro.stage}`} aria-label="レース場紹介">
-        <div className="race-intro-heading"><span>COURSE INTRODUCTION</span><p>{online?raceName:officialChallenge?raceName:shop.name}</p><h2>{introduction.name}</h2></div>
-        <div className="race-intro-caption" key={intro.stage}><span>{intro.stage==='overview'?'コース全景':intro.stage==='tour'?'コースの見どころ':'スターティンググリッド'}</span><p>{intro.stage==='overview'?`${online?`${state.racers.length}台・オンライン上位装備との対戦`:replay?'公式コース・1台タイムアタック':timeTrial?'一本道・1台タイムアタック':pointToPoint?'一本道・5台レース':`${introduction.lanes}レーン・${introduction.laps}周`} ／ 全長 約${introduction.distance}m`:intro.stage==='tour'?introduction.feature:introduction.advice}</p><small>{introduction.surface} ／ {pointToPoint?'全長':'1周'} 約{introduction.lapLength}m ／ {online?'オンライン対戦・賞金なし':legendChallenge?'特別レース・賞金なし':`${timeTrial?'完走賞':'1位賞金'} ${introduction.winnerPrize.toLocaleString('ja-JP')}円`}</small></div>
+        <div className="race-intro-heading"><span>COURSE INTRODUCTION</span><p>{exhibition?raceName:officialChallenge?raceName:shop.name}</p><h2>{introduction.name}</h2></div>
+        <div className="race-intro-caption" key={intro.stage}><span>{intro.stage==='overview'?'コース全景':intro.stage==='tour'?'コースの見どころ':'スターティンググリッド'}</span><p>{intro.stage==='overview'?`${exhibition?`${state.racers.length}台・${online?'オンライン上位装備との対戦':'モブCPUとの対戦'}`:replay?'公式コース・1台タイムアタック':timeTrial?'一本道・1台タイムアタック':pointToPoint?'一本道・5台レース':`${introduction.lanes}レーン・${introduction.laps}周`} ／ 全長 約${introduction.distance}m`:intro.stage==='tour'?introduction.feature:introduction.advice}</p><small>{introduction.surface} ／ {pointToPoint?'全長':'1周'} 約{introduction.lapLength}m ／ {noRewards?(online?'オンライン対戦・賞金なし':'モブ対戦・賞金なし'):legendChallenge?'特別レース・賞金なし':`${timeTrial?'完走賞':'1位賞金'} ${introduction.winnerPrize.toLocaleString('ja-JP')}円`}</small></div>
         <button className="race-intro-skip" onClick={skipIntro}>紹介をスキップ</button>
         <div className="race-intro-progress" aria-hidden="true"><i style={{transform:`scaleX(${intro.age/raceIntroDuration})`}}/></div>
       </section>}
@@ -188,13 +188,13 @@ export default function TrialView(){
         <p className="result-note" role="status">{recordEligible?'星皇なしの完走は歴代タイムの記録対象です。':'星皇シリーズ装着：この走行は歴代タイムに記録されません。'}{replay?' クリア後の再走なので、大会結果・クリア状態は変わりません。':''}</p>
         {driving.status==='finished'&&<p className="result-note" role="status">{onlineMessage}</p>}
         <p className="result-note">{penaltyText?`${penaltyText}を公式タイムに反映済み`:'公式タイムにはGO後の反応時間を含みます'}</p>
-        <p className="result-note" role="status">{online?'オンライン対戦・賞金なし':legendChallenge?'特別レースのため賞金はありません。':prize>0?`${!timeTrial&&winner?.id==='player'?'優勝賞金':'完走賞'} +${prize}円！`:'今回の賞金はありません。'} 所持金 {money.toLocaleString('ja-JP')}円</p>
+        <p className="result-note" role="status">{noRewards?(online?'オンライン対戦・賞金なし':'モブ対戦・賞金なし'):legendChallenge?'特別レースのため賞金はありません。':prize>0?`${!timeTrial&&winner?.id==='player'?'優勝賞金':'完走賞'} +${prize}円！`:'今回の賞金はありません。'} 所持金 {money.toLocaleString('ja-JP')}円</p>
         {timeTrial&&<p className="result-note" role="status">{driving.status==='finished'&&playerTime<=yuunagiTimeLimit?'規定40秒クリア！ 第4公式大会・緑川グランプリの出場権を獲得しました。街の緑川グランプリ決勝会場へ向かいましょう。':driving.status==='finished'?'規定タイムを超えました。装備を変えて再挑戦できます。':'完走できませんでした。再挑戦できます。'}{bestTime!==null?` 自己ベスト ${(Math.ceil(bestTime*100-1e-7)/100).toFixed(2)}秒。`:''}</p>}
         {legendChallenge&&<p className="result-note" role="status">風見 怜と火野 岳が圧倒的な走りを披露した。次こそ追いつこう！</p>}
         {officialQualificationNotice&&<p className="result-note" role="status">ひなた初優勝！ 若葉公式ダート杯の出場権を獲得しました。街の若葉レース場へ向かおう。</p>}
-        {circuitId==='forge'&&<p className="result-note" role="status">あかつきの試走 {Math.min(5,useGame.getState().akatsukiRaceCount)} / 5回。{useGame.getState().zenithQualified?'天頂決戦・ゼニス・クラウンの出場権を獲得！ 街の会場へ向かおう。':'勝敗に関係なく、結果まで5回走れば最後の出場権を獲得。'}</p>}
+        {!exhibition&&circuitId==='forge'&&<p className="result-note" role="status">あかつきの試走 {Math.min(5,useGame.getState().akatsukiRaceCount)} / 5回。{useGame.getState().zenithQualified?'天頂決戦・ゼニス・クラウンの出場権を獲得！ 街の会場へ向かおう。':'勝敗に関係なく、結果まで5回走れば最後の出場権を獲得。'}</p>}
         {officialChallenge&&!replay&&<><CupScore cup={cup} kind={kind}/><p className="result-note" role="status">{cupComplete(cup,kind)?gameOver?`総合${cupPlayerPlace(cup)}位。${grandprix||zenith?'2位以内の完走':'3位以内'}に届かずゲームオーバーです。`:kind==='zenith'?`天頂決戦・${cupPlayerPlace(cup)}位！ ゲームクリア！ すべての難所と強豪を越えた！`:kind==='final'?`緑川グランプリ・${cupPlayerPlace(cup)}位！ あかつき模型店が開放！ 次は最上位パーツを揃え、5回の試走で天頂決戦の出場権を目指そう。`:kind==='wakaba'?`総合${cupPlayerPlace(cup)}位！ わかば模型店が開放されました。${thirdQualified?'全4大会の第3公式大会・星空テクニカル杯の出場権を獲得！':'わかば模型店で優勝すると第3公式大会の出場権を獲得できます。'}`:`星空テクニカル杯・${cupPlayerPlace(cup)===1?'優勝':'入賞'}！ 街のゆうなぎ模型店が開放されました。一本道40秒チャレンジへ進もう。`:`第1戦を記録しました。ピットで装備を変更して第2戦へ。第1戦の再走はできません。`}</p></>}
-        {shop.id==='wakaba'&&thirdQualified&&!officialChallenge&&<p className="result-note" role="status">第3公式大会・星空テクニカル杯の出場権を獲得！ 街の星空レース場へ進もう。</p>}
+        {!exhibition&&shop.id==='wakaba'&&thirdQualified&&!officialChallenge&&<p className="result-note" role="status">第3公式大会・星空テクニカル杯の出場権を獲得！ 街の星空レース場へ進もう。</p>}
         {qualificationNotice&&<p className="result-note" role="status">初優勝！ {nextShopRace.shopName}のレース参加資格を獲得！ 店に戻り、訪ねてきた最強兄弟と特別レースを走ろう。その後、出口から街へ進めます。</p>}
         {qualificationNotice&&<p className="result-note" role="status">最強兄弟が挑戦を待っています。特別レースを終えると、博士からセイランボディを受け取れます。</p>}
         {shop.id==='aozora'&&aozoraWon&&!villainChallenge&&!villainDefeated&&<p className="result-note" role="status">あおぞらの優勝者に、黒岩 豪から挑戦状！ 模型店へ戻って話を聞こう。</p>}
@@ -203,7 +203,7 @@ export default function TrialView(){
     </div>
     <footer className="race-message">
       <div className="race-speaker"><StarterPortrait/><span>コース係</span></div>
-      <div className="race-commentary"><p className="race-phase">{error?'表示エラー':introducing?'レース場紹介':showResults?'最終結果':showTally?'記録集計中':ready?'スタート待機':counting?'スタートまで':waitingForGo?'GO・発進操作待ち':finish.stage==='finish'?'ゴールイン':finish.stage==='approach'?'最終ストレート':'レース中'}</p><p role="status" aria-live="polite">{message}</p><small>{introducing?'「紹介をスキップ」で先へ進む':canViewResults?'画面タップで結果を見る':ready?'「カウント開始」で３カウント開始':waitingForLaunch?'「発進」でスタート。GO前の発進は残り秒数を加算。':finished?online?'オンライン対戦・賞金なし':legendChallenge?'特別レース・賞金なし':`参加費なし・${timeTrial?'完走賞':'優勝'}${prizes[0].toLocaleString('ja-JP')}円${timeTrial?'・40秒以内で大会出場権':'／2〜5位も完走賞'}${prize>0?'（受取済み）':''}`:penaltyText||'走行は自動です。'}</small></div>
+      <div className="race-commentary"><p className="race-phase">{error?'表示エラー':introducing?'レース場紹介':showResults?'最終結果':showTally?'記録集計中':ready?'スタート待機':counting?'スタートまで':waitingForGo?'GO・発進操作待ち':finish.stage==='finish'?'ゴールイン':finish.stage==='approach'?'最終ストレート':'レース中'}</p><p role="status" aria-live="polite">{message}</p><small>{introducing?'「紹介をスキップ」で先へ進む':canViewResults?'画面タップで結果を見る':ready?'「カウント開始」で３カウント開始':waitingForLaunch?'「発進」でスタート。GO前の発進は残り秒数を加算。':finished?noRewards?(online?'オンライン対戦・賞金なし':'モブ対戦・賞金なし'):legendChallenge?'特別レース・賞金なし':`参加費なし・${timeTrial?'完走賞':'優勝'}${prizes[0].toLocaleString('ja-JP')}円${timeTrial?'・40秒以内で大会出場権':'／2〜5位も完走賞'}${prize>0?'（受取済み）':''}`:penaltyText||'走行は自動です。'}</small></div>
       <div className="race-commands">
         {ready&&!introducing&&!error?<button className="race-start-button" onClick={start}>▶ カウント開始</button>:null}
         {waitingForLaunch&&!canViewResults&&!error&&<button className="race-start-button" onClick={start}>{counting?'▶ 発進（早出）':'▶ GO！ 発進'}</button>}
