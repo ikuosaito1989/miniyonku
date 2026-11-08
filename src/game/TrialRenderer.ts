@@ -123,6 +123,20 @@ export class TrialRenderer {
     this.audio.update(this.state);
     this.report({...this.state});this.reportFinish(this.finishPresentation);
   }
+  skipRace(){
+    if(this.state.phase==='finished')return;
+    const finishDistance=this.track.circuitLength*(this.track.open?1:this.track.circuit.laps);
+    const skippedWinner=this.challenge===true?this.state.racers.findIndex(racer=>racer.id.startsWith('legend-')):0;
+    const racers=this.state.racers.map((racer,index)=>({
+      ...racer,
+      driving:{...racer.driving,status:'finished' as const,time:1+((index-skippedWinner+this.state.racers.length)%this.state.racers.length)*.25,distance:finishDistance,speed:0,stopReason:undefined},
+    }));
+    this.state={...this.state,phase:'finished',time:racers.at(-1)?.driving.time??1,playerStartOffset:0,falseStartPenalty:0,racers};
+    const arrivals=[...racers].sort((a,b)=>a.driving.time-b.driving.time).map(racer=>({id:racer.id,age:0,crossingTime:racer.driving.time}));
+    this.finishPresentation={stage:'results',arrivals,finalAge:3.8};
+    this.audio.update(this.state);
+    this.report({...this.state});this.reportFinish(this.finishPresentation);
+  }
   setSound(enabled:boolean,volume=0.35){this.audio.setVolume(volume);this.audio.setEnabled(enabled);}
   restart(){
     this.lappedAges.clear();

@@ -282,7 +282,7 @@ export const useGame = create<GameState>((set) => ({
   openLibrary:(category='all')=>set(s=>s.location==='library'&&!s.overlay&&!s.openingActive?{overlay:'library',libraryShelf:category,nearby:'',notice:''}:{}),
   openSettings:()=>set(s=>(s.overlay==='escort'||s.overlay==='towa-escort'||s.overlay==='podium')?{}:{overlay:'settings',shopAfter:false,notice:''}),
   openCheat:(fromSettings=false)=>set({overlay:'cheat',shopAfter:false,notice:'',cheatReturnToSettings:fromSettings}),
-  applyCheat:(amount)=>set(s=>({money:amount==='max'?9_999_999:s.money+1000,cheatUsed:true,overlay:s.cheatReturnToSettings?'settings':null,cheatReturnToSettings:false,notice:''})),
+  applyCheat:(amount)=>set(s=>({money:amount==='max'?9_999_999:s.money+1000,cheatUsed:s.cheatUsed||amount==='max',overlay:s.cheatReturnToSettings?'settings':null,cheatReturnToSettings:false,notice:''})),
   equip: (id,slot) => set(s => {
     if(s.overlay==='race')return s;
     const equipment=equipPart(s.equipment,s.inventory,id,slot),selectedUnits={...s.selectedUnits};

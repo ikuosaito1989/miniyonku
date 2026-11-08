@@ -60,6 +60,7 @@
 .race-commentary small { display: block; margin-top: 8px; font-size: 11px; color: #a7b6e2; font-weight: 400; line-height: 1.5; }
 .race-commands { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
 .retro-race .race-start-button { padding: 10px 0; color: #fff4b5; font-size: 18px; letter-spacing: 2px; white-space: nowrap; }
+.retro-race .race-skip-cheat { border: 1px solid #e7a94a; padding: 7px 9px; color: #ffe5a3; background: #49351f; font-size: 12px; }
 .race-commands > button:not(.race-start-button) { font-size: 12px; }
 .race-running { font-size: 14px; color: #c6d6ee; letter-spacing: 3px; }
 .race-running span { display: inline-block; margin-left: 10px; color: #8ac29b; }
