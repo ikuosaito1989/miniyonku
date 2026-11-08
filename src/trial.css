@@ -235,3 +235,9 @@
 .trial.retro-race.retro-race[data-camera][data-time-trial='true']:not([data-phase='introduction']){grid-template-rows:var(--compact-header) auto minmax(0,1fr) var(--compact-footer)}
 .trial.retro-race .time-trial-target{min-width:0;padding:7px 12px;line-height:1.6;align-content:center}
 .trial.retro-race .time-trial-target>span{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+/* Keep camera controls and exit reachable on narrow phones. */
+@media(max-width:600px){
+ .retro-race .race-header nav{flex:1 1 auto;justify-content:flex-end;min-width:0}
+ .retro-race .race-header .race-camera-choices{min-width:0;max-width:55vw;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin}
+ .retro-race .race-header .race-camera-choices button{flex:0 0 auto}
+}

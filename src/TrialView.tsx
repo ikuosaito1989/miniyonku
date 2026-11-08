@@ -67,7 +67,7 @@ export default function TrialView(){
   const introducing=intro.stage!=='done';
   const introduction=courseIntroduction(circuitId,officialChallenge);
   const [finish,setFinish]=useState(createFinishPresentation);
-  const [cameraMode,setCameraMode]=useState<TrialCamera>('broadcast');
+  const [cameraMode,setCameraMode]=useState<TrialCamera>('auto');
   const overview=cameraMode==='overview';
   const [error,setError]=useState('');
   const onlineMessage=useOnlineStatus(s=>s.message);
@@ -76,7 +76,7 @@ export default function TrialView(){
   useEffect(()=>{
     const stored=useGame.getState();
     const condition=equippedCondition(equipment,stored.units,stored.selectedUnits);
-    setState(createRaceState(equipment,stored.raceSeed,condition,challenge,circuitId,stored.bodyPaint));setFinish(createFinishPresentation());setError('');setCameraMode('broadcast');setIntro(raceIntroAt(0));
+    setState(createRaceState(equipment,stored.raceSeed,condition,challenge,circuitId,stored.bodyPaint));setFinish(createFinishPresentation());setError('');setCameraMode('auto');setIntro(raceIntroAt(0));
     const raceAttempt=useGame.getState().raceAttempt;
     let submitted=false;
     try{renderer.current=new TrialRenderer(host.current!,equipment,race=>{

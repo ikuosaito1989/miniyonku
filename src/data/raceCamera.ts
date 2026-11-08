@@ -8,6 +8,9 @@ export const raceCamera = {
 };
 
 export const raceCameraViews=[
+  {id:'auto',label:'自動'},
+  {id:'follow',label:'追従'},
+  {id:'low',label:'低位置'},
   {id:'zoom',label:'拡大'},
   {id:'overview',label:'全体'},
   {id:'broadcast',label:'マシンを見る'},

@@ -1,3 +1,4 @@
+import {RaceCameraDirector} from './RaceCameraDirector';
 import {buildStartMarshal} from './StartMarshal';
 import {withMobRivals} from './mobRace';
 import {VenueAnimation} from './VenueAnimation';
@@ -47,7 +48,9 @@ export class TrialRenderer {
   private introFrame:ReturnType<typeof overviewFrame>|null=null;
   private overviewFrame:ReturnType<typeof overviewFrame>|null=null;
   private overviewMarkers=new Map<string,THREE.Sprite>();
-  private cameraMode: TrialCamera = 'broadcast';
+  private cameraMode: TrialCamera = 'auto';
+  private director=new RaceCameraDirector();
+  private activeCamera:THREE.Camera=this.camera;
   private textures: THREE.Texture[] = [];
   private aspect = 1;
   private startShotBlend = 1;
@@ -109,7 +112,7 @@ export class TrialRenderer {
     this.audio.update(this.state);
     this.report({...this.state});
   }
-  setCamera(mode:TrialCamera){if(this.intro.stage==='done')this.cameraMode=mode;}
+  setCamera(mode:TrialCamera){if(this.intro.stage==='done'){this.cameraMode=mode;}}
   showResults(skipRetirementAnimation=false){
     const player=this.state.racers.find(r=>r.id==='player');
     if(!skipRetirementAnimation&&player?.driving.stopReason==='lapped'&&(this.lappedAges.get('player')??0)<lappedPresentationSeconds)return;
@@ -123,7 +126,7 @@ export class TrialRenderer {
   restart(){
     this.lappedAges.clear();
     for(const car of this.cars.values())delete car.userData.motionDistance;
-    this.state=createRaceState(this.equipment,this.seed,this.condition,this.challenge,this.circuitId,this.bodyPaint);this.accumulator=0;this.lastTime=0;this.lastReport=-1;this.cameraMode='broadcast';this.startShotBlend=1;
+    this.state=createRaceState(this.equipment,this.seed,this.condition,this.challenge,this.circuitId,this.bodyPaint);this.accumulator=0;this.lastTime=0;this.lastReport=-1;this.cameraMode='auto';this.director.reset();this.startShotBlend=1;
     this.intro=raceIntroAt(0);this.introLastTime=0;this.reportIntro(this.intro);
     this.finishPresentation=createFinishPresentation();this.reportFinish(this.finishPresentation);
     this.report({...this.state});
@@ -242,12 +245,13 @@ export class TrialRenderer {
     const podium=this.mesh(new THREE.BoxGeometry(.3,startRampHeight(0),.4),0x526477);podium.position.set(attendant.position.x,-startRampHeight(0)/2,attendant.position.z);group.add(podium);
     group.add(attendant);this.scene.add(group);
   }
-  private updateCamera(){
+  private updateCamera(elapsed:number){
     const {circuit,sampleLanePath}=this.track;
     const frame=this.overviewFrame??(this.overviewFrame=overviewViewportFrame(this.track,this.host.clientWidth,this.host.clientHeight));
     const player=this.state.racers.find(r=>r.id==='player')!;
     const p=sampleLanePath(player.driving.distance,player.lane);
     if(this.intro.stage!=='done'){
+      this.activeCamera=this.camera;
       this.camera.up.set(0,1,0);
       const frame=this.introFrame??(this.introFrame=overviewFrame(this.track,this.aspect,false));
       const age=this.intro.age,start=sampleLanePath(0,(circuit.lanes-1)/2);
@@ -267,6 +271,11 @@ export class TrialRenderer {
       this.camera.left=-height*this.aspect/2;this.camera.right=height*this.aspect/2;this.camera.top=height/2;this.camera.bottom=-height/2;this.camera.updateProjectionMatrix();
       this.camera.position.copy(target).add(new THREE.Vector3(...raceCamera.start.offset).multiplyScalar(Math.max(1,height/6)));this.camera.lookAt(target);return;
     }
+    if(this.cameraMode==='auto'||this.cameraMode==='follow'||this.cameraMode==='low'){
+      this.activeCamera=this.director.update(this.track,this.state,this.finishPresentation,this.cameraMode,this.aspect,elapsed,this.reducedMotion);
+      return;
+    }
+    this.activeCamera=this.camera;
     const overview=this.cameraMode==='overview',zoom=this.cameraMode==='zoom';
     if(overview)this.camera.up.set(frame.up.x,frame.up.y,frame.up.z);else this.camera.up.set(0,1,0);
     const goalShot=!overview&&!zoom&&shouldUseFinishCamera(this.state,this.finishPresentation);
@@ -358,10 +367,10 @@ export class TrialRenderer {
       }
     }
     this.playerMarker.scale.setScalar(overview?carScale:1);
-    this.playerMarker.visible=this.intro.stage==='done';
+    this.playerMarker.visible=this.intro.stage==='done'&&!['auto','follow','low'].includes(this.cameraMode);
     this.venueAnimation.update(now/1000,this.state.phase,this.reducedMotion);
-    this.updateCamera();const focus=this.cars.get('player')!.position,right=new THREE.Vector3(1,0,0).applyQuaternion(this.camera.quaternion);
-    this.audio.update(this.state,{track:this.track,listener:focus,right});this.renderer.render(this.scene,this.camera);
+    this.updateCamera(elapsed);const focus=this.cars.get('player')!.position,right=new THREE.Vector3(1,0,0).applyQuaternion(this.activeCamera.quaternion);
+    this.audio.update(this.state,{track:this.track,listener:focus,right});this.renderer.render(this.scene,this.activeCamera);
     if(now-this.lastReport>100){this.report({...this.state});this.reportFinish(this.finishPresentation);this.reportIntro(this.intro);this.lastReport=now;}
     this.frame=requestAnimationFrame(this.animate);
   };
