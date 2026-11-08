@@ -9,7 +9,11 @@
 * { box-sizing: border-box; }
 html, body, #root, main, .game-shell { width: 100%; height: 100%; margin: 0; overflow: hidden; }
 main { height: 100dvh; }
-button { font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+button { font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; box-shadow: 0 3px 0 #07161db0, 0 5px 9px #06141b38, inset 0 1px 0 #ffffff30; transition: translate 90ms ease, box-shadow 90ms ease, filter 120ms ease; touch-action: manipulation; }
+button:hover:not(:disabled) { filter: brightness(1.06); }
+button:active:not(:disabled) { translate: 0 2px; box-shadow: 0 1px 0 #07161db0, 0 2px 4px #06141b38, inset 0 2px 3px #07161d55; filter: brightness(.94); }
+button:disabled { box-shadow: 0 1px 0 #07161d70, inset 0 1px 0 #ffffff16; }
+@media(prefers-reduced-motion:reduce) { button { transition:none; } }
 button:focus-visible { outline: 3px solid #d39a38; outline-offset: 3px; }
 .stage { position: relative; width: 100%; height: 100%; isolation: isolate; }
 .world { position: absolute; inset: 0; overflow: hidden; }
