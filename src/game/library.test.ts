@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {parts,categories} from '../data/parts';
-import {specGlossary,formatSpec,libraryGuides,librarySource,searchLibrary} from '../data/library';
+import {specGlossary,formatSpec,libraryGuides,librarySource,searchLibrary,zenithSetupGuide} from '../data/library';
 import {townVenues,townBlocks,townSpawn,townWalkBounds,isVenueOpen,venueMessage} from '../data/world';
 import {townPeople} from '../data/townPeople';
 import {hiddenMechanicSpot} from '../data/hiddenMechanic';
@@ -11,6 +11,7 @@ import {snapshotGame} from './saveData';
 import {loadSavedGame} from './autoSave';
 import {libraryShelves,libraryReadingDesk,librarySpawn,libraryExit,libraryObstacles} from '../data/libraryRoom';
 test('未所持・後半・専用品・成長全段階を含む全種類を掲載し、すべての性能項目を説明する',()=>{
+ assert.match(zenithSetupGuide.text,/4:1/);assert.match(zenithSetupGuide.text,/新品に交換/);
  assert.deepEqual(searchLibrary('all','').map(p=>p.id),parts.map(p=>p.id));
  for(const category of Object.keys(categories) as (keyof typeof categories)[]){assert.ok(libraryGuides[category].text.length>30);assert.deepEqual(searchLibrary(category,'').map(p=>p.id),parts.filter(p=>p.category===category).map(p=>p.id));}
  for(const p of parts){assert.ok(librarySource(p));for(const [key,value] of Object.entries(p.specs)){assert.ok(specGlossary[key],`${p.id}:${key}`);assert.ok(formatSpec(key,value));}}

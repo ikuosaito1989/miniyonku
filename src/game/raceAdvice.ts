@@ -48,13 +48,13 @@ export function raceAdvice(state:RaceAdviceContext){
   if(isPracticeCourse(state.shopId))return modelShops[state.shopId].welcome;
   if(isSpecialtyShop(state.shopId))return modelShops[state.shopId].welcome;
   if(state.shopId==='atelier')return '星霧模型工房は星皇シリーズ全11種類・13品の販売専門店。各250000円、全品3250000円です。モーターとシャーシの2品は500000円。基礎性能は最上位ですが、深い砂はデューンタイヤ、凹凸はフレックスシャーシ、急坂は高トルクギアなど、専門品を混ぜるとさらに速くできる余地があります。星皇モーター・電池は消耗なし。制振は合計90%が上限なので、十分ならダンパーを軽量品やスライドへ替える選択もあります。他の模型店で試走してみよう。';
-  const shop=modelShops[state.shopId],lines=['レース相談は僕に任せて。'];
-  if(state.review?.circuitId===shop.circuitId)lines.push(state.review.text);
-  else lines.push('この店のレース記録はまだないね。今の装備で改善できる点を見てみよう。');
+  const shop=modelShops[state.shopId],adviceCircuitId=state.shopId==='akatsuki'?'zenith':shop.circuitId,lines=['レース相談は僕に任せて。'];
+  if(state.review?.circuitId===adviceCircuitId)lines.push(state.review.text);
+  else lines.push(state.shopId==='akatsuki'?'天頂決戦向けに、最後のコース条件で装備を考えよう。':'この店のレース記録はまだないね。今の装備で改善できる点を見てみよう。');
   if(state.shopId==='akatsuki'){
-    lines.push('あかつき模型店の最上位パーツを組み合わせよう。縦ループの失速はトルク不足。テンペスト＋4:1を軸に、砂地への追従とジャンプ着地の制振を両立しよう。最高速だけを上げても勝てないよ。テンペスト＋3.5:1はループで失速するので4:1以上を試そう。電池が減っていれば5.2:1も有効だ。');
-    lines.push('入賞を狙う軽量構成はタイタン＋3.5:1＋エクリプスシャーシ＋アペックスタイヤ。前中後をゼニスで軽くし、ジャイロ・駆動PRO・クラウンスライドを合わせよう。テンペストなら4:1も候補だ。ダンパーを増やすほど速いわけではなく、制振が十分なら軽さを選ぼう。重いボディや残量低下時はギアを大きくする必要があるよ。');
-    const missing=['motor-titan','chassis-eclipse','tire-apex','battery-zenith','accessory-slide-pro'].map(id=>parts.find(p=>p.id===id)!).filter(p=>!(state.inventory[p.id]>0));
+    lines.push('まず試す構成は、セイラン／テンペスト／4:1／エクリプス／アペックス／ゼニス電池・ホイール・前中ローラー／チタンシャフト／プラチナ端子／後ろクラウン／ジャイロ＋駆動PRO＋スライドダンパー。ゼニスの公式最終コースで完走・勝利を確認した構成だよ。テンペストは約60秒ブレークインし、電池は新品にしよう。');
+    lines.push('ゼニスは縦ループ、砂地、坂、ジャンプ2か所、終盤の連続S字が続く。4:1でループと坂の駆動力を残し、アペックスとダンパーで着地、ローラーとジャイロでS字の安定を取る。3.5:1は最高速が伸びる代わりにループで失速しやすい。');
+    const missing=['motor-tempest','chassis-eclipse','tire-apex','battery-zenith','accessory-slide-pro'].map(id=>parts.find(p=>p.id===id)!).filter(p=>!(state.inventory[p.id]>0));
     for(const p of missing.slice(0,3))lines.push(`優勝構成で不足する「${p.name}」は${p.price}円。${state.money>=p.price?'今なら購入できるよ。':'あと'+(p.price-state.money)+'円、他店の完走賞で貯めよう。'}`);
     if(state.motorSeconds<60&&parts.find(p=>p.id===state.equipment.motor)?.specs.wear!==0)lines.push(`モーターは作業台であと約${Math.ceil(60-state.motorSeconds)}秒ならそう。ブレークイン後に電池を新品に交換すると長距離で有利だよ。`);
     if(state.motorSeconds>180)lines.push('長いレースでモーターも摩耗するよ。同じ種類を新品交換し、ブレークインてから再挑戦しよう。');
@@ -76,14 +76,14 @@ export function raceAdvice(state:RaceAdviceContext){
   else if(motor.specs.wear!==0&&state.motorSeconds>180)lines.push(`今の${motor.name}は使用${state.motorSeconds.toFixed(0)}秒で摩耗中。ブレークインを増やしても回復しないので、新品への交換を優先しよう。`);
   const charge=batteryCharge(state.equipment.battery,state.batterySeconds);
   if(charge<.5)lines.push(`今の電池残量は${(charge*100).toFixed(0)}%。新品へ交換してから挑もう。`);
-  const base=trial(state.equipment,state,shop.circuitId);
+  const base=trial(state.equipment,state,adviceCircuitId);
   const candidates=parts.filter(p=>(isStocked(p,shop)||state.inventory[p.id]>0)&&(p.category==='roller'||!Object.values(state.equipment).includes(p.id)));
   const upgrades=candidates.flatMap(part=>{
     const slots=(Object.keys(equipmentSlots) as EquipmentSlot[]).filter(slot=>equipmentSlots[slot].category===part.category&&state.equipment[slot]!==part.id);
     return slots.flatMap(slot=>{
       const equipment={...state.equipment,[slot]:part.id};
       const condition={motorSeconds:part.category==='motor'?(state.motorAges?.[part.id]??0):state.motorSeconds,batterySeconds:part.category==='battery'?(state.batteryAges?.[part.id]??0):state.batterySeconds};
-      const time=trial(equipment,condition,shop.circuitId);
+      const time=trial(equipment,condition,adviceCircuitId);
       return Number.isFinite(time)&&time+.1<base?[{part,slot,time,owned:state.inventory[part.id]>0}]:[];
     });
   }).sort((a,b)=>Number(b.owned||b.part.price<=state.money)-Number(a.owned||a.part.price<=state.money)||a.time-b.time);

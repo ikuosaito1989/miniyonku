@@ -15,6 +15,10 @@ export const libraryGuides:Record<Category,{title:string;text:string}>={
  terminal:{title:'電力を届ける伝達効率',text:'端子の伝達効率が高いほど電池とモーターの性能を引き出しやすい。モーターだけを交換しても端子の損失は残る。重量と効率の両方を比べよう。'},
  accessory:{title:'補助パーツは役割の組み合わせ',text:'ウェイトは重量と安定、駆動サポートは効率、ダンパーは振動や着地、スタビライザーは姿勢を支える。ブレーキは坂の入口でだけ制動し、飛びすぎを抑える。強すぎると飛距離不足になる。その他3枠は異なる種類を最大3個。重量は足し算、効率などの倍率は組み合わせて働く。同種の重複装着はできない。'},
 };
+export const zenithSetupGuide={
+ title:'天頂決戦の基本セッティング',
+ text:'まずはセイラン＋テンペストモーター＋4:1ギア＋エクリプスシャーシ＋アペックスタイヤ＋ゼニス・フローティング8＋ゼニス・マラソンセル。シャフトはチタン、端子はプラチナ。ローラーは前・中をゼニス・セラミックガイド、後ろをクラウンスライド。補助はジャイロ、駆動PRO、スライドダンパー。出走前にモーターを約60秒ブレークインし、電池を新品に交換する。ゼニスは縦ループ・砂地・坂・2回のジャンプ・連続S字があるため、最高速だけを狙わず、4:1の駆動力と接地・安定・制振をそろえる。'
+};
 export const specGlossary:Record<string,{label:string;unit:string;meaning:string}>={
  rebound:{label:'反発係数',unit:'',meaning:'小さいほど着地で跳ね返りにくく、速度と姿勢を保つ'},brake:{label:'制動力',unit:'',meaning:'坂の入口での制動。強いほど飛びすぎを抑えるが飛距離不足に注意'},rpm:{label:'回転数',unit:'rpm',meaning:'最高速の基準となる回転数'},torque:{label:'トルク',unit:'mN·m',meaning:'発進・坂・抵抗に対抗する力'},weight:{label:'重量',unit:'g',meaning:'装着時に加わる重量'},wear:{label:'摩耗係数',unit:'×',meaning:'0は消耗なし・ブレークイン不要'},efficiency:{label:'駆動・伝達効率',unit:'×',meaning:'大きいほど駆動の損失が少ない'},stability:{label:'安定性',unit:'×',meaning:'大きいほど旋回時の姿勢を支える'},damping:{label:'制振',unit:'%',meaning:'振動や着地の衝撃を抑える'},roughGrip:{label:'悪路接地',unit:'×',meaning:'大きいほど悪路で接地を保つ'},roughResistance:{label:'悪路抵抗',unit:'×',meaning:'小さいほど砂・砂利の抵抗を抑える'},compliance:{label:'接地追従',unit:'×',meaning:'大きいほど凹凸に追従する'},diameter:{label:'直径',unit:'mm',meaning:'タイヤ径またはホイールのリム径'},grip:{label:'グリップ',unit:'',meaning:'旋回時の接地の基準'},pavedDrag:{label:'舗装抵抗',unit:'',meaning:'小さいほど舗装で転がりやすい'},cornerDrag:{label:'旋回抵抗',unit:'×',meaning:'小さいほどコーナーで速度を残す'},friction:{label:'摩擦係数',unit:'',meaning:'小さいほど壁との接触抵抗を抑える'},power:{label:'出力',unit:'×',meaning:'モーターの力と速さへの倍率'},endurance:{label:'持続係数',unit:'秒',meaning:'残量低下の基準。大きいほど長距離向き'},ratio:{label:'減速比',unit:':1',meaning:'大きいほど駆動力、小さいほど理論最高速'},drag:{label:'空気抵抗',unit:'×',meaning:'小さいほど高速で空気抵抗が少ない'},frontMotor:{label:'モーター配置',unit:'',meaning:'FMは前寄りの重心でジャンプを低くし、着地衝撃を抑える。飛距離不足に注意'},consumption:{label:'消耗係数',unit:'×',meaning:'0の電池は残量が減らない'},
 };

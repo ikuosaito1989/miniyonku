@@ -36,3 +36,7 @@ test('コースアウト・周回遅れを区別し、無料救済モーター�
   const text=raceAdvice({shopId:'komorebi',equipment:{...starterEquipment,motor:'motor-rescue'},inventory:{},money:2000,motorSeconds:0,batterySeconds:0,review:null});
   assert.doesNotMatch(text,/あと約60秒ならそう/);
 });
+test('あかつきの佐伯は工房コースでなく天頂決戦の検証済み構成を案内する',()=>{
+ const text=raceAdvice({shopId:'akatsuki',equipment:starterEquipment,inventory:createStarterInventory(),money:0,motorSeconds:0,batterySeconds:0,review:null});
+ assert.match(text,/天頂決戦向け/);assert.match(text,/セイラン／テンペスト／4:1／エクリプス／アペックス/);assert.match(text,/ジャンプ2か所/);assert.doesNotMatch(text,/優勝構成で不足する「タイタン/);
+});
