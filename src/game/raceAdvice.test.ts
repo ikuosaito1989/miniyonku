@@ -20,16 +20,16 @@ test('各店にレース相談の整備役がいて、その店で買える具�
     assert.match(text,/あと約60秒ならそう/);assert.match(text,/円/);assert.match(text,/完走賞で貯めよう/);assert.match(text,new RegExp(modelShops[shopId].name));
   }
 });
-test('電池切れ・フライング・発進遅れ・慣らし不足を実際のレースから記録し、保存できる',()=>{
+test('電池切れ・フライング・発進遅れ・ブレークイン不足を実際のレースから記録し、保存できる',()=>{
   const race=createRaceState(starterEquipment,123,{motorSeconds:10,batterySeconds:350});
   race.phase='finished';race.falseStartPenalty=.5;race.playerStartOffset=.8;
   race.racers[0].driving={time:10,distance:20,speed:0,stress:0,status:'out',stopReason:'battery'};
   const review=reviewRace(race)!;
-  assert.match(review.text,/電池切れ/);assert.match(review.text,/0.50秒/);assert.match(review.text,/0.80秒/);assert.match(review.text,/慣らしが足りなかった/);
+  assert.match(review.text,/電池切れ/);assert.match(review.text,/0.50秒/);assert.match(review.text,/0.80秒/);assert.match(review.text,/ブレークインが足りなかった/);
   const game={...snapshotGame(useGame.getInitialState()),lastRaceReview:review};
   assert.deepEqual(decodeSave({version:1,savedAt:123,game}).game.lastRaceReview,review);
 });
-test('コースアウト・周回遅れを区別し、無料救済モーターに慣らしを勧めない',()=>{
+test('コースアウト・周回遅れを区別し、無料救済モーターにブレークインを勧めない',()=>{
   const race=createRaceState(starterEquipment);race.phase='finished';race.racers[0].driving.status='out';
   assert.match(reviewRace(race)!.text,/コースアウト/);
   race.racers[0].driving.stopReason='lapped';assert.match(reviewRace(race)!.text,/周回遅れ/);

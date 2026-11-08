@@ -95,7 +95,7 @@ function runChallenge(seed:number,motorSeconds=60,equipment=prepared,delayTicks=
   for(let i=0;i<120*180&&race.phase!=='finished';i++)race=stepRace(race);
   return race;
 }
-test('黒岩はあおぞらのパーツと慣らしで勝てる相手。同じ設定とシードで結果を再現する',()=>{
+test('黒岩はあおぞらのパーツとブレークインで勝てる相手。同じ設定とシードで結果を再現する',()=>{
   for(const id of Object.values(prepared)){
     const part=parts.find(p=>p.id===id)!;
     assert.ok(id==='accessory-none'||id==='body-champion'||isStocked(part,modelShops.aozora),`${id}はあおぞらで用意できる`);
@@ -137,7 +137,7 @@ test('あおぞら初優勝で挑戦状→店のパーツで黒岩に勝利→�
     }
     assert.deepEqual(useGame.getState().equipment,prepared);
     useGame.getState().openSetting();
-    // 充電池で慣らし、新品の勝負用電池へ戻す。
+    // 充電池でブレークイン、新品の勝負用電池へ戻す。
     useGame.getState().exchangeReusable('battery');
     useGame.getState().breakIn();useGame.getState().breakIn();
     useGame.getState().buy('battery-power');useGame.getState().close();

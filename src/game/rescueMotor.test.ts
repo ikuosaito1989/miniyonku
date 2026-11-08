@@ -23,7 +23,7 @@ test('救済モーターは無料交換・非売品・性能一定で、標準�
   for(let i=0;i<120*300&&a.status==='running';i++){a=stepDriving(a,fresh);b=stepDriving(b,old);}
   assert.deepEqual(a,b);assert.equal(a.status,'finished');
 });
-test('旧セーブに予備を追加せず、装備・財布を維持。慣らしでは電池も時間も消費しない',()=>{
+test('旧セーブに予備を追加せず、装備・財布を維持。ブレークインでは電池も時間も消費しない',()=>{
   const game=snapshotGame(useGame.getInitialState());
   delete game.inventory['motor-rescue'];delete game.units['motor-rescue'];
   const restored=decodeSave({version:1,savedAt:1234,game}).game;

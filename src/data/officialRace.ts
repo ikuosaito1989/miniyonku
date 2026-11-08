@@ -15,7 +15,7 @@ const technicalBase:Entrant[]=officialRivals.map(r=>({...r,equipment:{...r.equip
 
 export const technicalRivals:Entrant[]=technicalBase.map(r=>r.id==='ren'?{...r,id:'legend-koya',name:'山城 昊也',color:0x303941,equipment:{...r.equipment,body:'body-legend-muscle'}}:{...r,equipment:{...r.equipment,body:r.id==='go'?'body-sport':r.id==='sou'?'body-sedan':'body-arrow'}});
 
-// わかばの常連は販売中の上位パーツを使い、慣らしと長距離用電池も整えている。
+// わかばの常連は販売中の上位パーツを使い、ブレークインと長距離用電池も整えている。
 export const wakabaRivals:Entrant[]=technicalBase.map((r,i)=>({...r,motorSeconds:60,equipment:{...r.equipment,body:i===1?'body-sedan':'body-arrow',motor:'motor-turn',chassis:'chassis-turn',tire:'tire-turn',wheel:'wheel-diff',rollerFront:'roller-turn',rollerSide:'roller-turn',rollerRear:'roller-turn',accessory:'accessory-stabilizer',accessory2:'accessory-support',accessory3:'accessory-damper-light',battery:'battery-endurance'}}));
 
 export const seniorEquipment={...wakabaRivals[0].equipment,body:'body-legend-towa',motor:'motor-surge',tire:'tire-landing',wheel:'wheel-floating',rollerFront:'roller-ceramic',rollerSide:'roller-ceramic',rollerRear:'roller-lowdouble',shaft:'shaft-1',terminal:'terminal-1',accessory:'accessory-stabilizer',accessory2:'accessory-support',accessory3:'accessory-slide-rear'};

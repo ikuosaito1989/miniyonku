@@ -39,10 +39,10 @@ test('公式初優勝だけで次の参加資格を獲得。敗北・途中・�
     assert.equal(useGame.getState().inventory['body-champion'],undefined);
   }finally{useGame.setState(original);}
 });
-test('案内役は財布・購入済み・装備・慣らし・資格に応じてヒントを変える',()=>{
+test('案内役は財布・購入済み・装備・ブレークイン・資格に応じてヒントを変える',()=>{
   const base={money:0,inventory:{},equipment:{...starterEquipment},motorSeconds:0,qualified:false};
   assert.match(shopAdvice('mechanic',base),/完走賞/);
   assert.match(shopAdvice('mechanic',{...base,inventory:{'gear-4':1}}),/自動では付かない/);
-  assert.match(shopAdvice('mechanic',{...base,equipment:{...starterEquipment,gear:'gear-4'}}),/慣らし/);
+  assert.match(shopAdvice('mechanic',{...base,equipment:{...starterEquipment,gear:'gear-4'}}),/ブレークイン/);
   assert.match(shopAdvice('guide',{...base,qualified:true}),/獲得おめでとう/);
 });

@@ -30,7 +30,7 @@ test('充電電池は基準出力95%。長時間使用後も電池切れせず�
   }
   assert.equal(run(100000).status,'finished');assert.deepEqual(run(0),run(100000));
 });
-test('所持金0・通常電池切れから充電電池に交換し、何度慣らしても残量固定。モーターは消耗する',()=>{
+test('所持金0・通常電池切れから充電電池に交換し、何度ブレークインても残量固定。モーターは消耗する',()=>{
   const original=useGame.getState();
   try{
     useGame.setState({...useGame.getInitialState(),money:0,units:{...createStarterUnits(),'battery-basic':[{id:'starter-battery',seconds:batteryCapacity('battery-basic')}]}});

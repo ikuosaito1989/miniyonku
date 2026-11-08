@@ -12,7 +12,7 @@ export const isMechanicMotor=(id:string)=>mechanicMotorStages.some(stage=>stage.
 export function mechanicMotorFor(points:number){return mechanicMotorStages.filter(stage=>points>=stage.points).at(-1)??mechanicMotorStages[0];}
 export const mechanicMotorParts=mechanicMotorStages.map((stage,index)=>({
  id:stage.id,category:'motor' as const,name:`メカニック・リンク Lv.${stage.level}`,
- price:0,description:`メカニックマンからの贈り物。熟練度で自動成長する専用モーター。消耗なし・慣らし不要。${index===8?'熟練度ランキング単独1位の証。最高クラスの回転とトルク。':`次の強化は熟練度${mechanicMotorStages[index+1].points}pt。最高段階はランキング単独1位で解放。`}非売品。`,
+ price:0,description:`メカニックマンからの贈り物。熟練度で自動成長する専用モーター。消耗なし・ブレークイン不要。${index===8?'熟練度ランキング単独1位の証。最高クラスの回転とトルク。':`次の強化は熟練度${mechanicMotorStages[index+1].points}pt。最高段階はランキング単独1位で解放。`}非売品。`,
  specs:{rpm:stage.rpm,torque:stage.torque,weight:20,wear:0},
  performance:`${stage.rpm.toLocaleString('en-US')} rpm / トルク ${stage.torque.toFixed(2)} mN·m / 20 g / 消耗なし・自動成長 / 非売品`,
 }));

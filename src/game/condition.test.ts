@@ -6,7 +6,7 @@ import { createRaceState } from './race';
 import { starterEquipment } from '../data/machine';
 import { useGame } from './store';
 
-test('適度な慣らしで性能が上がり、使いすぎると摩耗で下がる',()=>{
+test('適度なブレークインで性能が上がり、使いすぎると摩耗で下がる',()=>{
   assert.ok(motorFactor(60)>motorFactor(0));
   assert.equal(motorFactor(60),motorFactor(180));
   assert.ok(motorFactor(600)<motorFactor(180));
@@ -31,7 +31,7 @@ test('消耗を含め同じ状態なら再現でき、新品より消耗品は�
   };
   assert.deepEqual(drive(200),drive(200));assert.ok(drive(200).distance<drive(0).distance);
 });
-test('途中報告と慣らしは重複せず、再購入時だけ古いモーターを新品に交換する',()=>{
+test('途中報告とブレークインは重複せず、再購入時だけ古いモーターを新品に交換する',()=>{
   const original=useGame.getState();
   try{
     useGame.setState({units:createStarterUnits(),equipment:{...starterEquipment},selectedUnits:{motor:'starter-motor',battery:'starter-battery'},unitSerial:0,money:3000});

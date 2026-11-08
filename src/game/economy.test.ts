@@ -19,7 +19,7 @@ test('新規開始は2000円。既存セーブの財布とは独立した初期�
   assert.equal(INITIAL_MONEY,2000);
   assert.equal(useGame.getInitialState().money,INITIAL_MONEY);
 });
-test('従来の1000円予算では慣らし済みでも凪に届かず、買い足しで優勝可能',()=>{
+test('従来の1000円予算ではブレークイン済みでも凪に届かず、買い足しで優勝可能',()=>{
   const budget=1000;
   const leader=rivals.find(r=>r.id==='nagi')!;
   const benchmark=finish(leader.equipment,leader.lane,leader.motorSeconds,.97);
@@ -44,7 +44,7 @@ test('従来の1000円予算では慣らし済みでも凪に届かず、買い�
   assert.ok(finish({...leader.equipment,chassis:'chassis-light',body:'body-entry'},2,60)<fastestRival);
 });
 
-test('新品初期装備は全開始レーンで最下位。慣らしと買い足しで下位CPUを越えられる',()=>{
+test('新品初期装備は全開始レーンで最下位。ブレークインと買い足しで下位CPUを越えられる',()=>{
   const playerTimes=Array.from({length:5},(_,lane)=>finish(starterEquipment,lane));
   const bestFresh=Math.min(...playerTimes);
   const weakestTimes:number[]=[];

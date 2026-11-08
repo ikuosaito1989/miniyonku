@@ -12,7 +12,7 @@ test('熟練度表は経験に応じて称号を進め、最高段階で止ま�
   assert.equal(proficiency(9999).rank.name,'マスター');assert.equal(proficiency(9999).remaining,0);
   assert.equal(proficiency(-10).index,0);
 });
-test('有効な慣らしだけ経験を得て、ピーク後の無駄な慣らしでは稼げない',()=>{
+test('有効なブレークインだけ経験を得て、ピーク後の無駄なブレークインでは稼げない',()=>{
   assert.equal(breakInPractice(0,30),1);assert.equal(breakInPractice(30,30),1);
   assert.equal(breakInPractice(45,30),.5);assert.equal(breakInPractice(60,30),0);
 });

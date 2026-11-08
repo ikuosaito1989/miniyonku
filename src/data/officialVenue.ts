@@ -40,7 +40,7 @@ export function officialPeopleFor(id:string){
  {id:'jin',x:700,y:480,name:'橘 斗和',kind:'rival' as const,text:'お前が黒岩を負かしたっていう新人か。俺は橘 斗和、こいつの先輩だ。夕凪なら38秒台。決勝でお前の走りが通用するか、見せてもらおうじゃねえか。'},
  {id:'go',x:270,y:480,name:'黒岩 豪',kind:'rival' as const,text:'斗和先輩まで来てるんだ。今度こそ俺が勝つ！ 夕凪より増えた切り返しで、気を抜くなよ。'},
  {id:'sou',x:340,y:180,name:'石川 蒼',kind:'mechanic' as const,text:'とうとう決勝だね。スパイラルの後もS字が続くから、着地と旋回を整えてきたよ。'},
- {id:'ren',x:600,y:180,name:'高橋 蓮',kind:'guide' as const,text:'2位までがあかつきへ進めるんだって。新品電池と慣らし済みモーターを確認しておこう。'},
+ {id:'ren',x:600,y:180,name:'高橋 蓮',kind:'guide' as const,text:'2位までがあかつきへ進めるんだって。新品電池とブレークイン済みモーターを確認しておこう。'},
  {id:'rei',x:285,y:180,name:'風見 怜',kind:'rival' as const,text:'ここまで来たね、湊くん。僕たちは応援席から見守っているよ。夕凪で磨いたセッティングを信じて、最後まで走り切ろう！'},
  {id:'gaku',x:655,y:180,name:'火野 岳',kind:'rival' as const,text:'今日は俺たちは応援だ！ 相手の威勢に飲まれるな。スライドとローラーで切り返しを支えて、2位以内をつかんでこい！'},
  ];

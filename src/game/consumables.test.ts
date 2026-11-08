@@ -55,7 +55,7 @@ test('資金不足やレース中の購入で所持パーツを失わない',()=
   }finally{useGame.setState(original);}
 });
 
-test('異種モーターの慣らしを保持して付け替え、再購入は同じ種類だけを新品にする',()=>{
+test('異種モーターのブレークインを保持して付け替え、再購入は同じ種類だけを新品にする',()=>{
   const original=useGame.getState();
   try{
     useGame.setState({...useGame.getInitialState(),money:10000});

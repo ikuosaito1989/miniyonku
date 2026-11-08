@@ -229,7 +229,7 @@ export const useGame = create<GameState>((set) => ({
    if(s.location!=='town'||s.overlay||s.openingActive)return {};
    const update=syncMechanicMotor(s,true),stage=mechanicMotorFor(s.proficiencyPoints),next=mechanicMotorStages[stage.level];
    const owned=Object.keys(s.inventory).some(id=>id.startsWith('motor-mechanic-')&&s.inventory[id]>0);
-   return {...update,overlay:'dialogue',speaker:mechanicManName,shopAfter:false,dialogueStage:'none',dialogue:`よくこの路地を見つけたな。私はメカニックマン。${owned?'贈ったモーターの調子はどうだ？':'君に、メカニック・リンクを一つ贈ろう。模型店の作業台で装着できるぞ。'} 今の君の熟練度は${Math.floor(s.proficiencyPoints)}pt。モーターはLv.${stage.level}、${stage.rpm.toLocaleString('en-US')}rpm・トルク${stage.torque.toFixed(2)}。消耗せず、慣らしもいらない。熟練度が上がれば、私のところに戻らなくても自動で強化される。${next?`次は${next.points}ptだ。`:'熟練度ランキング単独1位、おめでとう！ 最高段階の力を託そう。'} 最高段階は、レジェンドも含めた熟練度ランキングの単独1位になったときだけだ。腕を磨いてこい！`};
+   return {...update,overlay:'dialogue',speaker:mechanicManName,shopAfter:false,dialogueStage:'none',dialogue:`よくこの路地を見つけたな。私はメカニックマン。${owned?'贈ったモーターの調子はどうだ？':'君に、メカニック・リンクを一つ贈ろう。模型店の作業台で装着できるぞ。'} 今の君の熟練度は${Math.floor(s.proficiencyPoints)}pt。モーターはLv.${stage.level}、${stage.rpm.toLocaleString('en-US')}rpm・トルク${stage.torque.toFixed(2)}。消耗せず、ブレークインもいらない。熟練度が上がれば、私のところに戻らなくても自動で強化される。${next?`次は${next.points}ptだ。`:'熟練度ランキング単独1位、おめでとう！ 最高段階の力を託そう。'} 最高段階は、レジェンドも含めた熟練度ランキングの単独1位になったときだけだ。腕を磨いてこい！`};
   }),
   openProficiency:()=>set({overlay:'proficiency',shopAfter:false,notice:''}),
   openLegends:()=>set({overlay:'legends',shopAfter:false,notice:''}),
@@ -238,12 +238,12 @@ export const useGame = create<GameState>((set) => ({
   breakIn:()=>set(s=>{
     if(s.overlay!=='setting')return s;
     const motorPart=parts.find(p=>p.id===s.equipment.motor);
-    if(motorPart?.specs.wear===0)return {notice:`${motorPart.name}は消耗しません。慣らしは不要です。`};
+    if(motorPart?.specs.wear===0)return {notice:`${motorPart.name}は消耗しません。ブレークインは不要です。`};
     const duration=30;
     const units={...s.units,[s.equipment.motor]:s.units[s.equipment.motor].map(u=>u.id===s.selectedUnits.motor?{...u,seconds:u.seconds+duration}:u)};
     const motor=s.units[s.equipment.motor]?.find(u=>u.id===s.selectedUnits.motor);
     const practice=breakInPractice(motor?.seconds??0,duration);
-    return {units,proficiencyPoints:s.proficiencyPoints+practice,notice:`${duration.toFixed(0)}秒の慣らし運転を行いました。電池の残量は減りません。${practice>0?' 整備の熟練度が上がりました。':''}`};
+    return {units,proficiencyPoints:s.proficiencyPoints+practice,notice:`${duration.toFixed(0)}秒のブレークイン運転を行いました。電池の残量は減りません。${practice>0?' 整備の熟練度が上がりました。':''}`};
   }),
   startTrial: () => set(s=>(s.overlay==='escort'||s.overlay==='towa-escort'||s.overlay==='podium')||s.gameOver||s.location==='library'||isSalesShop(s.location)||s.location==='town'||s.location==='stadium-5'||s.location==='stadium-9'||s.location==='stadium-10'||s.location==='stadium-7'?s:({raceChoiceCircuit:null,raceChoiceFromBoard:false,mobChallenge:null,onlineChallenge:null,tutorialStage:s.tutorialStage==='start'||s.tutorialStage==='racing'?'racing':s.tutorialStage,overlay:'race',officialChallengeActive:false,officialQualificationNotice:false,shopAfter:false,notice:'',legendChallengeActive:false,legendDebriefPending:false,villainChallengeActive:false,villainDebriefPending:false,thirdShopNotice:false,raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,qualificationNotice:false})),
   settleRace: (attempt,race) => set(s=>{
@@ -313,7 +313,7 @@ export const useGame = create<GameState>((set) => ({
       return {...updated,podiumPending:false,overlay:'dialogue',speaker:'大会受付係',dialogue:done?s.location==='stadium-7'?`天頂決戦・ゼニス・クラウン、${cupPlayerPlace(cup)}位！ おめでとう！ すべての難所と強豪を越え、今度こそゲームクリアです。ほしくず模型店が開放され、各公式会場で何度でもタイムアタックに挑戦できます！ 星皇装着の走行は記録されません。`:s.location==='stadium-10'?`緑川グランプリ・${cupPlayerPlace(cup)}位！ おめでとう、あかつき模型店が開放されました！ 最上位パーツを揃え、強豪たちと5回走って天頂決戦の出場権をつかんでください。`:s.location==='stadium-9'?`星空テクニカル杯・総合${cupPlayerPlace(cup)}位、おめでとうございます。長距離の連続コーナーを走り切りました。街のゆうなぎ模型店が開放されました！ 次は一本道コースを40秒以内で完走して、第4公式大会の出場権を目指してください。この大会は再出場できません。`:`総合${cupPlayerPlace(cup)}位、おめでとうございます。${updated.officialWon?'第3公式大会・星空テクニカル杯の出場権を獲得！':''}${updated.wakabaUnlocked?'街のわかば模型店が開放されました。':''}この大会は再出場できません。`:'第1戦の結果を記録しました。ピットで装備を組み直し、第2戦へ進んでください。第1戦はやり直せません。',officialChallengeActive:false,dialogueStage:done?'none':'official-invite',shopAfter:false};
     }
     if(s.overlay==='race'&&s.officialQualificationNotice)return {overlay:'dialogue',speaker:'日向 誠二',dialogue:officialRace.invitation,dialogueStage:'none',officialQualificationNotice:false,shopAfter:false};
-    if(s.overlay==='race'&&s.villainChallengeActive&&s.villainDebriefPending)return {overlay:'dialogue',speaker:challenger.name,dialogue:s.villainDefeated?'な、なんだと……俺が負けた？ ちっ、約束は守る。ひなた模型店への紹介状だ。町の、あおぞら模型店の右隣へ行け。次は負けないからな！':'ふん、まだその程度か。ギアと電池、それにモーターの慣らしを見直してこい。ここで待っている。勝てるまで何度でも相手をしてやる！',dialogueStage:s.villainDefeated?'villain-win':'villain-loss',villainChallengeActive:false,villainDebriefPending:false,shopAfter:false};
+    if(s.overlay==='race'&&s.villainChallengeActive&&s.villainDebriefPending)return {overlay:'dialogue',speaker:challenger.name,dialogue:s.villainDefeated?'な、なんだと……俺が負けた？ ちっ、約束は守る。ひなた模型店への紹介状だ。町の、あおぞら模型店の右隣へ行け。次は負けないからな！':'ふん、まだその程度か。ギアと電池、それにモーターのブレークインを見直してこい。ここで待っている。勝てるまで何度でも相手をしてやる！',dialogueStage:s.villainDefeated?'villain-win':'villain-loss',villainChallengeActive:false,villainDebriefPending:false,shopAfter:false};
     if(s.overlay==='race'&&s.location==='aozora'&&s.villainArrivalPending)return {overlay:'arrival',arrivalEvent:'villain',dialogueStage:'none',shopAfter:false};
     if(s.overlay==='race'&&s.location==='komorebi'&&s.legendEventPending)return {overlay:'arrival',arrivalEvent:'legend',dialogueStage:'none',shopAfter:false};
     if(s.overlay==='race'&&s.legendDebriefPending)return {overlay:'dialogue',speaker:'風見 怜',dialogue:s.legendRaceCompleted?'これが僕たち兄弟の走りだよ。今日は僕たちの勝ち。でも、君のマシンには伸びしろがある。外の町へ出て、あおぞら模型店にも挑戦してごらん。店の下の出口から行けるよ。またコースで会おう！':'今回は最後まで走れなかったね。電池や安定性を調整して、僕たちともう一度走ろう。出口で声をかけてくれれば、いつでも待っているよ。',dialogueStage:'legend-debrief',legendDebriefPending:false,legendChallengeActive:false,legendEventPending:!s.legendRaceCompleted,shopAfter:false};

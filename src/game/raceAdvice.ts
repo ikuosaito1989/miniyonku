@@ -16,7 +16,7 @@ export function reviewRace(race:RaceState):RaceReview|null{
   if(!player||race.phase!=='finished')return null;
   const rank=rankRacers(race).findIndex(r=>r.id==='player')+1;
   const notes=[player.driving.status==='finished'?`前回は${rank}位、公式タイム${officialTime(race,player).toFixed(2)}秒。`:'前回はリタイア。'];
-  if(player.driving.stopReason==='jump')notes.push('ジャンプの飛距離が足りず、着地点に届かなかったよ。電池・慣らし・トルクとギア比を確認しよう。');
+  if(player.driving.stopReason==='jump')notes.push('ジャンプの飛距離が足りず、着地点に届かなかったよ。電池・ブレークイン・トルクとギア比を確認しよう。');
   else if(player.driving.stopReason==='battery')notes.push('電池切れで止まったのが直接の敗因だよ。');
   else if(player.driving.stopReason==='lapped')notes.push('周回遅れになったよ。加速・最高速とコーナーでの減速を改善しよう。');
   else if(player.driving.stopReason==='retired')notes.push('先頭のゴール後に走行を終了したため、未完走として記録されたよ。');
@@ -28,7 +28,7 @@ export function reviewRace(race:RaceState):RaceReview|null{
   if(race.circuitId==='trail'&&player.driving.status==='finished'){const time=officialTime(race,player);notes.push(time<=yuunagiTimeLimit?'規定40秒をクリアして大会出場権を獲得したよ。':`規定40秒まであと${(Math.ceil((time-yuunagiTimeLimit)*100)/100).toFixed(2)}秒の短縮が必要だよ。旋回中の減速、ジャンプ後の再加速、GOの反応を見直そう。`);}
   if(race.falseStartPenalty>0)notes.push(`フライングで${race.falseStartPenalty.toFixed(2)}秒加算されたよ。GOを見てから発進しよう。`);
   if((race.playerStartOffset??0)>.2)notes.push(`GOから発進まで${race.playerStartOffset!.toFixed(2)}秒。発進待ちも公式タイムに入るよ。`);
-  if(player.performance.motorWearRate!==0&&player.performance.motorSeconds<60)notes.push(`出走時のモーター使用は${player.performance.motorSeconds.toFixed(0)}秒。約60秒までの慣らしが足りなかったね。`);
+  if(player.performance.motorWearRate!==0&&player.performance.motorSeconds<60)notes.push(`出走時のモーター使用は${player.performance.motorSeconds.toFixed(0)}秒。約60秒までのブレークインが足りなかったね。`);
   if(player.performance.motorWearRate!==0&&player.performance.motorSeconds>180)notes.push('出走時点でモーターが摩耗し、出力が落ちていたよ。');
   if(batteryCharge(player.equipment.battery,player.performance.batterySeconds+player.driving.time)<.3)notes.push('電池残量も少なく、後半の出力が落ちていたよ。');
   return {circuitId:race.circuitId,text:notes.join('\n')};
@@ -53,8 +53,8 @@ export function raceAdvice(state:RaceAdviceContext){
     lines.push('入賞を狙う軽量構成はタイタン＋3.5:1＋エクリプスシャーシ＋アペックスタイヤ。前中後をゼニスで軽くし、ジャイロ・駆動PRO・クラウンスライドを合わせよう。テンペストなら4:1も候補だ。ダンパーを増やすほど速いわけではなく、制振が十分なら軽さを選ぼう。重いボディや残量低下時はギアを大きくする必要があるよ。');
     const missing=['motor-titan','chassis-eclipse','tire-apex','battery-zenith','accessory-slide-pro'].map(id=>parts.find(p=>p.id===id)!).filter(p=>!(state.inventory[p.id]>0));
     for(const p of missing.slice(0,3))lines.push(`優勝構成で不足する「${p.name}」は${p.price}円。${state.money>=p.price?'今なら購入できるよ。':'あと'+(p.price-state.money)+'円、他店の完走賞で貯めよう。'}`);
-    if(state.motorSeconds<60&&parts.find(p=>p.id===state.equipment.motor)?.specs.wear!==0)lines.push(`モーターは作業台であと約${Math.ceil(60-state.motorSeconds)}秒ならそう。慣らし後に電池を新品に交換すると長距離で有利だよ。`);
-    if(state.motorSeconds>180)lines.push('長いレースでモーターも摩耗するよ。同じ種類を新品交換し、慣らしてから再挑戦しよう。');
+    if(state.motorSeconds<60&&parts.find(p=>p.id===state.equipment.motor)?.specs.wear!==0)lines.push(`モーターは作業台であと約${Math.ceil(60-state.motorSeconds)}秒ならそう。ブレークイン後に電池を新品に交換すると長距離で有利だよ。`);
+    if(state.motorSeconds>180)lines.push('長いレースでモーターも摩耗するよ。同じ種類を新品交換し、ブレークインてから再挑戦しよう。');
     if(batteryCharge(state.equipment.battery,state.batterySeconds)<.8)lines.push('電池が減っているね。ゼニス・マラソンセルの新品で最後まで出力を保とう。');
     return lines.join('\n');
   }
@@ -67,10 +67,10 @@ export function raceAdvice(state:RaceAdviceContext){
     const missing=['chassis-turn','tire-turn','wheel-diff','motor-turn','accessory-stabilizer'].map(id=>parts.find(p=>p.id===id)!).find(p=>!(state.inventory[p.id]>0));
     if(missing)lines.push(`${shop.name}で不足している「${missing.name}」を${missing.price}円で購入できるよ。${state.money>=missing.price?'今の所持金で購入できるよ。':`あと${missing.price-state.money}円、完走賞で貯めよう。`}単品だけでなく、上位の旋回装備を組み合わせよう。`);
   }
-  if(state.shopId==='aozora')lines.push('黒岩は軽量シャーシと前後のベアリングローラーで旋回を強化しているよ。セイランにこの店のブリーズモーター・4:1ギア・スポンジタイヤに、K1 ライト・ライト6スポーク・中空シャフト・高接触ターミナル・スパークセル・駆動サポートを組み合わせてみよう。低重心だけでなく軽さも効くよ。モーターは約60秒の慣らし、電池は残量、発進はGOへの反応も確認してね。');
+  if(state.shopId==='aozora')lines.push('黒岩は軽量シャーシと前後のベアリングローラーで旋回を強化しているよ。セイランにこの店のブリーズモーター・4:1ギア・スポンジタイヤに、K1 ライト・ライト6スポーク・中空シャフト・高接触ターミナル・スパークセル・駆動サポートを組み合わせてみよう。低重心だけでなく軽さも効くよ。モーターは約60秒のブレークイン、電池は残量、発進はGOへの反応も確認してね。');
   const motor=parts.find(p=>p.id===state.equipment.motor)!;
-  if(motor.specs.wear!==0&&state.motorSeconds<60)lines.push(`今の${motor.name}は使用${state.motorSeconds.toFixed(0)}秒。作業台であと約${Math.ceil(60-state.motorSeconds)}秒ならそう。慣らしでは電池残量は減らないよ。`);
-  else if(motor.specs.wear!==0&&state.motorSeconds>180)lines.push(`今の${motor.name}は使用${state.motorSeconds.toFixed(0)}秒で摩耗中。慣らしを増やしても回復しないので、新品への交換を優先しよう。`);
+  if(motor.specs.wear!==0&&state.motorSeconds<60)lines.push(`今の${motor.name}は使用${state.motorSeconds.toFixed(0)}秒。作業台であと約${Math.ceil(60-state.motorSeconds)}秒ならそう。ブレークインでは電池残量は減らないよ。`);
+  else if(motor.specs.wear!==0&&state.motorSeconds>180)lines.push(`今の${motor.name}は使用${state.motorSeconds.toFixed(0)}秒で摩耗中。ブレークインを増やしても回復しないので、新品への交換を優先しよう。`);
   const charge=batteryCharge(state.equipment.battery,state.batterySeconds);
   if(charge<.5)lines.push(`今の電池残量は${(charge*100).toFixed(0)}%。新品へ交換してから挑もう。`);
   const base=trial(state.equipment,state,shop.circuitId);

@@ -28,7 +28,7 @@ test('熟練度だけで外していても自動成長、装着中は一個と�
  useGame.setState({proficiencyPoints:520});assert.deepEqual(gifts(),[mechanicMotorFor(520).id]);assert.equal(useGame.getState().equipment.motor,'motor-stock');
  useGame.setState({location:'komorebi'});useGame.getState().openSetting();useGame.getState().equip(gifts()[0],'motor');const unit=useGame.getState().selectedUnits.motor;
  useGame.setState({proficiencyPoints:1400});assert.deepEqual(gifts(),[mechanicMotorFor(1400).id]);assert.equal(useGame.getState().equipment.motor,gifts()[0]);assert.equal(useGame.getState().selectedUnits.motor,unit);assert.equal(useGame.getState().inventory['motor-stock'],1);
- useGame.getState().breakIn();assert.equal(useGame.getState().units[gifts()[0]][0].seconds,0);assert.match(useGame.getState().notice,/慣らしは不要/);
+ useGame.getState().breakIn();assert.equal(useGame.getState().units[gifts()[0]][0].seconds,0);assert.match(useGame.getState().notice,/ブレークインは不要/);
  }finally{useGame.setState(before,true);}
 });
 test('レース中の熟練度上昇では装備を替えず、終了して戻ったときに反映する',()=>{

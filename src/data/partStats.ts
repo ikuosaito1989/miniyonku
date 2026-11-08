@@ -12,7 +12,7 @@ function metrics(part:Part):Metric[]{
   case 'motor':return [
    {id:'rpm',label:'回転数',read:p=>p.specs.rpm,format:n=>`${number(n)} rpm`},
    {id:'torque',label:'トルク',read:p=>p.specs.torque,format:n=>`${number(n)} mN·m`},
-   {id:'power',label:'出力目安',read:motorOutput,format:n=>`${number(n)} W`,help:'回転数とトルクから求めた単体の理論最大出力。実走では電池・慣らし・装備で変わります。'},weight];
+   {id:'power',label:'出力目安',read:motorOutput,format:n=>`${number(n)} W`,help:'回転数とトルクから求めた単体の理論最大出力。実走では電池・ブレークイン・装備で変わります。'},weight];
   case 'tire':return [
    {id:'grip',label:'グリップ',read:p=>p.specs.grip,format:number},
    {id:'scrub',label:'旋回の軽さ',read:p=>p.specs.grip,format:n=>`横擦れ ${number(n)}`,lower:true,help:'グリップが低いほど横擦れが小さく、旋回で速度を残せます。安定性とは交換関係です。'},

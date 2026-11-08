@@ -13,7 +13,7 @@ const pending=new WeakMap<StoreApi<GameState>,()=>void>();
 function quickAdvice(context:RaceAdviceContext){
  const motor=parts.find(p=>p.id===context.equipment.motor)!;
  return ['今のマシンを見てみたよ。',context.review?.text,
- motor.specs.wear===0?'このモーターは消耗なし・慣らし不要だよ。':context.motorSeconds<60?'モーターは約60秒まで慣らすと好調になるよ。慣らしで電池残量は減らないから、作業台で試してみよう。':context.motorSeconds>180?'モーターが摩耗しているね。新品への交換も考えてみよう。':'モーターの慣らしは十分だね。',
+ motor.specs.wear===0?'このモーターは消耗なし・ブレークイン不要だよ。':context.motorSeconds<60?'モーターは約60秒までブレークインすると好調になるよ。ブレークインで電池残量は減らないから、作業台で試してみよう。':context.motorSeconds>180?'モーターが摩耗しているね。新品への交換も考えてみよう。':'モーターのブレークインは十分だね。',
  batteryCharge(context.equipment.battery,context.batterySeconds)<.5?'電池残量が少ないね。レース前に新品への交換を考えよう。':'電池の状態はまだ良さそうだよ。',
  'コーナーではタイヤ・ローラー・シャーシの組み合わせも大切。一つずつ替えて、同じコースで試走してみよう。'].filter(Boolean).join('\n\n');
 }
