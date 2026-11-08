@@ -341,7 +341,7 @@ export class ShopScene extends Phaser.Scene {
     }
   }
   private playEventSound(cue:EventSound){
-    const {enabled,seVolume}=useAudioSettings.getState();if(enabled)this.eventAudio.play(cue,seVolume);
+    const {enabled,volume}=useAudioSettings.getState();if(enabled)this.eventAudio.play(cue,volume);
   }
   private arrivalTexture(kind:string,facing:Facing,frame:number){
     const key=`arrival-${kind}-${facing}-${frame}`;

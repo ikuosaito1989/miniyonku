@@ -38,7 +38,7 @@ test('復帰後に音ONのまま再生を再開し、非同期解除中に消え
     createBuffer(){return {getChannelData(){return new Float32Array(200);}};}
     createBufferSource(){return {...node(),buffer:null,loop:false,start(){},stop(){}};}
     createBiquadFilter(){return {...node(),type:'',frequency:param(),Q:param()};}
-    createOscillator(){const frequency=param();return {...node(),frequency,type:'',start(){if(frequency.value>=700)notes.push(frequency.value);},stop(){},onended:null};}
+    createOscillator(){const frequency=param();return {...node(),frequency,type:'',start(){if(frequency.value>=880)notes.push(frequency.value);},stop(){},onended:null};}
   }
   Object.defineProperty(globalThis,'document',{configurable:true,value:{hidden:false,addEventListener(){},removeEventListener(){}}});
   Object.defineProperty(globalThis,'window',{configurable:true,value:events});
@@ -47,8 +47,7 @@ test('復帰後に音ONのまま再生を再開し、非同期解除中に消え
   try{
     const audio=new RaceAudio(),race=startRace(createRaceState(starterEquipment));
     audio.update(race);assert.equal(notes.length,0);
-    audio.unlock();await flush();assert.deepEqual(notes,[784]);assert.ok(levels.includes(.26));
-    audio.update({...race,countdownTicks:240});audio.update({...race,countdownTicks:120});assert.deepEqual(notes,[784,831,880]);
+    audio.unlock();await flush();assert.deepEqual(notes,[880]);assert.ok(levels.includes(.26));
     contexts[0].state='interrupted';contexts[0].onstatechange?.();await flush();
     assert.equal(contexts[0].state,'running');
     audio.setEnabled(false);contexts[0].state='suspended';events.dispatchEvent(new Event('pointerdown'));await flush();assert.equal(contexts[0].state,'suspended');

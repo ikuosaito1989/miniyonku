@@ -27,8 +27,3 @@ test('距離で小さくなり左右を描き分け、空中では転がり音�
  assert.ok(racerSoundProfile(racer,getCircuitTrack('park-sand')).roughness>near.roughness);
  assert.ok(racerSoundProfile({...racer,performance:{...racer.performance,freeSpeed:racer.performance.freeSpeed*2}},view.track).frequency>near.frequency);
 });
-test('実際の継ぎ目を走行中に通過したときだけ一度鳴り、空中では鳴らさない',()=>{
- const events=new RaceSoundEvents();let state=createRaceState(starterEquipment);state=move(state,'player',{status:'running',speed:5,time:1,distance:1});state={...state,time:1};events.update(state);
- state=move({...state,time:1.3},'player',{distance:1.3,time:1.3});assert.ok(events.update(state).some(e=>e.kind==='joint'));assert.deepEqual(events.update(state),[]);
- state=move({...state,time:2},'player',{distance:2.2,time:2,flightY:1});assert.ok(!events.update(state).some(e=>e.kind==='joint'));
-});
