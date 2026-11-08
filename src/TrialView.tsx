@@ -10,7 +10,7 @@ import { raceIntroDuration, raceIntroAt, courseIntroduction } from './game/raceI
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useGame } from './game/store';
 import { TrialRenderer } from './game/TrialRenderer';
-import { raceCameraViews, type TrialCamera } from './data/raceCamera';
+import { defaultRaceZoom, raceCameraViews, raceZoomFactors, type TrialCamera } from './data/raceCamera';
 import { canViewRaceResults, countdownNumber, createRaceState, officialTime, rankRacers } from './game/race';
 import { getCircuitTrack } from './data/circuit';
 import { officialRace, officialRounds } from './data/officialRace';
@@ -69,6 +69,7 @@ export default function TrialView(){
   const introduction=courseIntroduction(circuitId,officialChallenge);
   const [finish,setFinish]=useState(createFinishPresentation);
   const [cameraMode,setCameraMode]=useState<TrialCamera>('broadcast');
+  const [cameraZoom,setCameraZoom]=useState(defaultRaceZoom);
   const overview=cameraMode==='overview';
   const [error,setError]=useState('');
   const onlineMessage=useOnlineStatus(s=>s.message);
@@ -78,7 +79,7 @@ export default function TrialView(){
   useEffect(()=>{
     const stored=useGame.getState();
     const condition=equippedCondition(equipment,stored.units,stored.selectedUnits);
-    setState(createRaceState(equipment,stored.raceSeed,condition,challenge,circuitId,stored.bodyPaint,stored.playerName||undefined));setFinish(createFinishPresentation());setError('');setCameraMode('broadcast');setIntro(raceIntroAt(0));
+    setState(createRaceState(equipment,stored.raceSeed,condition,challenge,circuitId,stored.bodyPaint,stored.playerName||undefined));setFinish(createFinishPresentation());setError('');setCameraMode('broadcast');setCameraZoom(defaultRaceZoom);setIntro(raceIntroAt(0));
     const raceAttempt=useGame.getState().raceAttempt;
     let submitted=false;
     try{renderer.current=new TrialRenderer(host.current!,equipment,race=>{
@@ -104,6 +105,7 @@ export default function TrialView(){
   const start=useCallback(()=>renderer.current?.start(),[]);
   const showRaceResults=useCallback(()=>renderer.current?.showResults(true),[]);
   const skipRace=useCallback(()=>{setSkipped(true);renderer.current?.skipRace();},[]);
+  const adjustZoom=(delta:number)=>{const next=Math.max(0,Math.min(raceZoomFactors.length-1,cameraZoom+delta));setCameraZoom(next);renderer.current?.setCameraZoom(next);};
   useEffect(()=>{
     const handleKey=(event:KeyboardEvent)=>{
       if(event.key==='Escape'){event.preventDefault();if(!event.repeat)requestClose();return;}
@@ -163,6 +165,7 @@ export default function TrialView(){
     <header className="race-header"><h2>{exhibition?raceName:officialChallenge?raceName:legendChallenge?'レジェンド挑戦':villainChallenge?'黒岩 豪からの挑戦':circuit.name}<span>{exhibition?`${state.racers.length}台・${online?'オンライン上位装備との対戦':'CPUとの対戦'}`:replay?'公式コース・1台タイムアタック':timeTrial?'一本道・1台タイムアタック':pointToPoint?'一本道・5台レース':`${circuit.lanes}レーン・${circuit.laps}周レース`}</span></h2><nav aria-label="レース操作">
       <AudioControls/>
       <label className="race-camera-select">視点<select aria-label="レースの視点" value={cameraMode} disabled={introducing} onChange={event=>{const mode=event.target.value as TrialCamera;renderer.current?.setCamera(mode);setCameraMode(mode);}}>{raceCameraViews.map(view=><option key={view.id} value={view.id}>{view.label}</option>)}</select></label>
+      <div className="race-zoom-controls" role="group" aria-label="レース画面の拡大率"><span>拡大</span><button aria-label="縮小" disabled={introducing||cameraZoom===0} onClick={()=>adjustZoom(-1)}>−</button><output aria-live="polite" aria-label={`拡大率 ${cameraZoom+1} / ${raceZoomFactors.length}`}>{cameraZoom+1}/6</output><button aria-label="拡大" disabled={introducing||cameraZoom===raceZoomFactors.length-1} onClick={()=>adjustZoom(1)}>＋</button></div>
       <button onClick={requestClose}>{exhibition?(raceChoice?'相手選択へ':'記録へ'):outdoor?'街へ':officialChallenge||isPracticeCourse(location)?'会場へ':'模型店へ'}</button>
     </nav></header>
     {!introducing&&(online?<RaceRanking race={state}/>:replay?<div className="time-trial-target"><span>クリア後・タイムアタック</span><span>{recordEligible?'記録対象：星皇なし':'星皇装着・記録対象外'}</span></div>:timeTrial?<div className="time-trial-target"><span>規定 <strong>{yuunagiTimeLimit.toFixed(2)}秒以内</strong></span><span>{bestTime!==null?`自己ベスト ${(Math.ceil(bestTime*100-1e-7)/100).toFixed(2)}秒`:'初挑戦'}</span><span>{finalQualified?'出場権獲得済み':'クリアで第4大会出場権'}</span></div>:<RaceRanking race={state}/>)}

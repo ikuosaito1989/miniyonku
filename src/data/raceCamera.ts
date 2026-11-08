@@ -9,7 +9,8 @@ export const raceCamera = {
 
 export const raceCameraViews=[
   {id:'broadcast',label:'マシンを見る'},
-  {id:'zoom',label:'拡大'},
   {id:'overview',label:'全体'},
 ] as const;
 export type TrialCamera=typeof raceCameraViews[number]['id']|'auto'|'follow'|'low';
+export const raceZoomFactors=[1.45,1.2,1,.86,.74,.64] as const;
+export const defaultRaceZoom=2;
