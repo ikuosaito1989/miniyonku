@@ -3,6 +3,7 @@ import {buildStartMarshal} from './StartMarshal';
 import {withMobRivals} from './mobRace';
 import {VenueAnimation} from './VenueAnimation';
 import {raceCourseDetails} from './RaceCourseDetails';
+import {courseRailColorAt,pavedCourseColors} from './coursePalette';
 import {isPracticeCourse} from '../data/practiceCourses';
 import {physicalRenderer,modelLighting} from './sceneLighting';
 import {RaceShadows} from './RaceShadows';
@@ -159,6 +160,7 @@ export class TrialRenderer {
   }
   private buildTrack(){
     const {circuit,circuitLength,sampleLanePath}=this.track;
+    const wallTint=new THREE.Color();
     for(let lane=0;lane<circuit.lanes;lane++){
       const vertices:number[]=[],indices:number[]=[],colors:number[]=[];
       for(let i=0;i<=circuit.samples;i++){
@@ -167,25 +169,26 @@ export class TrialRenderer {
           const offset=fraction*circuit.laneWidth/2,height=.0025*Math.abs(fraction)**2;
           vertices.push(p.x+p.sideX*offset+p.upX*height,p.y+p.sideY*offset+p.upY*height,p.z+p.sideZ*offset+p.upZ*height);
           const surface=this.track.surfaceAt(i/circuit.samples*circuitLength);
-          const color=new THREE.Color(surface.roughness===0?(lane%2?0x8d91bb:0xaaaed0):surface.roughness>.8?0xd2b47a:0xad8d61);
+          const color=new THREE.Color(surface.roughness===0?pavedCourseColors.white:surface.roughness>.8?0xd2b47a:0xad8d61);
           color.multiplyScalar(.88+.12*Math.sin(i*13.7+lane*4.1)**2);colors.push(color.r,color.g,color.b);
         }
         if(i<circuit.samples&&!this.track.isJumpGap((i+.5)/circuit.samples*circuitLength)){for(let col=0;col<4;col++){const a=i*5+col;indices.push(a,a+1,a+5,a+1,a+6,a+5);}}
       }
       const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.setIndex(indices);geometry.computeVertexNormals();
       if(circuit.surface.roughness>0)geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
-      const mesh=this.mesh(geometry,circuit.surface.roughness>0?0xffffff:lane%2?0x8d91bb:0xaaaed0);mesh.name=`course-running-surface-${lane}`;mesh.material.vertexColors=circuit.surface.roughness>0;mesh.material.side=THREE.DoubleSide;mesh.material.roughness=circuit.surface.roughness>0?.77:.36;mesh.material.metalness=0;mesh.material.envMapIntensity=.8;mesh.receiveShadow=true;this.scene.add(mesh);
+      const mesh=this.mesh(geometry,circuit.surface.roughness>0?0xffffff:pavedCourseColors.white);mesh.name=`course-running-surface-${lane}`;mesh.material.vertexColors=circuit.surface.roughness>0;mesh.material.side=THREE.DoubleSide;mesh.material.roughness=circuit.surface.roughness>0?.77:.36;mesh.material.metalness=0;mesh.material.envMapIntensity=.8;mesh.receiveShadow=true;this.scene.add(mesh);
       for(const side of [-1,1]){
       const offset=side*circuit.laneWidth/2;
-      const vertices:number[]=[],indices:number[]=[];
+      const vertices:number[]=[],indices:number[]=[],colors:number[]=[];
       for(let i=0;i<=circuit.samples;i++){
-        const p=sampleLanePath(i/circuit.samples*circuitLength,lane);
+        const distance=i/circuit.samples*circuitLength,p=sampleLanePath(distance,lane);wallTint.setHex(courseRailColorAt(this.track,distance,this.track.startDistance)??pavedCourseColors.white);
+        for(let vertex=0;vertex<7;vertex++)colors.push(wallTint.r,wallTint.g,wallTint.b);
         // Six-sided rounded cap, extruded along the unchanged lane geometry.
         for(const [delta,height] of [[-.008,0],[-.008,.048],[-.0057,.0537],[0,.056],[.0057,.0537],[.008,.048],[.008,0]])vertices.push(p.x+p.sideX*(offset+delta)+p.upX*height,p.y+p.sideY*(offset+delta)+p.upY*height,p.z+p.sideZ*(offset+delta)+p.upZ*height);
         if(i<circuit.samples&&!this.track.isJumpGap((i+.5)/circuit.samples*circuitLength)){for(let face=0;face<6;face++){const a=i*7+face;indices.push(a,a+7,a+1,a+1,a+7,a+8);}}
       }
-      const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.setIndex(indices);geometry.computeVertexNormals();
-      const rail=this.mesh(geometry,0xd7e5ed);rail.name=`course-rounded-rail-${lane}-${side}`;rail.material.side=THREE.DoubleSide;rail.material.roughness=.32;rail.material.metalness=0;rail.material.envMapIntensity=.8;rail.receiveShadow=true;this.scene.add(rail);
+      const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geometry.setIndex(indices);geometry.computeVertexNormals();
+      const rail=this.mesh(geometry,0xffffff);rail.name=`course-rounded-rail-${lane}-${side}`;rail.material.vertexColors=true;rail.material.side=THREE.DoubleSide;rail.material.roughness=.32;rail.material.metalness=0;rail.material.envMapIntensity=.8;rail.receiveShadow=true;this.scene.add(rail);
       }
     }
   }
@@ -202,7 +205,7 @@ export class TrialRenderer {
     const {circuit,sampleCircuit,startDistance,sampleLanePath,startRampHeight}=this.track;
     const start=sampleCircuit(startDistance);
     const group=new THREE.Group();group.position.set(start.x,startRampHeight(0),start.z);group.rotation.y=Math.atan2(start.tangentX,start.tangentZ);
-    const colors=[0x5685ce,0xcf5263,0xd4b749,0x50a889,0xb17bcb];
+    const colors=this.track.circuit.surface.roughness>0?[0x5685ce,0xcf5263,0xd4b749,0x50a889,0xb17bcb]:Array.from({length:circuit.lanes},()=>pavedCourseColors.white);
     // 色付きの発進台とラインも路面の高さに合わせ、浮いた平板にしない。
     const strip=(lane:number,from:number,to:number,left:number,right:number,color:number)=>{
       const vertices:number[]=[],indices:number[]=[],steps=Math.max(2,Math.ceil((to-from)*32));
