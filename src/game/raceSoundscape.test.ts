@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {createRaceState,type RaceState} from './race';
 import {starterEquipment} from '../data/machine';
 import {getCircuitTrack} from '../data/circuit';
+import {rollingSoundGain} from './RaceSoundLayer';
 import {RaceSoundEvents,racerSoundProfile,type RaceSoundPerspective} from './raceSoundscape';
 const view:RaceSoundPerspective={track:getCircuitTrack('leaf'),listener:{x:0,y:0,z:0},right:{x:1,y:0,z:0}};
 const move=(state:RaceState,id:string,values:Partial<RaceState['racers'][number]['driving']>):RaceState=>({...state,phase:'running',racers:state.racers.map(r=>r.id===id?{...r,driving:{...r.driving,...values}}:r)});
@@ -26,4 +27,11 @@ test('距離で小さくなり左右を描き分け、空中では転がり音�
  assert.equal(racerSoundProfile({...racer,driving:{...racer.driving,flightY:p.y+.2}},view.track).rolling,0);
  assert.ok(racerSoundProfile(racer,getCircuitTrack('park-sand')).roughness>near.roughness);
  assert.ok(racerSoundProfile({...racer,performance:{...racer.performance,freeSpeed:racer.performance.freeSpeed*2}},view.track).frequency>near.frequency);
+});
+
+test('舗装の走行音は聞こえる大きさを保ち、停止・空中・消音では鳴らさない',()=>{
+ assert.ok(rollingSoundGain(1,1,0,0,0)>=.34);
+ assert.equal(rollingSoundGain(1,0,0,0,0),0);
+ assert.equal(rollingSoundGain(0,1,0,0,0),0);
+ assert.ok(rollingSoundGain(1,1,1,0,0)<=.45);
 });

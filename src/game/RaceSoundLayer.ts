@@ -3,6 +3,10 @@ import {getCircuitTrack} from '../data/circuit';
 import {RaceSoundEvents,racerSoundProfile,type RaceSoundPerspective,type RaceSoundEvent} from './raceSoundscape';
 
 type Voice={motor:OscillatorNode;motorGain:GainNode;rolling:GainNode;filter:BiquadFilterNode;pan:StereoPannerNode|GainNode};
+/** Keep the rolling sound audible over music, with a per-car ceiling. */
+export function rollingSoundGain(level:number,rolling:number,roughness:number,time:number,distance:number){
+ return Math.min(.45,Math.max(0,level*rolling*(.35+roughness*.24)*(1+roughness*.16*Math.sin(time*39+distance*7))));
+}
 /** Five bounded voices share one noise source. All one-shot nodes disconnect on end. */
 export class RaceSoundLayer{
  private voices=new Map<string,Voice>();
@@ -37,7 +41,7 @@ export class RaceSoundLayer{
    const p=racerSoundProfile(racer,track,view),moving=Math.min(1,p.speed/6),level=audible?p.level:0;
    voice.motor.frequency.setTargetAtTime(p.frequency*(p.airborne?1.12:1),c.currentTime,.06);
    voice.motorGain.gain.setTargetAtTime(level*moving*.065,c.currentTime,.08);
-   voice.rolling.gain.setTargetAtTime(level*p.rolling*(.035+p.roughness*.12)*2*(1+p.roughness*.16*Math.sin(racer.driving.time*39+racer.driving.distance*7)),c.currentTime,.035);
+   voice.rolling.gain.setTargetAtTime(rollingSoundGain(level,p.rolling,p.roughness,racer.driving.time,racer.driving.distance),c.currentTime,.035);
    voice.filter.frequency.setTargetAtTime(1100+p.speed*95+p.roughness*1600,c.currentTime,.08);
    if('pan' in voice.pan)voice.pan.pan.setTargetAtTime(p.pan,c.currentTime,.06);
   }
