@@ -2,7 +2,7 @@ import {getCircuitTrack,type CircuitTrack} from '../data/circuit';
 import type {RaceState,Racer} from './race';
 export type SoundPoint={x:number;y:number;z:number};
 export type RaceSoundPerspective={track:CircuitTrack;listener:SoundPoint;right:SoundPoint};
-export type RaceSoundEvent={kind:'launch'|'land'|'pass';id:string;level:number;pan:number;roughness:number};
+export type RaceSoundEvent={kind:'launch'|'land'|'pass'|'joint';id:string;level:number;pan:number;roughness:number};
 export function racerSoundProfile(racer:Racer,track:CircuitTrack,view?:RaceSoundPerspective){
  const p=track.sampleLanePath(racer.driving.distance,racer.lane),dx=p.x-(view?.listener.x??p.x),dy=(racer.driving.flightY??p.y)-(view?.listener.y??p.y),dz=p.z-(view?.listener.z??p.z),distance=Math.hypot(dx,dy,dz);
  const attenuation=view?1/(1+(distance/1.7)**2):racer.id==='player'?1:.2;
@@ -11,7 +11,7 @@ export function racerSoundProfile(racer:Racer,track:CircuitTrack,view?:RaceSound
 }
 /** Observe simulation counters; rendering a state twice never repeats an impact. */
 export class RaceSoundEvents{
- private previous=new Map<string,{launched:boolean;landings:number;relative:number;passTime:number}>();
+ private previous=new Map<string,{launched:boolean;landings:number;relative:number;passTime:number;distance:number;jointTime:number}>();
  update(state:RaceState,view?:RaceSoundPerspective):RaceSoundEvent[]{
   const track=view?.track??getCircuitTrack(state.circuitId),player=state.racers.find(r=>r.id==='player'),events:RaceSoundEvent[]=[];
   for(const racer of state.racers){
@@ -21,9 +21,15 @@ export class RaceSoundEvents{
    if(before&&(state.phase==='running'||state.phase==='countdown')){
     if(!before.launched&&launched)events.push({kind:'launch',id:racer.id,level:profile.level*.18,pan:profile.pan,roughness:profile.roughness});
     if((d.landings??0)>before.landings&&d.status!=='out')events.push({kind:'land',id:racer.id,level:profile.level*Math.min(.42,.12+d.speed*.025)*(1-racer.performance.damping*.55),pan:profile.pan,roughness:profile.roughness});
+    // The visible modular joints are at .35 + n*spacing on each lap.
+    if(before.launched&&launched&&d.flightY===undefined&&d.status==='running'&&d.speed>2&&d.distance>before.distance&&d.distance-before.distance<2&&state.time-before.jointTime>.12){
+     const spacing=Math.max(.9,track.circuitLength/240),lap=track.open?0:Math.floor(d.distance/track.circuitLength),progress=track.open?d.distance:d.distance-lap*track.circuitLength,oldLap=track.open?0:Math.floor(before.distance/track.circuitLength),oldProgress=track.open?before.distance:before.distance-oldLap*track.circuitLength;
+     const crossed=lap===oldLap&&Math.floor((progress-.35)/spacing)>Math.floor((oldProgress-.35)/spacing)&&progress>=.35;
+     if(crossed&&!track.isJumpGap(progress)){events.push({kind:'joint',id:racer.id,level:profile.level*Math.min(.10,.025+d.speed*.007),pan:profile.pan,roughness:profile.roughness});before.jointTime=state.time;}
+    }
     if(view&&racer.id!=='player'&&d.time>1&&(player?.driving.time??0)>.4&&relative*before.relative<=0&&Math.abs(relative-before.relative)>.015&&Math.abs(relative-before.relative)<5&&profile.level>.16&&state.time-before.passTime>1){events.push({kind:'pass',id:racer.id,level:profile.level*.2,pan:profile.pan,roughness:profile.roughness});before.passTime=state.time;}
    }
-   this.previous.set(racer.id,{launched:state.phase==='ready'?false:(before?.launched??launched)||launched,landings:d.landings??0,relative,passTime:state.phase==='ready'?-2:before?.passTime??-2});
+   this.previous.set(racer.id,{launched:state.phase==='ready'?false:(before?.launched??launched)||launched,landings:d.landings??0,relative,passTime:state.phase==='ready'?-2:before?.passTime??-2,distance:d.distance,jointTime:state.phase==='ready'?-2:before?.jointTime??-2});
   }
   return events;
  }

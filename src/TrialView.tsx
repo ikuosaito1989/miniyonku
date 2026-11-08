@@ -71,7 +71,7 @@ export default function TrialView(){
   const overview=cameraMode==='overview';
   const [error,setError]=useState('');
   const onlineMessage=useOnlineStatus(s=>s.message);
-  const sound=useAudioSettings(s=>s.enabled),volume=useAudioSettings(s=>s.volume);
+  const sound=useAudioSettings(s=>s.enabled),volume=useAudioSettings(s=>s.seVolume);
 
   useEffect(()=>{
     const stored=useGame.getState();
@@ -93,6 +93,7 @@ export default function TrialView(){
     return()=>{renderer.current?.dispose();renderer.current=null;};
   },[equipment,challenge,circuitId,online,mob]);
   useEffect(()=>{renderer.current?.setSound(sound,volume);},[sound,volume,equipment]);
+  useEffect(()=>{const duck=state.phase==='countdown'?.5:state.phase==='running'&&state.time<1.3?.7:1;useAudioSettings.getState().setRaceDuck(duck);return()=>useAudioSettings.getState().setRaceDuck(1);},[state.phase,state.time<1.3]);
 
   const requestClose=useCallback(()=>{
     if(!error&&state.phase!=='finished'&&!window.confirm(`レースを終了して${exhibition?(raceChoice?'対戦相手の選択':'コース記録'):outdoor?'街':officialChallenge||isPracticeCourse(location)?'会場':'模型店'}に戻りますか？\n${officialChallenge&&!replay?'公式戦は一度限りです。このレースは棄権として記録され、やり直せません。':'途中で戻ると、このレースの賞金は受け取れません。'}`))return;

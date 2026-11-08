@@ -19,6 +19,7 @@ test('音量は0〜100%に制限し、ミュートをシーン間で共有する
     original.setVolume(3);assert.equal(useAudioSettings.getState().volume,1);
     original.setVolume(-1);assert.equal(useAudioSettings.getState().volume,0);
     original.setVolume(NaN);assert.equal(useAudioSettings.getState().volume,.35);
+    original.setSeVolume(.7);assert.equal(useAudioSettings.getState().seVolume,.7);assert.equal(useAudioSettings.getState().volume,.35);original.setSeVolume(3);assert.equal(useAudioSettings.getState().seVolume,1);original.setRaceDuck(.5);assert.equal(useAudioSettings.getState().raceDuck,.5);
     original.toggle();assert.equal(useAudioSettings.getState().enabled,!original.enabled);
   }finally{useAudioSettings.setState(original);}
 });
