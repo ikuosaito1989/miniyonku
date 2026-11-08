@@ -15,6 +15,7 @@ test('公式順位に応じた完走賞。途中・コースアウトは0円',()
   assert.equal(racePrize({...race,phase:'running'}),0);
   assert.equal(racePrize({...race,falseStartPenalty:2.5}),350);
   assert.equal(racePrize({...race,racers:race.racers.map(r=>r.id==='player'?{...r,driving:{...r.driving,status:'out'}}:r)}),0);
+  assert.equal(racePrize({...race,circuitId:'trail'}),1000);
 });
 test('同じレースの通知では二重加算せず、次の優勝で再度800円を受け取れる',()=>{
   const original=useGame.getState();

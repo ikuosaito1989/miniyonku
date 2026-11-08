@@ -59,14 +59,15 @@ function lowWedgeShell(sections:number[][],color:number,shininess=85){
 }
 
 export function buildRaceMachineModel(racer:Pick<Entrant,'id'|'color'|'equipment'|'bodyPaint'>){
- return buildMachineModel(racer.color,racer.equipment,racer.id===challenger.id?'kuroiwa':racer.id!=='player'&&racer.id!=='riku'&&racer.id!=='jin'&&!racer.id.startsWith('legend-')?'mob-kei':'stock',racer.id==='player'?racer.bodyPaint:undefined);
+ const appearance=racer.id===challenger.id?'kuroiwa':racer.id==='player'||racer.id==='jin'||racer.id.startsWith('legend-')?'stock':'mob-kei';
+ return buildMachineModel(racer.color,racer.equipment,appearance,racer.id==='player'?racer.bodyPaint:undefined);
 }
 
 export function buildMachineModel(racerColor:number,equipment:Equipment,appearance:'stock'|'mob-kei'|'kuroiwa'='stock',bodyPaint?:number){
   const original=bodyDesign(equipment.body);
   // コハクK660と通常NPCは同じ素朴な軽ワゴンの造形を使う。性能データは変更しない。
   const isKuroiwa=appearance==='kuroiwa';
-  const isMob=!isKuroiwa&&(original.id==='body-stream'||appearance==='mob-kei')&&original.id!=='body-champion'&&!original.id.startsWith('body-legend-');
+  const isMob=!isKuroiwa&&(original.id==='body-stream'||appearance==='mob-kei')&&!original.id.startsWith('body-legend-');
   const design=isMob?{...original,shape:'kei' as const,silhouette:undefined,width:.056,cabinHeight:.042,cabinFront:.041,cabinRear:-.092}:original;
   // 3Dプレビューはボディ固有色、レース中はレーサーごとの塗色を使う。
   const isStarter=design.silhouette==='starter-wedge',isChampion=design.silhouette==='champion-aero',isKazami=design.id==='body-legend-flow',isHino=design.id==='body-legend-wedge',isTowa=design.id==='body-legend-towa',isKoya=design.id==='body-legend-muscle';

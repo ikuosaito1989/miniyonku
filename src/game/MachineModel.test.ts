@@ -87,7 +87,7 @@ test('全ボディの曲面形状が有限でレーンに収まり、軽・SUV�
   assert.ok(heights['body-stream']>heights['body-arrow']);
 });
 
-test('通常CPUは箱型軽ワゴンの外観。記念車と最強兄弟は従来の造形を維持する',()=>{
+test('通常CPUとセイラン装備CPUは箱型軽ワゴン。プレイヤー・レジェンド・黒岩の外観は維持する',()=>{
   const mob=buildRaceMachineModel(rivals[0]);
   assert.ok(mob.getObjectByName('mob-kei-yellow-plate'));
   assert.ok(mob.getObjectByName('mob-kei-plastic-bumper'));
@@ -97,6 +97,11 @@ test('通常CPUは箱型軽ワゴンの外観。記念車と最強兄弟は従�
   assert.ok(size.x<.22&&size.z<.3&&size.y<.13);
   const shell=mob.getObjectByName('body-shell') as THREE.Mesh;
   assert.ok(shell.geometry instanceof THREE.BoxGeometry);
+  const seiranRival=buildRaceMachineModel({id:'sou',color:0x55a66c,equipment:{...starterEquipment,body:'body-champion'}});
+  assert.ok(seiranRival.getObjectByName('mob-kei-yellow-plate'));
+  assert.equal((seiranRival.getObjectByName('body-shell') as THREE.Mesh).geometry instanceof THREE.BoxGeometry,true);
+  const otherCpu=buildRaceMachineModel({...rivals[0],id:'riku',equipment:{...rivals[0].equipment,body:'body-manta'}});
+  assert.ok(otherCpu.getObjectByName('mob-kei-yellow-plate'));
   const protectedCars=[{id:'player',color:0xff0000,equipment:{...starterEquipment,body:'body-champion'}},...legends.slice(0,2).map(legend=>({...legend,color:0xff0000}))];
   for(const racer of protectedCars){
     const current=buildRaceMachineModel(racer),previous=buildMachineModel(racer.color,racer.equipment);
@@ -107,6 +112,8 @@ test('通常CPUは箱型軽ワゴンの外観。記念車と最強兄弟は従�
     assert.deepEqual(geometry(current),geometry(previous));
     for(const model of [current,previous])model.traverse(object=>{if(object instanceof THREE.Mesh){object.geometry.dispose();object.material.dispose();}});
   }
+  seiranRival.traverse(object=>{if(object instanceof THREE.Mesh){object.geometry.dispose();object.material.dispose();}});
+  otherCpu.traverse(object=>{if(object instanceof THREE.Mesh){object.geometry.dispose();object.material.dispose();}});
   const ku=buildRaceMachineModel(challenger),paint=(ku.getObjectByName('body-shell') as THREE.Mesh).material as THREE.MeshPhongMaterial;
   assert.equal(paint.color.getHex(),0x15191f);
   assert.ok(ku.getObjectByName('kuroiwa-gold-roof-stripe'));
