@@ -9,7 +9,6 @@ export class RaceShadows{
  private basis=new THREE.Matrix4();
  private side=new THREE.Vector3();private up=new THREE.Vector3();private forward=new THREE.Vector3();
  constructor(private scene:THREE.Scene,private key:THREE.DirectionalLight,compact:boolean){configureShadow(key,2.1,compact?512:1024);}
- setQuality(quality:'low'|'medium'|'high'){const size=quality==='high'?1024:512;this.key.shadow.map?.dispose();this.key.shadow.map=null;configureShadow(this.key,2.1,size);}
  add(id:string,car:THREE.Group){
   // Tiny screws and spokes need no separate shadow draws during a race.
   car.traverse(o=>{if(o instanceof THREE.Mesh){o.receiveShadow=o.userData.isAeroPaint!==true&&o.userData.noShadow!==true;o.castShadow=/^(body-shell|cabin-glass|chassis)$|^tire-/.test(o.name);}});

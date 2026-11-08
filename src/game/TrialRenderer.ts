@@ -48,8 +48,7 @@ export class TrialRenderer {
   private introFrame:ReturnType<typeof overviewFrame>|null=null;
   private overviewFrame:ReturnType<typeof overviewFrame>|null=null;
   private overviewMarkers=new Map<string,THREE.Sprite>();
-  private cameraMode: TrialCamera = 'auto';
-  private graphicsQuality:'low'|'medium'|'high'=compactDevice()?'medium':'high';
+  private cameraMode: TrialCamera = 'broadcast';
   private director=new RaceCameraDirector();
   private activeCamera:THREE.Camera=this.camera;
   private textures: THREE.Texture[] = [];
@@ -76,7 +75,7 @@ export class TrialRenderer {
     this.renderer.domElement.style.width='100%';
     this.renderer.domElement.style.height='100%';
     host.append(this.renderer.domElement);
-    const sun=modelLighting(this.scene);this.shadows=new RaceShadows(this.scene,sun,compactDevice());
+    const sun=modelLighting(this.scene);this.shadows=new RaceShadows(this.scene,sun,true);
     const grass=this.grassTexture();
     const groundSize=this.track.open?600:Math.max(100,this.track.circuit.radiusX*2+40,this.track.circuit.radiusZ*2+40);
     grass.repeat.set(groundSize/1.5,groundSize/1.5);
@@ -113,7 +112,6 @@ export class TrialRenderer {
     this.audio.update(this.state);
     this.report({...this.state});
   }
-  setGraphicsQuality(quality:'low'|'medium'|'high'){this.graphicsQuality=quality;this.renderer.shadowMap.enabled=quality!=='low';this.shadows.setQuality(quality);this.resize();}
   setCamera(mode:TrialCamera){if(this.intro.stage==='done'){this.cameraMode=mode;}}
   showResults(skipRetirementAnimation=false){
     const player=this.state.racers.find(r=>r.id==='player');
@@ -128,7 +126,7 @@ export class TrialRenderer {
   restart(){
     this.lappedAges.clear();
     for(const car of this.cars.values())delete car.userData.motionDistance;
-    this.state=createRaceState(this.equipment,this.seed,this.condition,this.challenge,this.circuitId,this.bodyPaint);this.accumulator=0;this.lastTime=0;this.lastReport=-1;this.cameraMode='auto';this.director.reset();this.startShotBlend=1;
+    this.state=createRaceState(this.equipment,this.seed,this.condition,this.challenge,this.circuitId,this.bodyPaint);this.accumulator=0;this.lastTime=0;this.lastReport=-1;this.cameraMode='broadcast';this.director.reset();this.startShotBlend=1;
     this.intro=raceIntroAt(0);this.introLastTime=0;this.reportIntro(this.intro);
     this.finishPresentation=createFinishPresentation();this.reportFinish(this.finishPresentation);
     this.report({...this.state});
@@ -140,8 +138,7 @@ export class TrialRenderer {
     const resolution=raceRenderSize(compact,width,height,window.devicePixelRatio);
     this.host.dataset.renderStyle='smooth';
     this.renderer.domElement.style.imageRendering='auto';
-    const scale=this.graphicsQuality==='low'?.7:1;
-    this.renderer.setSize(Math.max(1,Math.round(resolution.width*scale)),Math.max(1,Math.round(resolution.height*scale)),false);
+    this.renderer.setSize(resolution.width,resolution.height,false);
   }
   private grassTexture(){
     const canvas=document.createElement('canvas');canvas.width=64;canvas.height=64;

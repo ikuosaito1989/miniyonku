@@ -67,8 +67,7 @@ export default function TrialView(){
   const introducing=intro.stage!=='done';
   const introduction=courseIntroduction(circuitId,officialChallenge);
   const [finish,setFinish]=useState(createFinishPresentation);
-  const [cameraMode,setCameraMode]=useState<TrialCamera>('auto');
-  const [graphicsQuality,setGraphicsQuality]=useState<'low'|'medium'|'high'>(()=>typeof window!=='undefined'&&window.innerWidth<=720?'medium':'high');
+  const [cameraMode,setCameraMode]=useState<TrialCamera>('broadcast');
   const overview=cameraMode==='overview';
   const [error,setError]=useState('');
   const onlineMessage=useOnlineStatus(s=>s.message);
@@ -77,7 +76,7 @@ export default function TrialView(){
   useEffect(()=>{
     const stored=useGame.getState();
     const condition=equippedCondition(equipment,stored.units,stored.selectedUnits);
-    setState(createRaceState(equipment,stored.raceSeed,condition,challenge,circuitId,stored.bodyPaint));setFinish(createFinishPresentation());setError('');setCameraMode('auto');setIntro(raceIntroAt(0));
+    setState(createRaceState(equipment,stored.raceSeed,condition,challenge,circuitId,stored.bodyPaint));setFinish(createFinishPresentation());setError('');setCameraMode('broadcast');setIntro(raceIntroAt(0));
     const raceAttempt=useGame.getState().raceAttempt;
     let submitted=false;
     try{renderer.current=new TrialRenderer(host.current!,equipment,race=>{
@@ -89,7 +88,7 @@ export default function TrialView(){
         else useOnlineStatus.setState({message:tutorialActive(current.tutorialStage)?'チュートリアル中はオンライン登録対象外です。':'星皇装備、または対象外の記録のためオンライン登録しません。'});
       }
       setState(race);
-    },setFinish,condition,stored.raceSeed,challenge,circuitId,setIntro,stored.bodyPaint,online?.records??null,!!mob);renderer.current.setGraphicsQuality(graphicsQuality);}
+    },setFinish,condition,stored.raceSeed,challenge,circuitId,setIntro,stored.bodyPaint,online?.records??null,!!mob);}
     catch{setError('3D表示を開始できませんでした。WebGL対応ブラウザで再試行してください。');}
     return()=>{renderer.current?.dispose();renderer.current=null;};
   },[equipment,challenge,circuitId,online,mob]);
@@ -161,7 +160,6 @@ export default function TrialView(){
     <header className="race-header"><h2>{exhibition?raceName:officialChallenge?raceName:legendChallenge?'レジェンド挑戦':villainChallenge?'黒岩 豪からの挑戦':circuit.name}<span>{exhibition?`${state.racers.length}台・${online?'オンライン上位装備との対戦':'モブCPUとの対戦'}`:replay?'公式コース・1台タイムアタック':timeTrial?'一本道・1台タイムアタック':pointToPoint?'一本道・5台レース':`${circuit.lanes}レーン・${circuit.laps}周レース`}</span></h2><nav aria-label="レース操作">
       <AudioControls/>
       <label className="race-camera-select">視点<select aria-label="レースの視点" value={cameraMode} disabled={introducing} onChange={event=>{const mode=event.target.value as TrialCamera;renderer.current?.setCamera(mode);setCameraMode(mode);}}>{raceCameraViews.map(view=><option key={view.id} value={view.id}>{view.label}</option>)}</select></label>
-      <label className="race-quality-select">画質<select aria-label="レースの画質" value={graphicsQuality} onChange={event=>{const quality=event.target.value as 'low'|'medium'|'high';renderer.current?.setGraphicsQuality(quality);setGraphicsQuality(quality);}}><option value="low">低</option><option value="medium">中</option><option value="high">高</option></select></label>
       <button onClick={requestClose}>{exhibition?(raceChoice?'相手選択へ':'記録へ'):outdoor?'街へ':officialChallenge||isPracticeCourse(location)?'会場へ':'模型店へ'}</button>
     </nav></header>
     {!introducing&&(online?<RaceRanking race={state}/>:replay?<div className="time-trial-target"><span>クリア後・タイムアタック</span><span>{recordEligible?'記録対象：星皇なし':'星皇装着・記録対象外'}</span></div>:timeTrial?<div className="time-trial-target"><span>規定 <strong>{yuunagiTimeLimit.toFixed(2)}秒以内</strong></span><span>{bestTime!==null?`自己ベスト ${(Math.ceil(bestTime*100-1e-7)/100).toFixed(2)}秒`:'初挑戦'}</span><span>{finalQualified?'出場権獲得済み':'クリアで第4大会出場権'}</span></div>:<RaceRanking race={state}/>)}
