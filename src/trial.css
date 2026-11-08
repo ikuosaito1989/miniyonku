@@ -241,3 +241,7 @@
  .retro-race .race-header .race-camera-choices{min-width:0;max-width:55vw;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin}
  .retro-race .race-header .race-camera-choices button{flex:0 0 auto}
 }
+.race-camera-select,.race-quality-select{display:flex;align-items:center;gap:3px;white-space:nowrap;font-size:10px;color:#d9e6f4}
+.race-camera-select select,.race-quality-select select{min-height:32px;max-width:96px;border:1px solid #9cadd5;background:#101448;color:#edf4ff;border-radius:3px;font:inherit;padding:3px 4px}
+.race-camera-select select:focus-visible,.race-quality-select select:focus-visible{outline:2px solid #ffe872;outline-offset:2px}
+@media(max-width:600px){.race-camera-select,.race-quality-select{font-size:10px}.race-camera-select select{max-width:80px}.race-quality-select select{max-width:48px}.retro-race .race-header nav{flex:0 0 auto}}

@@ -10,6 +10,7 @@ import { buildKazamiBody } from './KazamiBody';
 import { buildSeiranBody } from './SeiranBody';
 import { challenger } from '../data/challenger';
 import * as THREE from 'three';
+import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 import type { Equipment } from '../data/machine';
 import type { Entrant } from '../data/rivals';
 import { bodyDesign } from '../data/bodies';
@@ -96,7 +97,7 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
     :[[-.128,.035,.012],[-.116,w*.85,.016],[-.08,w,.02],[0,w,.021],[.08,w*.97,.018],[.117,w*.83,.014],[.132,.026,.009]];
   if(!isChampion&&!isKazami&&!isHino&&!isTowa&&!isKoya&&!isKuroiwa){
     const body=isMob
-      ?new THREE.Mesh(new THREE.BoxGeometry(.112,.035,.24),new THREE.MeshPhongMaterial({color,shininess:12}))
+      ?new THREE.Mesh(new RoundedBoxGeometry(.112,.035,.24,2,.0025),new THREE.MeshPhongMaterial({color,shininess:12}))
       :isStarter
       ?lowWedgeShell([[-.137,.043,.045,.053,.067],[-.119,.064,.045,.056,.071],[-.092,.074,.045,.057,.072],[-.065,.071,.045,.056,.07],[-.02,.064,.045,.054,.067],[.035,.061,.045,.053,.065],[.077,.057,.045,.052,.062],[.105,.047,.045,.051,.06],[.132,.027,.046,.05,.057],[.145,.004,.048,.05,.053]],color)
       :shell(sections,color,boxy);
@@ -104,7 +105,7 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
     body.name='body-shell';car.add(body);
     const rear=design.cabinRear,front=design.cabinFront,height=design.cabinHeight;
     const canopy=isMob
-      ?new THREE.Mesh(new THREE.BoxGeometry(.099,.046,.142),new THREE.MeshPhongMaterial({color:0x35494e,shininess:18}))
+      ?new THREE.Mesh(new RoundedBoxGeometry(.099,.046,.142,2,.002),new THREE.MeshPhongMaterial({color:0x35494e,shininess:18}))
       :isStarter
       ?lowWedgeShell([[-.091,.004,.067,.071,.072],[-.078,.026,.067,.078,.087],[-.054,.036,.067,.081,.091],[-.018,.037,.067,.081,.091],[.014,.031,.066,.078,.086],[.04,.019,.064,.071,.077],[.051,.002,.063,.066,.067]],0x193b52,52)
       :shell([[rear-.014,.002,.001],[rear,w*.68,height*.72],[rear+.02,w*.7,height],[front-.015,w*.65,height],[front+.022,w*.7,.002],[front+.028,.002,.001]],0x193b52,boxy);
@@ -112,7 +113,7 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
     else if(!isStarter&&!isChampion)canopy.position.y=.018;
     canopy.name='cabin-glass';car.add(canopy);
     if(!isStarter&&!isChampion){
-      const roof=isMob?new THREE.Mesh(new THREE.BoxGeometry(.108,.005,.152),new THREE.MeshPhongMaterial({color,shininess:12})):shell([[rear+.005,.003,.001],[rear+.02,w*.7,.002],[front-.017,w*.65,.002],[front-.012,.003,.001]],color,boxy);
+      const roof=isMob?new THREE.Mesh(new RoundedBoxGeometry(.108,.005,.152,2,.0015),new THREE.MeshPhongMaterial({color,shininess:12})):shell([[rear+.005,.003,.001],[rear+.02,w*.7,.002],[front-.017,w*.65,.002],[front-.012,.003,.001]],color,boxy);
       if(isMob)roof.position.set(0,.12,-.024);else roof.position.y=.022+height;roof.name='roof';car.add(roof);
     }else if(isStarter){
       // 小さな赤いルーフパネルで、窓とボンネットをはっきり分ける。

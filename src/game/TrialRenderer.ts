@@ -49,6 +49,7 @@ export class TrialRenderer {
   private overviewFrame:ReturnType<typeof overviewFrame>|null=null;
   private overviewMarkers=new Map<string,THREE.Sprite>();
   private cameraMode: TrialCamera = 'auto';
+  private graphicsQuality:'low'|'medium'|'high'=compactDevice()?'medium':'high';
   private director=new RaceCameraDirector();
   private activeCamera:THREE.Camera=this.camera;
   private textures: THREE.Texture[] = [];
@@ -112,6 +113,7 @@ export class TrialRenderer {
     this.audio.update(this.state);
     this.report({...this.state});
   }
+  setGraphicsQuality(quality:'low'|'medium'|'high'){this.graphicsQuality=quality;this.renderer.shadowMap.enabled=quality!=='low';this.shadows.setQuality(quality);this.resize();}
   setCamera(mode:TrialCamera){if(this.intro.stage==='done'){this.cameraMode=mode;}}
   showResults(skipRetirementAnimation=false){
     const player=this.state.racers.find(r=>r.id==='player');
@@ -138,7 +140,8 @@ export class TrialRenderer {
     const resolution=raceRenderSize(compact,width,height,window.devicePixelRatio);
     this.host.dataset.renderStyle='smooth';
     this.renderer.domElement.style.imageRendering='auto';
-    this.renderer.setSize(resolution.width,resolution.height,false);
+    const scale=this.graphicsQuality==='low'?.7:1;
+    this.renderer.setSize(Math.max(1,Math.round(resolution.width*scale)),Math.max(1,Math.round(resolution.height*scale)),false);
   }
   private grassTexture(){
     const canvas=document.createElement('canvas');canvas.width=64;canvas.height=64;
@@ -163,27 +166,29 @@ export class TrialRenderer {
       const vertices:number[]=[],indices:number[]=[],colors:number[]=[];
       for(let i=0;i<=circuit.samples;i++){
         const p=sampleLanePath(i/circuit.samples*circuitLength,lane);
-        for(const offset of [-circuit.laneWidth/2,circuit.laneWidth/2]){
-          vertices.push(p.x+p.sideX*offset,p.y+p.sideY*offset,p.z+p.sideZ*offset);
+        for(const fraction of [-1,-.8,0,.8,1]){
+          const offset=fraction*circuit.laneWidth/2,height=.0025*Math.abs(fraction)**2;
+          vertices.push(p.x+p.sideX*offset+p.upX*height,p.y+p.sideY*offset+p.upY*height,p.z+p.sideZ*offset+p.upZ*height);
           const surface=this.track.surfaceAt(i/circuit.samples*circuitLength);
           const color=new THREE.Color(surface.roughness===0?(lane%2?0x8d91bb:0xaaaed0):surface.roughness>.8?0xd2b47a:0xad8d61);
           color.multiplyScalar(.88+.12*Math.sin(i*13.7+lane*4.1)**2);colors.push(color.r,color.g,color.b);
         }
-        if(i<circuit.samples&&!this.track.isJumpGap((i+.5)/circuit.samples*circuitLength)){const a=i*2;indices.push(a,a+1,a+2,a+1,a+3,a+2);}
+        if(i<circuit.samples&&!this.track.isJumpGap((i+.5)/circuit.samples*circuitLength)){for(let col=0;col<4;col++){const a=i*5+col;indices.push(a,a+1,a+5,a+1,a+6,a+5);}}
       }
       const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.setIndex(indices);geometry.computeVertexNormals();
       if(circuit.surface.roughness>0)geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
-      const mesh=this.mesh(geometry,circuit.surface.roughness>0?0xffffff:lane%2?0x8d91bb:0xaaaed0);mesh.material.vertexColors=circuit.surface.roughness>0;mesh.material.side=THREE.DoubleSide;mesh.receiveShadow=true;this.scene.add(mesh);
+      const mesh=this.mesh(geometry,circuit.surface.roughness>0?0xffffff:lane%2?0x8d91bb:0xaaaed0);mesh.name=`course-running-surface-${lane}`;mesh.material.vertexColors=circuit.surface.roughness>0;mesh.material.side=THREE.DoubleSide;mesh.material.roughness=circuit.surface.roughness>0?.77:.36;mesh.material.metalness=0;mesh.material.envMapIntensity=.8;mesh.receiveShadow=true;this.scene.add(mesh);
       for(const side of [-1,1]){
       const offset=side*circuit.laneWidth/2;
       const vertices:number[]=[],indices:number[]=[];
       for(let i=0;i<=circuit.samples;i++){
         const p=sampleLanePath(i/circuit.samples*circuitLength,lane);
-        for(const [delta,height] of [[-0.008,0],[0.008,0],[-0.008,0.055],[0.008,0.055]])vertices.push(p.x+p.sideX*(offset+delta)+p.upX*height,p.y+p.sideY*(offset+delta)+p.upY*height,p.z+p.sideZ*(offset+delta)+p.upZ*height);
-        if(i<circuit.samples&&!this.track.isJumpGap((i+.5)/circuit.samples*circuitLength)){const a=i*4;indices.push(a,a+4,a+2,a+2,a+4,a+6,a+1,a+3,a+5,a+3,a+7,a+5,a+2,a+6,a+3,a+3,a+6,a+7);}
+        // Six-sided rounded cap, extruded along the unchanged lane geometry.
+        for(const [delta,height] of [[-.008,0],[-.008,.048],[-.0057,.0537],[0,.056],[.0057,.0537],[.008,.048],[.008,0]])vertices.push(p.x+p.sideX*(offset+delta)+p.upX*height,p.y+p.sideY*(offset+delta)+p.upY*height,p.z+p.sideZ*(offset+delta)+p.upZ*height);
+        if(i<circuit.samples&&!this.track.isJumpGap((i+.5)/circuit.samples*circuitLength)){for(let face=0;face<6;face++){const a=i*7+face;indices.push(a,a+7,a+1,a+1,a+7,a+8);}}
       }
       const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));geometry.setIndex(indices);geometry.computeVertexNormals();
-      const rail=this.mesh(geometry,0xd7e5ed);rail.material.side=THREE.DoubleSide;rail.receiveShadow=true;this.scene.add(rail);
+      const rail=this.mesh(geometry,0xd7e5ed);rail.name=`course-rounded-rail-${lane}-${side}`;rail.material.side=THREE.DoubleSide;rail.material.roughness=.32;rail.material.metalness=0;rail.material.envMapIntensity=.8;rail.receiveShadow=true;this.scene.add(rail);
       }
     }
   }

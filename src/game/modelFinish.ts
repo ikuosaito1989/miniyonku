@@ -24,8 +24,8 @@ export function finishMachineMaterials(model:THREE.Group){
    m.vertexColors=source.vertexColors;m.flatShading=source.flatShading;
    m.roughness=surface==='glass'?.13:surface==='carbon'?.52:surface==='metal'?.28:Math.max(surface==='paint'?.27:.42,roughness);
    m.metalness=surface==='glass'?.06:surface==='carbon'?.18:surface==='metal'?Math.max(.72,metalness):Math.min(.18,metalness);
-   m.envMapIntensity=surface==='metal'?1.05:surface==='glass'?1.1:.85;
-   if(m instanceof THREE.MeshPhysicalMaterial){m.clearcoat=surface==='glass'?1:roughness>.5?.25:.85;m.clearcoatRoughness=surface==='glass'?.07:.19;m.ior=1.48;}
+   m.envMapIntensity=surface==='metal'?1.1:surface==='glass'?1.0:surface==='paint'?.95:.7;
+   if(m instanceof THREE.MeshPhysicalMaterial){m.clearcoat=surface==='glass'?1:roughness>.5?.3:.9;m.clearcoatRoughness=surface==='glass'?.09:.16;m.ior=1.48;}
    m.name=`machine-${surface}`;m.userData.surface=surface;variants.set(surface,m);used.add(m);return m;
   };
   object.material=Array.isArray(object.material)?object.material.map(finish):finish(object.material);
