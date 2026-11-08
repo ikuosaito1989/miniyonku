@@ -265,6 +265,7 @@ export class ShopScene extends Phaser.Scene {
     this.input.on('blur',()=>this.input.keyboard?.resetKeys());
     this.game.events.on(Phaser.Core.Events.BLUR, this.resetKeys, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN,()=>this.game.events.off(Phaser.Core.Events.BLUR,this.resetKeys,this));
+    window.dispatchEvent(new CustomEvent('miniyonku:world-ready',{detail:{location:useGame.getState().location}}));
   }
   private cancelRoute(){this.route=[];this.destination?.setVisible(false);}
   private resetKeys(){this.input.keyboard?.resetKeys();touchInput.reset();this.cancelRoute();this.gesture.reset();this.pendingTarget=null;}
