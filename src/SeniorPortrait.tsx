@@ -1,3 +1,3 @@
-import {legendPersonDrawing} from './game/LegendPeopleArt';
-import {CharacterPortrait} from './CharacterPortrait';
-export function SeniorPortrait(){return <CharacterPortrait draw={()=>legendPersonDrawing('towa','down')} label="橘 斗和"/>;}
+import portrait from './assets/portraits/towa-pop.webp';
+
+export function SeniorPortrait(){return <img src={portrait} alt="" decoding="async"/>;}
