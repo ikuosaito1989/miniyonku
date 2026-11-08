@@ -184,7 +184,6 @@
 @media(min-height:481px){.retro-race[data-phase='running'][data-camera='overview'] .race-phase{font-size:9px;line-height:1.2;margin-bottom:2px}.retro-race[data-phase='running'][data-camera='overview'] .race-speaker span{display:block;line-height:1.1;letter-spacing:0}.retro-race[data-phase='running'][data-camera='overview'] .starter-portrait{margin-bottom:3px}}
 @media(min-height:481px){.retro-race[data-phase='running'][data-camera='overview'] .race-condition{top:12px;right:12px;left:auto;bottom:auto}}
 
-.race-camera-choices{display:flex;align-items:center;gap:3px}.race-header .race-camera-choices button{border:1px solid #9cadd5;padding:5px 6px;min-height:30px;background:#101448;color:#edf4ff}.race-header .race-camera-choices button[aria-pressed=true]{border-color:#ffe872;background:#315e8a;color:#ffe872}.race-header .race-camera-choices button:disabled{opacity:.5}.race-header .race-camera-choices button:focus-visible{outline:2px solid #ffe872;outline-offset:2px}@media(max-width:600px){.race-header .race-camera-choices{gap:2px}.race-header .race-camera-choices button{font-size:10px;padding-inline:3px}.retro-race .race-header h2{font-size:10px}}
 
 /* 案内は文章の高さに合わせる。極端な長文も枠内で読めるようにする。 */
 .retro-race .race-message { min-height: 0; max-height: 40dvh; overflow-y: auto; overflow-x: hidden; }
@@ -239,13 +238,7 @@
 /* Keep camera controls and exit reachable on narrow phones. */
 @media(max-width:600px){
  .retro-race .race-header nav{flex:1 1 auto;justify-content:flex-end;min-width:0}
- .retro-race .race-header .race-camera-choices{min-width:0;max-width:55vw;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin}
- .retro-race .race-header .race-camera-choices button{flex:0 0 auto}
 }
-.race-camera-select{display:flex;align-items:center;gap:3px;white-space:nowrap;font-size:10px;color:#d9e6f4}
-.race-camera-select select{min-height:32px;max-width:96px;border:1px solid #9cadd5;background:#101448;color:#edf4ff;border-radius:3px;font:inherit;padding:3px 4px}
-.race-camera-select select:focus-visible{outline:2px solid #ffe872;outline-offset:2px}
-@media(max-width:600px){.race-camera-select{font-size:10px}.race-camera-select select{max-width:80px}.retro-race .race-header nav{flex:0 0 auto}}
 .race-zoom-controls{display:flex;align-items:center;gap:3px;white-space:nowrap;color:#d9e6f4;font-size:10px}
 .race-header .race-zoom-controls button{width:30px;height:30px;padding:0;border:1px solid #9cadd5;background:#101448;color:#edf4ff;font-size:20px;line-height:1}
 .race-zoom-controls button:disabled{opacity:.42}
