@@ -12,6 +12,7 @@ export class VenueAnimation{
  private lastTick=-1;
  private wasReduced=false;
  private marshal:THREE.Group|null=null;
+ private marshalElbow:THREE.Group|null=null;
  private matrix=new THREE.Matrix4();private rotation=new THREE.Matrix4();private base=new THREE.Matrix4();private pivot=new THREE.Vector3();private shifted=new THREE.Vector3();
  constructor(private venue:THREE.Group){
   this.people=venue.userData.spectators??[];this.staff=venue.userData.pitStaff??[];
@@ -25,9 +26,9 @@ export class VenueAnimation{
   add('venue-spectator-arms','arm',2);add('venue-spectator-hands','arm',2);
   add('pit-staff-heads','staff-head');add('pit-staff-hair','staff-head');add('pit-staff-working-arms','staff-arm');add('pit-staff-working-hands','staff-arm');add('pit-staff-held-tools','staff-arm');
  }
- attachMarshal(root:THREE.Object3D){this.marshal=root.getObjectByName('marshal-flag-arm') as THREE.Group??null;}
+ attachMarshal(root:THREE.Object3D){this.marshal=root.getObjectByName('marshal-flag-arm') as THREE.Group??null;this.marshalElbow=root.getObjectByName('marshal-flag-elbow') as THREE.Group??null;}
  update(seconds:number,phase:RaceState['phase'],reduced=false){
-  if(reduced){if(!this.wasReduced){for(const p of this.parts){p.mesh.instanceMatrix.array.set(p.base);p.mesh.instanceMatrix.needsUpdate=true;}if(this.marshal)this.marshal.rotation.z=0;}this.wasReduced=true;return;}
+  if(reduced){if(!this.wasReduced){for(const p of this.parts){p.mesh.instanceMatrix.array.set(p.base);p.mesh.instanceMatrix.needsUpdate=true;}if(this.marshal)this.marshal.rotation.z=0;if(this.marshalElbow)this.marshalElbow.rotation.z=-.4;}this.wasReduced=true;return;}
   this.wasReduced=false;const tick=Math.floor(seconds*12);if(tick===this.lastTick)return;this.lastTick=tick;
   const stride=Math.max(1,Math.ceil(this.people.length/96));
   for(const part of this.parts){
@@ -53,5 +54,6 @@ export class VenueAnimation{
    part.mesh.instanceMatrix.needsUpdate=true;
   }
   if(this.marshal)this.marshal.rotation.z=phase==='countdown'?.08*Math.sin(seconds*3):phase==='running'?-.65+.12*Math.sin(seconds*2):.03*Math.sin(seconds);
+  if(this.marshalElbow)this.marshalElbow.rotation.z=-.4+(phase==='countdown'?.06*Math.sin(seconds*3-.35):phase==='running'?.08*Math.sin(seconds*2-.35):.02*Math.sin(seconds-.35));
  }
 }

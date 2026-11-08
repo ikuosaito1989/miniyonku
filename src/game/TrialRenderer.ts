@@ -1,3 +1,4 @@
+import {buildStartMarshal} from './StartMarshal';
 import {withMobRivals} from './mobRace';
 import {VenueAnimation} from './VenueAnimation';
 import {raceCourseDetails} from './RaceCourseDetails';
@@ -237,14 +238,7 @@ export class TrialRenderer {
       const label=new THREE.Mesh(new THREE.PlaneGeometry(1.2,.15),new THREE.MeshBasicMaterial({map:labelTexture,transparent:true,side:THREE.DoubleSide}));label.position.set(0,.65,.028);gate.add(label);this.scene.add(gate);
       for(let lane=0;lane<circuit.lanes;lane++)for(let row=0;row<2;row++)for(let i=0;i<4;i++)strip(lane,this.track.circuitLength-.12+row*.04,this.track.circuitLength-.08+row*.04,-circuit.laneWidth/2+i*circuit.laneWidth/4,-circuit.laneWidth/2+(i+1)*circuit.laneWidth/4,(i+row)%2?0x26354b:0xf5f1da);
     }
-    // 自作のスタート係。既存作品のキャラクターを使わない。
-    const attendant=new THREE.Group();attendant.position.set(-circuit.laneWidth*circuit.lanes/2-0.23,0,-0.15);
-    const block=(w:number,h:number,d:number,x:number,y:number,z:number,color:number)=>{
-      const mesh=this.mesh(new THREE.BoxGeometry(w,h,d),color);mesh.position.set(x,y,z);attendant.add(mesh);return mesh;
-    };
-    block(0.11,0.15,0.08,0,0.16,0,0xe0a34c);block(0.09,0.09,0.08,0,0.28,0,0xefc09a);
-    block(0.12,0.03,0.11,0,0.34,0,0x304461);block(0.04,0.1,0.06,-0.03,0.04,0,0x25364b);block(0.04,0.1,0.06,0.03,0.04,0,0x25364b);
-    const arm=block(0.025,0.15,0.025,-0.11,0.25,0,0xefc09a),flag=block(0.12,0.08,0.008,-0.17,0.35,0,0xf8df79),gesture=new THREE.Group();gesture.name='marshal-flag-arm';gesture.position.set(-.11,.25,0);for(const part of [arm,flag]){part.position.sub(gesture.position);gesture.add(part);}attendant.add(gesture);
+    const attendant=buildStartMarshal();attendant.position.set(-circuit.laneWidth*circuit.lanes/2-0.23,0,-0.15);
     const podium=this.mesh(new THREE.BoxGeometry(.3,startRampHeight(0),.4),0x526477);podium.position.set(attendant.position.x,-startRampHeight(0)/2,attendant.position.z);group.add(podium);
     group.add(attendant);this.scene.add(group);
   }
