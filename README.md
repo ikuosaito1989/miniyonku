@@ -3,28 +3,36 @@
 ![チビ四駆 セイランのタイトル画面](docs/screenshots/title-screen.png)
 
 ```mermaid
-flowchart TD
+flowchart LR
   subgraph Development[開発・ビルド]
+    direction TB
     Source["TypeScript / React<br/>ソースコード・画像・音源"]
     Toolchain["Node.js / pnpm<br/>Viteでビルド"]
     Dist["dist/<br/>HTML・CSS・JavaScript・静的アセット"]
-    Source --> Toolchain --> Dist
     Check["TypeScriptで型チェック<br/>tsx + Node.js Test Runnerでロジック検証"]
+    Source --> Toolchain --> Dist
     Source --> Check
   end
 
-  Dist -->|Wranglerでアップロード| Hosting["Cloudflare Workers Static Assets<br/>SPA配信・Workers Preview"]
+  Hosting["Cloudflare Workers Static Assets<br/>SPA配信・Workers Preview"]
 
   subgraph Browser[ユーザーのブラウザ]
-    UI["React 19<br/>画面切替・会話・ショップ・設定"]
-    World["Phaser 3<br/>街・店内の2D探索・入力・当たり判定"]
-    Race["Three.js / WebGL<br/>3Dレース・マシンプレビュー"]
-    Store["Zustand 5<br/>進行・所持品・装備の状態管理"]
-    Logic["TypeScriptのゲームロジック<br/>走行物理・購入・大会・報酬"]
-    Data["src/data/<br/>パーツ・コース・マップ・人物データ"]
-    Save["セーブ処理<br/>検証・自動保存・復元"]
-    DB[("IndexedDB<br/>同一ブラウザ・オリジン内のセーブ")]
-    Audio["Web Audio API<br/>BGM・効果音"]
+    direction TB
+    subgraph Presentation[ゲーム画面]
+      direction LR
+      UI["React 19<br/>画面切替・会話・ショップ・設定"]
+      World["Phaser 3<br/>街・店内の2D探索・入力・当たり判定"]
+      Race["Three.js / WebGL<br/>3Dレース・マシンプレビュー"]
+    end
+    subgraph GameServices[ゲーム状態・サービス]
+      direction LR
+      Store["Zustand 5<br/>進行・所持品・装備の状態管理"]
+      Logic["TypeScriptのゲームロジック<br/>走行物理・購入・大会・報酬"]
+      Data["src/data/<br/>パーツ・コース・マップ・人物データ"]
+      Save["セーブ処理<br/>検証・自動保存・復元"]
+      DB[("IndexedDB<br/>同一ブラウザ・オリジン内のセーブ")]
+      Audio["Web Audio API<br/>BGM・効果音"]
+    end
     UI --> World
     UI --> Race
     UI <--> Store
@@ -38,7 +46,22 @@ flowchart TD
     Race --> Audio
   end
 
+  Dist -->|Wranglerでアップロード| Hosting
   Hosting -->|HTTPSでアプリ・アセットを配信| UI
+
+  classDef build fill:#eef2f7,stroke:#596d8d,color:#263445,stroke-width:1.5px;
+  classDef hosting fill:#fff4e9,stroke:#e66a16,color:#74320b,stroke-width:2px;
+  classDef ui fill:#f0f7ff,stroke:#486a98,color:#203b5a,stroke-width:1.5px;
+  classDef service fill:#eff9ed,stroke:#3b8c35,color:#245a20,stroke-width:1.5px;
+  classDef store fill:#f5f0ff,stroke:#7142c8,color:#382269,stroke-width:1.5px;
+  class Source,Toolchain,Dist,Check build;
+  class Hosting hosting;
+  class UI,World,Race ui;
+  class Store,Logic,Data,Save,DB,Audio service;
+  style Development fill:#ffffff,stroke:#596d8d,stroke-width:2px;
+  style Browser fill:#ffffff,stroke:#263445,stroke-width:2px;
+  style Presentation fill:#f8fbff,stroke:#486a98,stroke-width:1.5px;
+  style GameServices fill:#fbfff9,stroke:#3b8c35,stroke-width:1.5px;
 ```
 
 | 区分 | 使用技術 | 役割・構成 |
