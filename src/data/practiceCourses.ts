@@ -1,6 +1,10 @@
 import {pavedSurface} from './surfaces';
 import type {TrackSurface} from './surfaces';
-const course=(name:string,feature:string,advice:string,radiusX:number,radiusZ:number,turns:number,wave:number,hills:number,height:number,surface:TrackSurface=pavedSurface,laps=3,jump=false)=>({name,feature,advice,radiusX,radiusZ,turns,wave,hills,height,surface,laps,jump,lanes:5,laneWidth:.22,asymmetry:0,chicane:0,samples:2400,cornerLoad:1.3});
+// 旧周回数に応じて1周を縮尺し、5レーンを一巡しても総距離を保つ。
+const course=(name:string,feature:string,advice:string,radiusX:number,radiusZ:number,turns:number,wave:number,hills:number,height:number,surface:TrackSurface=pavedSurface,previousLaps=3,jump=false)=>{
+ const layoutScale=previousLaps/5;
+ return {name,feature,advice,radiusX:radiusX*layoutScale,radiusZ:radiusZ*layoutScale,turns,wave,hills,height:height*layoutScale,surface,laps:5,jump,layoutScale,lanes:5,laneWidth:.22,asymmetry:0,chicane:0,samples:2400,cornerLoad:1.3};
+};
 export const practiceCourses={
  'park-switchback':course('千曲スイッチバック','細かな切り返しが延々と続く多コーナーコース。','低摩擦ローラーと旋回抵抗の小さい足まわりを比べよう。',26,20,9,.09,0,0),
  'park-hairpin':course('双牙ヘアピン','長い直線の両端にきついヘアピンが待つ。','直線の最高速だけでなく、旋回の安定と再加速も必要。',40,8,4,.08,0,0),

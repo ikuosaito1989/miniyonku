@@ -20,7 +20,7 @@ function buildCircuit(id:Exclude<CircuitId,'forge'|'zenith'>){
   const practice=isPracticeCourse(id)?practiceCourses[id]:null;
   const weave=id==='sun'?.48:0;
   const waves=id==='grove'?.696:id==='comet'?.95:0;
-  const stadiumPoint=(t:number)=>{
+  const unscaledStadiumPoint=(t:number)=>{
     const straight=id==='park-velocity'?100:id==='park-hairpin'?60:28,radius=id==='park-velocity'?8:id==='park-hairpin'?2.5:4,half=straight/2,total=straight*2+2*Math.PI*radius;
     let d=((t/(2*Math.PI)*total)%total+total)%total;
     if(d<straight)return {x:-half+d,z:-radius};d-=straight;
@@ -28,6 +28,7 @@ function buildCircuit(id:Exclude<CircuitId,'forge'|'zenith'>){
     if(d<straight)return {x:half-d,z:radius};d-=straight;
     const a=Math.PI/2+d/radius;return {x:-half+radius*Math.cos(a),z:radius*Math.sin(a)};
   };
+  const stadiumPoint=(t:number)=>{const p=unscaledStadiumPoint(t),scale=practice?.layoutScale??1;return {x:p.x*scale,z:p.z*scale};};
   const point=(t:number)=>id==='park-velocity'||id==='park-hairpin'?stadiumPoint(t):practice?{x:Math.cos(t)*circuit.radiusX*(1+practice.wave*Math.cos(practice.turns*t)),z:Math.sin(t)*circuit.radiusZ*(1+practice.wave*Math.cos(practice.turns*t)),elevation:practice.height*(1-Math.cos(practice.hills*t))/2}:open?yuunagiPoint(t,id==='grandprix'):id==='grove'?wakabaPoint(t):id==='sprint'?stadiumPoint(t):({x:Math.cos(t)*circuit.radiusX+Math.cos(t*2)*circuit.asymmetry+Math.cos(t*4)*weave,z:Math.sin(t)*circuit.radiusZ+Math.sin(t*3)*circuit.chicane+Math.sin(t*7)*waves});
   const points=Array.from({length:circuit.samples+1},(_,i)=>point(i/circuit.samples*Math.PI*2)),lengths=[0];
   for(let i=1;i<points.length;i++)lengths.push(lengths[i-1]+Math.hypot(points[i].x-points[i-1].x,points[i].z-points[i-1].z));
@@ -59,7 +60,7 @@ function buildCircuit(id:Exclude<CircuitId,'forge'|'zenith'>){
     if(position<startRamp.descentStart)return startRamp.height;
     return startRamp.height*(1-smooth((position-startRamp.descentStart)/(startRamp.descentEnd-startRamp.descentStart)));
   }
-  const obstacles=practice?.jump?{hill:{start:0,length:1,height:0},jump:{takeoff:circuitLength*.63,rise:3.5,height:.3,gap:.4,landingLength:3.5}}:open?{hill:{start:circuitLength*.12,length:5,height:.35},jump:{takeoff:circuitLength*.80,rise:3.2,height:.38,gap:.55,landingLength:3}}:id==='grove'?{hill:{start:circuitLength*.10,length:6,height:.65},jump:{takeoff:circuitLength*.64,rise:3.8,height:.46,gap:.65,landingLength:3}}:null;
+  const obstacles=practice?.jump?{hill:{start:0,length:1,height:0},jump:{takeoff:circuitLength*.63,rise:3.5*practice.layoutScale,height:.3*practice.layoutScale,gap:.4*practice.layoutScale,landingLength:3.5*practice.layoutScale}}:open?{hill:{start:circuitLength*.12,length:5,height:.35},jump:{takeoff:circuitLength*.80,rise:3.2,height:.38,gap:.55,landingLength:3}}:id==='grove'?{hill:{start:circuitLength*.10,length:6,height:.65},jump:{takeoff:circuitLength*.64,rise:3.8,height:.46,gap:.65,landingLength:3}}:null;
   const courseProgress=(distance:number)=>open?distance:((distance%circuitLength)+circuitLength)%circuitLength;
   function obstacleHeight(distance:number){
     if(!obstacles)return 0;
@@ -88,7 +89,7 @@ function buildCircuit(id:Exclude<CircuitId,'forge'|'zenith'>){
     return progress<.18?{name:'締まった土',roughness:.45,grip:.9}:progress<.4?{name:'砂利ストレート',roughness:.95,grip:.72}:progress<.7?{name:'荒れたダート連続コーナー',roughness:1,grip:.76}:{name:'砂地のS字',roughness:.8,grip:.65};
   };
   // 連続した切り返しで姿勢を戻す余裕が少なく、旋回時の負荷が増す。
-  return {hasHills:!!practice?.hills,fairLanes:true,jumps:obstacles?[obstacles.jump]:[],open,obstacles,courseProgress,isJumpGap,obstacleHeight,cornerLoad:'cornerLoad' in circuit?circuit.cornerLoad:1,surfaceAt,circuit,circuitLength,startDistance,laneOffset,sampleCircuit,laneChange,sampleLanePath,startRamp,startRampHeight};
+  return {hasHills:!!practice?.hills,fairLanes:!practice,jumps:obstacles?[obstacles.jump]:[],open,obstacles,courseProgress,isJumpGap,obstacleHeight,cornerLoad:'cornerLoad' in circuit?circuit.cornerLoad:1,surfaceAt,circuit,circuitLength,startDistance,laneOffset,sampleCircuit,laneChange,sampleLanePath,startRamp,startRampHeight};
 }
 export type CircuitTrack=ReturnType<typeof buildCircuit>;
 const tracks:Record<CircuitId,CircuitTrack>={...Object.fromEntries(practiceCourseIds.map(id=>[id,buildCircuit(id)])) as Record<PracticeCourseId,CircuitTrack>,leaf:buildCircuit('leaf'),wind:buildCircuit('wind'),sun:buildCircuit('sun'),sprint:buildCircuit('sprint'),grove:buildCircuit('grove'),comet:buildCircuit('comet'),trail:buildCircuit('trail'),grandprix:buildCircuit('grandprix'),forge:buildZenithTrack(buildCircuit('trail'),true),zenith:buildZenithTrack(buildCircuit('trail'))};

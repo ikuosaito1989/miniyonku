@@ -5,13 +5,13 @@ import {useGame} from './store';
 import {recordOpponentUnlocked} from './raceOpponents';
 import {onlineCircuits,type OnlineRecord} from './onlineRecords';
 import {starterEquipment} from '../data/machine';
-import {raceRulesVersion} from './timeRecords';
+import {currentRaceRulesVersion} from './timeRecords';
 import {createRaceState} from './race';
 import {withMobRivals} from './mobRace';
 import {getCircuitTrack,type CircuitId} from '../data/circuit';
 import {snapshotGame} from './saveData';
 import {loadSavedGame} from './autoSave';
-const records=(id:CircuitId):OnlineRecord[]=>[0,1,2,3].map((i)=>({playerId:String(i).repeat(64),displayName:`記録保持者${i+1}`,recordedAt:'2026-11-08T00:00:00Z',circuitId:id,rulesVersion:raceRulesVersion,time:20+i,equipment:{...starterEquipment},condition:{motorSeconds:60,batterySeconds:0}}));
+const records=(id:CircuitId):OnlineRecord[]=>[0,1,2,3].map((i)=>({playerId:String(i).repeat(64),displayName:`記録保持者${i+1}`,recordedAt:'2026-11-08T00:00:00Z',circuitId:id,rulesVersion:currentRaceRulesVersion(id),time:20+i,equipment:{...starterEquipment},condition:{motorSeconds:60,batterySeconds:0}}));
 const ready=()=>({...useGame.getInitialState(),openingActive:false,openingStep:9,tutorialStage:'done' as const});
 
 test('ストーリー10コースの記録対戦は最終クリア後、屋外10コースは初めから解放する',()=>{
@@ -28,7 +28,7 @@ test('ストーリー10コースの記録対戦は最終クリア後、屋外10�
 test('相手選択の取消は何も消費せず、記録なし・別コース・進行前の開始も拒否する',()=>{
  const before=useGame.getState();try{
   useGame.setState({...ready(),location:'town'},true);const saved=snapshotGame(useGame.getState()),attempt=useGame.getState().raceAttempt;
-  useGame.getState().openRaceChoice('park-sand');assert.equal(useGame.getState().overlay,'race-opponents');useGame.getState().startOnlineTrial('park-sand',[]);assert.equal(useGame.getState().overlay,'race-opponents');
+  useGame.getState().openRaceChoice('park-sand');assert.equal(useGame.getState().overlay,'race-opponents');useGame.getState().startOnlineTrial('park-sand',records('park-sand').map(r=>({...r,rulesVersion:2})));assert.equal(useGame.getState().overlay,'race-opponents');useGame.getState().startOnlineTrial('park-sand',[]);assert.equal(useGame.getState().overlay,'race-opponents');
   useGame.getState().startMobTrial('park-gravel');assert.equal(useGame.getState().overlay,'race-opponents');useGame.getState().close();assert.equal(useGame.getState().overlay,null);assert.equal(useGame.getState().raceAttempt,attempt);assert.deepEqual(snapshotGame(useGame.getState()),saved);
   useGame.setState({...ready(),location:'komorebi',overlay:'race-opponents',raceChoiceCircuit:'leaf'},true);useGame.getState().startOnlineTrial('leaf',records('leaf'));useGame.getState().startMobTrial('leaf');assert.equal(useGame.getState().overlay,'race-opponents');
   useGame.setState({...ready(),location:'komorebi',zenithCleared:true,overlay:'time-board'},true);useGame.getState().startOnlineTrial('zenith',records('zenith'));assert.equal(useGame.getState().overlay,'time-board');

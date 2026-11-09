@@ -1,5 +1,5 @@
 import {create} from 'zustand';
-import {raceRulesVersion} from './timeRecords';
+import {currentRaceRulesVersion} from './timeRecords';
 import {decodeOnlineRecords, type OnlineRecord, type OnlineSubmission} from './onlineRecords';
 import type {CircuitId} from '../data/circuit';
 import {story} from '../data/story';
@@ -29,7 +29,7 @@ export async function setOnlineDisplayName(value:string){
 }
 export async function loadLeaderboard(circuitId:CircuitId):Promise<OnlineRecord[]>{
  if(!onlineEnabled)throw new Error('オンライン記録は接続準備中です。');
- const response=await fetch(`${apiBase}/api/miniyonku/records?circuitId=${encodeURIComponent(circuitId)}&rulesVersion=${raceRulesVersion}`,{signal:AbortSignal.timeout(10000),credentials:'omit'});
+ const response=await fetch(`${apiBase}/api/miniyonku/records?circuitId=${encodeURIComponent(circuitId)}&rulesVersion=${currentRaceRulesVersion(circuitId)}`,{signal:AbortSignal.timeout(10000),credentials:'omit'});
  if(!response.ok)throw new Error('ランキングを取得できません。時間をおいて再試行してください。');
  return decodeOnlineRecords(await response.json(),circuitId);
 }
@@ -41,7 +41,7 @@ export function syncOnlineRecords():Promise<void>{
   let outsideTopFive=false;
   const {token,pending}=await localState(s=>structuredClone(s));
   for(const [key,record] of Object.entries(pending)){
-   if(record.rulesVersion!==raceRulesVersion){await localState(s=>{delete s.pending[key];});continue;}
+   if(record.rulesVersion!==currentRaceRulesVersion(record.circuitId)){await localState(s=>{delete s.pending[key];});continue;}
    const response=await fetch(`${apiBase}/api/miniyonku/records`,{method:'POST',headers:{'Content-Type':'application/json','X-Miniyonku-Player-Token':token},body:JSON.stringify(record),signal:AbortSignal.timeout(10000),credentials:'omit'});
    if(!response.ok)throw new Error('オンライン記録を送信できません。未送信のベストは端末に保存しています。');
    const payload=await response.json();
