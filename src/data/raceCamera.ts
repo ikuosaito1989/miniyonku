@@ -8,5 +8,5 @@ export const raceCamera = {
 };
 
 export const raceZoomSteps=10;
-export const defaultRaceZoom=5;
+export const defaultRaceZoom=6; // 表示は1始まりなので、初期値は7/10。
 export type TrialCamera='broadcast'|'overview'|'auto'|'follow'|'low';
