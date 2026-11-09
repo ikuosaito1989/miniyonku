@@ -11,3 +11,5 @@
 .game-settings-audio .audio-panel{position:static;width:100%;box-sizing:border-box;margin-top:12px;max-height:none;overflow:visible;box-shadow:none}
 .game-settings-audio .audio-panel input{height:44px}
 .game-settings-manual input{max-width:100%;min-height:44px;box-sizing:border-box;padding:8px;background:#fff;color:#132f40;font:inherit}.game-settings-manual label{display:block;margin-bottom:8px}
+
+.game-settings-play-time{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:18px;padding:16px;background:#102631;border:2px solid #76949a}.game-settings-play-time h3{margin:0;font-size:15px;color:#c3d5d2}.game-settings-play-time strong{font-size:clamp(20px,5vw,28px);font-variant-numeric:tabular-nums;color:#fff0a6}
