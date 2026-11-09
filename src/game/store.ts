@@ -49,7 +49,7 @@ export interface GameState extends Wallet {
   openingStep:number;openingActive:boolean;openingTour:OpeningTour|null;
   startOpening:(replay?:boolean)=>void;advanceOpening:(expectedStep:number)=>void;completeOpeningWalk:(expectedStep:number)=>void;finishOpening:(showSetting?:boolean)=>void;
   lastLoginAt:number|null;loginBonusReceived:boolean;recordLogin:(now?:number)=>void;
-  timeHistory:TimeHistory;legacyTimeHistory:TimeHistory;timeBoardCircuit:CircuitId|null;openTimeBoard:(id?:CircuitId)=>void;officialReplayActive:boolean;
+  timeHistory:TimeHistory;legacyTimeHistory:TimeHistory;timeBoardCircuit:CircuitId|null;openTimeBoard:(id?:CircuitId)=>void;courseIntroPreview:CircuitId|null;openCourseIntroPreview:(id:CircuitId)=>void;closeCourseIntroPreview:()=>void;officialReplayActive:boolean;
   yuunagiUnlocked:boolean;yuunagiBestTime:number|null;finalQualified:boolean;
   wakabaCup:CupProgress;technicalCup:CupProgress;finalCup:CupProgress;grandprixCleared:boolean;zenithCup:CupProgress;zenithCleared:boolean;akatsukiRaceCount:number;zenithQualified:boolean;gameOver:boolean;wakabaUnlocked:boolean;thirdOfficialQualified:boolean;
   enterOfficialVenue:(id?:'stadium-5'|'stadium-9'|'stadium-10'|'stadium-7')=>void;townReturnVenue:PracticeCourseId|'library'|'stadium-5'|'stadium-9'|'stadium-10'|'stadium-7'|null;
@@ -152,7 +152,7 @@ export const useGame = create<GameState>((set) => ({
     if(showSetting&&s.tutorialStage==='pending')return {...tutorialStart(s,false),openingStep:OPENING_END};
     return {tutorialStage:s.tutorialStage==='pending'?'done':s.tutorialStage,openingStep:OPENING_END,openingActive:false,location:'komorebi',lastShop:'komorebi',townReturnVenue:null,overlay:showSetting?'setting':null,shopAfter:false,nearby:'',notice:''};
   }),
-  legacyTimeHistory:{},timeBoardCircuit:null,officialReplayActive:false,
+  legacyTimeHistory:{},timeBoardCircuit:null,courseIntroPreview:null,openCourseIntroPreview:id=>set(s=>s.overlay!=='time-board'?s:{courseIntroPreview:id,overlay:'race'}),closeCourseIntroPreview:()=>set(s=>s.courseIntroPreview===null?{}:{courseIntroPreview:null,overlay:'time-board'}),officialReplayActive:false,
   raceChoiceCircuit:null,raceChoiceFromBoard:false,mobChallenge:null,
   openRaceChoice:id=>set(s=>!opponentCourseAvailable(s,id)||s.overlay!==null&&s.overlay!=='time-board'&&s.overlay!=='race-opponents'&&s.overlay!=='dialogue'?s:{raceChoiceCircuit:id,raceChoiceFromBoard:s.overlay==='time-board',overlay:'race-opponents',timeBoardCircuit:id,shopAfter:false,notice:''}),
   startMobTrial:id=>set(s=>{

@@ -104,6 +104,9 @@ export class TrialRenderer {
     if(this.intro.stage==='done')return;
     this.intro=raceIntroAt(raceIntroDuration);this.lastTime=0;this.accumulator=0;this.reportIntro(this.intro);
   }
+  replayIntro(){
+    this.intro=raceIntroAt(0);this.introLastTime=0;this.lastTime=0;this.accumulator=0;this.introFrame=null;this.reportIntro(this.intro);
+  }
   start(){
     if(this.intro.stage!=='done'){this.skipIntro();return;}
     this.audio.unlock();
