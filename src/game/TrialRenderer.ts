@@ -267,8 +267,6 @@ export class TrialRenderer {
   private updateCamera(elapsed:number){
     const {circuit,sampleLanePath}=this.track;
     const frame=this.overviewFrame??(this.overviewFrame=overviewViewportFrame(this.track,this.host.clientWidth,this.host.clientHeight));
-    const player=this.state.racers.find(r=>r.id==='player')!;
-    const p=sampleLanePath(player.driving.distance,player.lane);
     if(this.intro.stage!=='done'){
       this.activeCamera=this.camera;
       this.camera.up.set(0,1,0);
@@ -304,15 +302,18 @@ export class TrialRenderer {
     this.camera.up.copy(overviewUp.lerp(worldUp,zoomBlend).normalize());
     this.camera.left=-viewHeight*this.aspect/2;this.camera.right=viewHeight*this.aspect/2;
     this.camera.top=viewHeight/2;this.camera.bottom=-viewHeight/2;this.camera.updateProjectionMatrix();
-    const start=sampleLanePath(this.track.open&&goalShot?this.track.circuitLength:0,(circuit.lanes-1)/2);
-    const closeTarget=goalShot?new THREE.Vector3(start.x-start.tangentX*raceCamera.finish.lookBehind,start.y,start.z-start.tangentZ*raceCamera.finish.lookBehind):new THREE.Vector3(p.x+p.tangentX*raceCamera.running.lookAhead,p.y,p.z+p.tangentZ*raceCamera.running.lookAhead)
-      .lerp(new THREE.Vector3(start.x-start.tangentX*raceCamera.start.lookBehind,start.y,start.z-start.tangentZ*raceCamera.start.lookBehind),blend);
+    // 拡大の最初の1段階でマシンへ寄せ切る。画角と同じ割合で注視点を
+    // 補間すると、広いコースでは拡大中もコース中央を映してしまう。
+    const focusProgress=THREE.MathUtils.clamp(this.displayedCameraZoom,0,1);
+    const focusBlend=focusProgress*focusProgress*(3-2*focusProgress);
+    // 路面位置ではなく描画済みの車体を追い、飛行・コースアウト・ゴール後にも追従する。
+    const closeTarget=this.cars.get('player')!.position.clone().add(new THREE.Vector3(0,.025,0));
     const overviewTarget=new THREE.Vector3(frame.target.x,frame.target.y,frame.target.z);
     const overviewOffset=new THREE.Vector3(...raceCamera.start.offset).multiplyScalar(Math.max(1,frame.height/6));
     const closeOffset=new THREE.Vector3(...(goalShot?raceCamera.finish.offset:raceCamera.running.offset));
     if(!goalShot)closeOffset.lerp(new THREE.Vector3(...raceCamera.start.offset),blend);
-    const target=overviewTarget.clone().lerp(closeTarget,zoomBlend);
-    const cameraPosition=overviewTarget.add(overviewOffset).lerp(closeTarget.clone().add(closeOffset),zoomBlend);
+    const target=overviewTarget.clone().lerp(closeTarget,focusBlend);
+    const cameraPosition=target.clone().add(overviewOffset.lerp(closeOffset,zoomBlend));
     this.camera.position.copy(cameraPosition);this.camera.lookAt(target);
   }
   private animate=(now:number)=>{
