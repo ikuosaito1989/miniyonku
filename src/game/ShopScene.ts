@@ -130,6 +130,7 @@ export class ShopScene extends Phaser.Scene {
       this.solids=officialFixturesFor(useGame.getState().location).map(f=>new Phaser.Geom.Rectangle(f.x,f.y,f.w,f.h));
       for(const npc of officialPeopleFor(useGame.getState().location)){
         const person=this.person(npc.x,npc.y,npc.kind,npc.name);
+        this.addConversationMarker(person);
         if(npc.id==='rei'||npc.id==='gaku'){(person.list[1] as Phaser.GameObjects.Image).setTexture(this.arrivalTexture(npc.id,'down',0));}
         if(npc.id==='jin'&&useGame.getState().location==='stadium-10')this.escortGuide=person;
         if(npc.id==='go'||npc.id==='riku'||npc.id==='jin'||npc.id==='koya'){
@@ -151,11 +152,14 @@ export class ShopScene extends Phaser.Scene {
       this.solids.push(new Phaser.Geom.Rectangle(fixture.x,fixture.y,fixture.w,fixture.h));
     }
     const cast=this.cast;
-    this.person(cast.owner.x,cast.owner.y,'owner',cast.owner.name);
+    const ownerPerson=this.person(cast.owner.x,cast.owner.y,'owner',cast.owner.name);
+    this.addConversationMarker(ownerPerson);
     const rivalPerson=this.person(cast.rival.x,cast.rival.y,useGame.getState().location==='hinata'?'mechanic':'rival',cast.rival.name);
+    this.addConversationMarker(rivalPerson);
     if((shopId==='akatsuki'||shopId==='hoshikuzu')){const key='akatsuki-towa';if(!this.textures.exists(key))createPersonTexture(this,key,legendPersonDrawing('towa','down'));(rivalPerson.list[1] as Phaser.GameObjects.Image).setTexture(key);}
     for(const visitor of cast.visitors){
       const npc=this.person(visitor.x,visitor.y,visitor.kind,visitor.name);
+      this.addConversationMarker(npc);
       if((shopId==='akatsuki'||shopId==='hoshikuzu')){if(visitor.name==='風見 怜'||visitor.name==='火野 岳')(npc.list[1] as Phaser.GameObjects.Image).setTexture(this.arrivalTexture(visitor.name==='風見 怜'?'rei':'gaku','down',0));if(visitor.name==='山城 昊也'){const key='akatsuki-koya';if(!this.textures.exists(key))createPersonTexture(this,key,legendPersonDrawing('koya','down'));(npc.list[1] as Phaser.GameObjects.Image).setTexture(key);}}
       this.solids.push(new Phaser.Geom.Rectangle(visitor.x-12,visitor.y-9,24,21));
     }
@@ -197,6 +201,7 @@ export class ShopScene extends Phaser.Scene {
     this.player=this.person(spawn.x,spawn.y,'player');
     if(useGame.getState().location==='stadium-9'){
       this.escortGuide=this.person(koyaVenueSpot.x,koyaVenueSpot.y,'rival');
+      this.addConversationMarker(this.escortGuide);
       (this.escortGuide.list[1] as Phaser.GameObjects.Image).setTexture(this.arrivalTexture('koya','down',0));
       this.solids.push(new Phaser.Geom.Rectangle(koyaVenueSpot.x-12,koyaVenueSpot.y-9,24,21));
     }
@@ -290,8 +295,10 @@ export class ShopScene extends Phaser.Scene {
     this.cameras.main.setZoom(zoom.x,zoom.y);
     this.cameras.main.centerOn(roomView.x+roomView.width/2,roomView.y+roomView.height/2);
   }
-  // 会話できる街の住人だけに、文字を使わない吹き出しを表示する。
+  // 会話対象の人物に、文字を使わない吹き出しを表示する。
   private addConversationMarker(person:Phaser.GameObjects.Container){
+    if(person.getData('conversationMarker'))return;
+    person.setData('conversationMarker',true);
     const marker=this.add.graphics();
     marker.fillStyle(0x273e48,.45).fillRoundedRect(-13,-78,26,18,6);
     marker.fillStyle(0xfff8de,1).fillRoundedRect(-12,-80,24,17,6);
@@ -318,6 +325,7 @@ export class ShopScene extends Phaser.Scene {
         createPersonTexture(this,key,challengerDrawing('down'));
       }
       this.challengerPerson=this.person(challengerSpot.x,challengerSpot.y,'rival');
+      this.addConversationMarker(this.challengerPerson);
       (this.challengerPerson.list[1] as Phaser.GameObjects.Image).setTexture(key);
       this.challengerSolid=new Phaser.Geom.Rectangle(challengerSpot.x-12,challengerSpot.y-9,24,21);this.solids.push(this.challengerSolid);
     }else if(!visible&&this.challengerPerson){
@@ -336,6 +344,7 @@ export class ShopScene extends Phaser.Scene {
         (this.doctorPerson.list[1] as Phaser.GameObjects.Image).setTexture(this.arrivalTexture('doctor','down',0));
         this.doctorSolid=new Phaser.Geom.Rectangle(doctorSpot.x-12,doctorSpot.y-9,24,21);this.solids.push(this.doctorSolid);
       }
+      this.addConversationMarker(this.doctorPerson);
     }else if(!visible&&this.doctorPerson){
       this.doctorPerson.destroy();this.doctorPerson=null;
       this.solids=this.solids.filter(s=>s!==this.doctorSolid);this.doctorSolid=null;
@@ -378,6 +387,7 @@ export class ShopScene extends Phaser.Scene {
       actor.container.setPosition(actor.state.position.x,actor.state.position.y).setDepth(actor.state.position.y);
       const frame=actor.state.arrived?0:Math.floor(actor.state.walkTime/130)%4;
       (actor.container.list[1] as Phaser.GameObjects.Image).setTexture(this.arrivalTexture(actor.kind,actor.state.facing,frame));
+      if(actor.state.arrived&&(actor.kind==='rei'||actor.kind==='gaku'))this.addConversationMarker(actor.container);
       if(Math.floor(actor.state.distance/18)>Math.floor(before/18))this.playEventSound('step');
       if(actor.kind==='villain')this.challengerSolid?.setPosition(actor.container.x-12,actor.container.y-9);
     }
@@ -397,7 +407,7 @@ export class ShopScene extends Phaser.Scene {
     if(this.escortPhase!==step){
       this.escortPhase=step;this.resetKeys();this.cancelRoute();this.gesture.reset();this.pendingTarget=null;
       this.escortArrival=null;this.escortPlayerWalk=null;this.escortGuideWalk=null;
-      if(!this.escortGuide)this.escortGuide=this.person(480,550,'rival');
+      if(!this.escortGuide){this.escortGuide=this.person(480,550,'rival');this.addConversationMarker(this.escortGuide);}
       if(step===1){this.escortArrival=createArrival({x:this.player.x,y:this.player.y},this.solids,1)[0];this.playEventSound('arrival');}
       if(step===2){const actor=createArrival({x:this.player.x,y:this.player.y},this.solids,1)[0];const end=actor.route.at(-1)??actor.position;this.escortGuide.setPosition(end.x,end.y).setDepth(end.y);}
       if(step===3){
