@@ -28,10 +28,15 @@ export const outdoorAdvisors=practiceCourseIds.map(courseId=>{
 });
 export function outdoorAdvice(courseId:PracticeCourseId){
  const course=practiceCourses[courseId];
- const recommendations=advice[courseId].parts.map(([id,reason])=>{
-  const part=parts.find(p=>p.id===id);
-  if(!part)throw new Error(`おすすめパーツがありません: ${id}`);
-  return `「${part.name}」は${reason}よ。`;
+ const recommendations=outdoorRecommendations(courseId).map(({name,reason})=>{
+  return `「${name}」は${reason}よ。`;
  });
  return `ここは「${course.name}」。${course.advice}\n\n${recommendations.join('\n')}\n\n一つずつ交換して、タイムと完走できるかを比べてね。モーターと電池の状態も確認しよう！`;
+}
+export function outdoorRecommendations(courseId:PracticeCourseId){
+ return advice[courseId].parts.map(([id,reason])=>{
+  const part=parts.find(p=>p.id===id);
+  if(!part)throw new Error(`おすすめパーツがありません: ${id}`);
+  return {id,name:part.name,reason};
+ });
 }
