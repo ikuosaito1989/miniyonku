@@ -1,3 +1,4 @@
+import {outdoorAdvisors} from './data/outdoorAdvisors';
 import {story} from './data/story';
 import mechanicManPortrait from './assets/portraits/mechanic-man-pop.webp';
 import {NpcPortrait} from './NpcPortrait';
@@ -22,7 +23,7 @@ export function DialogueView(){
   const {playerName,speaker,dialogue,adviceThinking,shopAfter,advance,close,dialogueStage,zenithCleared,startLegendChallenge,startVillainChallenge,startOfficialRace,openSetting}=useGame();
   const [selected,setSelected]=useState(0);
   const panel=useRef<HTMLElement>(null),buttons=useRef<Array<HTMLButtonElement|null>>([]);
-  const id=dialoguePerson(speaker),person=id?dialoguePeople[id]:null,appearance=npcAppearanceId(speaker);
+  const id=dialoguePerson(speaker),person=id?dialoguePeople[id]:null,appearance=npcAppearanceId(speaker)??outdoorAdvisors.find(p=>p.name===speaker)?.appearance??null;
   const book=speaker.startsWith('セッティング本棚');
   const choices=dialogueChoices(shopAfter,book,dialogueStage).map(choice=>choice.action==='officialRace'&&zenithCleared?{...choice,label:'タイムアタックに挑戦！'}:choice);
   const choose=(index:number)=>{const action=choices[index]?.action;if(action==='officialRace')startOfficialRace();else if(action==='advance')advance();else if(action==='legendSetting')openSetting();else if(action==='legendRace')startLegendChallenge();else if(action==='villainRace')startVillainChallenge();else close();};

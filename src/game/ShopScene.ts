@@ -1,3 +1,4 @@
+import {outdoorAdvisors,outdoorAdvice} from '../data/outdoorAdvisors';
 import {drawTownCrowd} from './TownCrowdArt';
 import {townCrowdObstacles} from '../data/townCrowd';
 import {drawRecordBoard} from './RecordBoardArt';
@@ -111,7 +112,7 @@ export class ShopScene extends Phaser.Scene {
     createPeopleTextures(this);
     if(this.isTown){
       drawTown(this,useGame.getState());
-      this.updateTownCrowd=drawTownCrowd(this);
+      this.updateTownCrowd=drawTownCrowd(this,(person,id)=>{if(outdoorAdvisors.some(p=>p.id===id))this.addConversationMarker(person);});
       this.solids=[...townVenues,...townBlocks].map(v=>new Phaser.Geom.Rectangle(v.x,v.y,v.w,v.h));
       this.solids.push(...townCrowdObstacles.map(v=>new Phaser.Geom.Rectangle(v.x,v.y,v.width,v.height)));
       const hidden=this.person(hiddenMechanicSpot.x,hiddenMechanicSpot.y,'owner');
@@ -527,6 +528,7 @@ export class ShopScene extends Phaser.Scene {
       {x:hiddenMechanicSpot.x-16,y:hiddenMechanicSpot.y-80,w:32,h:92,label:mechanicManName,speaker:mechanicManName,shopAfter:false,text:'……よく見つけたな。',kind:'mechanic-man'},
       ...townVenues.filter(v=>v.kind==='outdoor').map(v=>({...outdoorTimeBoardPlacement(v),label:'歴代ベストタイム TOP 5',speaker:v.name,shopAfter:false,text:'タイムを見る。',kind:'time-records' as const,circuitId:v.id as import('../data/practiceCourses').PracticeCourseId})),
       ...townVenues.map(v=>({x:v.x,y:v.y,w:v.w,h:v.h,label:v.name,speaker:v.name,shopAfter:false,text:venueMessage(v),kind:'venue' as const,venueId:v.id})),
+      ...outdoorAdvisors.map(p=>({x:p.x-16,y:p.y-80,w:32,h:92,label:`${p.name}（パーツ相談）`,speaker:p.name,shopAfter:false,text:outdoorAdvice(p.courseId),kind:'town-person' as const})),
       ...townPeople.map(p=>({x:p.x-16,y:p.y-80,w:32,h:92,label:p.name,speaker:p.name,shopAfter:false,text:townPersonAdvice(p,useGame.getState()),kind:'town-person' as const})),
     ];
     if(this.isOfficial)return [

@@ -155,7 +155,7 @@ test('オンラインCPUは保存装備・開始時の消耗をそのまま使�
  const record={circuitId:'leaf' as const,rulesVersion:raceRulesVersion,time:30,equipment:{...starterEquipment},condition,displayName:'記録プレイヤー',playerId:'a'.repeat(64),recordedAt:new Date(0).toISOString()};
  const base=createRaceState(starterEquipment,123,undefined,'time-attack');
  const race=withOnlineRivals(base,[record]);
- assert.equal(race.racers.length,2);assert.equal(new Set(race.racers.map(r=>r.lane)).size,2);
+ assert.equal(race.racers.length,5);assert.equal(new Set(race.racers.map(r=>r.lane)).size,5);assert.equal(race.racers.filter(r=>r.name.endsWith('（モブ）')).length,3);
  assert.deepEqual(race.racers[1].performance,machinePerformance(starterEquipment,condition));
  assert.equal(race.racers[1].name,record.displayName);assert.equal(race.racers[1].driving.status,'ready');
  assert.equal(base.racers.length,1);assert.notEqual(race.racers[1].equipment,record.equipment);
@@ -178,4 +178,17 @@ test('オンライン投稿は自分の完走だけ。公式タイムと開始�
  assert.throws(()=>decodeOnlineRecords({records:[{...raw,equipment:{...raw.equipment,motor:'motor-sovereign'}}]},'leaf'));
  player.driving.status='out';assert.equal(raceSubmission(race,'自分'),null);
  player.driving.status='finished';player.equipment={...starterEquipment,motor:'motor-sovereign'};assert.equal(raceSubmission(race,'自分'),null);
+});
+
+test('オンラインは上位4名をタイム順で選び、足りないときも自分と合わせて5台になる',async()=>{
+ const {withOnlineRivals,topOnlineOpponents}=await import('./onlineRace');
+ const {currentRaceRulesVersion}=await import('./timeRecords');
+ const records=Array.from({length:5},(_,i)=>({circuitId:'park-sand' as const,rulesVersion:currentRaceRulesVersion('park-sand'),time:50-i,equipment:{...starterEquipment},condition:{motorSeconds:60+i,batterySeconds:i},displayName:`記録${i}`,playerId:String(i).repeat(64),recordedAt:new Date(i*1000).toISOString()}));
+ for(let count=1;count<=5;count++){
+  const input=records.slice(0,count),expected=topOnlineOpponents(input),base=createRaceState(starterEquipment,123,undefined,'time-attack','park-sand'),race=withOnlineRivals(base,input);
+  assert.equal(race.racers.length,5);assert.equal(new Set(race.racers.map(r=>r.id)).size,5);assert.equal(new Set(race.racers.map(r=>r.lane)).size,5);
+  assert.deepEqual(race.racers.filter(r=>r.id.startsWith('online-')).map(r=>r.name),expected.map(r=>r.displayName));
+  assert.equal(race.racers.filter(r=>r.name.endsWith('（モブ）')).length,4-expected.length);
+  assert.equal(input[0].time,50);assert.equal(base.racers.length,1);
+ }
 });

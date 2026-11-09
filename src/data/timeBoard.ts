@@ -12,4 +12,5 @@ export function officialTimeBoards(location:string){
  return courses.map((circuitId,index)=>({circuitId,x:index===0?90:730,y:465,w:130,h:64}));
 }
 
-export function outdoorTimeBoardPlacement(v:{x:number;y:number;w:number;h:number}){return {x:v.x+v.w-54,y:v.y+v.h+7,w:76,h:44};}
+// 耐久コースの南東には住宅があるため、看板と会話用の通路を南西側へ寄せる。
+export function outdoorTimeBoardPlacement(v:{id?:string;x:number;y:number;w:number;h:number}){return {x:v.id==='park-endurance'?v.x+8:v.x+v.w-54,y:v.y+v.h+7,w:76,h:44};}
