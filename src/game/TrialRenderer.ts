@@ -1,3 +1,4 @@
+import {isMasterCourse} from '../data/masterCourses';
 import {buildStartMarshal} from './StartMarshal';
 import {withMobRivals} from './mobRace';
 import {VenueAnimation} from './VenueAnimation';
@@ -78,7 +79,7 @@ export class TrialRenderer {
     host.append(this.renderer.domElement);
     const sun=modelLighting(this.scene);this.shadows=new RaceShadows(this.scene,sun,true);
     const grass=this.grassTexture();
-    const groundSize=this.track.open?600:Math.max(100,this.track.circuit.radiusX*2+40,this.track.circuit.radiusZ*2+40);
+    const groundSize=Math.max(this.track.open?600:100,this.track.circuit.radiusX*2+40,this.track.circuit.radiusZ*2+40);
     grass.repeat.set(groundSize/1.5,groundSize/1.5);
     const ground=new THREE.Mesh(new THREE.PlaneGeometry(groundSize,groundSize),new THREE.MeshStandardMaterial((challenge==='official'||challenge==='time-attack')?{color:0x7c928f,roughness:.86,envMapIntensity:.35}:{map:grass,roughness:1,envMapIntensity:.25}));
     ground.rotation.x=-Math.PI/2;ground.position.y=-0.025;ground.receiveShadow=true;this.scene.add(ground);
@@ -279,7 +280,7 @@ export class TrialRenderer {
       if(this.intro.stage==='tour'&&!this.reducedMotion){
         const progress=(age-raceIntroTiming.overview)/raceIntroTiming.tour;
         const landmarks=[55,135,this.track.circuitLength*.34,this.track.jumps[0]?.takeoff??0,this.track.circuitLength*.65,this.track.jumps[1]?.takeoff??0];
-        const distance=this.circuitId==='forge'||this.circuitId==='zenith'?landmarks[Math.min(5,Math.floor(progress*6))]:progress*this.track.circuitLength;
+        const distance=this.circuitId==='forge'||this.circuitId==='zenith'||isMasterCourse(this.circuitId)?landmarks[Math.min(5,Math.floor(progress*6))]:progress*this.track.circuitLength;
         const p=sampleLanePath(distance,(circuit.lanes-1)/2),zoom=smooth((age-raceIntroTiming.overview)/1.6);
         target.lerp(new THREE.Vector3(p.x,p.y,p.z),zoom);height=THREE.MathUtils.lerp(wide,tourHeight,zoom);
       }else if(this.intro.stage==='grid'&&!this.reducedMotion){
@@ -337,7 +338,7 @@ export class TrialRenderer {
     const overview=this.cameraZoom===0&&this.intro.stage==='done';
     const frame=this.overviewFrame??(this.overviewFrame=overviewViewportFrame(this.track,this.host.clientWidth,this.host.clientHeight));
     const pixelsPerUnit=this.host.clientHeight/frame.height;
-    const carScale=overview?overviewCarScale(this.host.clientHeight,frame.height,(this.circuitId==='forge'||this.circuitId==='zenith')?64:8):1;
+    const carScale=overview?overviewCarScale(this.host.clientHeight,frame.height,(this.circuitId==='forge'||this.circuitId==='zenith'||isMasterCourse(this.circuitId))?64:8):1;
     const labelBoxes:Array<{x:number;y:number}>=[];
     for(const racer of this.state.racers){
       const p=sampleLanePath(finishTrackDistance(racer,this.finishPresentation),racer.lane);
@@ -368,7 +369,7 @@ export class TrialRenderer {
       const backDistance=reason==='climb'||reason==='loop'?Math.min(.8,presentationAge*1.15):0;
       car.position.set(p.x+p.upX*.015+p.sideX*blowSide-p.tangentX*backDistance,(racer.driving.flightY??p.y)+(crashed?0.14+Math.sin(Math.min(1,presentationAge/.7)*Math.PI)*.55:p.upY*.015),p.z+p.upZ*.015+p.sideZ*blowSide-p.tangentZ*backDistance);
       car.rotation.order='YXZ';car.rotation.set(racer.driving.flightY!==undefined?-Math.atan2(racer.driving.flightVelocity??0,Math.max(.1,racer.driving.speed)):-p.pitch,Math.atan2(p.tangentX,p.tangentZ)+(blowOut?sideSign*Math.min(1,presentationAge/.7)*.7:reason==='climb'||reason==='loop'?-Math.min(.22,presentationAge*.25):0),crashed?0.9:stopped?-.16:0);
-      if((this.circuitId==='forge'||this.circuitId==='zenith')&&racer.driving.flightY===undefined&&!crashed)car.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(new THREE.Vector3(p.sideX,p.sideY,p.sideZ),new THREE.Vector3(p.upX,p.upY,p.upZ),new THREE.Vector3(p.forwardX,p.forwardY,p.forwardZ)));
+      if((this.circuitId==='forge'||this.circuitId==='zenith'||isMasterCourse(this.circuitId))&&racer.driving.flightY===undefined&&!crashed)car.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(new THREE.Vector3(p.sideX,p.sideY,p.sideZ),new THREE.Vector3(p.upX,p.upY,p.upZ),new THREE.Vector3(p.forwardX,p.forwardY,p.forwardZ)));
       const direction=sign<0?-1:1;
       const grounded=racer.driving.flightY===undefined&&!crashed&&!stopped&&racer.driving.status!=='out';
       animateRunningGear(car,finishTrackDistance(racer,this.finishPresentation),elapsed,direction,p.curvature,grounded);

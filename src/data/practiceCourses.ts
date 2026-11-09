@@ -1,3 +1,4 @@
+import {masterCourses,masterCourseIds,isMasterCourse,type MasterCourseId} from './masterCourses';
 import {pavedSurface} from './surfaces';
 import type {TrackSurface} from './surfaces';
 // 旧周回数に応じて1周を縮尺し、5レーンを一巡しても総距離を保つ。
@@ -17,7 +18,10 @@ export const practiceCourses={
  'park-velocity':course('流線ハイスピード','非常に長い直線と緩いカーブをつなぐ高速コース。','高回転モーターや高速ギア、大径タイヤの伸びを比べよう。',55,13,0,0,0,0,pavedSurface,2),
  'park-jump':course('翼丘ジャンプラリー','舗装の連続カーブに坂とジャンプ台を組み合わせた立体コース。','着地の反発と制振、ブレーキを調整。減速しすぎると飛距離が不足する。',30,22,4,.07,2,.8,pavedSurface,3,true),
  'park-endurance':course('翠風エンデュランス','長い周回を走る屋外耐久コース。電池の残量と後半の速度が勝負を分ける。','高出力の短距離電池と、重い長距離電池の走りを比べよう。',43,25,3,.035,0,0,pavedSurface,8),
+ ...Object.fromEntries(masterCourseIds.map(id=>[id,{...course(masterCourses[id].name,masterCourses[id].feature,masterCourses[id].advice,40,25,0,0,0,0),laps:1}])) as Record<MasterCourseId,ReturnType<typeof course>>
 };
 export type PracticeCourseId=keyof typeof practiceCourses;
 export const practiceCourseIds=Object.keys(practiceCourses) as PracticeCourseId[];
 export const isPracticeCourse=(id:string):id is PracticeCourseId=>Object.hasOwn(practiceCourses,id);
+
+export const regularPracticeCourseIds=practiceCourseIds.filter((id):id is Exclude<PracticeCourseId,MasterCourseId>=>!isMasterCourse(id));

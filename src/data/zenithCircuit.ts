@@ -1,8 +1,9 @@
+import type {MasterCourseProfile} from './masterCourses';
 import type {CircuitTrack} from './circuit';
 type Point={x:number;y:number;z:number;loopAngle:number;loopRadius:number;bank:number};
 const mix=(a:number,b:number,t:number)=>a+(b-a)*t;
 /** 立体の実走行弧長で進む、縦ループ・横螺旋・混合路面の最長コース。 */
-export function buildZenithTrack(base:CircuitTrack,practice=false):CircuitTrack{
+export function buildZenithTrack(base:CircuitTrack,practice=false,profile?:MasterCourseProfile):CircuitTrack{
  const points:Point[]=[];
  const road=(controls:number[][])=>{
   for(let i=0;i<controls.length-1;i++)for(let j=0;j<48;j++){
@@ -12,19 +13,21 @@ export function buildZenithTrack(base:CircuitTrack,practice=false):CircuitTrack{
   }
   const end=controls.at(-1)!;points.push({x:end[0],z:end[1],y:end[2],loopAngle:0,loopRadius:0,bank:0});
  };
- road([[-70,-45,0],[-48,-45,0],[-20,-45,0]]);
- const radius=1.8;
+ road([[profile?.startX??-70,-45,0],[-48,-45,0],[-20,-45,0]]);
+ const radius=profile?.loopRadius??1.8;
  for(let i=1;i<=360;i++){const a=i/360*Math.PI*2,u=i/360;points.push({x:-20+radius*Math.sin(a),y:radius*(1-Math.cos(a)),z:-45+1.4*u*u*(3-2*u),loopAngle:a,loopRadius:radius,bank:0});}
- road([[-20,-43.6,0],[0,-43.6,0],[30,-36,0],[24,-22,0],[32,-20,1.4],[40,-20,1.4]]);
- for(let i=1;i<=540;i++){const u=i/540,a=-Math.PI/2+u*3*Math.PI;points.push({x:40+8*Math.cos(a),z:-12+8*Math.sin(a),y:1.4+1.4*u,loopAngle:0,loopRadius:0,bank:u*Math.PI*2});}
- road([[40,-4,2.8],[32,-4,2.2],[12,2,.5],[-12,8,0],[-40,12,0],[-66,25,.7],[-80,45,0],[-65,62,0],[-30,62,0],[0,58,0],[32,62,.7],[60,55,0],[76,30,0],[100,12,0],[120,30,0],[145,25,0],[185,25,0],[225,25,0]]);
+ const spiralRadius=profile?.spiralRadius??8,spiralTurns=profile?.spiralTurns??1.5,spiralRise=profile?.rise??1.4;
+ road([[-20,-43.6,0],[0,-43.6,0],[30,-36,0],[24,-22,0],[32,-12-spiralRadius,1.4],[40,-12-spiralRadius,1.4]]);
+ for(let i=1;i<=540;i++){const u=i/540,a=-Math.PI/2+u*spiralTurns*2*Math.PI;points.push({x:40+spiralRadius*Math.cos(a),z:-12+spiralRadius*Math.sin(a),y:1.4+spiralRise*u,loopAngle:0,loopRadius:0,bank:u*Math.PI*2});}
+ if(profile)road([[40,-12+spiralRadius,1.4+spiralRise],...profile.tail.map(p=>[...p])]);
+ else road([[40,-4,2.8],[32,-4,2.2],[12,2,.5],[-12,8,0],[-40,12,0],[-66,25,.7],[-80,45,0],[-65,62,0],[-30,62,0],[0,58,0],[32,62,.7],[60,55,0],[76,30,0],[100,12,0],[120,30,0],[145,25,0],[185,25,0],[225,25,0]]);
  // 練習でも全要素を走る。公式は短い連続S字を追加し、約1分半に収める。
- if(!practice)road([[225,25,0],[235,18,0],[245,28,.5],[258,22,0]]);
+ if(!practice&&!profile)road([[225,25,0],[235,18,0],[245,28,.5],[258,22,0]]);
  const lengths=[0];for(let i=1;i<points.length;i++){const a=points[i-1],b=points[i];lengths.push(lengths.at(-1)!+Math.hypot(b.x-a.x,b.y-a.y,b.z-a.z));}
  // 区間の継ぎ目の重複点を除く。
  for(let i=lengths.length-1;i>0;i--)if(lengths[i]-lengths[i-1]<1e-7){points.splice(i,1);lengths.splice(i,1);}
  const circuitLength=lengths.at(-1)!;
- const jumps=[.46,.74].map(f=>({takeoff:circuitLength*f,rise:4,height:.34,gap:.5,landingLength:4}));
+ const jumps=(profile?.jumps??[.46,.74]).map(f=>({takeoff:circuitLength*f,rise:4,height:profile?.jumpHeight??.34,gap:.5,landingLength:4}));
  const obstacles={hill:{start:circuitLength*.34,length:9,height:.8},jump:jumps[0]};
  const obstacleHeight=(distance:number)=>{
   const h=obstacles.hill;let height=distance>=h.start&&distance<=h.start+h.length?h.height*Math.sin(Math.PI*(distance-h.start)/h.length)**2:0;
@@ -50,6 +53,6 @@ export function buildZenithTrack(base:CircuitTrack,practice=false):CircuitTrack{
  };
  const sampleLanePath=(d:number,lane:number)=>{const p=pose(d),offset=(lane-2)*base.circuit.laneWidth;return {...p,x:p.x+p.sideX*offset,y:p.y+p.sideY*offset,z:p.z+p.sideZ*offset,from:lane,to:lane,lane,changing:false};};
  const sampleCircuit=(d:number)=>{const p=pose(d);return {x:p.x,z:p.z,elevation:p.y,tangentX:p.tangentX,tangentZ:p.tangentZ,curvature:p.curvature};};
- const surfaceAt=(distance:number)=>{const f=distance/circuitLength;return f>=.30&&f<.43||f>=.64&&f<.72?{name:'深い砂地',roughness:.9,grip:.7}:f>=.55&&f<.64?{name:'砂利の切り返し',roughness:.65,grip:.82}:{name:'高速舗装',roughness:0,grip:1};};
- return {...base,fairLanes:true,open:true,jumps,obstacles,obstacleHeight,courseProgress:(d:number)=>d,isJumpGap:(d:number)=>jumps.some(j=>d>=j.takeoff&&d<j.takeoff+j.gap),cornerLoad:2.0,circuit:{...base.circuit,name:practice?'暁アルティメット・クロス':'天頂決戦・ゼニス・クラウン',laps:1,radiusX:215,radiusZ:150,samples:4800,surface:{name:'舗装・砂地・砂利',roughness:.5,grip:.9}},circuitLength,startDistance:0,sampleCircuit,sampleLanePath,surfaceAt};
+ const surfaceAt=(distance:number)=>{const f=distance/circuitLength;if(profile){if(profile.sand.some(([a,b])=>f>=a&&f<b))return {name:'深い砂地',roughness:.95,grip:.7};if(profile.gravel.some(([a,b])=>f>=a&&f<b))return {name:'砂利の切り返し',roughness:.7,grip:.82};return {name:'高速舗装',roughness:0,grip:1};}return f>=.30&&f<.43||f>=.64&&f<.72?{name:'深い砂地',roughness:.9,grip:.7}:f>=.55&&f<.64?{name:'砂利の切り返し',roughness:.65,grip:.82}:{name:'高速舗装',roughness:0,grip:1};};
+ return {...base,fairLanes:true,open:true,jumps,obstacles,obstacleHeight,courseProgress:(d:number)=>d,isJumpGap:(d:number)=>jumps.some(j=>d>=j.takeoff&&d<j.takeoff+j.gap),cornerLoad:profile?.cornerLoad??2.0,circuit:{...base.circuit,name:profile?.name??(practice?'暁アルティメット・クロス':'天頂決戦・ゼニス・クラウン'),laps:1,radiusX:profile?Math.max(...points.map(p=>Math.abs(p.x)))+20:215,radiusZ:profile?Math.max(...points.map(p=>Math.abs(p.z)))+20:150,samples:4800,surface:{name:'舗装・砂地・砂利',roughness:.5,grip:.9}},circuitLength,startDistance:0,sampleCircuit,sampleLanePath,surfaceAt};
 }

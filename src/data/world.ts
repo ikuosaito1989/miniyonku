@@ -1,3 +1,4 @@
+import {isMasterCourse,masterCourseIds,masterCourses} from './masterCourses';
 import {practiceCourses,practiceCourseIds,isPracticeCourse,type PracticeCourseId} from './practiceCourses';
 import {specialtyStock,isSpecialtyShop} from './specialtyParts';
 export const isSalesShop=(id:string)=>id==='atelier'||isSpecialtyShop(id);
@@ -29,7 +30,7 @@ export const modelShops:Record<ShopId,ModelShop>={
 };
 export function currentShop(location:WorldLocation){return modelShops[location==='town'||location==='library'?'komorebi':location==='stadium-5'?'hinata':location==='stadium-9'?'wakaba':location==='stadium-10'?'yuunagi':location==='stadium-7'?'akatsuki':location];}
 export interface WorldProgress {legendRaceCompleted:boolean;villainDefeated:boolean;officialQualified?:boolean;wakabaUnlocked?:boolean;thirdOfficialQualified?:boolean;yuunagiUnlocked?:boolean;finalQualified?:boolean;grandprixCleared?:boolean;zenithQualified?:boolean;zenithCleared?:boolean}
-export function canEnterShop(id:ShopId,progress:WorldProgress){return id==='hoshikuzu'?progress.zenithCleared===true:id==='akatsuki'?progress.grandprixCleared===true:id==='yuunagi'?progress.yuunagiUnlocked===true:id==='wakaba'?progress.wakabaUnlocked===true:(id==='komorebi'||isSalesShop(id)||isPracticeCourse(id))||progress.legendRaceCompleted&&(id==='aozora'||progress.villainDefeated);}
+export function canEnterShop(id:ShopId,progress:WorldProgress){return isMasterCourse(id)?progress.zenithCleared===true:id==='hoshikuzu'?progress.zenithCleared===true:id==='akatsuki'?progress.grandprixCleared===true:id==='yuunagi'?progress.yuunagiUnlocked===true:id==='wakaba'?progress.wakabaUnlocked===true:(id==='komorebi'||isSalesShop(id)||isPracticeCourse(id))||progress.legendRaceCompleted&&(id==='aozora'||progress.villainDefeated);}
 export function isVenueOpen(venue:TownVenue,progress:WorldProgress){return venue.kind==='library'?true:venue.id==='stadium-7'?progress.zenithQualified===true:venue.id==='stadium-10'?progress.finalQualified===true:venue.id==='stadium-9'?progress.thirdOfficialQualified===true:venue.id==='stadium-5'?progress.officialQualified===true:!!venue.shopId&&canEnterShop(venue.shopId,progress);}
 export interface TownVenue {id:string;name:string;kind:'shop'|'stadium'|'library'|'outdoor';stage:number;x:number;y:number;w:number;h:number;entrance:'north'|'south';color:number;shopId?:ShopId}
 const venueTemplates:TownVenue[]=[
@@ -46,9 +47,9 @@ const venueTemplates:TownVenue[]=[
   {id:'stadium-10',name:'緑川グランプリ',kind:'stadium',stage:10,x:750,y:316,w:132,h:88,entrance:'north',color:0xb59b52},
 ];
 // 広い街に種付き乱数で散らす。再読込で店が移動しない共通の街地図。
-export const townSize={width:3200,height:2400};
-export const townWalkBounds={left:64,right:2940,top:96,bottom:2336};
-export const townRoads={vertical:[460,1240,2080,2820],horizontal:[700,1500,2180]};
+export const townSize={width:5400,height:2400};
+export const townWalkBounds={left:64,right:5300,top:96,bottom:2336};
+export const townRoads={vertical:[460,1240,2080,2820,3100,4160,5240],horizontal:[700,1500,2180]};
 export function generateTownVenues(seed=19890421):TownVenue[]{
   let state=seed>>>0;const random=()=>{state=(Math.imul(state,1664525)+1013904223)>>>0;return state/4294967296;};
   const plots=[{x:180,y:290},{x:780,y:380},{x:1560,y:270},{x:2380,y:360},{x:260,y:1070},{x:920,y:1110},{x:1670,y:1050},{x:2480,y:1120},{x:190,y:1780},{x:970,y:1850},{x:1680,y:1800}];
@@ -60,7 +61,7 @@ export function generateTownVenues(seed=19890421):TownVenue[]{
   const buildings:TownVenue[]=[...venues,...(['torque','velocity','terrain'] as const).map((id,i):TownVenue=>({id,name:modelShops[id].name,kind:'shop',stage:1,x:[1500,2260,2500][i],y:790,w:190,h:140,entrance:'south',color:modelShops[id].color,shopId:id})),{id:'atelier',name:'星霧模型工房',kind:'shop',stage:1,x:650,y:805,w:190,h:140,entrance:'south',color:0x77649c,shopId:'atelier'},{id:'library',name:'緑川町立図書館',kind:'library',stage:1,x:970,y:805,w:190,h:140,entrance:'south',color:0x657c88} ];
   const outdoors:TownVenue[]=[];
   const separate=(a:TownVenue,b:TownVenue)=>a.x+a.w+40<b.x||b.x+b.w+40<a.x||a.y+a.h+80<b.y||b.y+b.h+80<a.y;
-  for(const id of practiceCourseIds){
+  for(const id of practiceCourseIds.filter(id=>!isMasterCourse(id))){
     let placed=false;
     for(let attempt=0;attempt<20000;attempt++){
       const v:TownVenue={id,name:practiceCourses[id].name,kind:'outdoor',stage:1,x:100+Math.floor(random()*2600),y:200+Math.floor(random()*1900),w:180,h:110,entrance:'south',color:modelShops[id].color,shopId:id};
@@ -79,7 +80,8 @@ export function generateTownVenues(seed=19890421):TownVenue[]{
     endurance=v;
   }
   if(!endurance)throw new Error('耐久工房の配置場所が足りません。');
-  return [...buildings,...outdoors,endurance];
+  const masters=masterCourseIds.map((id,i):TownVenue=>({id,name:masterCourses[id].name,kind:'outdoor',stage:8,x:i%2===0?3260:4380,y:i<2?820:1670,w:760,h:420,entrance:'south',color:masterCourses[id].color,shopId:id}));
+  return [...buildings,...outdoors,endurance,...masters];
 }
 export const townVenues=generateTownVenues();
 // 住宅・商店街の背景棟。入口を持たない建物も歩行障害物として扱う。
@@ -102,6 +104,7 @@ for(let row=0,y=190;y<2210;y+=156,row++)for(let x=110+(row%2)*72;x<2770;x+=160){
 export const shopExit={x:440,y:575,w:80,h:7};
 export function townSpawn(shop:ShopId|'library'|'stadium-5'|'stadium-9'|'stadium-10'|'stadium-7'){const venue=townVenues.find(v=>v.id===shop)!;return {x:venue.x+venue.w/2,y:venue.entrance==='north'?venue.y-42:venue.y+venue.h+42};}
 export function venueMessage(venue:TownVenue){
+  if(isMasterCourse(venue.id))return '天頂決戦クリア後に開放される巨大マスターコース。'+modelShops[venue.id].welcome;
   if(isPracticeCourse(venue.id))return modelShops[venue.id].welcome;
   if(isSpecialtyShop(venue.id))return modelShops[venue.id].welcome;
   if(venue.kind==='library')return '最初から無料で入れる図書館。全種類のパーツの性能・特徴・入手先、ギア比やモーターの基礎を調べられます。未所持品・非売品も閲覧可能。';

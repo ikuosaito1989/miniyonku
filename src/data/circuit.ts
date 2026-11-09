@@ -1,3 +1,4 @@
+import {masterCourses,masterCourseIds,isMasterCourse} from './masterCourses';
 import {practiceCourses,practiceCourseIds,isPracticeCourse,type PracticeCourseId} from './practiceCourses';
 import {buildZenithTrack} from './zenithCircuit';
 import {yuunagiPoint} from './yuunagiCircuit';
@@ -92,7 +93,7 @@ function buildCircuit(id:Exclude<CircuitId,'forge'|'zenith'>){
   return {hasHills:!!practice?.hills,fairLanes:!practice,jumps:obstacles?[obstacles.jump]:[],open,obstacles,courseProgress,isJumpGap,obstacleHeight,cornerLoad:'cornerLoad' in circuit?circuit.cornerLoad:1,surfaceAt,circuit,circuitLength,startDistance,laneOffset,sampleCircuit,laneChange,sampleLanePath,startRamp,startRampHeight};
 }
 export type CircuitTrack=ReturnType<typeof buildCircuit>;
-const tracks:Record<CircuitId,CircuitTrack>={...Object.fromEntries(practiceCourseIds.map(id=>[id,buildCircuit(id)])) as Record<PracticeCourseId,CircuitTrack>,leaf:buildCircuit('leaf'),wind:buildCircuit('wind'),sun:buildCircuit('sun'),sprint:buildCircuit('sprint'),grove:buildCircuit('grove'),comet:buildCircuit('comet'),trail:buildCircuit('trail'),grandprix:buildCircuit('grandprix'),forge:buildZenithTrack(buildCircuit('trail'),true),zenith:buildZenithTrack(buildCircuit('trail'))};
+const tracks:Record<CircuitId,CircuitTrack>={...Object.fromEntries(masterCourseIds.map(id=>[id,buildZenithTrack(buildCircuit('trail'),true,masterCourses[id])])) as Record<typeof masterCourseIds[number],CircuitTrack>,...Object.fromEntries(practiceCourseIds.filter(id=>!isMasterCourse(id)).map(id=>[id,buildCircuit(id)])) as Record<PracticeCourseId,CircuitTrack>,leaf:buildCircuit('leaf'),wind:buildCircuit('wind'),sun:buildCircuit('sun'),sprint:buildCircuit('sprint'),grove:buildCircuit('grove'),comet:buildCircuit('comet'),trail:buildCircuit('trail'),grandprix:buildCircuit('grandprix'),forge:buildZenithTrack(buildCircuit('trail'),true),zenith:buildZenithTrack(buildCircuit('trail'))};
 export const getCircuitTrack=(id:CircuitId='leaf')=>tracks[id];
 // 既存の計算・テストのデフォルトは入門コースのまま。
 export const {circuit,circuitLength,startDistance,laneOffset,sampleCircuit,laneChange,sampleLanePath}=tracks.leaf;

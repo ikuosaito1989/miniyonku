@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {practiceCourses,practiceCourseIds} from '../data/practiceCourses';
+import {practiceCourses,regularPracticeCourseIds as practiceCourseIds} from '../data/practiceCourses';
 import {practiceEquipment,practiceRivals} from '../data/practiceRivals';
 import {getCircuitTrack,type CircuitId} from '../data/circuit';
 import {townVenues,townBlocks,townSpawn,townWalkBounds,modelShops} from '../data/world';
@@ -48,7 +48,7 @@ test('street entrances are reachable; independent races and records save without
 });
 
 test('random outdoor placement spans both axes, is stable by seed, and migrates old indoor saves to town',()=>{
- const parks=townVenues.filter(v=>v.kind==='outdoor');assert.equal(parks.length,11);assert.ok(new Set(parks.map(v=>Math.floor(v.x/500))).size>=4);assert.ok(new Set(parks.map(v=>Math.floor(v.y/400))).size>=3);
+ const parks=townVenues.filter(v=>v.kind==='outdoor');assert.equal(parks.length,15);assert.ok(new Set(parks.map(v=>Math.floor(v.x/500))).size>=4);assert.ok(new Set(parks.map(v=>Math.floor(v.y/400))).size>=3);
  const old={...snapshotGame(useGame.getInitialState()),location:'park-sand',lastShop:'park-sand'};
  const migrated=decodeSave({version:1,savedAt:1,game:old}).game;assert.equal(migrated.location,'town');assert.equal(migrated.townReturnVenue,'park-sand');assert.equal(migrated.lastShop,'komorebi');
 });

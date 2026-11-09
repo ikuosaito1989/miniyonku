@@ -15,7 +15,7 @@ const records=(id:CircuitId):OnlineRecord[]=>[0,1,2,3].map((i)=>({playerId:Strin
 const ready=()=>({...useGame.getInitialState(),openingActive:false,openingStep:9,tutorialStage:'done' as const});
 
 test('ストーリー10コースの記録対戦は最終クリア後、屋外10コースは初めから解放する',()=>{
- assert.equal(onlineCircuits.length,21);assert.equal(onlineCircuits.filter(id=>recordOpponentUnlocked(id,false)).length,11);
+ assert.equal(onlineCircuits.length,25);assert.equal(onlineCircuits.filter(id=>recordOpponentUnlocked(id,false)).length,11);
  for(const id of onlineCircuits)assert.equal(recordOpponentUnlocked(id,true),true);
  const before=useGame.getState();try{
   for(const cleared of [false,true])for(const location of ['komorebi','yuunagi','stadium-7'] as const){

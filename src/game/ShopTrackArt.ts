@@ -10,7 +10,7 @@ import {courseRailColorAt,pavedCourseColors} from './coursePalette';
 export function drawShopTrack(scene:Phaser.Scene,f:Fixture,track:CircuitTrack,depth=f.y+f.h+1,painted=false){
  const key=`course-model-16-${track.circuit.name}-${f.w}-${f.h}-${painted}`;
  if(!scene.textures.exists(key)){
-  const texture=scene.textures.createCanvas(key,Math.ceil(f.w*3),Math.ceil(f.h*3))!,c=texture.context;c.scale(3,3);c.lineJoin='round';c.lineCap='round';
+  const resolution=f.w>500?2:3,texture=scene.textures.createCanvas(key,Math.ceil(f.w*resolution),Math.ceil(f.h*resolution))!,c=texture.context;c.scale(resolution,resolution);c.lineJoin='round';c.lineCap='round';
   const p=new SceneryPen(c),{centerline,paths,laneWidth}=shopTrackLayout(track,f.w,f.h),road=laneWidth*track.circuit.lanes;
   const stroke=(points:ShopTrackPoint[],width:number,color:string,dy=0,dx=0)=>{if(points.length<2)return;c.strokeStyle=color;c.lineWidth=width;c.beginPath();points.forEach((point,i)=>{const x=Math.round((point.x+dx)*2)/2,y=Math.round((point.y+dy)*2)/2;i?c.lineTo(x,y):c.moveTo(x,y);});c.stroke();};
   if(!painted){p.round(1,2,f.w-2,f.h-3,3,'#526958');p.round(3,3,f.w-6,f.h-7,2,'#b8b49a');p.rect(5,4,f.w-10,1,'#e2d3a7');p.rect(5,f.h-7,f.w-10,3,'#737f69');}

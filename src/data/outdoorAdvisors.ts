@@ -3,6 +3,10 @@ import {townCrowd} from './townCrowd';
 import {parts} from './parts';
 
 const advice:Record<PracticeCourseId,{name:string;parts:readonly (readonly [string,string])[]}>= {
+ 'master-azure':{name:'天野 蒼',parts:[['motor-hoshi-sprint','高速舗装の伸びとループの駆動力を両立する'],['gear-hoshi-3.8','縦ループで失速するときに駆動力を補う'],['tire-apex','舗装と砂の両方を走る足まわりを整える']]},
+ 'master-crimson':{name:'紅林 沙羅',parts:[['motor-hoshi-loop','深い砂とループを越えるトルクを確保する'],['tire-hoshi-gravel','舗装と悪路の抵抗を見比べる'],['chassis-hoshi-fm','砂地での接地と制振を助ける']]},
+ 'master-violet':{name:'紫原 旋',parts:[['motor-hoshi-light','軽い車体で連続S字後の再加速を助ける'],['chassis-hoshi-corner','低い重心で切り返しの姿勢を安定させる'],['tire-hoshi-low','ジャンプ着地の跳ねを減らす']]},
+ 'master-gold':{name:'金城 恒',parts:[['battery-hoshi-long','後半まで残量を確保する'],['motor-hoshi-loop','大容量電池の重さを支えるトルクを確保する'],['tire-hoshi-gravel','砂利への接地と舗装での転がりを両立する']]},
  'park-switchback':{name:'松原 航',parts:[['roller-special-velocity-free','細かな切り返しで壁との摩擦を抑える'],['wheel-floating','内外輪の回転差による抵抗を減らす'],['chassis-turn','低い重心で連続コーナーの姿勢を支える']]},
  'park-hairpin':{name:'二階堂 颯',parts:[['motor-turn','ヘアピン後の再加速を助ける'],['roller-ceramic','壁に触れるときの摩擦を抑える'],['tire-turn','舗装のグリップと安定を確保する']]},
  'park-slalom':{name:'風岡 紬',parts:[['roller-special-velocity-free','左右の切り返しで速度を残す'],['wheel-floating','長いS字で旋回抵抗を抑える'],['chassis-turn','軽さと低い重心を両立する']]},

@@ -86,8 +86,8 @@ test('旧セーブで兄弟に挑戦済みでも完走済みとは推定せず�
   }finally{useGame.setState(original);}
 });
 
-test('街の11模型店・大会会場4か所・練習場10か所は通路からすべて調べられ、未開放店は準備中',()=>{
-  assert.equal(townVenues.filter(v=>v.kind==='shop').length,11);
+test('街の模型店・大会会場・屋外コースは通路からすべて調べられ、未開放店は準備中',()=>{
+  assert.equal(townVenues.filter(v=>v.kind==='shop').length,12);
   assert.equal(townVenues.filter(v=>v.kind==='shop'&&!isVenueOpen(v,{legendRaceCompleted:true,villainDefeated:false})).length,5);
   assert.equal(townVenues.filter(v=>v.kind==='shop'&&!isVenueOpen(v,{legendRaceCompleted:true,villainDefeated:true})).length,4);
   assert.deepEqual(townVenues.filter(v=>v.kind==='stadium'&&!isPracticeCourse(v.id)).map(v=>v.stage),[5,7,9,10]);

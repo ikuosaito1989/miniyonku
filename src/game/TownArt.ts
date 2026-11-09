@@ -10,13 +10,13 @@ function ground(c:CanvasRenderingContext2D){
  const p=new SceneryPen(c),r=p.rect.bind(p),noise=artNoise;
  r(0,0,townSize.width,townSize.height,'#788f62');
  // Wide, quiet colour clusters keep the dense tufts from becoming visual noise.
- for(let y=0;y<2400;y+=56)for(let x=0;x<3200;x+=64){const n=noise(x,y),color=['#7b9364','#758d60','#7d9467','#748c60'][n%4];for(let row=0;row<6;row++){const inset=[16,7,2,0,5,13][row]+(noise(x,row)%3)*2;r(x+inset,y+row*7,54-inset*2,7,color);for(let edge=0;edge<3;edge++){r(x+inset-2-edge*2,y+row*7+edge*2,2,2,edge%2?color:'#788f62');r(x+54-inset+edge*2,y+row*7+2+edge,2,2,color);}}}
- for(let y=0;y<2400;y+=9)for(let x=0;x<3200;x+=11){const n=noise(x,y);if(n%5>1)continue;const xx=x+n%5,yy=y+(n>>>4)%4;
+ for(let y=0;y<townSize.height;y+=56)for(let x=0;x<townSize.width;x+=64){const n=noise(x,y),color=['#7b9364','#758d60','#7d9467','#748c60'][n%4];for(let row=0;row<6;row++){const inset=[16,7,2,0,5,13][row]+(noise(x,row)%3)*2;r(x+inset,y+row*7,54-inset*2,7,color);for(let edge=0;edge<3;edge++){r(x+inset-2-edge*2,y+row*7+edge*2,2,2,edge%2?color:'#788f62');r(x+54-inset+edge*2,y+row*7+2+edge,2,2,color);}}}
+ for(let y=0;y<townSize.height;y+=9)for(let x=0;x<townSize.width;x+=11){const n=noise(x,y);if(n%5>1)continue;const xx=x+n%5,yy=y+(n>>>4)%4;
   r(xx,yy+2,4,1,'#617d52');r(xx+1,yy,1,3,'#a0af77');r(xx+3,yy-1,1,3,'#8da66d');if(n%13===0)r(xx+1,yy+4,2,1,'#bdbe87');
  }
  // Stepped stone shore, reeds and broken reflections.
- for(let y=0;y<2400;y+=8){const shore=2990+Math.round(Math.sin(y/90)*12/2)*2;r(shore-24,y,40,8,'#87926c');r(shore-12,y,25,8,'#b4ab7c');r(shore-3,y,13,8,'#546c68');r(shore+5,y,3200-shore-5,8,'#427e91');r(shore+12,y,3200-shore-12,3,'#5798a6');
-  for(let x=shore+25;x<3200;x+=37){const n=noise(x,y);r(x+n%11,y+4,14+n%9,1,'#8ec3be');r(x+7,y+6,8,1,'#2e677f');if(n%9===0){r(shore-13,y-3,2,10,'#486c53');r(shore-10,y-5,1,11,'#9aa372');}}
+ for(let y=0;y<townSize.height;y+=8){const shore=townSize.width-210+Math.round(Math.sin(y/90)*12/2)*2;r(shore-24,y,40,8,'#87926c');r(shore-12,y,25,8,'#b4ab7c');r(shore-3,y,13,8,'#546c68');r(shore+5,y,townSize.width-shore-5,8,'#427e91');r(shore+12,y,townSize.width-shore-12,3,'#5798a6');
+  for(let x=shore+25;x<townSize.width;x+=37){const n=noise(x,y);r(x+n%11,y+4,14+n%9,1,'#8ec3be');r(x+7,y+6,8,1,'#2e677f');if(n%9===0){r(shore-13,y-3,2,10,'#486c53');r(shore-10,y-5,1,11,'#9aa372');}}
  }
  const road=(x:number,y:number,w:number,h:number)=>{
   r(x+3,y+4,w,h,'#3d55574d');r(x,y,w,h,'#495860');r(x+7,y+7,w-14,h-14,'#667377');
@@ -28,7 +28,7 @@ function ground(c:CanvasRenderingContext2D){
  for(const x of townRoads.vertical){road(x-70,72,140,2250);for(let y=88;y<2320;y+=30){r(x-2,y,4,13,'#c9bd8d');r(x-1,y,1,11,'#e4d5a5');for(const xx of [x-70,x+63]){r(xx,y,7,1,'#6e8279');r(xx,y+1,7,1,'#d8cfaa');}}
   for(let y=185;y<2290;y+=210){r(x+53,y,9,17,'#3d535a');for(let i=0;i<4;i++)r(x+54,y+2+i*4,7,1,'#85958e');}
  }
- for(const y of townRoads.horizontal){road(64,y-70,2880,140);for(let x=80;x<2944;x+=30){r(x,y-2,13,4,'#c9bd8d');r(x,y-2,12,1,'#e2d3a2');for(const yy of [y-70,y+63])r(x,yy,1,7,'#70847d');}}
+ for(const y of townRoads.horizontal){road(64,y-70,townSize.width-320,140);for(let x=80;x<townSize.width-256;x+=30){r(x,y-2,13,4,'#c9bd8d');r(x,y-2,12,1,'#e2d3a2');for(const yy of [y-70,y+63])r(x,yy,1,7,'#70847d');}}
  for(const x of townRoads.vertical)for(const y of townRoads.horizontal){r(x-53,y-53,106,106,'#667377');for(let i=0;i<5;i++){r(x-44+i*19,y-64,9,30,'#d8d1b0');r(x-44+i*19,y+34,9,30,'#d8d1b0');}p.ellipse(x+29,y+20,9,7,'#485e64');p.ellipse(x+29,y+19,8,6,'#879188');for(let i=0;i<3;i++)r(x+24,y+16+i*3,10,1,'#596f70');}
  for(const v of townVenues){
   const cx=v.x+v.w/2,cy=v.entrance==='south'?v.y+v.h+30:v.y-30,roadY=townRoads.horizontal.reduce((a,b)=>Math.abs(b-cy)<Math.abs(a-cy)?b:a);
@@ -74,10 +74,11 @@ function house(scene:Phaser.Scene,block:typeof townBlocks[number],index:number){
  if(w>=130){tree(scene,x-32,y+h+8);tree(scene,x+w+32,y+h+8);}else tree(scene,index%2?x-42:x+w+42,y+h-8);
 }
 export function drawTown(scene:Phaser.Scene,progress:WorldProgress){
- const key='midorikawa-ground-16';if(!scene.textures.exists(key)){const texture=scene.textures.createCanvas(key,townSize.width,townSize.height)!;ground(texture.context);texture.refresh();}
- scene.add.image(0,0,key).setOrigin(0).setDepth(-100);
+ // 大きな街でも個々の地面テクスチャは2048px以下の幅に保つ。
+ for(let x=0;x<townSize.width;x+=2048){const key=`midorikawa-ground-16-${x}`;if(!scene.textures.exists(key)){const texture=scene.textures.createCanvas(key,Math.min(2048,townSize.width-x),townSize.height)!;texture.context.translate(-x,0);ground(texture.context);texture.refresh();}scene.add.image(x,0,key).setOrigin(0).setDepth(-100);}
+
  townBlocks.forEach((block,index)=>house(scene,block,index));
- for(const venue of townVenues)if(venue.kind==='outdoor')drawOutdoorCourse(scene,venue);else drawVenueFacade(scene,venue,isVenueOpen(venue,progress));
+ for(const venue of townVenues)if(venue.kind==='outdoor')drawOutdoorCourse(scene,venue,isVenueOpen(venue,progress));else drawVenueFacade(scene,venue,isVenueOpen(venue,progress));
  for(const x of townRoads.vertical)for(let y=160;y<2300;y+=180){if(townVenues.some(v=>Math.abs(x-v.x)<v.w+100&&y>v.y-80&&y<v.y+v.h+70))continue;tree(scene,x-100,y);lamp(scene,x+88,y+50);}
  for(let i=0;i<55;i++){const x=110+(i*437)%2780,y=210+(i*281)%1980;if([...townVenues,...townBlocks].some(v=>x>v.x-90&&x<v.x+v.w+90&&y>v.y-100&&y<v.y+v.h+90)||townRoads.vertical.some(v=>Math.abs(v-x)<100)||townRoads.horizontal.some(v=>Math.abs(v-y)<100))continue;tree(scene,x,y);tree(scene,x+28,y+34);}
  for(const y of [100,2290])for(let x=100;x<2930;x+=125)tree(scene,x,y);

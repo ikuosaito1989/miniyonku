@@ -1,3 +1,4 @@
+import {isMasterCourse} from '../data/masterCourses';
 import {isPracticeCourse} from '../data/practiceCourses';
 import {practiceRivals} from '../data/practiceRivals';
 import {zenithRivals} from '../data/zenithRace';
@@ -45,8 +46,8 @@ export function createRaceState(equipment:Equipment,seed=0x5eed,condition:Machin
     const raceEquipment=legendary?{...starterEquipment,body:entrant.equipment.body,motor:'motor-sovereign',chassis:'chassis-sovereign',gear:'gear-4'}:entrant.equipment;
     const performance=machinePerformance(raceEquipment,entrant.id==='player'?condition:{...freshCondition,motorSeconds:entrant.motorSeconds??0});
     // CPUの個体差もシードから決定する。毎フレームの乱数は使わない。
-    const variation=entrant.id==='player'?1:(challenge==='villain'&&entrant.id===challenger.id||circuitId==='grove'||circuitId==='grandprix'||circuitId==='forge'||circuitId==='zenith')?.999+random()*.002:0.97+random()*0.06;
-    const difficulty=(circuitId==='grove'||circuitId==='grandprix'||circuitId==='forge'||circuitId==='zenith')?1:circuitId!=='leaf'?.96:RIVAL_DIFFICULTY;
+    const variation=entrant.id==='player'||isMasterCourse(circuitId)?1:(challenge==='villain'&&entrant.id===challenger.id||circuitId==='grove'||circuitId==='grandprix'||circuitId==='forge'||circuitId==='zenith')?.999+random()*.002:0.97+random()*0.06;
+    const difficulty=(isMasterCourse(circuitId)||circuitId==='grove'||circuitId==='grandprix'||circuitId==='forge'||circuitId==='zenith')?1:circuitId!=='leaf'?.96:RIVAL_DIFFICULTY;
     const racePace=legendary?1:entrant.id==='player'||entrant.id===challenger.id&&challenge!=='official'?1:difficulty;
     return {...entrant,performance:{...performance,freeSpeed:performance.freeSpeed*variation*racePace,stallForce:performance.stallForce*variation*racePace,lateralLimit:performance.lateralLimit},driving:createDrivingState()};
   })};

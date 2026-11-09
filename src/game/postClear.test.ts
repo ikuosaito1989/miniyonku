@@ -1,3 +1,4 @@
+import {masterCourseIds} from '../data/masterCourses';
 import {test} from 'node:test';import assert from 'node:assert/strict';
 import {useGame} from './store';import {createRaceState} from './race';import {cupProgression,legacyCup,raceCupHeat} from './cup';import {snapshotGame,decodeSave} from './saveData';import {loadSavedGame} from './autoSave';
 import {zenithEquipment} from '../data/zenithRace';import {starterEquipment,equipmentSlots,type Equipment} from '../data/machine';import {sovereignEquipment} from '../data/sovereignParts';import {postClearParts,legendBodyIds} from '../data/postClearParts';import {modelShops,canEnterShop} from '../data/world';import {parts} from '../data/parts';import {isStocked} from '../data/progression';import {officialTimeBoards} from '../data/timeBoard';import {recordRaceTimes,migrateTimeHistory,isRecordEquipmentEligible} from './timeRecords';import {getCircuitTrack,type CircuitId} from '../data/circuit';import {buildMachineModel} from './MachineModel';import {machinePerformance,createDrivingState,startDriving,stepDriving} from './driving';
@@ -30,4 +31,14 @@ function drive(id:CircuitId,e:Equipment){const t=getCircuitTrack(id),p=machinePe
 test('新パーツは星皇なしで完走でき、舗装用と砂用の優劣が路面によって逆転する',()=>{
  const sprint={...zenithEquipment,motor:'motor-hoshi-sprint',chassis:'chassis-hoshi-fm-sprint',tire:'tire-hoshi-slick',gear:'gear-hoshi-3.8'},sand={...zenithEquipment,motor:'motor-hoshi-rally',chassis:'chassis-hoshi-fm-dune',tire:'tire-hoshi-sand',gear:'gear-hoshi-4.5'};
  assert.ok(isRecordEquipmentEligible(sprint)&&isRecordEquipmentEligible(sand));assert.ok(drive('wind',sprint)<drive('wind',sand));assert.ok(drive('sun',sand)<drive('sun',sprint));drive('zenith',{...zenithEquipment,motor:'motor-hoshi-loop',chassis:'chassis-hoshi-fm-loop',tire:'tire-hoshi-gravel',gear:'gear-hoshi-4.5'});
+});
+
+test('旧クリア済みセーブからも巨大マスター4コースが開放され、帰還地点とクリアを保存できる',()=>{
+ const before=useGame.getState();try{
+  for(const id of masterCourseIds){
+   useGame.setState({...cleared(),townReturnVenue:id},true);
+   const saved=decodeSave({version:1,savedAt:123,game:snapshotGame(useGame.getState())}).game;
+   assert.equal(saved.zenithCleared,true);assert.equal(saved.townReturnVenue,id);assert.equal(canEnterShop(id,saved),true);
+  }
+ }finally{useGame.setState(before,true);}
 });

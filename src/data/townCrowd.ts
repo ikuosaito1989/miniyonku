@@ -1,3 +1,4 @@
+import {isMasterCourse} from './masterCourses';
 import {townVenues,townBlocks,townRoads,townWalkBounds,townSpawn} from './world';
 import {townPeople} from './townPeople';
 import {hiddenMechanicSpot} from './hiddenMechanic';
@@ -27,6 +28,7 @@ export function generateTownCrowd(){
  };
  for(const v of townVenues){
   if(v.kind==='outdoor'){
+   if(isMasterCourse(v.id))add({x:v.x+v.w/2-100,y:v.y+v.h+65},'down','watch',v.id);
    for(const f of [.15,.65]){add({x:v.x-38,y:v.y+v.h*f},'right','watch',v.id);add({x:v.x+v.w+38,y:v.y+v.h*f},'left','watch',v.id);}
    for(const f of [.05,.38,.72])add({x:v.x+v.w*f,y:v.y-26},'down','watch',v.id);
    add({x:v.x+12,y:v.y+v.h+55},'up','watch',v.id);
