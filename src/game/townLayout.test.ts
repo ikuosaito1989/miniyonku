@@ -1,7 +1,7 @@
 import {isPracticeCourse} from '../data/practiceCourses';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {generateTownVenues,townVenues,townSize,townWalkBounds,townSpawn,townBlocks} from '../data/world';
+import {generateTownVenues,townVenues,townSize,townWalkBounds,townSpawn,townBlocks,townRoads,townPlaza} from '../data/world';
 import {canStand,canTravel,findWalkingPath} from './navigation';
 test('広域マップは店と大型会場を重複なく散らし、乱数の種ごとに配置を再現する',()=>{
  assert.ok(townSize.width*townSize.height>=960*640*12);
@@ -16,6 +16,16 @@ test('広域マップは店と大型会場を重複なく散らし、乱数の�
    if(v.kind==='stadium'&&!isPracticeCourse(v.id))assert.ok(v.w>=350&&v.h>=250);
   }
  }
+});
+test('街区は舗装道路でつながり、店舗の玄関は次の通りに短い歩道で接続する',()=>{
+ assert.deepEqual(townSize,{width:7000,height:4600});
+ for(const v of townVenues.filter(v=>v.w<300)){
+  const entrance=townSpawn(v.id as Parameters<typeof townSpawn>[0]);
+  const nextStreet=townRoads.horizontal.find(y=>y>v.y)!;
+  assert.ok(nextStreet-entrance.y<=80&&nextStreet-entrance.y>=55,`${v.id} entrance should connect to its frontage street`);
+ }
+ assert.ok(townBlocks.length>=35,'residential lots should fill the connected city grid');
+ assert.equal(townVenues.some(v=>v.x<townPlaza.x+townPlaza.w&&v.x+v.w>townPlaza.x&&v.y<townPlaza.y+townPlaza.h&&v.y+v.h>townPlaza.y),false);
 });
 test('広域マップの帰還地点と遠方への道は、店内の歩行制限と独立している',()=>{
  const obstacles=[...townVenues,...townBlocks].map(v=>({x:v.x,y:v.y,width:v.w,height:v.h}));

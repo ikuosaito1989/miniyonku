@@ -46,60 +46,43 @@ const venueTemplates:TownVenue[]=[
   {id:'stadium-9',name:'星空レース場',kind:'stadium',stage:9,x:750,y:466,w:132,h:88,entrance:'north',color:0x9674a6},
   {id:'stadium-10',name:'緑川グランプリ',kind:'stadium',stage:10,x:750,y:316,w:132,h:88,entrance:'north',color:0xb59b52},
 ];
-// 広い街に種付き乱数で散らす。再読込で店が移動しない共通の街地図。
-export const townSize={width:5400,height:2400};
-export const townWalkBounds={left:64,right:5300,top:96,bottom:2336};
-export const townRoads={vertical:[460,1240,2080,2820,3100,4160,5240],horizontal:[700,1500,2180]};
+// 生活道路で区切った5列6段の街区。東側は大会会場をまとめた競技地区。
+export const townSize={width:7000,height:4600};
+export const townWalkBounds={left:64,right:6880,top:96,bottom:4536};
+export const townRoads={vertical:[400,1200,2000,2800,3600,4400],horizontal:[420,1100,1780,2460,3140,3820,4480]};
+export const townPlaza={x:2050,y:1840,w:700,h:500};
 export function generateTownVenues(seed=19890421):TownVenue[]{
   let state=seed>>>0;const random=()=>{state=(Math.imul(state,1664525)+1013904223)>>>0;return state/4294967296;};
-  const plots=[{x:180,y:290},{x:780,y:380},{x:1560,y:270},{x:2380,y:360},{x:260,y:1070},{x:920,y:1110},{x:1670,y:1050},{x:2480,y:1120},{x:190,y:1780},{x:970,y:1850},{x:1680,y:1800}];
-  for(let i=plots.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[plots[i],plots[j]]=[plots[j],plots[i]];}
-  const venues=venueTemplates.map((venue,index):TownVenue=>{
-    const plot=plots[index],stadium=venue.kind==='stadium';
-    return {...venue,entrance:'south',x:plot.x+Math.floor(random()*40)-20,y:plot.y+Math.floor(random()*50)-25,w:stadium?350:190,h:stadium?250:140};
+  const fixed:TownVenue[]=[...venueTemplates,
+    ...(['torque','velocity','terrain'] as const).map((id):TownVenue=>({id,name:modelShops[id].name,kind:'shop',stage:1,x:0,y:0,w:190,h:140,entrance:'south',color:modelShops[id].color,shopId:id})),
+    {id:'atelier',name:'星霧模型工房',kind:'shop',stage:1,x:0,y:0,w:190,h:140,entrance:'south',color:0x77649c,shopId:'atelier' as ShopId},
+    {id:'library',name:'緑川町立図書館',kind:'library',stage:1,x:0,y:0,w:190,h:140,entrance:'south',color:0x657c88},
+    {id:'endurance',name:modelShops.endurance.name,kind:'shop' as const,stage:1,x:0,y:0,w:190,h:140,entrance:'south' as const,color:modelShops.endurance.color,shopId:'endurance' as ShopId},
+    ...practiceCourseIds.filter(id=>!isMasterCourse(id)).map((id):TownVenue=>({id,name:practiceCourses[id].name,kind:'outdoor',stage:1,x:0,y:0,w:180,h:110,entrance:'south',color:modelShops[id].color,shopId:id})),
+  ];
+  // Two adjoining cells form a pedestrian square and planted pocket park.
+  const lots=Array.from({length:30},(_,i)=>({x:500+(i%5)*800,y:470+Math.floor(i/5)*680})).filter((_,i)=>i!==12);
+  for(let i=lots.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[lots[i],lots[j]]=[lots[j],lots[i]];}
+  const civic=fixed.map((v,index)=>{
+    const lot=lots[index],stadium=v.kind==='stadium',w=stadium?350:v.w,h=stadium?250:v.h;
+    const nextStreet=townRoads.horizontal.find(y=>y>lot.y)!;
+    return {...v,x:lot.x+Math.floor(random()*13),y:nextStreet-h-110+Math.floor(random()*7),w,h,entrance:'south' as const};
   });
-  const buildings:TownVenue[]=[...venues,...(['torque','velocity','terrain'] as const).map((id,i):TownVenue=>({id,name:modelShops[id].name,kind:'shop',stage:1,x:[1500,2260,2500][i],y:790,w:190,h:140,entrance:'south',color:modelShops[id].color,shopId:id})),{id:'atelier',name:'星霧模型工房',kind:'shop',stage:1,x:650,y:805,w:190,h:140,entrance:'south',color:0x77649c,shopId:'atelier'},{id:'library',name:'緑川町立図書館',kind:'library',stage:1,x:970,y:805,w:190,h:140,entrance:'south',color:0x657c88} ];
-  const outdoors:TownVenue[]=[];
-  const separate=(a:TownVenue,b:TownVenue)=>a.x+a.w+40<b.x||b.x+b.w+40<a.x||a.y+a.h+80<b.y||b.y+b.h+80<a.y;
-  for(const id of practiceCourseIds.filter(id=>!isMasterCourse(id))){
-    let placed=false;
-    for(let attempt=0;attempt<20000;attempt++){
-      const v:TownVenue={id,name:practiceCourses[id].name,kind:'outdoor',stage:1,x:100+Math.floor(random()*2600),y:200+Math.floor(random()*1900),w:180,h:110,entrance:'south',color:modelShops[id].color,shopId:id};
-      if(townRoads.vertical.some(x=>x>=v.x-75&&x<=v.x+v.w+75)||townRoads.horizontal.some(y=>y>=v.y-75&&y<=v.y+v.h+75))continue;
-      if([...buildings,...outdoors].some(b=>!separate(v,b)))continue;
-      outdoors.push(v);placed=true;break;
-    }
-    if(!placed)throw new Error('屋外コースの配置場所が足りません。');
-  }
-  // 既存施設と既存コースの配置を変えず、追加店は空き区画に置く。
-  let endurance:TownVenue|undefined;
-  for(let y=180;y<2150&&!endurance;y+=50)for(let x=100;x<2750&&!endurance;x+=50){
-    const v:TownVenue={id:'endurance',name:modelShops.endurance.name,kind:'shop',stage:1,x,y,w:190,h:140,entrance:'south',color:modelShops.endurance.color,shopId:'endurance'};
-    if(townRoads.vertical.some(r=>r>=x-75&&r<=x+v.w+75)||townRoads.horizontal.some(r=>r>=y-75&&r<=y+v.h+75))continue;
-    if([...buildings,...outdoors].some(b=>!separate(v,b)))continue;
-    endurance=v;
-  }
-  if(!endurance)throw new Error('耐久工房の配置場所が足りません。');
-  const masters=masterCourseIds.map((id,i):TownVenue=>({id,name:masterCourses[id].name,kind:'outdoor',stage:8,x:i%2===0?3260:4380,y:i<2?820:1670,w:760,h:420,entrance:'south',color:masterCourses[id].color,shopId:id}));
-  return [...buildings,...outdoors,endurance,...masters];
+  // Four master courses share a road-connected campus beyond the neighborhood.
+  const masters=masterCourseIds.map((id,i):TownVenue=>({id,name:masterCourses[id].name,kind:'outdoor',stage:8,x:i%2===0?4740:5600,y:i<2?1165:1845,w:760,h:420,entrance:'south',color:masterCourses[id].color,shopId:id}));
+  return [...civic,...masters];
 }
 export const townVenues=generateTownVenues();
-// 住宅・商店街の背景棟。入口を持たない建物も歩行障害物として扱う。
+// 街路に面する住宅・小規模店舗。入口前の歩道を残し、会場と重ねない。
 export const townBlocks:Array<{x:number;y:number;w:number;h:number}>=[];
-for(let y=130;y<2150;y+=345)for(let x=100;x<2800;x+=370){
-  const w=145+(x%3)*15,h=110;
-  if(townRoads.vertical.some(road=>road>x-100&&road<x+w+100)||townRoads.horizontal.some(road=>road>y-80&&road<y+h+80))continue;
-  if(townVenues.some(v=>x<v.x+v.w+90&&x+w>v.x-90&&y<v.y+v.h+90&&y+h>v.y-110))continue;
+for(let row=0;row<6;row++)for(let col=0;col<5;col++){
+ const cell={x:500+col*800,y:470+row*680};
+ if(col===2&&row===2)continue;
+ for(let r=0;r<2;r++)for(let c=0;c<3;c++){
+  const x=cell.x+22+c*202+(r%2)*14,y=cell.y+22+r*262,w=142+(c%2)*10,h=112+(r%2)*8;
+  if(townVenues.some(v=>x<v.x+v.w+34&&x+w>v.x-34&&y<v.y+v.h+44&&y+h>v.y-42))continue;
   townBlocks.push({x,y,w,h});
-}
-// 小さな住宅を空き区画に補充。既存施設、帰還地点、道路沿いの通路は維持する。
-for(let row=0,y=190;y<2210;y+=156,row++)for(let x=110+(row%2)*72;x<2770;x+=160){
- const w=86+(row%3)*6,h=72;
- if(townRoads.vertical.some(r=>r>x-94&&r<x+w+94)||townRoads.horizontal.some(r=>r>y-92&&r<y+h+92))continue;
- if(townVenues.some(b=>x<b.x+b.w+72&&x+w>b.x-72&&y<b.y+b.h+110&&y+h>b.y-90))continue;
- if(townBlocks.some(b=>x<b.x+b.w+45&&x+w>b.x-45&&y<b.y+b.h+65&&y+h>b.y-62))continue;
- if(x<1700&&x+w>1390&&y<1790&&y+h>1520)continue; // 池の広場
- townBlocks.push({x,y,w,h});
+ }
 }
 export const shopExit={x:440,y:575,w:80,h:7};
 export function townSpawn(shop:ShopId|'library'|'stadium-5'|'stadium-9'|'stadium-10'|'stadium-7'){const venue=townVenues.find(v=>v.id===shop)!;return {x:venue.x+venue.w/2,y:venue.entrance==='north'?venue.y-42:venue.y+venue.h+42};}

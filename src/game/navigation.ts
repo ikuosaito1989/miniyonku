@@ -12,11 +12,12 @@ export function canTravel(a:Point,b:Point,obstacles:Obstacle[],bounds=walkBounds
   return true;
 }
 
-// 足元の衝突サイズで障害物を膨らませ、8px格子を4方向探索する。
+// 足元の衝突サイズで障害物を膨らませ、屋外は28px・屋内は8px格子で4方向探索する。
 // 棚をタップした場合は、タップ位置に最も近い到達可能な通路へ案内する。
 export function findWalkingPath(start:Point,target:Point,obstacles:Obstacle[],bounds=walkBounds):Point[]{
   if(!canStand(start,obstacles,bounds))return [];
-  const size=bounds.right-bounds.left>1000?20:8,cols=Math.floor((bounds.right-bounds.left)/size)+1,rows=Math.floor((bounds.bottom-bounds.top)/size)+1;
+  if(Math.hypot(start.x-target.x,start.y-target.y)<1)return [target];
+  const size=bounds.right-bounds.left>1000?28:8,cols=Math.floor((bounds.right-bounds.left)/size)+1,rows=Math.floor((bounds.bottom-bounds.top)/size)+1;
   const point=(id:number):Point=>({x:bounds.left+(id%cols)*size,y:bounds.top+Math.floor(id/cols)*size});
   const free=Array.from({length:cols*rows},(_,id)=>canStand(point(id),obstacles,bounds));
   const connect=(a:Point,b:Point):Point[]|null=>{

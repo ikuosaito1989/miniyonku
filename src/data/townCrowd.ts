@@ -39,7 +39,7 @@ export function generateTownCrowd(){
  }
  for(const b of townBlocks){add({x:b.x-34,y:b.y+b.h+40},'right','rest');add({x:b.x+b.w+40,y:b.y+b.h+43},'left','chat');}
  // Groups on the pavements give the spaces between destinations life too.
- for(const x of townRoads.vertical)for(let y=230;y<2260;y+=238){add({x:x-79,y},'down','chat');add({x:x+82,y:y+42},'up','rest');}
+ for(const x of townRoads.vertical)for(const y of townRoads.horizontal.slice(0,-1)){const yy=y+118;add({x:x-79,y:yy},'down','chat');add({x:x+82,y:yy+42},'up','rest');}
  return result;
 }
 export const townCrowd=generateTownCrowd();
