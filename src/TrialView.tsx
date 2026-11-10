@@ -178,7 +178,7 @@ export default function TrialView(){
       {introducing&&!error&&<section className={`race-intro race-intro-${intro.stage}`} aria-label="レース場紹介">
         <div className="race-intro-heading"><span>COURSE INTRODUCTION</span><p>{exhibition?raceName:officialChallenge?raceName:shop.name}</p><h2>{introduction.name}</h2></div>
         <div className="race-intro-caption" key={intro.stage}><span>{intro.stage==='overview'?'コース全景':intro.stage==='tour'?'コースの見どころ':'スターティンググリッド'}</span><p>{intro.stage==='overview'?`${exhibition?`${state.racers.length}台・${online?'オンライン上位装備との対戦':'CPUとの対戦'}`:replay?'公式コース・1台タイムアタック':timeTrial?'一本道・1台タイムアタック':pointToPoint?'一本道・5台レース':`${introduction.lanes}レーン・${introduction.laps}周`} ／ 全長 約${introduction.distance}m`:intro.stage==='tour'?introduction.feature:introduction.advice}</p><small>{introduction.surface} ／ {pointToPoint?'全長':'1周'} 約{introduction.lapLength}m ／ {noRewards?(online?'オンライン対戦・賞金なし':'CPU対戦・賞金なし'):legendChallenge?'特別レース・賞金なし':`${timeTrial?'完走賞':'1位賞金'} ${introduction.winnerPrize.toLocaleString('ja-JP')}円`}</small></div>
-        <button className="race-intro-skip" onClick={skipIntro}>紹介をスキップ</button>
+        {!courseIntroPreview&&<button className="race-intro-skip" onClick={skipIntro}>紹介をスキップ</button>}
         <div className="race-intro-progress" aria-hidden="true"><i style={{transform:`scaleX(${intro.age/raceIntroDuration})`}}/></div>
       </section>}
       {!introducing&&!error&&!showTally&&!showResults&&<><div className="race-condition">電池 {batteryLabel(player.equipment.battery,player.performance.batterySeconds+driving.time)} ／ モーター {(motorFactor(player.performance.motorSeconds+driving.time,player.equipment.motor)*100).toFixed(1)}%</div>
