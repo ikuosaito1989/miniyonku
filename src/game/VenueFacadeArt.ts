@@ -35,13 +35,20 @@ export function paintVenueFacade(p:SceneryPen,v:TownVenue,open:boolean){
   for(const side of [-1,1]){const fx=x+w/2+side*(w*.36);p.rect(fx,y-45,2,60,'#b9c9c4');p.poly([[fx+2,y-44],[fx+27,y-39],[fx+2,y-20]],accent);p.checker(fx+4,y-42,16,8,4);}
  }else{
   const t=shopThemes[(v.shopId??'komorebi') as ShopId];
-  // 以前の二階建ての町の模型店を基本に、配色・軒・小物だけを変える。
+  // Existing building footprints stay fixed; layered siding, masonry, and trim carry
+  // the same material detail as the new interiors into the town-facing elevation.
   p.round(x,y,w,h,3,t.ink);p.gradient(x+3,y+3,w-6,h-7,'#e3d8bc',t.floorDark);
+  p.material(x+5,y+6,w-10,h-14,'stone',v.x+v.y);
+  for(let row=0;row<5;row++){
+   const yy=y+7+row*8,offset=row%2?0:7;
+   p.line([[x+6+offset,yy],[x+w-7,yy]],'#3146512c',.6);
+   for(let xx=x+7+offset;xx<x+w-8;xx+=19)p.line([[xx,yy],[xx,yy+7]],'#f4ead02d',.5);
+  }
   p.poly([[x-8,y-24],[x+w/2,y-34],[x+w+8,y-24],[x+w+8,y+5],[x-8,y+5]],t.ink);
   p.poly([[x-5,y-24],[x+w/2,y-31],[x+w+5,y-24],[x+w+5,y+1],[x-5,y+1]],t.accent);
-  for(let yy=y-23;yy<y;yy+=7){p.line([[x-3,yy],[x+w+3,yy]],'#dae0d066',1);for(let xx=x+3;xx<x+w;xx+=14)p.line([[xx,yy+1],[xx,yy+5]],'#30475855',1);}
+  for(let yy=y-23;yy<y;yy+=7){p.line([[x-3,yy],[x+w+3,yy]],'#dae0d066',1);for(let xx=x+3;xx<x+w;xx+=14){p.line([[xx,yy+1],[xx,yy+5]],'#30475855',1);p.rect(xx+2,yy+2,2,1,'#eff0cf25');}}
   p.rect(x-8,y+2,w+16,4,t.wood);p.rect(x-7,y+2,w+14,1,t.metal);
-  for(let xx=x+13;xx<x+w-18;xx+=35){p.round(xx,y+14,26,25,1,'#5e6e7b');p.gradient(xx+2,y+16,22,20,'#a5c9c9','#7198a6');p.rect(xx+4,y+17,3,17,'#e5ecce88');p.rect(xx+12,y+16,1,20,'#d8d9bc');p.rect(xx-1,y+38,28,2,t.wood);}
+  for(let xx=x+13;xx<x+w-18;xx+=35){p.shadow(xx,y+14,26,25);p.round(xx,y+14,26,25,1,'#5e6e7b');p.gradient(xx+2,y+16,22,20,'#a5c9c9','#7198a6');p.poly([[xx+3,y+17],[xx+10,y+17],[xx+5,y+31],[xx+3,y+31]],'#f6f3da42');p.rect(xx+4,y+17,3,17,'#e5ecce88');p.rect(xx+12,y+16,1,20,'#d8d9bc');p.rect(xx-1,y+38,28,2,t.wood);p.rect(xx,y+40,27,1,'#354c5266');}
   // 小さな模型の壁章。看板に文字は入れない。
   p.round(x+7,y+46,w-14,25,2,t.wood);p.rect(x+10,y+48,w-20,1,'#fff0cb88');p.round(x+10,y+48,w-20,21,1,t.ink);
   p.wheel(x+w/2-14,y+60,6,t.metal);p.wheel(x+w/2+14,y+60,6,t.metal);p.poly([[x+w/2-18,y+57],[x+w/2-5,y+51],[x+w/2+15,y+53],[x+w/2+21,y+58]],t.accent);
@@ -78,7 +85,7 @@ export function paintVenueFacade(p:SceneryPen,v:TownVenue,open:boolean){
  c.globalAlpha=1;
 }
 export function drawVenueFacade(scene:Phaser.Scene,v:TownVenue,open:boolean){
- const key=`facade-v3-${v.id}-${open}`,width=v.w+80,height=v.h+125;
+ const key=`facade-v4-${v.id}-${open}`,width=v.w+80,height=v.h+125;
  if(!scene.textures.exists(key)){const t=scene.textures.createCanvas(key,width*2,height*2)!;t.context.scale(2,2);paintVenueFacade(new SceneryPen(t.context),v,open);t.refresh();t.setFilter(Phaser.Textures.FilterMode.NEAREST);}
  scene.add.image(v.x-40,v.y-91,key).setOrigin(0).setDisplaySize(width,height).setDepth(v.y+v.h);
 }

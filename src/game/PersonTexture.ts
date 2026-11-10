@@ -8,5 +8,6 @@ export function createPersonTexture(scene:Phaser.Scene,key:string,drawing:readon
   const scale=3,texture=scene.textures.createCanvas(key,personSpriteSize.width*scale,personSpriteSize.height*scale)!;
   texture.context.scale(scale,scale);
   paintPixels(texture.context,drawing);
-  texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
+  // Keep hard pixel clusters when the 3x character source is drawn at 48x64.
+  texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
 }
