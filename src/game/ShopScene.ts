@@ -49,7 +49,7 @@ import { mirroredShop, shopLayout } from '../data/shopLayout';
 import { challenger, challengerSpot } from '../data/challenger';
 import { challengerDrawing, doctorDrawing } from './PeopleArt';
 import { createPersonTexture } from './PersonTexture';
-import { drawTown } from './TownArt';
+import { drawTown,townHouseArt } from './TownArt';
 import { drawShopDetails } from './WorldDetailArt';
 import { getCircuitTrack,type CircuitId } from '../data/circuit';
 
@@ -98,7 +98,7 @@ export class ShopScene extends Phaser.Scene {
   private challengerSolid:Phaser.Geom.Rectangle|null=null;
   private get cast(){return shopCast(currentShop(useGame.getState().location).id);}
   constructor(){ super('shop'); }
-  preload(){const id=useGame.getState().location,image=sceneryImage(id);if(image)this.load.image(sceneryKey(id),image);}
+  preload(){const id=useGame.getState().location,image=sceneryImage(id);if(image)this.load.image(sceneryKey(id),image);if(id==='town')townHouseArt.forEach((src,index)=>this.load.image(`town-house-art-${index}`,src));}
   create(){
     this.eventAudio=new EventAudio();
     const unlockAudio=()=>{if(useAudioSettings.getState().enabled)this.eventAudio.unlock();};

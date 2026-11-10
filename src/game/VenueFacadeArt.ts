@@ -35,8 +35,17 @@ export function paintVenueFacade(p:SceneryPen,v:TownVenue,open:boolean){
   for(const side of [-1,1]){const fx=x+w/2+side*(w*.36);p.rect(fx,y-45,2,60,'#b9c9c4');p.poly([[fx+2,y-44],[fx+27,y-39],[fx+2,y-20]],accent);p.checker(fx+4,y-42,16,8,4);}
  }else{
   const t=shopThemes[(v.shopId??'komorebi') as ShopId];
-  // Existing building footprints stay fixed; layered siding, masonry, and trim carry
-  // the same material detail as the new interiors into the town-facing elevation.
+  const shopId=v.shopId??'komorebi',style=['komorebi','aozora','hinata','wakaba','yuunagi','akatsuki','hoshikuzu','atelier','endurance','torque','velocity','terrain'].indexOf(shopId);
+  // A deep service side wall, plinth and raised roof make each shop read as a building,
+  // while the saved venue footprint and its entrance remain exactly where they are.
+  p.poly([[x+w-15,y+8],[x+w+10,y-7],[x+w+10,y+h-9],[x+w-15,y+h-3]],'#344b50');
+  p.poly([[x+w-12,y+11],[x+w+7,y],[x+w+7,y+h-13],[x+w-12,y+h-7]],t.floorDark);
+  for(let row=0;row<5;row++){const sy=y+20+row*22;p.line([[x+w-11,sy],[x+w+6,sy-9]],'#eadfc12b',1);}
+  p.poly([[x-12,y+9],[x+w/2,y-35],[x+w+15,y+5],[x+w+11,y+17],[x-9,y+20]],'#30464d');
+  if(style===0||style===4||style===6){p.poly([[x-8,y+8],[x+w/2,y-29],[x+w+11,y+4],[x+w+8,y+12],[x-6,y+15]],t.accent);p.poly([[x-7,y+8],[x+w/2,y-29],[x+w/2,y-20],[x-6,y+15]],t.light);p.line([[x+w/2,y-28],[x+w+10,y+4]],'#d8e0ca80',2);}
+  else if(style===2||style===5){p.poly([[x-8,y-3],[x+8,y-22],[x+w-13,y-22],[x+w+11,y+4],[x+w+8,y+13],[x-6,y+14]],t.accent);p.line([[x-4,y+1],[x+w+7,y+7]],'#f1d29b99',2);}
+  else{p.poly([[x-8,y-3],[x+12,y-22],[x+w-10,y-22],[x+w+11,y+2],[x+w+8,y+12],[x-6,y+14]],t.accent);p.rect(x+10,y-17,w-20,4,t.light);p.rect(x+13,y-12,w-26,2,'#203c4966');}
+  // Existing floorplans remain walkable; layered siding, masonry and trim continue the interior material palette.
   p.round(x,y,w,h,3,t.ink);p.gradient(x+3,y+3,w-6,h-7,'#e3d8bc',t.floorDark);
   p.material(x+5,y+6,w-10,h-14,'stone',v.x+v.y);
   for(let row=0;row<5;row++){
@@ -45,7 +54,7 @@ export function paintVenueFacade(p:SceneryPen,v:TownVenue,open:boolean){
    for(let xx=x+7+offset;xx<x+w-8;xx+=19)p.line([[xx,yy],[xx,yy+7]],'#f4ead02d',.5);
   }
   p.poly([[x-8,y-24],[x+w/2,y-34],[x+w+8,y-24],[x+w+8,y+5],[x-8,y+5]],t.ink);
-  p.poly([[x-5,y-24],[x+w/2,y-31],[x+w+5,y-24],[x+w+5,y+1],[x-5,y+1]],t.accent);
+  p.poly([[x-5,y-24],[x+w/2,y-31],[x+w+5,y-24],[x+w+5,y+1],[x-5,y+1]],style===3?'#526b54':style===5?'#a65554':t.accent);
   for(let yy=y-23;yy<y;yy+=7){p.line([[x-3,yy],[x+w+3,yy]],'#dae0d066',1);for(let xx=x+3;xx<x+w;xx+=14){p.line([[xx,yy+1],[xx,yy+5]],'#30475855',1);p.rect(xx+2,yy+2,2,1,'#eff0cf25');}}
   p.rect(x-8,y+2,w+16,4,t.wood);p.rect(x-7,y+2,w+14,1,t.metal);
   for(let xx=x+13;xx<x+w-18;xx+=35){p.shadow(xx,y+14,26,25);p.round(xx,y+14,26,25,1,'#5e6e7b');p.gradient(xx+2,y+16,22,20,'#a5c9c9','#7198a6');p.poly([[xx+3,y+17],[xx+10,y+17],[xx+5,y+31],[xx+3,y+31]],'#f6f3da42');p.rect(xx+4,y+17,3,17,'#e5ecce88');p.rect(xx+12,y+16,1,20,'#d8d9bc');p.rect(xx-1,y+38,28,2,t.wood);p.rect(xx,y+40,27,1,'#354c5266');}
