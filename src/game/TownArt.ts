@@ -4,13 +4,6 @@ import Phaser from 'phaser';
 import {isVenueOpen,townVenues,townSize,townRoads,townBlocks,townPlaza,townWalkBounds,type WorldProgress} from '../data/world';
 import {artNoise,paintPixelTree} from './PixelArtMaterials';
 import {SceneryPen} from './SceneryCanvas';
-import houseArt0 from '../assets/scenery/houses/house-0.webp';
-import houseArt1 from '../assets/scenery/houses/house-1.webp';
-import houseArt2 from '../assets/scenery/houses/house-2.webp';
-import houseArt3 from '../assets/scenery/houses/house-3.webp';
-import houseArt4 from '../assets/scenery/houses/house-4.webp';
-import houseArt5 from '../assets/scenery/houses/house-5.webp';
-export const townHouseArt=[houseArt0,houseArt1,houseArt2,houseArt3,houseArt4,houseArt5] as const;
 
 /** Terrain is baked once. Pixel clusters follow a fixed, upper-left daylight. */
 function ground(c:CanvasRenderingContext2D,chunkX=0,chunkWidth=townSize.width,chunkY=0,chunkHeight=townSize.height){
@@ -95,67 +88,13 @@ function ground(c:CanvasRenderingContext2D,chunkX=0,chunkWidth=townSize.width,ch
   r(x,y,1,6,'#496f50');r(x-2,y+2,2,1,'#a4b87d');r(x+1,y+3,2,1,'#7e9d64');r(x-1,y-2,3,1,i%3?'#d4c18c':'#cd9e99');r(x-2,y-1,5,1,i%3?'#e7d7a4':'#e1b7af');r(x,y-1,1,1,'#f2df9d');
  }
 }
-function house(scene:Phaser.Scene,block:typeof townBlocks[number],index:number){
- const {x,y,w,h}=block,key=`town-house-18-${index}-${w}-${h}`,style=index%6;
- const artKey=`town-house-art-${style}`;
- if(scene.textures.exists(artKey)){
-  scene.textures.get(artKey).setFilter(Phaser.Textures.FilterMode.NEAREST);
-  const size=w+64,bottom=y+h+14;
-  scene.add.image(x+(w-size)/2,bottom-size,artKey).setOrigin(0).setDisplaySize(size,size).setDepth(y+h);
-  if(w>=130){tree(scene,x-32,y+h+8);tree(scene,x+w+32,y+h+8);}else tree(scene,index%2?x-42:x+w+42,y+h-8);
-  return;
- }
- if(!scene.textures.exists(key)){const t=scene.textures.createCanvas(key,(w+64)*2,(h+100)*2)!;t.context.scale(2,2);const p=new SceneryPen(t.context),xx=26,yy=56,side=style%2?14:9,wall=['#d9c7a4','#c8d2bf','#d6bda7','#bfcac5','#d8d3bc','#cfb796'][style],shade=['#a99078','#92a59b','#a88477','#899e9c','#a7a18b','#9c8068'][style],roof=['#586f72','#617c69','#805d56','#555e70','#8b715a','#466774'][style],accent=['#a87e58','#657f73','#b2795e','#7279a0','#b39a65','#5392a0'][style];
-  // Deep foundation, a clearly lit front wall and a darker exposed side establish the three-quarter volume.
-  p.ellipse(xx+w/2+8,yy+h+13,w*.62,13,'#20383b35');p.poly([[xx,yy+12],[xx+w-side,yy+12],[xx+w-side,yy+h-5],[xx,yy+h]],shade);p.poly([[xx+3,yy+8],[xx+w-side,yy+8],[xx+w-side,yy+h-8],[xx+3,yy+h-4]],wall);p.poly([[xx+w-side,yy+8],[xx+w+7,yy-2],[xx+w+7,yy+h-16],[xx+w-side,yy+h-8]],['#887b70','#758b80','#91776c','#748486','#898776','#6e8182'][style]);
-  p.rect(xx+3,yy+h-10,w-side-3,6,'#605d51');p.rect(xx+3,yy+h-10,w-side-3,2,'#eee0be');p.rect(xx+3,yy+h-4,w-side-3,2,'#45585a');
-  // Six silhouettes and construction systems: tiled gable, low hip, raised apartment, shopfront, dormer and roof deck.
-  if(style===0||style===4){const ridge=style===0?yy-27:yy-35;p.poly([[xx-8,yy+12],[xx+w*.48,ridge],[xx+w+9,yy+12],[xx+w+8,yy+19],[xx-7,yy+19]],'#354a51');p.poly([[xx-4,yy+11],[xx+w*.48,ridge+4],[xx+w+5,yy+11],[xx+w+3,yy+18],[xx-3,yy+18]],roof);p.poly([[xx-4,yy+11],[xx+w*.48,ridge+4],[xx+w*.48,yy+13],[xx-3,yy+18]],'#859181');p.poly([[xx+w*.48,ridge+4],[xx+w+5,yy+11],[xx+w+3,yy+18],[xx+w*.48,yy+13]],shade);
-   for(let row=0;row<4;row++){const tY=yy+Math.floor((ridge-yy+8)*(row+1)/5);for(let tx=xx+3+(row%2)*6;tx<xx+w-side-4;tx+=13){p.rect(tx,tY,10,1,'#c1b69b');p.rect(tx+1,tY+1,8,2,style===0?'#718784':'#87736a');p.rect(tx+8,tY+1,1,3,'#3c5358');p.rect(tx,tY+4,9,1,'#3b5053');}}
-  }else if(style===1||style===5){p.poly([[xx-9,yy+9],[xx+13,yy-17],[xx+w-side-5,yy-17],[xx+w+13,yy+7],[xx+w+7,yy+15],[xx-7,yy+18]],'#33494d');p.poly([[xx-5,yy+8],[xx+15,yy-12],[xx+w-side-7,yy-12],[xx+w+8,yy+7],[xx+w+3,yy+13],[xx-3,yy+15]],roof);p.poly([[xx-3,yy+14],[xx+15,yy-7],[xx+15,yy-12],[xx-5,yy+8]],'#9a9681');
-   for(let row=0;row<4;row++)for(let col=0;col<8;col++){const tx=xx+8+col*13-(row%2)*6,ty=yy-7+row*6;if(tx>xx+w-side-11)continue;p.line([[tx,ty],[tx+17,ty-1]],'#c7bca155',1);p.rect(tx+4,ty+1,4,1,'#35494b55');}
-  }else if(style===2){p.poly([[xx-7,yy+9],[xx+8,yy-12],[xx+w-side-1,yy-12],[xx+w+12,yy+7],[xx+w+10,yy+16],[xx-5,yy+18]],'#34464b');p.poly([[xx-2,yy+8],[xx+11,yy-7],[xx+w-side-3,yy-7],[xx+w+6,yy+7],[xx+w+3,yy+13],[xx,yy+14]],roof);p.rect(xx+9,yy-4,w-side-20,4,'#a99373');
-  }else if(style===3){p.poly([[xx-8,yy+11],[xx+8,yy-12],[xx+w-side+2,yy-12],[xx+w+14,yy+6],[xx+w+10,yy+15],[xx-6,yy+18]],'#33464c');p.poly([[xx-3,yy+10],[xx+12,yy-7],[xx+w-side,yy-7],[xx+w+7,yy+6],[xx+w+3,yy+12],[xx,yy+14]],roof);p.rect(xx+10,yy-4,w-side-20,3,'#d0c4a0');p.rect(xx+w/2-13,yy-17,26,12,'#526d72');p.rect(xx+w/2-10,yy-15,9,8,'#a9c5bd');p.rect(xx+w/2+2,yy-15,8,8,'#809da1');
-  }
-  // Distinct window/door layouts, recessed sills and warm interior light.
-  const window=(wx:number,wy:number,ww:number,wh:number,lit:boolean)=>{p.rect(wx-2,wy-2,ww+4,wh+5,'#59675f');p.rect(wx,wy,ww,wh,lit?'#d9bd83':'#496873');p.gradient(wx+1,wy+1,ww-2,wh-2,lit?'#ead9a7':'#a9cbc0',lit?'#8a9d8a':'#64818a');p.poly([[wx+1,wy+1],[wx+ww*.45,wy+1],[wx+2,wy+wh*.54]],'#f4edd080');p.rect(wx+Math.floor(ww*.53),wy,1,wh,'#e4d7b5');p.rect(wx-3,wy+wh,ww+6,2,'#e4d0a5');p.rect(wx-4,wy+wh+2,ww+8,2,'#68736a');};
-  const floorCount=Math.max(1,Math.floor((h-34)/33)),windowW=w>120?17:13,slots=Math.max(2,Math.floor((w-side-18)/(windowW+15)));
-  for(let row=0;row<floorCount;row++)for(let col=0;col<slots;col++){
-   const wx=xx+8+col*(w-side-18)/slots,wy=yy+15+row*29;
-   if((style===3&&row===floorCount-1&&col===Math.floor(slots/2))||wy+18>yy+h-30)continue;
-   window(wx,wy,windowW,14,(index+row*3+col)%5===0);
-   if(style===1&&row===0){p.rect(wx-3,wy+16,windowW+6,3,'#4c5b59');p.rect(wx,wy+19,2,7,'#604b3d');p.rect(wx+windowW-2,wy+19,2,7,'#604b3d');p.rect(wx-4,wy+24,windowW+8,2,'#d2b884');}
-  }
-  const doorX=xx+(style===3?w*.62:w*.5)-8,doorY=yy+h-31;p.rect(doorX-3,doorY-4,22,34,'#4b5551');p.rect(doorX,doorY,16,30,style===3?'#477270':'#795e48');p.rect(doorX+2,doorY+2,12,19,style===3?'#9fc2bc':'#b79768');p.rect(doorX+12,doorY+17,2,2,'#ecd08d');p.rect(doorX-5,doorY+29,26,3,'#e1cfaa');p.rect(doorX-7,doorY+32,30,2,'#53605a');
-  // Street-facing stoop and parcel locker join the facade to a pedestrian path.
-  p.rect(doorX-10,yy+h+1,36,4,'#69756a');p.rect(doorX-9,yy+h+1,34,1,'#e3d6b5');p.rect(doorX-7,yy+h+5,30,4,'#bcb79c');p.rect(doorX-5,yy+h+5,26,1,'#e4d7b7');
-  if(style===0||style===2||style===4){p.rect(xx+4,yy+h-23,w-side-10,4,'#52635b');p.rect(xx+6,yy+h-21,w-side-14,2,'#89725b');for(let i=0;i<Math.max(3,Math.floor((w-side-18)/9));i++){const fx=xx+9+i*9;p.rect(fx,yy+h-28,5,5,i%3?'#6e915a':'#bd9b71');p.ellipse(fx+2,yy+h-29,2,2,i%2?'#d78e9b':'#ebd090');}}
-  // AC condensers, drain pipes, utility boxes and roof equipment vary with the house type.
-  const pipeX=xx+w-side+2;p.rect(pipeX,yy+18,2,h-22,'#405a58');p.rect(pipeX-1,yy+18,4,2,'#c4b99c');p.rect(pipeX-5,yy+h-37,14,10,'#687a77');p.rect(pipeX-3,yy+h-35,10,6,'#9eaaa0');p.rect(pipeX-4,yy+h-26,12,2,'#4b605d');
-  if(style===2||style===3||style===5){p.rect(xx+w*.67,yy-8,15,7,'#566b68');p.rect(xx+w*.67+2,yy-6,11,4,'#97aaa1');p.rect(xx+w*.67+4,yy-5,2,2,'#53676a');p.rect(xx+w*.67+8,yy-5,2,2,'#53676a');}
-  // A varied street identity is structural: awnings, balconies, tile bands, service windows and rooftop forms.
-  if(style===3){const ax=xx+6,ay=yy+h-23;p.rect(ax-2,ay,w-side-12,3,'#445952');for(let i=0;i<Math.max(3,Math.floor((w-side-12)/12));i++){const aw=Math.min(12,w-side-12-i*12);p.poly([[ax+i*12,ay+3],[ax+i*12+aw,ay+3],[ax+i*12+aw-2,ay+12],[ax+i*12+2,ay+12]],i%2?accent:'#d5c59c');p.rect(ax+i*12+2,ay+12,aw-3,2,'#59645b');}}
-  if(style===1||style===5){for(let col=0;col<2;col++){const bx=xx+5+col*(w-side-28),by=yy+35;p.rect(bx,by,25,3,'#485958');p.rect(bx+2,by+3,2,13,'#586661');p.rect(bx+21,by+3,2,13,'#586661');p.rect(bx-1,by+15,27,3,'#c0ad83');for(let j=0;j<4;j++)p.rect(bx+2+j*6,by+16,4,6,j%2?'#7c9a69':'#bd8e82');}}
-  if(style===4){p.poly([[xx+w/2-19,yy+10],[xx+w/2,yy-4],[xx+w/2+19,yy+10]],'#44585a');p.rect(xx+w/2-13,yy+1,26,10,'#829892');p.rect(xx+w/2-10,yy+3,7,7,'#c7d3c3');p.rect(xx+w/2+3,yy+3,7,7,'#bdd0c5');}
-  if(style===5){p.rect(xx+4,yy+24,w-side-8,6,'#52645e');for(let i=0;i<Math.floor((w-side-12)/8);i++)p.rect(xx+7+i*8,yy+25,3,4,i%2?'#c8aa71':'#9bb1a4');}
-  p.rect(xx+w-side,yy+7,2,h-18,'#c4c4a6');p.rect(xx+w-side+2,yy+12,1,h-28,'#394f52');p.rect(xx+3,yy+9,2,h-22,'#f3e4c277');
-  // Mailboxes, recycling, bicycles and planted borders add inhabited details without crowding doors.
-  const bx=xx+w-side+10;p.rect(bx,yy+h-19,2,16,'#465d59');p.rect(bx-5,yy+h-24,13,8,'#344c52');p.rect(bx-4,yy+h-23,11,5,style%2?'#b86e59':'#708f9b');p.rect(bx+3,yy+h-21,2,2,'#e0c88f');
-  if(style===1||style===3){const cy=yy+h-1,cx=xx+w*.67;p.ellipse(cx-7,cy+3,5,5,'#374a50');p.ellipse(cx+9,cy+3,5,5,'#374a50');p.line([[cx-7,cy+3],[cx-2,cy-7],[cx+4,cy+3],[cx-7,cy+3],[cx+2,cy-6],[cx+9,cy+3]],'#93675a',1.2);p.line([[cx+9,cy+3],[cx+7,cy-9],[cx+13,cy-9]],'#465d60',1);}
-  for(const sideIndex of [0,1]){const fx=sideIndex?xx+w-side+18:xx-10,fy=yy+h+3;p.rect(fx,fy,16,7,'#64765c');p.rect(fx,fy,16,1,'#c5b88b');for(let j=0;j<4;j++){p.rect(fx+2+j*4,fy-3,2,4,'#52784d');p.ellipse(fx+2+j*4,fy-4,2,2,j%2?'#d59b94':'#e2c574');}}
-  t.refresh();t.setFilter(Phaser.Textures.FilterMode.NEAREST);
- }
- scene.add.image(x-26,y-56,key).setOrigin(0).setDisplaySize(w+64,h+100).setDepth(y+h);
- if(w>=130){tree(scene,x-32,y+h+8);tree(scene,x+w+32,y+h+8);}else tree(scene,index%2?x-42:x+w+42,y+h-8);
-}
 export function drawTown(scene:Phaser.Scene,progress:WorldProgress){
  // 大きな街でも個々の地面テクスチャは2048px以下の幅に保つ。
  for(let y=0;y<townSize.height;y+=2048)for(let x=0;x<townSize.width;x+=2048){const width=Math.min(2048,townSize.width-x),height=Math.min(2048,townSize.height-y),key=`midorikawa-ground-18-${x}-${y}`;if(!scene.textures.exists(key)){const texture=scene.textures.createCanvas(key,width,height)!;texture.context.translate(-x,-y);ground(texture.context,x,width,y,height);texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.NEAREST);}scene.add.image(x,y,key).setOrigin(0).setDepth(-100);}
 
- townBlocks.forEach((block,index)=>house(scene,block,index));
  for(const venue of townVenues)if(venue.kind==='outdoor')drawOutdoorCourse(scene,venue,isVenueOpen(venue,progress));else drawVenueFacade(scene,venue,isVenueOpen(venue,progress));
  for(const x of townRoads.vertical)for(let y=townWalkBounds.top+64;y<townWalkBounds.bottom-70;y+=180){if(townVenues.some(v=>Math.abs(x-v.x)<v.w+100&&y>v.y-80&&y<v.y+v.h+70))continue;tree(scene,x-100,y);lamp(scene,x+88,y+50);}
- for(let i=0;i<55;i++){const x=110+(i*437)%(townSize.width-220),y=210+(i*281)%(townSize.height-420);if([...townVenues,...townBlocks].some(v=>x>v.x-90&&x<v.x+v.w+90&&y>v.y-100&&y<v.y+v.h+90)||townRoads.vertical.some(v=>Math.abs(v-x)<100)||townRoads.horizontal.some(v=>Math.abs(v-y)<100))continue;tree(scene,x,y);tree(scene,x+28,y+34);}
+ for(let i=0;i<28;i++){const x=110+(i*487)%(townSize.width-220),y=210+(i*337)%(townSize.height-420);if([...townVenues].some(v=>x>v.x-90&&x<v.x+v.w+90&&y>v.y-100&&y<v.y+v.h+90)||townRoads.vertical.some(v=>Math.abs(v-x)<100)||townRoads.horizontal.some(v=>Math.abs(v-y)<100))continue;tree(scene,x,y);tree(scene,x+28,y+34);}
  for(const y of [townWalkBounds.top+8,townWalkBounds.bottom-16])for(let x=100;x<townSize.width-300;x+=125)tree(scene,x,y);
  for(const [x,y] of [[2140,1995],[2660,1995],[2140,2220],[2660,2220],[720,780],[3900,2530]]){tree(scene,x,y);const key='park-bench-16';if(!scene.textures.exists(key)){const t=scene.textures.createCanvas(key,112,64)!;t.context.scale(2,2);const p=new SceneryPen(t.context);p.shadow(3,14,45,10);for(const xx of [8,40]){p.rect(xx,14,3,15,'#3d5357');p.rect(xx+1,15,1,12,'#8fa19a');}p.rect(3,3,46,9,'#5c5d4a');for(let row=0;row<3;row++){p.gradient(4,3+row*3,44,2,'#c3ab7b','#947f5e');}p.gradient(3,14,46,7,'#d2b589','#8d7a5c');p.material(4,14,44,7,'wood',12);for(const xx of [8,41])p.rect(xx,15,1,1,'#e9d4a7');t.refresh();t.setFilter(Phaser.Textures.FilterMode.NEAREST);}scene.add.image(x+20,y+1,key).setOrigin(0).setDisplaySize(56,32).setDepth(y+24);}
 }

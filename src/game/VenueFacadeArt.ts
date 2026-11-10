@@ -16,6 +16,7 @@ export function paintVenueFacade(p:SceneryPen,v:TownVenue,open:boolean){
   p.round(x+w/2-22,y+48,44,h-49,3,'#475c65');p.gradient(x+w/2-18,y+53,36,h-57,'#b3d1c5','#5f8690');p.rect(x+w/2-1,y+53,2,h-57,'#d9d6ba');p.rect(x+w/2+10,y+h-24,3,11,'#dfc581');
   for(const col of [x+5,x+w-12]){p.gradient(col,y+13,7,h-14,'#ece2cb','#999e97');p.rect(col-2,y+12,11,4,'#c1b99d');}
   p.round(x-15,y+h-25,18,25,3,'#9e7c61');p.ellipse(x-6,y+h-29,15,12,'#66876a');p.round(x+w+1,y+h-25,18,25,3,'#9e7c61');p.ellipse(x+w+10,y+h-29,15,12,'#66876a');
+  p.round(x+w/2-48,y+13,96,14,2,'#425764');p.rect(x+w/2-45,y+15,90,1,'#eee0c1');c.save();c.font='bold 6px sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillStyle='#fff0cb';c.fillText('緑川町立図書館',x+w/2,y+21,88);c.restore();
  }else if(v.kind==='stadium'){
   const colors:Record<string,string[]>={'stadium-5':['#376f73','#91bdac'],'stadium-9':['#4e527f','#bd9ace'],'stadium-10':['#745153','#e5b97a'],'stadium-7':['#354968','#dcc080']};
   const [dark,accent]=colors[v.id]??colors['stadium-5'];
@@ -29,6 +30,7 @@ export function paintVenueFacade(p:SceneryPen,v:TownVenue,open:boolean){
   p.round(x+34,y+100,w-68,h-102,7,dark);p.gradient(x+41,y+108,w-82,h-116,'#6bafb9','#25435c');for(let i=0;i<9;i++)p.rect(x+46+i*(w-92)/9,y+110,2,h-121,'#dae7d477');
   // 中央の紋章とレースのチェッカー。
   p.round(x+w/2-44,y+25,88,66,8,'#1a2e45');p.round(x+w/2-41,y+28,82,60,6,accent);p.round(x+w/2-38,y+31,76,54,5,dark);p.trophy(x+w/2,y+37,1.1);
+  p.round(x+w/2-60,y+h-34,120,16,2,'#1c3447');p.rect(x+w/2-57,y+h-32,114,1,'#fff0c0');c.save();c.font='bold 7px sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillStyle='#fff0c9';c.fillText(v.name,x+w/2,y+h-26,110);c.restore();
   p.checker(x+26,y+97,46,12,6);p.checker(x+w-72,y+97,46,12,6);
   for(let step=0;step<4;step++){p.gradient(x+47-step*4,y+h-16+step*5,w-94+step*8,5,'#d7d9c8','#929ea0');}
   for(const bx of [x+7,x+w-24]){p.gradient(bx,y+116,17,h-121,'#e7e2c5','#839696');p.rect(bx+3,y+118,2,h-125,'#fff1c5');}
@@ -58,10 +60,13 @@ export function paintVenueFacade(p:SceneryPen,v:TownVenue,open:boolean){
   for(let yy=y-23;yy<y;yy+=7){p.line([[x-3,yy],[x+w+3,yy]],'#dae0d066',1);for(let xx=x+3;xx<x+w;xx+=14){p.line([[xx,yy+1],[xx,yy+5]],'#30475855',1);p.rect(xx+2,yy+2,2,1,'#eff0cf25');}}
   p.rect(x-8,y+2,w+16,4,t.wood);p.rect(x-7,y+2,w+14,1,t.metal);
   for(let xx=x+13;xx<x+w-18;xx+=35){p.shadow(xx,y+14,26,25);p.round(xx,y+14,26,25,1,'#5e6e7b');p.gradient(xx+2,y+16,22,20,'#a5c9c9','#7198a6');p.poly([[xx+3,y+17],[xx+10,y+17],[xx+5,y+31],[xx+3,y+31]],'#f6f3da42');p.rect(xx+4,y+17,3,17,'#e5ecce88');p.rect(xx+12,y+16,1,20,'#d8d9bc');p.rect(xx-1,y+38,28,2,t.wood);p.rect(xx,y+40,27,1,'#354c5266');}
-  // 小さな模型の壁章。看板に文字は入れない。
+  // Raised storefront sign and miniature machine badge identify each usable shop.
   p.round(x+7,y+46,w-14,25,2,t.wood);p.rect(x+10,y+48,w-20,1,'#fff0cb88');p.round(x+10,y+48,w-20,21,1,t.ink);
   p.wheel(x+w/2-14,y+60,6,t.metal);p.wheel(x+w/2+14,y+60,6,t.metal);p.poly([[x+w/2-18,y+57],[x+w/2-5,y+51],[x+w/2+15,y+53],[x+w/2+21,y+58]],t.accent);
   p.poly([[x+w/2-9,y+55],[x+w/2-3,y+52],[x+w/2+7,y+53],[x+w/2+10,y+56]],'#e8efdc');p.poly([[x+w/2-7,y+55],[x+w/2-2,y+53],[x+w/2+5,y+54],[x+w/2+7,y+56]],'#527582');p.rect(x+w/2-20,y+58,4,2,'#f3d48a');p.rect(x+w/2+18,y+58,4,2,'#f3d48a');p.line([[x+w/2-13,y+64],[x+w/2+13,y+64]],'#f0e4bd',.7);
+  const shopNames:Record<string,string>={komorebi:'こもれび模型店',aozora:'あおぞら模型店',hinata:'ひなた模型店',wakaba:'わかば模型店',yuunagi:'ゆうなぎ模型店',akatsuki:'あかつき模型店',hoshikuzu:'ほしくず模型店',atelier:'星霧模型工房',endurance:'持久力パーツ館',torque:'トルク専門店',velocity:'スピード専門店',terrain:'オフロード専門店'};
+  const signX=x+14,signY=y+7,signW=w-28;p.round(signX+2,signY+2,signW,14,2,'#21384488');p.round(signX,signY,signW,14,2,t.wood);p.round(signX+2,signY+2,signW-4,10,1,t.ink);p.rect(signX+3,signY+2,signW-6,1,t.light);
+  c.save();c.font='bold 6px sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillStyle='#fff0ca';c.fillText(shopNames[shopId]??v.name,signX+signW/2,signY+7,signW-8);c.restore();
   for(let i=0;i<12;i++){const xx=x+4+i*(w-8)/12;p.rect(xx,y+76,(w-8)/12,7,i%2?'#e4dec6':t.accent);p.rect(xx,y+83,(w-8)/12-1,3,i%2?'#b9b39e':t.wood);}
   for(const xx of [x+12,x+w-62]){p.round(xx-2,y+90,54,42,2,'#344a50');p.round(xx,y+92,50,37,2,t.ink);p.gradient(xx+3,y+94,44,30,'#a3c8c7','#6d969e');p.poly([[xx+5,y+95],[xx+16,y+95],[xx+8,y+123],[xx+5,y+123]],'#f6efcc66');p.rect(xx+4,y+94,41,.7,'#eff0d9');for(let i=0;i<4;i++){p.rect(xx+5+i*10,y+115,8,9,[t.accent,'#b87e78','#c6b884','#829fb0'][i]);p.rect(xx+6+i*10,y+116,6,1,'#eee5c6');p.rect(xx+7+i*10,y+118,1,4,'#32464a');}p.rect(xx+2,y+130,50,2,t.wood);p.rect(xx+4,y+132,46,1,'#3b4e4d');}
   const dx=x+w/2-14;p.round(dx,y+91,28,h-94,2,t.ink);p.gradient(dx+3,y+94,22,25,'#c7d9cc','#7b9fa9');p.rect(dx+21,y+123,3,3,'#dec388');p.gradient(x+4,y+h-6,w-8,6,'#d1c6aa','#8a8a7c');
@@ -94,7 +99,7 @@ export function paintVenueFacade(p:SceneryPen,v:TownVenue,open:boolean){
  c.globalAlpha=1;
 }
 export function drawVenueFacade(scene:Phaser.Scene,v:TownVenue,open:boolean){
- const key=`facade-v4-${v.id}-${open}`,width=v.w+80,height=v.h+125;
- if(!scene.textures.exists(key)){const t=scene.textures.createCanvas(key,width*2,height*2)!;t.context.scale(2,2);paintVenueFacade(new SceneryPen(t.context),v,open);t.refresh();t.setFilter(Phaser.Textures.FilterMode.NEAREST);}
+ const key=`facade-v5-${v.id}-${open}`,width=v.w+80,height=v.h+125;
+ if(!scene.textures.exists(key)){const t=scene.textures.createCanvas(key,width*3,height*3)!;t.context.scale(3,3);paintVenueFacade(new SceneryPen(t.context),v,open);t.refresh();t.setFilter(Phaser.Textures.FilterMode.NEAREST);}
  scene.add.image(v.x-40,v.y-91,key).setOrigin(0).setDisplaySize(width,height).setDepth(v.y+v.h);
 }

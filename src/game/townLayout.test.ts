@@ -24,7 +24,7 @@ test('街区は舗装道路でつながり、店舗の玄関は次の通りに�
   const nextStreet=townRoads.horizontal.find(y=>y>v.y)!;
   assert.ok(nextStreet-entrance.y<=80&&nextStreet-entrance.y>=55,`${v.id} entrance should connect to its frontage street`);
  }
- assert.ok(townBlocks.length>=35,'residential lots should fill the connected city grid');
+ assert.equal(townBlocks.length,0,'non-enterable buildings are not drawn or placed as obstacles');
  assert.equal(townVenues.some(v=>v.x<townPlaza.x+townPlaza.w&&v.x+v.w>townPlaza.x&&v.y<townPlaza.y+townPlaza.h&&v.y+v.h>townPlaza.y),false);
 });
 test('広域マップの帰還地点と遠方への道は、店内の歩行制限と独立している',()=>{

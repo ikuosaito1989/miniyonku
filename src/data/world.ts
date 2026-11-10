@@ -64,7 +64,7 @@ export function generateTownVenues(seed=19890421):TownVenue[]{
   const lots=Array.from({length:30},(_,i)=>({x:500+(i%5)*800,y:470+Math.floor(i/5)*680})).filter((_,i)=>i!==12);
   for(let i=lots.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[lots[i],lots[j]]=[lots[j],lots[i]];}
   const civic=fixed.map((v,index)=>{
-    const lot=lots[index],stadium=v.kind==='stadium',w=stadium?350:v.w,h=stadium?250:v.h;
+    const lot=lots[index],stadium=v.kind==='stadium',building=v.kind==='shop'||v.kind==='library',w=stadium?350:building?320:v.w,h=stadium?250:building?220:v.h;
     const nextStreet=townRoads.horizontal.find(y=>y>lot.y)!;
     return {...v,x:lot.x+Math.floor(random()*13),y:nextStreet-h-110+Math.floor(random()*7),w,h,entrance:'south' as const};
   });
@@ -73,17 +73,9 @@ export function generateTownVenues(seed=19890421):TownVenue[]{
   return [...civic,...masters];
 }
 export const townVenues=generateTownVenues();
-// 街路に面する住宅・小規模店舗。入口前の歩道を残し、会場と重ねない。
+// Only enterable destinations and race facilities occupy the town map.
+// Non-enterable residential set dressing is intentionally omitted.
 export const townBlocks:Array<{x:number;y:number;w:number;h:number}>=[];
-for(let row=0;row<6;row++)for(let col=0;col<5;col++){
- const cell={x:500+col*800,y:470+row*680};
- if(col===2&&row===2)continue;
- for(let r=0;r<2;r++)for(let c=0;c<3;c++){
-  const x=cell.x+22+c*202+(r%2)*14,y=cell.y+22+r*262,w=142+(c%2)*10,h=112+(r%2)*8;
-  if(townVenues.some(v=>x<v.x+v.w+34&&x+w>v.x-34&&y<v.y+v.h+44&&y+h>v.y-42))continue;
-  townBlocks.push({x,y,w,h});
- }
-}
 export const shopExit={x:440,y:575,w:80,h:7};
 export function townSpawn(shop:ShopId|'library'|'stadium-5'|'stadium-9'|'stadium-10'|'stadium-7'){const venue=townVenues.find(v=>v.id===shop)!;return {x:venue.x+venue.w/2,y:venue.entrance==='north'?venue.y-42:venue.y+venue.h+42};}
 export function venueMessage(venue:TownVenue){
