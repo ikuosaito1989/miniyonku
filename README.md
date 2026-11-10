@@ -79,3 +79,11 @@ flowchart LR
 | 検証 | TypeScript / tsx / Node.js Test Runner | 型チェックと`src/game/*.test.ts`のゲームロジックテスト |
 | 配信・デプロイ | Cloudflare Workers Static Assets / Wrangler 4 | `dist/`の静的配信、SPAフォールバック、Workers Previewへのデプロイ |
 | サーバー・DB | 独自API・Cloudflare D1は未導入 | 現在はブラウザ内でゲーム処理とセーブを完結。D1バインディングなし |
+
+## Neglegere 連携アーキテクチャ
+
+![Neglegere とチビ四駆 -セイラン- のシステム構成](docs/architecture/neglegere-miniyonku.png)
+
+この図は Neglegere と miniyonku を含む連携構成を示しています。チビ四駆 -セイラン- 本体の現在の構成は上記のとおり静的配信で、独自 API や D1 は使っていません。図にある miniyonku の Workers と D1 は Neglegere との API 連携に関する構成です。図中のサービスや連携の説明は図示されたシステム全体を対象としています。
+
+編集可能な draw.io ファイル: [`docs/architecture/neglegere-miniyonku.drawio`](docs/architecture/neglegere-miniyonku.drawio)
