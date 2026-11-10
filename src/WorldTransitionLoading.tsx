@@ -11,7 +11,7 @@ export function SeiranLoading({label,fullscreen=false,compact=false,inline=false
   return <div className={`world-transition-loading${fullscreen?' world-transition-loading-fullscreen':''}${compact?' world-transition-loading-compact':''}${inline?' world-transition-loading-inline':''}`} role="status" aria-live="polite" aria-label={label}>
     <div className="world-transition-card">
       <span className="world-transition-kicker">GREEN RIVER RACING</span>
-      <div className="world-transition-spinner"><span className="world-transition-orbit"/><img src={machine} alt=""/></div>
+      <div className="world-transition-runway" aria-hidden="true"><img src={machine} alt=""/></div>
       <strong>{label}</strong>
       <div className="world-transition-progress" aria-hidden="true"><i/></div>
       <small>LOADING</small>
