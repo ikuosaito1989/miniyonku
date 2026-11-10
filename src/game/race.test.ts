@@ -167,6 +167,7 @@ test('オンライン投稿は自分の完走だけ。公式タイムと開始�
  assert.equal(raceSubmission(race,'自分'),null);
  const player=race.racers[0];race.phase='finished';player.driving={...player.driving,status:'finished',time:25};race.playerStartOffset=.25;race.falseStartPenalty=.5;
  const submission=raceSubmission(race,'自分')!;
+ assert.equal(raceSubmission(race,'自分',true),null,'skipped races cannot be submitted to the online leaderboard');
  race.phase='running';assert.equal(raceSubmission(race,'自分')?.time,25.75);race.phase='finished';
  assert.equal(submission.time,25.75);assert.deepEqual(submission.equipment,starterEquipment);
  assert.deepEqual(submission.condition,{motorSeconds:0,batterySeconds:0});

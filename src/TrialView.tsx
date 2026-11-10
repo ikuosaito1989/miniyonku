@@ -38,6 +38,7 @@ function StarterPortrait(){
 export default function TrialView(){
   const host=useRef<HTMLDivElement>(null);
   const renderer=useRef<TrialRenderer|null>(null);
+  const skippedRace=useRef(false);
   const equipment=useGame(s=>s.equipment);
   const close=useGame(s=>s.close);
   const courseIntroPreview=useGame(s=>s.courseIntroPreview),closeCourseIntroPreview=useGame(s=>s.closeCourseIntroPreview);
@@ -80,6 +81,7 @@ export default function TrialView(){
 
   useEffect(()=>{
     setRendererReady(false);
+    skippedRace.current=false;
     const stored=useGame.getState();
     const condition=equippedCondition(equipment,stored.units,stored.selectedUnits);
     setState(createRaceState(equipment,stored.raceSeed,condition,challenge,circuitId,stored.bodyPaint,stored.playerName||undefined));setFinish(createFinishPresentation());setError('');setCameraZoom(defaultRaceZoom);setIntro(raceIntroAt(0));
@@ -91,9 +93,9 @@ export default function TrialView(){
         useGame.getState().settleRace(raceAttempt,race);
         if(!submitted&&race.racers.find(r=>r.id==='player')?.driving.status==='finished'){
           submitted=true;
-          const current=useGame.getState(),record=raceSubmission(race,current.playerName);
+          const current=useGame.getState(),record=raceSubmission(race,current.playerName,skippedRace.current);
           if(record&&!tutorialActive(current.tutorialStage))void queueOnlineRecord(record);
-          else useOnlineStatus.setState({message:tutorialActive(current.tutorialStage)?'チュートリアル中はオンライン登録対象外です。':'星皇装備、または対象外の記録のためオンライン登録しません。'});
+          else useOnlineStatus.setState({message:skippedRace.current?'裏技でスキップしたレースはオンライン登録対象外です。':tutorialActive(current.tutorialStage)?'チュートリアル中はオンライン登録対象外です。':'星皇装備、または対象外の記録のためオンライン登録しません。'});
         }
         setState(race);
       },setFinish,condition,stored.raceSeed,challenge,circuitId,setIntro,stored.bodyPaint,online?.records??null,!!mob,stored.playerName||undefined);}
@@ -113,7 +115,7 @@ export default function TrialView(){
   const replayIntro=useCallback(()=>renderer.current?.replayIntro(),[]);
   const start=useCallback(()=>renderer.current?.start(),[]);
   const showRaceResults=useCallback(()=>renderer.current?.showResults(true),[]);
-  const skipRace=useCallback(()=>{setSkipped(true);renderer.current?.skipRace();},[]);
+  const skipRace=useCallback(()=>{skippedRace.current=true;setSkipped(true);renderer.current?.skipRace();},[]);
   const adjustZoom=(delta:number)=>{const next=Math.max(0,Math.min(raceZoomSteps-1,cameraZoom+delta));setCameraZoom(next);renderer.current?.setCameraZoom(next);};
   useEffect(()=>{
     const handleKey=(event:KeyboardEvent)=>{

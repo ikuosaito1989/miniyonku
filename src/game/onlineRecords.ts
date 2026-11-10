@@ -13,9 +13,9 @@ export interface OnlineSubmission {
 export interface OnlineRecord extends OnlineSubmission {playerId:string; recordedAt:string}
 export interface OnlineChallenge {circuitId:CircuitId; records:OnlineRecord[]}
 export const onlineCircuits:CircuitId[]=[...practiceCourseIds,'leaf','wind','sun','sprint','grove','comet','trail','grandprix','forge','zenith'];
-export function raceSubmission(race:RaceState,displayName:string):OnlineSubmission|null {
+export function raceSubmission(race:RaceState,displayName:string,wasSkipped=false):OnlineSubmission|null {
  const player=race.racers.find(r=>r.id==='player');
- if((race.phase!=='running'&&race.phase!=='finished')||!player||player.driving.status!=='finished'||!isRecordEquipmentEligible(player.equipment))return null;
+ if(wasSkipped||(race.phase!=='running'&&race.phase!=='finished')||!player||player.driving.status!=='finished'||!isRecordEquipmentEligible(player.equipment))return null;
  const time=officialTime(race,player);
  if(!Number.isFinite(time)||time<=0||time>86400)return null;
  return {circuitId:race.circuitId,rulesVersion:currentRaceRulesVersion(race.circuitId),time,equipment:{...player.equipment},condition:{motorSeconds:player.performance.motorSeconds,batterySeconds:player.performance.batterySeconds},displayName};
