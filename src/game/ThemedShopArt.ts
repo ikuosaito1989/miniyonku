@@ -75,7 +75,18 @@ function paintFixture(p:SceneryPen,f:Fixture,t:ShopTheme){
  const w=f.w,h=f.h;p.shadow(1,0,w-6,h-7);
  const casework=()=>{p.round(0,0,w,h,4,t.ink);p.gradient(2,2,w-4,h-6,t.metal,t.wood);p.rect(4,3,w-8,2,'#f9efd999');p.rect(5,h-6,w-10,3,t.ink);p.material(4,3,w-8,h-8,'wood',Math.round(w+h));for(const x of [4,w-5])for(const y of [4,h-8]){p.rect(x,y,1,1,t.light);p.rect(x+.5,y+.5,.5,.5,t.ink);}};
  if(f.kind==='plant'){p.plant(w/2,h*.65,1.2);return;}
- if(f.kind==='track'){casework();p.round(6,6,w-12,h-12,5,t.ink);p.line([[8,h-9],[w-8,h-9]],t.metal,1);return;}
+ if(f.kind==='track'){
+  casework();p.round(6,6,w-12,h-12,5,t.ink);
+  if(t.style==='atelier'){
+   p.gradient(9,9,w-18,h-23,'#6f668b','#33334b');p.rect(9,9,w-18,1,'#d8c5ef');
+   for(const [i,x] of [w*.29,w*.70].entries()){
+    const color=i?'#d7b44f':'#728fd1';p.shadow(x-37,29,74,66);p.round(x-37,29,74,66,4,'#352e49');p.round(x-34,32,68,58,3,'#76668d');
+    p.rect(x-30,36,60,2,'#ddd0bb');p.glow(x,58,28,i?'#ffd88930':'#b4ccff30');car(p,x,60,.78,color);
+    p.line([[x-29,86],[x+29,86]],'#d7c5a2',1);p.rect(x-15,84,30,2,i?'#d8bd73':'#9eb9e0');
+   }
+  }else p.line([[8,h-9],[w-8,h-9]],t.metal,1);
+  return;
+ }
  if(f.kind==='legends'){casework();p.gradient(6,5,w-12,h-12,t.ink,'#152f40');for(let i=0;i<4;i++){const x=16+i*(w-26)/4;p.glow(x+24,31,28,t.light+'30');p.round(x,12,52,46,4,'#173543');car(p,x+26,35,.62,['#5d95d5','#d4ad5e','#b2bdc5','#6778a8'][i]);p.rect(x+3,12,45,1,t.light);p.line([[x+2,14],[x+7,52],[x+16,52],[x+12,14]],'#e3f8ec33',1);}return;}
  if(f.kind==='counter'){casework();p.gradient(5,5,w-10,h*.45,'#e7e1c7',t.wood);p.round(7,6,w*.55,h*.4,3,t.ink);p.gradient(10,9,w*.52,h*.32,'#659b9c','#264a5f');for(let i=0;i<3;i++){car(p,29+i*26,24,.35,['#c26c69','#779dc2','#d4bd72'][i]);}p.poly([[11,10],[42,10],[28,37],[11,37]],'#e4f0da33');p.round(w-41,9,28,17,2,'#354955');p.rect(w-37,12,20,9,'#a3c8b7');p.round(w-45,29,36,5,1,'#d8d0b3');p.rect(w-63,11,12,17,'#e3d6b5');for(let i=0;i<4;i++)p.rect(w-61,14+i*3,8,1,'#9f977e');p.rect(5,h*.5,w-10,h*.42,t.wood);for(let x=15;x<w-10;x+=23)p.line([[x,h*.54],[x,h-11]],'#fae3bb22');p.rect(8,h*.54,w-16,1,t.metal);return;}
  if(f.kind==='bookshelf'){casework();for(let row=0;row<2;row++){p.rect(6,6+row*20,w-12,17,t.ink);for(let i=0;i<13;i++){const x=9+i*(w-20)/13;p.rect(x,8+row*20,8,14,['#9d5a68','#5f8b99','#bba15c','#7b9c7e'][i%4]);p.rect(x+1,8+row*20,1,14,'#eee4bf88');p.rect(x+2,11+row*20,5,1,'#e5dcbd');}p.rect(5,23+row*20,w-10,2,t.metal);}return;}
@@ -86,4 +97,16 @@ function paintFixture(p:SceneryPen,f:Fixture,t:ShopTheme){
  car(p,w*.43,h*.39,1.05,'#c25e66');for(let i=0;i<3;i++){const x=w-42+i*10;p.round(x,13,5,23,2,'#b8c6bf');p.round(x-1,31,7,9,2,['#bb716a','#63899a','#c5ac6e'][i]);p.rect(x+1,14,1,12,'#f3ecdb');}p.round(11,12,17,32,2,'#b1beb5');p.ellipse(19,21,5,5,'#55747a');p.rect(14,35,10,3,'#e2cf9e');p.rect(12,h-19,w-24,10,t.metal);for(const x of [w*.25,w*.7])p.round(x,h-17,18,3,1,t.ink);
 }
 export function drawThemedRoom(scene:Phaser.Scene,id:ShopId){if(drawPaintedScenery(scene,id))return;const key=texture(scene,`room-v3-${id}`,960,640,p=>paintShopRoom(p,id));scene.add.image(0,0,key).setOrigin(0).setDisplaySize(960,640).setDepth(-100);}
-export function drawThemedFixture(scene:Phaser.Scene,f:Fixture,id:ShopId){if(drawPaintedFixture(scene,id,f))return;const key=texture(scene,`fixture-v3-${id}-${f.kind}-${f.w}-${f.h}`,f.w+9,f.h+10,p=>{if(isPracticeCourse(id)&&f.kind==='shelf'){const t=shopThemes[id];p.rect(0,0,f.w,f.h,t.ink);for(let row=0;row<6;row++){const y=row*29;p.gradient(2,y+1,f.w-4,26,t.metal,t.ink);for(let col=0;col<3;col++){const x=10+col*(f.w-20)/3;p.round(x,y+4,15,13,2,row%2?t.accent:t.wood);p.ellipse(x+7,y+4,4,4,['#d4b991','#bd9277','#e6c89d'][col]);p.rect(x+4,y+15,7,7,'#354e65');}}}else paintFixture(p,f,shopThemes[id]);});scene.add.image(f.x,f.y,key).setOrigin(0).setDisplaySize(f.w+9,f.h+10).setDepth(f.y+f.h);}
+export function drawThemedFixture(scene:Phaser.Scene,f:Fixture,id:ShopId){
+ // The top-center display is a fixed game object for four named legend machines.
+ // Background art may contain decorative wall shelving in the same area; always
+ // draw this fixture from its semantic type so the interactive object matches.
+ if(f.kind==='legends'||f.kind==='track'&&id==='atelier'){
+  const role=f.kind==='legends'?'legends':'machine-showcase';
+  const key=texture(scene,`fixture-v4-${id}-${role}-${f.w}-${f.h}`,f.w+9,f.h+10,p=>paintFixture(p,f,shopThemes[id]));
+  scene.add.image(f.x,f.y,key).setOrigin(0).setDisplaySize(f.w+9,f.h+10).setDepth(f.y+f.h);return;
+ }
+ if(drawPaintedFixture(scene,id,f))return;
+ const key=texture(scene,`fixture-v3-${id}-${f.kind}-${f.w}-${f.h}`,f.w+9,f.h+10,p=>{if(isPracticeCourse(id)&&f.kind==='shelf'){const t=shopThemes[id];p.rect(0,0,f.w,f.h,t.ink);for(let row=0;row<6;row++){const y=row*29;p.gradient(2,y+1,f.w-4,26,t.metal,t.ink);for(let col=0;col<3;col++){const x=10+col*(f.w-20)/3;p.round(x,y+4,15,13,2,row%2?t.accent:t.wood);p.ellipse(x+7,y+4,4,4,['#d4b991','#bd9277','#e6c89d'][col]);p.rect(x+4,y+15,7,7,'#354e65');}}}else paintFixture(p,f,shopThemes[id]);});
+ scene.add.image(f.x,f.y,key).setOrigin(0).setDisplaySize(f.w+9,f.h+10).setDepth(f.y+f.h);
+}

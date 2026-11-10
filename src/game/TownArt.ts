@@ -6,34 +6,39 @@ import {artNoise,paintPixelTree} from './PixelArtMaterials';
 import {SceneryPen} from './SceneryCanvas';
 
 /** Terrain is baked once. Pixel clusters follow a fixed, upper-left daylight. */
-function ground(c:CanvasRenderingContext2D){
+function ground(c:CanvasRenderingContext2D,chunkX=0,chunkWidth=townSize.width){
  const p=new SceneryPen(c),r=p.rect.bind(p),noise=artNoise;
- r(0,0,townSize.width,townSize.height,'#788f62');
+ const chunkEnd=chunkX+chunkWidth;
+ r(chunkX,0,chunkWidth,townSize.height,'#788f62');
  // Wide, quiet colour clusters keep the dense tufts from becoming visual noise.
- for(let y=0;y<townSize.height;y+=56)for(let x=0;x<townSize.width;x+=64){const n=noise(x,y),color=['#7b9364','#758d60','#7d9467','#748c60'][n%4];for(let row=0;row<6;row++){const inset=[16,7,2,0,5,13][row]+(noise(x,row)%3)*2;r(x+inset,y+row*7,54-inset*2,7,color);for(let edge=0;edge<3;edge++){r(x+inset-2-edge*2,y+row*7+edge*2,2,2,edge%2?color:'#788f62');r(x+54-inset+edge*2,y+row*7+2+edge,2,2,color);}}}
- for(let y=0;y<townSize.height;y+=9)for(let x=0;x<townSize.width;x+=11){const n=noise(x,y);if(n%5>1)continue;const xx=x+n%5,yy=y+(n>>>4)%4;
-  r(xx,yy+2,4,1,'#617d52');r(xx+1,yy,1,3,'#a0af77');r(xx+3,yy-1,1,3,'#8da66d');if(n%13===0)r(xx+1,yy+4,2,1,'#bdbe87');
+ const firstGrassX=Math.max(0,Math.floor(chunkX/64)*64);
+ for(let y=0;y<townSize.height;y+=56)for(let x=firstGrassX;x<chunkEnd+64;x+=64){const n=noise(x,y),color=['#7b9364','#758d60','#7d9467','#748c60'][n%4];for(let row=0;row<6;row++){const inset=[16,7,2,0,5,13][row]+(noise(x,row)%3)*2;r(x+inset,y+row*7,54-inset*2,7,color);for(let edge=0;edge<3;edge++){r(x+inset-2-edge*2,y+row*7+edge*2,2,2,edge%2?color:'#788f62');r(x+54-inset+edge*2,y+row*7+2+edge,2,2,color);}}}
+ // Larger clusters reduce busy pixel noise while retaining a natural ground rhythm.
+ const firstTuftX=Math.max(0,Math.floor(chunkX/17)*17);
+ for(let y=0;y<townSize.height;y+=18)for(let x=firstTuftX;x<chunkEnd+17;x+=17){const n=noise(x,y);if(n%5>2)continue;const xx=x+n%5,yy=y+(n>>>4)%5;
+  r(xx,yy+2,3+n%3,1,'#617d52');r(xx+1,yy,1,2+n%2,'#a0af77');r(xx+3,yy-1,1,2,'#8da66d');if(n%13===0)r(xx+1,yy+4,2,1,'#bdbe87');
  }
  // Stepped stone shore, reeds and broken reflections.
  for(let y=0;y<townSize.height;y+=8){const shore=townSize.width-210+Math.round(Math.sin(y/90)*12/2)*2;r(shore-24,y,40,8,'#87926c');r(shore-12,y,25,8,'#b4ab7c');r(shore-3,y,13,8,'#546c68');r(shore+5,y,townSize.width-shore-5,8,'#427e91');r(shore+12,y,townSize.width-shore-12,3,'#5798a6');
   for(let x=shore+25;x<townSize.width;x+=37){const n=noise(x,y);r(x+n%11,y+4,14+n%9,1,'#8ec3be');r(x+7,y+6,8,1,'#2e677f');if(n%9===0){r(shore-13,y-3,2,10,'#486c53');r(shore-10,y-5,1,11,'#9aa372');}}
  }
- const road=(x:number,y:number,w:number,h:number)=>{
+ const road=(x:number,y:number,w:number,h:number,trimLeft=true,trimRight=true)=>{
   r(x+4,y+5,w,h,'#34474a55');r(x,y,w,h,'#414f55');r(x+3,y+3,w-6,h-6,'#59666a');r(x+7,y+7,w-14,h-14,'#626f72');
   for(let yy=y+10;yy<y+h-7;yy+=11)for(let xx=x+10;xx<x+w-7;xx+=13){const n=noise(xx,yy);if(n%3===0)r(xx,yy,2,1,n%2?'#85918a':'#51646a');}
   // Irregular aggregate, tire polishing and repairs replace the flat asphalt fill.
   for(let yy=y+8;yy<y+h-8;yy+=7)for(let xx=x+8;xx<x+w-8;xx+=9){const n=noise(xx,yy,91);if(n%4===0)continue;const px=xx+n%6,py=yy+(n>>>5)%5;r(px,py,1+n%3,1,n%3===0?'#abb0a336':n%2?'#34494e36':'#d4c9a21b');if(n%11===0)r(px+1,py+1,2,1,'#253b4230');}
   for(let yy=y+20;yy<y+h-16;yy+=67)for(let xx=x+26;xx<x+w-24;xx+=83){const n=noise(xx,yy,193);if(n%5)continue;const px=xx+n%13,py=yy+(n>>>6)%14;r(px,py,9+n%14,1,'#283f4626');r(px+2,py+1,5+n%9,1,'#aab0a11b');}
   // Raised curbs, chipped paint and paired gutter lines give every road a profile.
-  r(x,y,w,3,'#c8c2a0');r(x,y+3,w,1,'#e0d3a5');r(x,y+4,2,h-8,'#c8c39c');r(x+w-3,y+4,3,h-8,'#8e9988');r(x,y+h-4,w,1,'#a7a995');r(x,y+h-3,w,3,'#77877f');
-  for(let yy=y+12;yy<y+h-12;yy+=22){r(x+5,yy,2,8,'#30454b');r(x+6,yy+1,1,6,'#abb1a3');r(x+w-8,yy,2,8,'#30454b');r(x+w-7,yy+1,1,6,'#abb1a3');}
+  r(x,y,w,3,'#c8c2a0');r(x,y+3,w,1,'#e0d3a5');if(trimLeft)r(x,y+4,2,h-8,'#c8c39c');if(trimRight)r(x+w-3,y+4,3,h-8,'#8e9988');r(x,y+h-4,w,1,'#a7a995');r(x,y+h-3,w,3,'#77877f');
+  for(let yy=y+12;yy<y+h-12;yy+=22){if(trimLeft){r(x+5,yy,2,8,'#30454b');r(x+6,yy+1,1,6,'#abb1a3');}if(trimRight){r(x+w-8,yy,2,8,'#30454b');r(x+w-7,yy+1,1,6,'#abb1a3');}}
  };
- for(const x of townRoads.vertical){road(x-70,72,140,2250);for(let y=88;y<2320;y+=30){r(x-2,y,4,13,'#c9bd8d');r(x-1,y,1,11,'#e4d5a5');for(const xx of [x-70,x+63]){r(xx,y,7,1,'#6e8279');r(xx,y+1,7,1,'#d8cfaa');}}
+ for(const x of townRoads.vertical){if(x+70<chunkX||x-70>chunkEnd)continue;road(x-70,72,140,2250);for(let y=88;y<2320;y+=30){r(x-2,y,4,13,'#c9bd8d');r(x-1,y,1,11,'#e4d5a5');for(const xx of [x-70,x+63]){r(xx,y,7,1,'#6e8279');r(xx,y+1,7,1,'#d8cfaa');}}
   for(let y=185;y<2290;y+=210){r(x+53,y,9,17,'#3d535a');for(let i=0;i<4;i++)r(x+54,y+2+i*4,7,1,'#85958e');}
  }
- for(const y of townRoads.horizontal){road(64,y-70,townSize.width-320,140);for(let x=80;x<townSize.width-256;x+=30){r(x,y-2,13,4,'#c9bd8d');r(x,y-2,12,1,'#e2d3a2');for(const yy of [y-70,y+63])r(x,yy,1,7,'#70847d');}}
+ for(const y of townRoads.horizontal){const roadStart=64,roadEnd=townSize.width-256,start=Math.max(roadStart,chunkX),end=Math.min(roadEnd,chunkEnd);if(end>start)road(start,y-70,end-start,140,start===roadStart,end===roadEnd);const firstMarker=80+Math.ceil((Math.max(80,chunkX-13)-80)/30)*30;for(let x=firstMarker;x<Math.min(roadEnd,chunkEnd);x+=30){r(x,y-2,13,4,'#c9bd8d');r(x,y-2,12,1,'#e2d3a2');for(const yy of [y-70,y+63])r(x,yy,1,7,'#70847d');}}
  for(const x of townRoads.vertical)for(const y of townRoads.horizontal){r(x-53,y-53,106,106,'#667377');for(let i=0;i<5;i++){r(x-44+i*19,y-64,9,30,'#d8d1b0');r(x-44+i*19,y+34,9,30,'#d8d1b0');}p.ellipse(x+29,y+20,9,7,'#485e64');p.ellipse(x+29,y+19,8,6,'#879188');for(let i=0;i<3;i++)r(x+24,y+16+i*3,10,1,'#596f70');}
  for(const v of townVenues){
+  if(v.x+v.w+80<chunkX||v.x-80>chunkEnd)continue;
   const cx=v.x+v.w/2,cy=v.entrance==='south'?v.y+v.h+30:v.y-30,roadY=townRoads.horizontal.reduce((a,b)=>Math.abs(b-cy)<Math.abs(a-cy)?b:a);
   const pad=v.kind==='outdoor'?{x:v.x-8,y:v.y-8,w:v.w+16,h:v.h+28}:{x:v.x-24,y:v.y-65,w:v.w+48,h:v.h+118};
   r(pad.x+3,pad.y+4,pad.w,pad.h,'#506d4e55');r(pad.x,pad.y,pad.w,pad.h,'#b0af8c');
@@ -44,14 +49,15 @@ function ground(c:CanvasRenderingContext2D){
  }
  // House fronts have their own stone thresholds and planted yards.
  for(const b of townBlocks){
+  if(b.x+b.w+8<chunkX||b.x-8>chunkEnd)continue;
   const y=b.y+b.h,cx=b.x+b.w/2;
   r(b.x-6,y+3,b.w+12,32,'#6c845b');r(b.x-5,y+4,b.w+10,1,'#a3ad7b');
   for(let yy=y+6;yy<y+55;yy+=10){r(cx-10,yy,20,8,'#b8b496');r(cx-9,yy,18,1,'#d6caa7');r(cx-10,yy+7,20,1,'#8d977c');}
   for(const x of [b.x+1,b.x+b.w-19]){r(x,y+18,18,6,'#3e624b');r(x+1,y+17,16,3,'#769364');r(x+3,y+17,3,1,'#acb681');r(x+11,y+18,2,1,'#c2ae83');}
  }
  // Park pond: layered coping stones and reeds, instead of flat nested squares.
- r(1458,1588,184,136,'#6d826c');r(1460,1590,180,132,'#b1aa88');for(let x=1462;x<1640;x+=18){r(x,1591,16,5,'#d0c6a0');r(x,1715,16,5,'#999c83');}r(1470,1600,160,112,'#345e6b');r(1473,1603,154,106,'#578e92');r(1477,1606,146,98,'#6aa59f');
- for(let i=0;i<45;i++){const n=noise(i,42),x=1482+n%133,y=1610+(n>>>9)%84;r(x,y,6+n%10,1,'#a2c5b4');if(i%5===0){p.ellipse(x,y+6,4,2,'#527f62');r(x-1,y+5,2,1,'#a4b68a');}}
+ if(chunkX<1642&&chunkEnd>1458){r(1458,1588,184,136,'#6d826c');r(1460,1590,180,132,'#b1aa88');for(let x=1462;x<1640;x+=18){r(x,1591,16,5,'#d0c6a0');r(x,1715,16,5,'#999c83');}r(1470,1600,160,112,'#345e6b');r(1473,1603,154,106,'#578e92');r(1477,1606,146,98,'#6aa59f');
+ for(let i=0;i<45;i++){const n=noise(i,42),x=1482+n%133,y=1610+(n>>>9)%84;r(x,y,6+n%10,1,'#a2c5b4');if(i%5===0){p.ellipse(x,y+6,4,2,'#527f62');r(x-1,y+5,2,1,'#a4b68a');}}}
  for(let i=0;i<340;i++){const x=80+noise(i,1)%2820,y=100+noise(i,2)%2190;if(townVenues.some(v=>x>v.x-35&&x<v.x+v.w+35&&y>v.y-75&&y<v.y+v.h+70)||townRoads.vertical.some(v=>Math.abs(v-x)<86)||townRoads.horizontal.some(v=>Math.abs(v-y)<86))continue;
   r(x,y,1,6,'#496f50');r(x-2,y+2,2,1,'#a4b87d');r(x+1,y+3,2,1,'#7e9d64');r(x-1,y-2,3,1,i%3?'#d4c18c':'#cd9e99');r(x-2,y-1,5,1,i%3?'#e7d7a4':'#e1b7af');r(x,y-1,1,1,'#f2df9d');
  }
@@ -79,7 +85,7 @@ function house(scene:Phaser.Scene,block:typeof townBlocks[number],index:number){
 }
 export function drawTown(scene:Phaser.Scene,progress:WorldProgress){
  // 大きな街でも個々の地面テクスチャは2048px以下の幅に保つ。
- for(let x=0;x<townSize.width;x+=2048){const key=`midorikawa-ground-17-${x}`;if(!scene.textures.exists(key)){const texture=scene.textures.createCanvas(key,Math.min(2048,townSize.width-x),townSize.height)!;texture.context.translate(-x,0);ground(texture.context);texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.NEAREST);}scene.add.image(x,0,key).setOrigin(0).setDepth(-100);}
+ for(let x=0;x<townSize.width;x+=2048){const width=Math.min(2048,townSize.width-x),key=`midorikawa-ground-17-${x}`;if(!scene.textures.exists(key)){const texture=scene.textures.createCanvas(key,width,townSize.height)!;texture.context.translate(-x,0);ground(texture.context,x,width);texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.NEAREST);}scene.add.image(x,0,key).setOrigin(0).setDepth(-100);}
 
  townBlocks.forEach((block,index)=>house(scene,block,index));
  for(const venue of townVenues)if(venue.kind==='outdoor')drawOutdoorCourse(scene,venue,isVenueOpen(venue,progress));else drawVenueFacade(scene,venue,isVenueOpen(venue,progress));
