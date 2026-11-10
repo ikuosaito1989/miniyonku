@@ -7,13 +7,23 @@
 | 通常（模型店・通常会話・買い物・設定） | 今日の空も（Track 1） | POLARIS PLUS | https://opentracks.com/bgm/detail/23752 |
 | イベント（最強兄弟・黒岩・博士の登場と会話） | 解答Quizman（Track 1） | shimtone | https://opentracks.com/bgm/detail/23958 |
 | レース（待機・カウント・走行・結果） | Rush Recklessly（指定のTrack 2） | FLASH☆BEAT | https://opentracks.com/bgm/detail/23946/track/2 |
+| 公式レース | Thrilling Race（Track 1） | こばっと | https://opentracks.com/bgm/detail/7817 |
+| 表彰台 | 祝福の鐘（Track 1） | マニーラ | https://opentracks.com/bgm/detail/14881 |
 
 既存2曲の音源はユーザーがダウンロードし提供したMP3。ファイル名だけではトラック番号を判別できないため、レース音源は指定Track 2として提供されたファイルを使用している。
 
 - 音源利用ライセンス：https://opentracks.com/help/articles/license/
 - サイト利用規約：https://opentracks.com/help/articles/terms/
-- 確認日：2026-10-19
-- 制作者は3名ともサイト準拠と表示。公開前に最新条件も確認すること。
+- 確認日：2026-11-10
+- 各制作者の利用条件は楽曲ページで確認し、公開前に最新条件も再確認すること。
+
+## 公式レース・表彰台BGM
+
+- 公式レース曲「Thrilling Race」は、こばっと作曲の2:45のBGM。制作者の説明がレース展開・バトル向けで、速い・力強いタグがあるため選定。
+- 表彰台曲「祝福の鐘」は、マニーラ作曲の1:45のBGM。制作者が勝利のお祝い用途として案内しているため選定。
+- 両曲とも OpenTracks の楽曲ページで無料利用条件を確認。サイト利用規約・音源利用ライセンス・制作者の最新条件を適用する。
+- 音源の自動取得は行わない。手動でダウンロードした MP3 をユーザーから受け取り、`private/audio/Thrilling_Race.mp3` と `private/audio/祝福の鐘.mp3` に置いた後、`pnpm audio:pack --official` / `pnpm audio:pack --podium` で個別にパックする。
+- 音源がまだ配置されていない間、公式レースは通常レース曲、表彰台はイベント曲（未配置なら通常曲）にフォールバックする。
 
 ゲームの背景音楽としてのみ使用する。音楽のダウンロード機能は設けず、外部音源URLへ直リンク再生しない。素材を自由利用可能な自作音源と表示しない。
 

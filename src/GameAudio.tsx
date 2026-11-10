@@ -29,7 +29,10 @@ export function GameAudio(){
     window.addEventListener('focus',visibility);window.addEventListener('pageshow',visibility);visibility();
     return()=>{window.removeEventListener('pointerdown',unlock,true);window.removeEventListener('pointerup',unlock,true);window.removeEventListener('touchend',unlock,true);window.removeEventListener('keydown',key,true);document.removeEventListener('visibilitychange',visibility);window.removeEventListener('focus',visibility);window.removeEventListener('pageshow',visibility);music.dispose();player.current=null;};
   },[]);
-  useEffect(()=>{player.current?.setScene(scene==='event'&&!musicTracks.event.ready?'shop':scene);},[scene]);
+  useEffect(()=>{
+    const fallback:Record<typeof scene,typeof scene>={shop:'shop',race:'race',event:musicTracks.event.ready?'event':'shop',official:musicTracks.official.ready?'official':'race',podium:musicTracks.podium.ready?'podium':musicTracks.event.ready?'event':'shop'};
+    player.current?.setScene(fallback[scene]);
+  },[scene]);
   useEffect(()=>{player.current?.setSettings(enabled,volume);},[enabled,volume]);
   return null;
 }
