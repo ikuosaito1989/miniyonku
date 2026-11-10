@@ -98,6 +98,7 @@ test('通常CPUとセイラン装備CPUは箱型軽ワゴン。プレイヤー�
   const shell=mob.getObjectByName('body-shell') as THREE.Mesh;
   assert.ok(shell.geometry instanceof THREE.BoxGeometry);
   const seiranRival=buildRaceMachineModel({id:'sou',color:0x55a66c,equipment:{...starterEquipment,body:'body-champion'}});
+  assert.equal(seiranRival.name,'body-proto');
   assert.ok(seiranRival.getObjectByName('mob-kei-yellow-plate'));
   assert.equal((seiranRival.getObjectByName('body-shell') as THREE.Mesh).geometry instanceof THREE.BoxGeometry,true);
   const otherCpu=buildRaceMachineModel({...rivals[0],id:'riku',equipment:{...rivals[0].equipment,body:'body-manta'}});

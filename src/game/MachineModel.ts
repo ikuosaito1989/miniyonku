@@ -60,7 +60,9 @@ function lowWedgeShell(sections:number[][],color:number,shininess=85){
 
 export function buildRaceMachineModel(racer:Pick<Entrant,'id'|'color'|'equipment'|'bodyPaint'>){
  const appearance=racer.id===challenger.id?'kuroiwa':racer.id==='player'||racer.id==='jin'||racer.id.startsWith('legend-')?'stock':'mob-kei';
- return buildMachineModel(racer.color,racer.equipment,appearance,racer.id==='player'?racer.bodyPaint:undefined);
+ // セイランは主人公専用。NPCが記録装備などで参照しても、レース画面ではモブ車体を描く。
+ const equipment=appearance==='mob-kei'&&racer.equipment.body==='body-champion'?{...racer.equipment,body:'body-proto'}:racer.equipment;
+ return buildMachineModel(racer.color,equipment,appearance,racer.id==='player'?racer.bodyPaint:undefined);
 }
 
 export function buildMachineModel(racerColor:number,equipment:Equipment,appearance:'stock'|'mob-kei'|'kuroiwa'='stock',bodyPaint?:number){
