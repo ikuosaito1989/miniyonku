@@ -27,6 +27,7 @@ import { parts,type Category } from '../data/parts';
 import { purchase, type Wallet } from './purchase';
 import { createStarterInventory, starterEquipment, type Equipment, type EquipmentSlot } from '../data/machine';
 import { equipPart } from './equipment';
+import { buildQuickSetup, type QuickSetupProfile } from './quickSetup';
 import { racePrize } from './reward';
 import { officialTime, rankRacers, type RaceState } from './race';
 import { INITIAL_MONEY } from '../data/economy';
@@ -80,7 +81,7 @@ export interface GameState extends Wallet {
   raceAttempt: number; settledAttempt: number; lastPrize: number;
   settleRace: (attempt: number, race: RaceState) => void;
   overlay: 'race-opponents' | 'library' | 'podium' | 'towa-escort' | 'escort' | 'opening' | 'time-board' | 'mission' | 'town-map' | 'arrival' | 'dialogue' | 'shop' | 'race' | 'setting' | 'settings' | 'proficiency' | 'legends' | 'cheat' | 'game-over' | null; speaker: string; dialogue: string; shopAfter: boolean; notice: string; nearby: string;
-  openSetting: () => void; equip: (id: string,slot?:EquipmentSlot) => void;
+  openSetting: () => void; equip: (id: string,slot?:EquipmentSlot) => void; applyQuickSetup:(profile:QuickSetupProfile)=>void;
   openSettings:()=>void;libraryShelf:Category|'all';enterLibrary:()=>void;openLibrary:(category?:Category|'all')=>void;
   startTrial: () => void;
   talk: (speaker: string, text: string, shopAfter?: boolean) => void; advance: () => void; close: () => void; buy: (id: string) => void;
@@ -288,6 +289,12 @@ export const useGame = create<GameState>((set) => ({
     const equipment=equipPart(s.equipment,s.inventory,id,slot),selectedUnits={...s.selectedUnits};
     for(const key of ['motor','battery'] as const)if(equipment[key]!==s.equipment[key])selectedUnits[key]=s.units[equipment[key]]?.[0]?.id??'';
     return {equipment,selectedUnits,...(s.tutorialStage==='equip'&&equipment.gear===TUTORIAL_PART?{tutorialStage:'start' as const}:{})};
+  }),
+  applyQuickSetup:profile=>set(s=>{
+    if(s.overlay==='race')return s;
+    const equipment=buildQuickSetup(s.equipment,s.inventory,profile),selectedUnits={...s.selectedUnits};
+    for(const key of ['motor','battery'] as const)if(equipment[key]!==s.equipment[key])selectedUnits[key]=s.units[equipment[key]]?.[0]?.id??'';
+    return {equipment,selectedUnits,notice:profile==='speed'?'所持パーツで最高速型に組み替えました。':profile==='offroad'?'所持パーツで悪路型に組み替えました。':'所持パーツでバランス型に組み替えました。'};
   }),
   openLegendChallenge:()=>set(s=>s.location!=='komorebi'||!s.unlockedRaces.includes(nextShopRace.id)||s.legendRaceCompleted||s.overlay==='race'||(s.overlay==='escort'||s.overlay==='towa-escort'||s.overlay==='podium')||s.overlay==='arrival'?s:{overlay:'dialogue',speaker:'火野 岳',dialogue:'準備はできたかい？ 僕たち兄弟とのレースに、何度でも挑んでおいで。',dialogueStage:'legend-invite',shopAfter:false}),
   startLegendChallenge:()=>set(s=>s.location!=='komorebi'||!s.unlockedRaces.includes(nextShopRace.id)||s.overlay==='arrival'?s:({overlay:'race',shopAfter:false,notice:'最強兄弟との特別レース！',legendEventPending:false,legendDebriefPending:false,legendEventSeen:true,legendChallengeActive:true,dialogueStage:'none',raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,qualificationNotice:false})),
