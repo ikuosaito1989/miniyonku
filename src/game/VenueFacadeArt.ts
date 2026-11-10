@@ -20,8 +20,10 @@ export function paintVenueFacade(p:SceneryPen,v:TownVenue,open:boolean){
  }else if(v.kind==='stadium'){
   const colors:Record<string,string[]>={'stadium-5':['#376f73','#91bdac'],'stadium-9':['#4e527f','#bd9ace'],'stadium-10':['#745153','#e5b97a'],'stadium-7':['#354968','#dcc080']};
   const [dark,accent]=colors[v.id]??colors['stadium-5'];
-  // A stepped arena shell: deep service wing, angled canopy, visible front and side planes.
-  p.poly([[x+7,y+52],[x+w-29,y+52],[x+w+12,y+31],[x+w+12,y+h-22],[x+w-25,y+h-5],[x+7,y+h-5]],'#253b50');
+  // Broad roof planes and a deep side return give the hall a clear 3/4 footprint.
+  // Keep the shapes large and simple; added volume comes from geometry and shadow,
+  // not from increasing the pixel density.
+  p.poly([[x+7,y+52],[x+w-29,y+52],[x+w+26,y+22],[x+w+26,y+h-18],[x+w-25,y+h-5],[x+7,y+h-5]],'#253b50');
   p.poly([[x+8,y+49],[x+w-31,y+49],[x+w-31,y+h-17],[x+8,y+h-17]],'#9aaea9');
   p.gradient(x+12,y+53,w-48,42,'#667d86','#344e61');
   for(let row=0;row<3;row++){
@@ -29,14 +31,16 @@ export function paintVenueFacade(p:SceneryPen,v:TownVenue,open:boolean){
    for(let col=0;col<14;col++){const xx=x+19+col*(w-65)/14;p.rect(xx,yy+3,Math.max(5,(w-80)/18),6,['#304a60','#527083','#375c6b','#755d67'][col%4]);p.rect(xx+1,yy+3,2,2,'#d1b28c');}
   }
   // Cantilever roof with a lit fascia, exposed truss braces and a shaded right return.
-  p.poly([[x-8,y+51],[x+24,y+4],[x+w-34,y+4],[x+w+14,y+39],[x+w+7,y+54],[x-5,y+62]],'#24394d');
-  p.poly([[x-3,y+47],[x+27,y+10],[x+w-35,y+10],[x+w+7,y+40],[x+w+2,y+48],[x-1,y+55]],dark);
-  p.poly([[x-3,y+47],[x+27,y+10],[x+27,y+20],[x+4,y+51]],accent);
-  p.poly([[x+w-35,y+10],[x+w+7,y+40],[x+w+2,y+48],[x+w-35,y+21]],'#263b4b');
-  p.rect(x+30,y+13,w-68,2,'#e3e0c8');p.rect(x+29,y+18,w-62,2,'#1e3444');
-  for(let i=0;i<8;i++){const tx=x+38+i*(w-88)/8;p.line([[tx,y+19],[tx+12,y+42],[tx+23,y+19]],'#d4d6c366',1);}
+  p.poly([[x-13,y+53],[x+27,y-42],[x+w-34,y-42],[x+w+20,y+34],[x+w+14,y+58],[x-9,y+69]],'#24394d');
+  p.poly([[x-7,y+48],[x+31,y-34],[x+w-35,y-34],[x+w+12,y+36],[x+w+6,y+50],[x-3,y+61]],dark);
+  p.poly([[x-7,y+48],[x+31,y-34],[x+31,y-20],[x+3,y+54]],accent);
+  p.poly([[x+31,y-34],[x+w-35,y-34],[x+w+12,y+36],[x+w+6,y+50],[x+w/2,y-20]],'#526b79');
+  p.poly([[x+w/2,y-20],[x+w+6,y+50],[x+w+6,y+57],[x+w/2,y-11]],'#263b4b');
+  for(let band=0;band<4;band++){const yy=y-24+band*15;p.line([[x+22+band*6,yy],[x+w-28+band*6,yy+1]],band%2?'#d0d3bd77':'#263c4a88',2);}
+  p.rect(x+30,y-28,w-68,2,'#e3e0c8');p.rect(x+29,y-22,w-62,2,'#1e3444');
+  for(let i=0;i<8;i++){const tx=x+38+i*(w-88)/8;p.line([[tx,y-20],[tx+12,y+20],[tx+23,y-20]],'#d4d6c366',1);}
   // A modest name board sits in the canopy fascia instead of an oversized trophy emblem.
-  p.round(x+w/2-55,y+25,110,17,2,'#1d3448');p.rect(x+w/2-52,y+27,104,1,'#f0dfb4');c.save();c.font='bold 7px sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillStyle='#fff0c9';c.fillText(v.name,x+w/2,y+34,100);c.restore();
+  p.round(x+w/2-55,y+24,110,17,2,'#1d3448');p.rect(x+w/2-52,y+26,104,1,'#f0dfb4');c.save();c.font='bold 7px sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillStyle='#fff0c9';c.fillText(v.name,x+w/2,y+33,100);c.restore();
   // Glass entrance, two stair flights, side columns and a small race pennant establish use and scale.
   const doorY=y+h-79;p.round(x+w/2-53,doorY-5,106,64,3,'#263d51');p.gradient(x+w/2-49,doorY,98,49,'#a7c5c2','#547989');
   p.rect(x+w/2-2,doorY,4,49,'#e1d3aa');p.rect(x+w/2-42,doorY+6,34,31,'#34566a');p.rect(x+w/2+8,doorY+6,34,31,'#34566a');p.rect(x+w/2-38,doorY+9,25,2,'#c8dcd2');p.rect(x+w/2+13,doorY+9,25,2,'#c8dcd2');p.rect(x+w/2-46,doorY+47,92,3,accent);
@@ -48,14 +52,32 @@ export function paintVenueFacade(p:SceneryPen,v:TownVenue,open:boolean){
   const shopId=v.shopId??'komorebi',style=['komorebi','aozora','hinata','wakaba','yuunagi','akatsuki','hoshikuzu','atelier','endurance','torque','velocity','terrain'].indexOf(shopId);
   // A deep service side wall, plinth and raised roof make each shop read as a building,
   // while the saved venue footprint and its entrance remain exactly where they are.
-  p.poly([[x+w-15,y+8],[x+w+10,y-7],[x+w+10,y+h-9],[x+w-15,y+h-3]],'#344b50');
-  p.poly([[x+w-12,y+11],[x+w+7,y],[x+w+7,y+h-13],[x+w-12,y+h-7]],t.floorDark);
-  for(let row=0;row<5;row++){const sy=y+20+row*22;p.line([[x+w-11,sy],[x+w+6,sy-9]],'#eadfc12b',1);}
-  p.poly([[x-12,y+9],[x+w/2,y-35],[x+w+15,y+5],[x+w+11,y+17],[x-9,y+20]],'#30464d');
-  if(style===0||style===4||style===6){p.poly([[x-8,y+8],[x+w/2,y-29],[x+w+11,y+4],[x+w+8,y+12],[x-6,y+15]],t.accent);p.poly([[x-7,y+8],[x+w/2,y-29],[x+w/2,y-20],[x-6,y+15]],t.light);p.line([[x+w/2,y-28],[x+w+10,y+4]],'#d8e0ca80',2);}
-  else if(style===2||style===5){p.poly([[x-8,y-3],[x+8,y-22],[x+w-13,y-22],[x+w+11,y+4],[x+w+8,y+13],[x-6,y+14]],t.accent);p.line([[x-4,y+1],[x+w+7,y+7]],'#f1d29b99',2);}
-  else{p.poly([[x-8,y-3],[x+12,y-22],[x+w-10,y-22],[x+w+11,y+2],[x+w+8,y+12],[x-6,y+14]],t.accent);p.rect(x+10,y-17,w-20,4,t.light);p.rect(x+13,y-12,w-26,2,'#203c4966');}
-  // Existing floorplans remain walkable; layered siding, masonry and trim continue the interior material palette.
+  p.poly([[x+w-25,y+10],[x+w+25,y-20],[x+w+25,y+h-8],[x+w-25,y+h-2]],'#263c41');
+  p.poly([[x+w-21,y+14],[x+w+20,y-11],[x+w+20,y+h-14],[x+w-21,y+h-7]],t.floorDark);
+  for(let row=0;row<5;row++){const sy=y+22+row*22;p.line([[x+w-19,sy],[x+w+18,sy-22]],'#eadfc13b',1);}
+  // A deep, overhanging roof is seen above the front wall. Its large planes,
+  // ridge and fascia establish volume at the same one-pixel source resolution.
+  p.poly([[x-13,y+9],[x+21,y-57],[x+w-23,y-57],[x+w+25,y+2],[x+w+21,y+18],[x-9,y+25]],'#30464d');
+  p.poly([[x-7,y+5],[x+25,y-50],[x+w-21,y-50],[x+w+16,y+3],[x+w+12,y+14],[x-4,y+17]],t.accent);
+  if(style===0||style===4||style===6){
+   p.poly([[x-7,y+5],[x+25,y-50],[x+w/2,y-30],[x+2,y+15]],t.light);
+   p.poly([[x+25,y-50],[x+w-21,y-50],[x+w+16,y+3],[x+w/2,y-30]],t.accent);
+   p.poly([[x-7,y+5],[x+25,y-50],[x+25,y-41],[x-4,y+14]],'#f4e5bf');
+   for(let band=0;band<4;band++){const yy=y-40+band*12;p.line([[x+31,y+yy+50],[x+w-18,y+yy+50]],'#f2e3bd55',1);}
+  }else if(style===2||style===5){
+   p.poly([[x-7,y+4],[x+20,y-43],[x+w-26,y-43],[x+w+16,y+5],[x+w+12,y+17],[x-3,y+17]],t.accent);
+   p.poly([[x-4,y-1],[x+24,y-38],[x+w-29,y-38],[x+w+10,y+5]],'#d6b982');
+   p.line([[x-4,y+7],[x+w+12,y+12]],'#f1d29b',3);
+  }else{
+   p.poly([[x-7,y+4],[x+22,y-45],[x+w-24,y-45],[x+w+17,y+4],[x+w+13,y+16],[x-3,y+16]],t.accent);
+   p.poly([[x+2,y+1],[x+26,y-40],[x+w-27,y-40],[x+w+9,y+5]],t.light);
+   p.poly([[x+26,y-40],[x+w-27,y-40],[x+w+9,y+5],[x+w+3,y+7]],t.accent);
+   p.rect(x+24,y-33,w-48,2,'#f4e9c4');p.rect(x+26,y-27,w-52,2,'#304c50');
+  }
+  // Existing floorplans remain walkable. Compress the front elevation against
+  // the unchanged ground line so the roof and right return occupy more of the
+  // silhouette, like the reference's strongly top-down 3/4 buildings.
+  c.save();c.translate(0,y+h);c.scale(1,.76);c.translate(0,-(y+h));
   p.round(x,y,w,h,3,t.ink);p.gradient(x+3,y+3,w-6,h-7,'#e3d8bc',t.floorDark);
   p.material(x+5,y+6,w-10,h-14,'stone',v.x+v.y);
   for(let row=0;row<5;row++){
@@ -89,10 +111,12 @@ export function paintVenueFacade(p:SceneryPen,v:TownVenue,open:boolean){
   if(v.id==='velocity')for(let i=0;i<3;i++)p.line([[x+12+i*7,y+49],[x+20+i*7,y+57],[x+12+i*7,y+65]],t.light,2);
   if(v.id==='terrain'){p.poly([[x+9,y+66],[x+22,y+46],[x+36,y+66]],t.ink);p.poly([[x+17,y+54],[x+22,y+46],[x+28,y+55]],t.light);}
   if(v.id==='atelier'){p.ellipse(x+23,y+58,7,7,'#a6a0bc');p.ellipse(x+23,y+58,3,3,t.ink);for(let i=0;i<8;i++){const a=i*Math.PI/4;p.line([[x+23+Math.cos(a)*6,y+58+Math.sin(a)*6],[x+23+Math.cos(a)*9,y+58+Math.sin(a)*9]],'#c7bed6',1.5);}}
+  c.restore();
  }
 
  // Roof grain, masonry corners, drainpipes and contact shading share the town palette.
- p.material(x-4,y-27,w+8,27,'stone',w+h);
+  // Side-wall corner shade keeps the front and return plane visually separate.
+  p.poly([[x+w-23,y+13],[x+w+19,y-12],[x+w+19,y+h-13],[x+w-23,y+h-5]],'#243a3f55');
  p.rect(x+3,y+6,1,h-12,'#fff0cf66');p.rect(x+w-5,y+7,2,h-12,'#334c4c33');
  for(let yy=y+8;yy<y+h-9;yy+=9){p.rect(x+4,yy,4,.5,'#efe3bd60');p.rect(x+w-9,yy+3,5,.5,'#334b4e22');}
  if(v.kind==='shop'){
@@ -107,7 +131,7 @@ export function paintVenueFacade(p:SceneryPen,v:TownVenue,open:boolean){
  c.globalAlpha=1;
 }
 export function drawVenueFacade(scene:Phaser.Scene,v:TownVenue,open:boolean){
- const key=`facade-v7-${v.id}-${open}`,width=v.w+80,height=v.h+125,resolution=1;
+ const key=`facade-v8-${v.id}-${open}`,width=v.w+80,height=v.h+145,resolution=1;
  if(!scene.textures.exists(key)){const t=scene.textures.createCanvas(key,width*resolution,height*resolution)!;t.context.scale(resolution,resolution);paintVenueFacade(new SceneryPen(t.context),v,open);t.refresh();t.setFilter(Phaser.Textures.FilterMode.NEAREST);}
  scene.add.image(v.x-40,v.y-91,key).setOrigin(0).setDisplaySize(width,height).setDepth(v.y+v.h);
 }
