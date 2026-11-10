@@ -19,7 +19,7 @@ test('広域マップは店と大型会場を重複なく散らし、乱数の�
 });
 test('街区は舗装道路でつながり、店舗の玄関は次の通りに短い歩道で接続する',()=>{
  assert.deepEqual(townSize,{width:7000,height:4600});
- for(const v of townVenues.filter(v=>v.w<300)){
+ for(const v of townVenues.filter(v=>v.kind!=='outdoor')){
   const entrance=townSpawn(v.id as Parameters<typeof townSpawn>[0]);
   const nextStreet=townRoads.horizontal.find(y=>y>v.y)!;
   assert.ok(nextStreet-entrance.y<=80&&nextStreet-entrance.y>=55,`${v.id} entrance should connect to its frontage street`);

@@ -4,6 +4,8 @@ import Phaser from 'phaser';
 import {isVenueOpen,townVenues,townSize,townRoads,townBlocks,townPlaza,townWalkBounds,type WorldProgress} from '../data/world';
 import {artNoise,paintPixelTree} from './PixelArtMaterials';
 import {SceneryPen} from './SceneryCanvas';
+/** One raster pixel covers two map units; repeating vector detail avoids full-size terrain canvases. */
+export const townGroundRasterScale=.5;
 
 /** Terrain is baked once. Pixel clusters follow a fixed, upper-left daylight. */
 function ground(c:CanvasRenderingContext2D,chunkX=0,chunkWidth=townSize.width,chunkY=0,chunkHeight=townSize.height){
@@ -89,8 +91,8 @@ function ground(c:CanvasRenderingContext2D,chunkX=0,chunkWidth=townSize.width,ch
  }
 }
 export function drawTown(scene:Phaser.Scene,progress:WorldProgress){
- // 大きな街でも個々の地面テクスチャは2048px以下の幅に保つ。
- for(let y=0;y<townSize.height;y+=2048)for(let x=0;x<townSize.width;x+=2048){const width=Math.min(2048,townSize.width-x),height=Math.min(2048,townSize.height-y),key=`midorikawa-ground-18-${x}-${y}`;if(!scene.textures.exists(key)){const texture=scene.textures.createCanvas(key,width,height)!;texture.context.translate(-x,-y);ground(texture.context,x,width,y,height);texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.NEAREST);}scene.add.image(x,y,key).setOrigin(0).setDepth(-100);}
+ // Chunk size limits canvas allocations; half-resolution raster cuts the full-world terrain buffer by 75%.
+ for(let y=0;y<townSize.height;y+=2048)for(let x=0;x<townSize.width;x+=2048){const width=Math.min(2048,townSize.width-x),height=Math.min(2048,townSize.height-y),key=`midorikawa-ground-19-${x}-${y}`,rasterWidth=Math.ceil(width*townGroundRasterScale),rasterHeight=Math.ceil(height*townGroundRasterScale);if(!scene.textures.exists(key)){const texture=scene.textures.createCanvas(key,rasterWidth,rasterHeight)!;texture.context.scale(townGroundRasterScale,townGroundRasterScale);texture.context.translate(-x,-y);ground(texture.context,x,width,y,height);texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.NEAREST);}scene.add.image(x,y,key).setOrigin(0).setDisplaySize(width,height).setDepth(-100);}
 
  for(const venue of townVenues)if(venue.kind==='outdoor')drawOutdoorCourse(scene,venue,isVenueOpen(venue,progress));else drawVenueFacade(scene,venue,isVenueOpen(venue,progress));
  for(const x of townRoads.vertical)for(let y=townWalkBounds.top+64;y<townWalkBounds.bottom-70;y+=180){if(townVenues.some(v=>Math.abs(x-v.x)<v.w+100&&y>v.y-80&&y<v.y+v.h+70))continue;tree(scene,x-100,y);lamp(scene,x+88,y+50);}

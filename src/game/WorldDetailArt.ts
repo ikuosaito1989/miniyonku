@@ -7,7 +7,7 @@ import {shopThemes} from '../data/shopThemes';
 /** Shared room finish, painted once and clipped away from all furniture footprints. */
 export function drawRoomFinish(scene:Phaser.Scene,id:string,fixtures:readonly {x:number;y:number;w:number;h:number}[],accent='#cab88d'){
  const key=`room-finish-16-${id}`;
- if(!scene.textures.exists(key)){const t=scene.textures.createCanvas(key,1920,1280)!;t.context.scale(2,2);const c=t.context,p=new SceneryPen(c);
+ if(!scene.textures.exists(key)){const t=scene.textures.createCanvas(key,960,640)!;const c=t.context,p=new SceneryPen(c);
   c.save();c.beginPath();c.rect(42,117,876,477);for(const f of fixtures)c.rect(f.x-2,f.y-2,f.w+4,f.h+5);c.clip('evenodd');
   p.material(43,118,874,475,id==='library'?'wood':'stone',id.length*7);
   // Soft light is expressed in a handful of stepped colour planes, not a blur.

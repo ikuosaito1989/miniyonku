@@ -20,21 +20,29 @@ export function paintVenueFacade(p:SceneryPen,v:TownVenue,open:boolean){
  }else if(v.kind==='stadium'){
   const colors:Record<string,string[]>={'stadium-5':['#376f73','#91bdac'],'stadium-9':['#4e527f','#bd9ace'],'stadium-10':['#745153','#e5b97a'],'stadium-7':['#354968','#dcc080']};
   const [dark,accent]=colors[v.id]??colors['stadium-5'];
-  p.round(x-9,y-18,w+18,h+18,14,'#23364a');p.gradient(x-5,y-9,w+10,h+5,'#d0d3cb','#839da6');
-  // スタジアムの段状スタンドと湾曲した大屋根。
-  p.ellipse(x+w/2,y+10,w*.55,65,'#263b51');p.ellipse(x+w/2,y+4,w*.54,59,'#b4c5c6');p.ellipse(x+w/2,y-2,w*.5,48,dark);p.ellipse(x+w/2,y-6,w*.44,33,'#26394e');
-  for(let i=0;i<22;i++){const a=Math.PI+(i/21)*Math.PI;const xx=x+w/2+Math.cos(a)*w*.49,yy=y+4+Math.sin(a)*47;p.line([[xx,yy],[x+w/2+Math.cos(a)*w*.54,yy-10]],'#e7e7d1',2);}
-  for(let row=0;row<3;row++){const yy=y+34+row*33;p.gradient(x+8,yy,w-16,28,'#c8d2ca','#778e9c');for(let i=0;i<13;i++){const xx=x+16+i*(w-32)/13;p.round(xx,yy+3,(w-48)/13,16,2,'#2c4a62');p.rect(xx+2,yy+4,(w-58)/13,4,'#97c9ce');}p.rect(x+4,yy+24,w-8,3,accent);}
-  // 4本の照明塔・トラス・投光器。
-  for(const tx of [x+7,x+w-22]){p.rect(tx,y-76,9,131,'#425b6d');for(let k=0;k<7;k++)p.line([[tx,y-70+k*18],[tx+9,y-52+k*18],[tx,y-52+k*18]],'#b6c8c8',1);p.round(tx-10,y-83,30,20,2,'#344a5e');for(let row=0;row<2;row++)for(let col=0;col<4;col++)p.round(tx-7+col*6,y-80+row*7,4,5,1,'#fff0c0');p.glow(tx+4,y-72,35,'#fff1b340');}
-  p.round(x+34,y+100,w-68,h-102,7,dark);p.gradient(x+41,y+108,w-82,h-116,'#6bafb9','#25435c');for(let i=0;i<9;i++)p.rect(x+46+i*(w-92)/9,y+110,2,h-121,'#dae7d477');
-  // 中央の紋章とレースのチェッカー。
-  p.round(x+w/2-44,y+25,88,66,8,'#1a2e45');p.round(x+w/2-41,y+28,82,60,6,accent);p.round(x+w/2-38,y+31,76,54,5,dark);p.trophy(x+w/2,y+37,1.1);
-  p.round(x+w/2-60,y+h-34,120,16,2,'#1c3447');p.rect(x+w/2-57,y+h-32,114,1,'#fff0c0');c.save();c.font='bold 7px sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillStyle='#fff0c9';c.fillText(v.name,x+w/2,y+h-26,110);c.restore();
-  p.checker(x+26,y+97,46,12,6);p.checker(x+w-72,y+97,46,12,6);
-  for(let step=0;step<4;step++){p.gradient(x+47-step*4,y+h-16+step*5,w-94+step*8,5,'#d7d9c8','#929ea0');}
-  for(const bx of [x+7,x+w-24]){p.gradient(bx,y+116,17,h-121,'#e7e2c5','#839696');p.rect(bx+3,y+118,2,h-125,'#fff1c5');}
-  for(const side of [-1,1]){const fx=x+w/2+side*(w*.36);p.rect(fx,y-45,2,60,'#b9c9c4');p.poly([[fx+2,y-44],[fx+27,y-39],[fx+2,y-20]],accent);p.checker(fx+4,y-42,16,8,4);}
+  // A stepped arena shell: deep service wing, angled canopy, visible front and side planes.
+  p.poly([[x+7,y+52],[x+w-29,y+52],[x+w+12,y+31],[x+w+12,y+h-22],[x+w-25,y+h-5],[x+7,y+h-5]],'#253b50');
+  p.poly([[x+8,y+49],[x+w-31,y+49],[x+w-31,y+h-17],[x+8,y+h-17]],'#9aaea9');
+  p.gradient(x+12,y+53,w-48,42,'#667d86','#344e61');
+  for(let row=0;row<3;row++){
+   const yy=y+56+row*13;p.rect(x+15,yy,w-55,2,accent);
+   for(let col=0;col<14;col++){const xx=x+19+col*(w-65)/14;p.rect(xx,yy+3,Math.max(5,(w-80)/18),6,['#304a60','#527083','#375c6b','#755d67'][col%4]);p.rect(xx+1,yy+3,2,2,'#d1b28c');}
+  }
+  // Cantilever roof with a lit fascia, exposed truss braces and a shaded right return.
+  p.poly([[x-8,y+51],[x+24,y+4],[x+w-34,y+4],[x+w+14,y+39],[x+w+7,y+54],[x-5,y+62]],'#24394d');
+  p.poly([[x-3,y+47],[x+27,y+10],[x+w-35,y+10],[x+w+7,y+40],[x+w+2,y+48],[x-1,y+55]],dark);
+  p.poly([[x-3,y+47],[x+27,y+10],[x+27,y+20],[x+4,y+51]],accent);
+  p.poly([[x+w-35,y+10],[x+w+7,y+40],[x+w+2,y+48],[x+w-35,y+21]],'#263b4b');
+  p.rect(x+30,y+13,w-68,2,'#e3e0c8');p.rect(x+29,y+18,w-62,2,'#1e3444');
+  for(let i=0;i<8;i++){const tx=x+38+i*(w-88)/8;p.line([[tx,y+19],[tx+12,y+42],[tx+23,y+19]],'#d4d6c366',1);}
+  // A modest name board sits in the canopy fascia instead of an oversized trophy emblem.
+  p.round(x+w/2-55,y+25,110,17,2,'#1d3448');p.rect(x+w/2-52,y+27,104,1,'#f0dfb4');c.save();c.font='bold 7px sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillStyle='#fff0c9';c.fillText(v.name,x+w/2,y+34,100);c.restore();
+  // Glass entrance, two stair flights, side columns and a small race pennant establish use and scale.
+  const doorY=y+h-79;p.round(x+w/2-53,doorY-5,106,64,3,'#263d51');p.gradient(x+w/2-49,doorY,98,49,'#a7c5c2','#547989');
+  p.rect(x+w/2-2,doorY,4,49,'#e1d3aa');p.rect(x+w/2-42,doorY+6,34,31,'#34566a');p.rect(x+w/2+8,doorY+6,34,31,'#34566a');p.rect(x+w/2-38,doorY+9,25,2,'#c8dcd2');p.rect(x+w/2+13,doorY+9,25,2,'#c8dcd2');p.rect(x+w/2-46,doorY+47,92,3,accent);
+  for(const bx of [x+13,x+w-35]){p.rect(bx,y+56,10,h-77,'#536c75');p.rect(bx+2,y+58,2,h-81,'#d7d8c2');p.rect(bx+7,y+58,2,h-81,'#334d5a');}
+  for(let step=0;step<4;step++){p.poly([[x+w/2-67-step*6,y+h-18+step*5],[x+w/2+67+step*6,y+h-18+step*5],[x+w/2+61+step*6,y+h-14+step*5],[x+w/2-61-step*6,y+h-14+step*5]],step%2?'#737f80':'#d1c7ae');}
+  for(const bx of [x+4,x+w-14]){p.rect(bx,y+27,2,38,'#bac9c4');p.poly([[bx+2,y+28],[bx+22,y+33],[bx+2,y+41]],accent);p.rect(bx+4,y+31,12,2,'#fff0c4');}
  }else{
   const t=shopThemes[(v.shopId??'komorebi') as ShopId];
   const shopId=v.shopId??'komorebi',style=['komorebi','aozora','hinata','wakaba','yuunagi','akatsuki','hoshikuzu','atelier','endurance','torque','velocity','terrain'].indexOf(shopId);
@@ -99,7 +107,7 @@ export function paintVenueFacade(p:SceneryPen,v:TownVenue,open:boolean){
  c.globalAlpha=1;
 }
 export function drawVenueFacade(scene:Phaser.Scene,v:TownVenue,open:boolean){
- const key=`facade-v5-${v.id}-${open}`,width=v.w+80,height=v.h+125;
- if(!scene.textures.exists(key)){const t=scene.textures.createCanvas(key,width*3,height*3)!;t.context.scale(3,3);paintVenueFacade(new SceneryPen(t.context),v,open);t.refresh();t.setFilter(Phaser.Textures.FilterMode.NEAREST);}
+ const key=`facade-v7-${v.id}-${open}`,width=v.w+80,height=v.h+125,resolution=1;
+ if(!scene.textures.exists(key)){const t=scene.textures.createCanvas(key,width*resolution,height*resolution)!;t.context.scale(resolution,resolution);paintVenueFacade(new SceneryPen(t.context),v,open);t.refresh();t.setFilter(Phaser.Textures.FilterMode.NEAREST);}
  scene.add.image(v.x-40,v.y-91,key).setOrigin(0).setDisplaySize(width,height).setDepth(v.y+v.h);
 }

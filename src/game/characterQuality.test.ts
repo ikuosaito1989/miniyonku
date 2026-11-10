@@ -3,14 +3,14 @@ import assert from 'node:assert/strict';
 import {shopRenderScale} from '../data/display';
 import {personDrawing,challengerDrawing,doctorDrawing,offroaderDrawing,personSpriteSize,type Facing,type PersonKind} from './PeopleArt';
 
-test('2DのRetina描画はDPR2を使用し、画面サイズとGPU上限を守る',()=>{
+test('2DのRetina描画はDPR2を上限とし、軽量なピクセル描画予算を守る',()=>{
   assert.equal(shopRenderScale(390,844,3),2);
   assert.equal(shopRenderScale(844,390,2),2);
   assert.equal(shopRenderScale(1100,850,1),1);
   for(const [w,h,dpr] of [[2000,1500,3],[4000,2000,3],[390,844,2]]){
     const ratio=shopRenderScale(w,h,dpr);
     assert.ok(w*ratio<=2560&&h*ratio<=2560);
-    assert.ok(w*h*ratio*ratio<=4_000_001);
+    assert.ok(w*h*ratio*ratio<=1_500_001);
   }
   for(const invalid of [NaN,Infinity,-1,0])assert.ok(Number.isFinite(shopRenderScale(invalid,invalid,invalid)));
 });

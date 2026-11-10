@@ -271,6 +271,13 @@ export class ShopScene extends Phaser.Scene {
     this.input.on('blur',()=>this.input.keyboard?.resetKeys());
     this.game.events.on(Phaser.Core.Events.BLUR, this.resetKeys, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN,()=>this.game.events.off(Phaser.Core.Events.BLUR,this.resetKeys,this));
+    if(new URLSearchParams(window.location.search).has('renderstats')){
+      const textures=Object.values(this.textures.list) as Phaser.Textures.Texture[],sources=textures.flatMap(texture=>texture.source),uniqueImages=new Set(sources.map(source=>source.image));
+      const estimatedGpuBytes=sources.reduce((sum,source)=>sum+source.width*source.height*4,0);
+      const stats={location:useGame.getState().location,renderer:this.game.renderer.type,textureCount:textures.length,sourceCount:sources.length,uniqueImages:uniqueImages.size,estimatedGpuMiB:Number((estimatedGpuBytes/1048576).toFixed(1)),canvasWidth:this.game.canvas.width,canvasHeight:this.game.canvas.height};
+      console.info(`[seiran-renderstats] ${JSON.stringify(stats)} (RGBA estimate; driver overhead and CPU canvas buffers excluded)`);
+      window.dispatchEvent(new CustomEvent('seiran:renderstats',{detail:stats}));
+    }
     window.dispatchEvent(new CustomEvent('miniyonku:world-ready',{detail:{location:useGame.getState().location}}));
   }
   private cancelRoute(){this.route=[];this.destination?.setVisible(false);}

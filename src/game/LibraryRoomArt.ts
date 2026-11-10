@@ -1,4 +1,4 @@
-import type Phaser from 'phaser';
+import Phaser from 'phaser';
 import {SceneryPen} from './SceneryCanvas';
 import {drawRoomFinish} from './WorldDetailArt';
 import {libraryShelves,libraryTables,libraryReadingDesk} from '../data/libraryRoom';
@@ -19,7 +19,7 @@ function volume(p:SceneryPen,x:number,y:number,h:number,index:number){
  if(index%4===0){p.rect(x+2,y+5,1,h-11,'#e2d1a855');p.rect(x+3,y+6,.5,h-13,'#304c4a33');}
 }
 export function drawLibraryRoom(scene:Phaser.Scene){
- const texture=(key:string,w:number,h:number,paint:(p:SceneryPen)=>void)=>{if(!scene.textures.exists(key)){const t=scene.textures.createCanvas(key,w*2,h*2)!;t.context.scale(2,2);paint(new SceneryPen(t.context));t.refresh();}};
+ const texture=(key:string,w:number,h:number,paint:(p:SceneryPen)=>void)=>{if(!scene.textures.exists(key)){const t=scene.textures.createCanvas(key,w,h)!;paint(new SceneryPen(t.context));t.refresh();t.setFilter(Phaser.Textures.FilterMode.NEAREST);}};
  texture('library-room-floor-16',960,640,p=>{
   p.rect(0,0,960,640,'#263b42');p.gradient(40,26,880,104,'#78918b','#b7c4aa');
   for(let x=50;x<920;x+=16){p.rect(x,28,1,98,'#d1d5bd33');p.rect(x+8,28,1,98,'#324b4d16');}p.material(40,28,880,100,'wood',9);

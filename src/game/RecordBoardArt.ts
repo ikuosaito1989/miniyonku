@@ -3,7 +3,7 @@ import {SceneryPen} from './SceneryCanvas';
 /** A readable trophy + stopwatch sign. Words and actual records stay in the UI. */
 export function drawRecordBoard(scene:Phaser.Scene,rect:{x:number;y:number;w:number;h:number},depth:number,hasRecords=false){
  const {x,y,w,h}=rect,key=`record-board-16-${w}-${h}-${hasRecords}`;
- if(!scene.textures.exists(key)){const t=scene.textures.createCanvas(key,(w+8)*3,(h+9)*3)!;t.context.scale(3,3);const p=new SceneryPen(t.context);
+ if(!scene.textures.exists(key)){const t=scene.textures.createCanvas(key,(w+8)*2,(h+9)*2)!;t.context.scale(2,2);const p=new SceneryPen(t.context);
   p.ellipse(w/2+3,h+3,w/2,3,'#273e4133');for(const xx of [9,w-14]){p.rect(xx,h-15,5,19,'#3d4c43');p.rect(xx+1,h-14,2,17,'#9d8960');p.rect(xx+2,h-14,1,15,'#c6ad78');}
   p.round(1,2,w,h-5,2,'#293e49');p.gradient(2,1,w-2,h-7,'#dfc797','#a18b62');p.rect(4,3,w-6,1,'#fff0bd');p.round(5,5,w-10,h-15,1,'#274b56');p.rect(7,6,w-14,1,'#7d9d94');p.material(7,7,w-14,h-20,'metal');
   const scale=Math.min(w/100,h/64),cx=w*.45,cy=h*.24;p.trophy(cx,cy,scale*.75);
