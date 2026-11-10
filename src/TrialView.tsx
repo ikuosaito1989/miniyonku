@@ -24,6 +24,7 @@ import { AudioControls } from './GameAudio';
 import { useAudioSettings } from './game/audioSettings';
 import starterPortrait from './assets/portraits/starter-pop.webp';
 import { prizesForCircuit } from './data/economy';
+import { SeiranLoading } from './WorldTransitionLoading';
 
 function clock(seconds:number,roundUp=false){
   const centiseconds=roundUp?Math.ceil(seconds*100-1e-7):Math.floor(seconds*100);
@@ -70,6 +71,7 @@ export default function TrialView(){
   const introduction=courseIntroduction(circuitId,officialChallenge);
   const [finish,setFinish]=useState(createFinishPresentation);
   const [cameraZoom,setCameraZoom]=useState(defaultRaceZoom);
+  const [rendererReady,setRendererReady]=useState(false);
   const overview=cameraZoom===0;
   const [error,setError]=useState('');
   const onlineMessage=useOnlineStatus(s=>s.message);
@@ -77,23 +79,28 @@ export default function TrialView(){
   const sound=useAudioSettings(s=>s.enabled),volume=useAudioSettings(s=>s.volume);
 
   useEffect(()=>{
+    setRendererReady(false);
     const stored=useGame.getState();
     const condition=equippedCondition(equipment,stored.units,stored.selectedUnits);
     setState(createRaceState(equipment,stored.raceSeed,condition,challenge,circuitId,stored.bodyPaint,stored.playerName||undefined));setFinish(createFinishPresentation());setError('');setCameraZoom(defaultRaceZoom);setIntro(raceIntroAt(0));
     const raceAttempt=useGame.getState().raceAttempt;
     let submitted=false;
-    try{renderer.current=new TrialRenderer(host.current!,equipment,race=>{
-      useGame.getState().settleRace(raceAttempt,race);
-      if(!submitted&&race.racers.find(r=>r.id==='player')?.driving.status==='finished'){
-        submitted=true;
-        const current=useGame.getState(),record=raceSubmission(race,current.playerName);
-        if(record&&!tutorialActive(current.tutorialStage))void queueOnlineRecord(record);
-        else useOnlineStatus.setState({message:tutorialActive(current.tutorialStage)?'チュートリアル中はオンライン登録対象外です。':'星皇装備、または対象外の記録のためオンライン登録しません。'});
-      }
-      setState(race);
-    },setFinish,condition,stored.raceSeed,challenge,circuitId,setIntro,stored.bodyPaint,online?.records??null,!!mob,stored.playerName||undefined);}
-    catch{setError('3D表示を開始できませんでした。WebGL対応ブラウザで再試行してください。');}
-    return()=>{renderer.current?.dispose();renderer.current=null;};
+    let secondFrame=0;
+    const firstFrame=requestAnimationFrame(()=>{secondFrame=requestAnimationFrame(()=>{
+      try{renderer.current=new TrialRenderer(host.current!,equipment,race=>{
+        useGame.getState().settleRace(raceAttempt,race);
+        if(!submitted&&race.racers.find(r=>r.id==='player')?.driving.status==='finished'){
+          submitted=true;
+          const current=useGame.getState(),record=raceSubmission(race,current.playerName);
+          if(record&&!tutorialActive(current.tutorialStage))void queueOnlineRecord(record);
+          else useOnlineStatus.setState({message:tutorialActive(current.tutorialStage)?'チュートリアル中はオンライン登録対象外です。':'星皇装備、または対象外の記録のためオンライン登録しません。'});
+        }
+        setState(race);
+      },setFinish,condition,stored.raceSeed,challenge,circuitId,setIntro,stored.bodyPaint,online?.records??null,!!mob,stored.playerName||undefined);}
+      catch{setError('3D表示を開始できませんでした。WebGL対応ブラウザで再試行してください。');}
+      finally{setRendererReady(true);}
+    });});
+    return()=>{cancelAnimationFrame(firstFrame);cancelAnimationFrame(secondFrame);renderer.current?.dispose();renderer.current=null;};
   },[equipment,challenge,circuitId,online,mob]);
   useEffect(()=>{renderer.current?.setSound(sound,volume);},[sound,volume,equipment]);
 
@@ -174,6 +181,7 @@ export default function TrialView(){
     {!courseIntroPreview&&!introducing&&(online?<RaceRanking race={state}/>:replay?<div className="time-trial-target"><span>クリア後・タイムアタック</span><span>{recordEligible?'記録対象：星皇なし':'星皇装着・記録対象外'}</span></div>:timeTrial?<div className="time-trial-target"><span>規定 <strong>{yuunagiTimeLimit.toFixed(2)}秒以内</strong></span><span>{bestTime!==null?`自己ベスト ${(Math.ceil(bestTime*100-1e-7)/100).toFixed(2)}秒`:'初挑戦'}</span><span>{finalQualified?'出場権獲得済み':'クリアで第4大会出場権'}</span></div>:<RaceRanking race={state}/>)}
     <div className="race-viewport">
       <div className="trial-canvas" ref={host}/>
+      {!rendererReady&&!error&&<SeiranLoading label="3Dコースを準備しています" compact/>}
       <div className="race-scanlines"/>
       {introducing&&!error&&<section className={`race-intro race-intro-${intro.stage}`} aria-label="レース場紹介">
         <div className="race-intro-heading"><span>COURSE INTRODUCTION</span><p>{exhibition?raceName:officialChallenge?raceName:shop.name}</p><h2>{introduction.name}</h2></div>

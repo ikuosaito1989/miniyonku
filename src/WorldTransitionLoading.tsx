@@ -7,6 +7,18 @@ import './world-transition-loading.css';
 type WorldLocation=ReturnType<typeof useGame.getState>['location'];
 type LoadingTransition={location:WorldLocation;startedAt:number};
 
+export function SeiranLoading({label,fullscreen=false,compact=false,inline=false}:{label:string;fullscreen?:boolean;compact?:boolean;inline?:boolean}){
+  return <div className={`world-transition-loading${fullscreen?' world-transition-loading-fullscreen':''}${compact?' world-transition-loading-compact':''}${inline?' world-transition-loading-inline':''}`} role="status" aria-live="polite" aria-label={label}>
+    <div className="world-transition-card">
+      <span className="world-transition-kicker">GREEN RIVER RACING</span>
+      <div className="world-transition-spinner"><span className="world-transition-orbit"/><img src={machine} alt=""/></div>
+      <strong>{label}</strong>
+      <div className="world-transition-progress" aria-hidden="true"><i/></div>
+      <small>LOADING</small>
+    </div>
+  </div>;
+}
+
 function destinationName(location:WorldLocation){
   if(location==='town')return '緑川町';
   if(location==='library')return '緑川町立図書館';
@@ -17,12 +29,14 @@ function destinationName(location:WorldLocation){
   return currentShop(location).name;
 }
 
-export function WorldTransitionLoading({active}:{active:boolean}){
+export function WorldTransitionLoading({active,initialLoading=false}:{active:boolean;initialLoading?:boolean}){
   const location=useGame(s=>s.location),openingActive=useGame(s=>s.openingActive),previous=useRef(location);
+  const initialPending=useRef(initialLoading);
   const [transition,setTransition]=useState<LoadingTransition|null>(null);
   useLayoutEffect(()=>{
     const from=previous.current;previous.current=location;
-    if(from===location||openingActive||!active)return;
+    const initial=initialPending.current;initialPending.current=false;
+    if(!active||from===location&&!initial||openingActive&&!initial)return;
     const startedAt=performance.now();let hideTimer=0,timeout=0;
     const onReady=(event:Event)=>{
       const readyLocation=(event as CustomEvent<{location:WorldLocation}>).detail?.location;
@@ -38,13 +52,5 @@ export function WorldTransitionLoading({active}:{active:boolean}){
   },[location,openingActive,active]);
   if(!transition)return null;
   const destination=destinationName(transition.location);
-  return <div className="world-transition-loading" role="status" aria-live="polite" aria-label={`${destination}へ移動中`}>
-    <div className="world-transition-card">
-      <span className="world-transition-kicker">GREEN RIVER RACING</span>
-      <div className="world-transition-spinner"><span className="world-transition-orbit"/><img src={machine} alt=""/></div>
-      <strong>{destination}へ移動中</strong>
-      <div className="world-transition-progress" aria-hidden="true"><i/></div>
-      <small>LOADING</small>
-    </div>
-  </div>;
+  return <SeiranLoading label={`${destination}へ移動中`}/>;
 }

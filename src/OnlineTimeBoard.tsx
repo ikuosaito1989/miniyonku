@@ -8,6 +8,7 @@ import {useGame} from './game/store';
 import {formatRecordTime} from './game/timeRecords';
 import type {OnlineRecord} from './game/onlineRecords';
 import {loadLeaderboard,onlineDisplayName,setOnlineDisplayName,syncOnlineRecords,useOnlineStatus} from './game/onlineLeaderboard';
+import {SeiranLoading} from './WorldTransitionLoading';
 
 export function OnlineTimeBoard({circuitId}:{circuitId:CircuitId}){
  const [records,setRecords]=useState<OnlineRecord[]>([]),[name,setName]=useState(''),[error,setError]=useState(''),[loading,setLoading]=useState(true),[revision,setRevision]=useState(0);
@@ -25,7 +26,7 @@ export function OnlineTimeBoard({circuitId}:{circuitId:CircuitId}){
   <label>投稿する表示名 <input value={name} maxLength={24} onChange={event=>setName(event.target.value)} /></label>
   <button onClick={()=>{void saveName();}}>表示名を保存</button>
   <button disabled={loading} onClick={()=>{void syncOnlineRecords().then(()=>setRevision(n=>n+1));}}>再送・ランキング更新</button>
-  <p role="status">{loading?'ランキングを読み込み中…':message}</p>
+  {loading?<SeiranLoading label="オンラインランキングを読み込んでいます" compact inline/>:<p role="status">{message}</p>}
   {error&&<p role="alert">{error}</p>}
   {!loading&&!error&&!records.length&&<p>まだオンライン記録がありません。完走して最初の記録を残そう。</p>}
   <ol>{records.map((record,index)=><li key={record.playerId}>

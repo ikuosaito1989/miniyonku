@@ -15,7 +15,7 @@ import { GameOver } from './GameOver';
 import { keepScreenAwake } from './game/wakeLock';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { ShopWorld } from './ShopWorld';
-import { WorldTransitionLoading } from './WorldTransitionLoading';
+import { SeiranLoading, WorldTransitionLoading } from './WorldTransitionLoading';
 import { useGame } from './game/store';
 import {equipmentSlots,type EquipmentSlot} from './data/machine';
 import { categories, parts, type Category, type Part } from './data/parts';
@@ -85,7 +85,7 @@ export function App(){
   return <main>
     <GameAudio/>
     {!started ? <TitleScreen needsName={!game.playerName} onName={name=>{useGame.getState().setPlayerName(name);void setOnlineDisplayName(name).catch(()=>{});}} onStart={()=>{useGame.getState().startOpening();useGame.getState().resumeTutorial();useGame.getState().resumeKoyaEscort();useGame.getState().resumeTowaEscort();setStarted(true);}}/> : <section className="game-shell" aria-label="ゲーム画面">
-      <div className="stage"><ShopWorld/><WorldTransitionLoading active={started}/>
+      <div className="stage"><ShopWorld/><WorldTransitionLoading active={started} initialLoading={started}/>
         {game.overlay===null&&<div className="world-toolbar"><button className="game-settings-open" onClick={game.openSettings}>設定</button>{game.location==='library'?<div className="library-room-guide"><div><strong>緑川町立図書館</strong><span>{game.nearby||'本棚をタップして近づくと読めます'}</span></div><button onClick={()=>game.openLibrary()}>全蔵書</button></div>:!tutorialActive(game.tutorialStage)&&<MissionGuide/>}<AudioControls floating/></div>}
         <SaveWarning/>
         {game.openingActive&&<OpeningScene/>}
@@ -107,7 +107,7 @@ export function App(){
         {game.overlay==='settings'&&<GameSettings/>}
         {game.overlay==='cheat'&&<CheatPanel/>}
         {game.overlay==='setting'&&<SettingView/>}
-        {game.overlay==='race'&&<Suspense fallback={<div className="trial-loading">試走コースを準備中…</div>}><TrialView/></Suspense>}
+        {game.overlay==='race'&&<Suspense fallback={<SeiranLoading label="レースコースを読み込んでいます" compact/>}><TrialView/></Suspense>}
         {game.overlay==='shop'&&<div className="scrim"><div className="modal shop" inert={!!pendingPurchase} aria-hidden={pendingPurchase?true:undefined} role="dialog" aria-modal={pendingPurchase?undefined:true} aria-labelledby="modal-title" ref={modal} tabIndex={-1}>
             <div className="shop-head"><div><p className="eyebrow">{shop.name}</p><h2 id="modal-title">パーツショップ</h2></div><button className="close" onClick={game.close} aria-label="ショップを閉じる">✕</button></div>
             <div className="shop-balance">所持金 <strong>¥ {yen(game.money)}</strong><span>所持パーツ {Object.values(game.inventory).reduce((a,b)=>a+b,0)} 点（初期装備含む）</span></div>

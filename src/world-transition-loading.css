@@ -1,4 +1,5 @@
 .world-transition-loading{position:absolute;z-index:100;inset:0;display:grid;place-items:center;padding:max(24px,env(safe-area-inset-top)) 20px max(24px,env(safe-area-inset-bottom));background:radial-gradient(ellipse at 50% 42%,#29454b 0,#172b31 58%,#101e25 100%);color:#f2e8ca;animation:world-loading-in .16s ease-out both}
+.world-transition-loading-fullscreen{position:fixed;z-index:2000}
 .world-transition-card{width:min(100%,390px);min-height:330px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:26px 28px;border:3px ridge #b7c3af;background:linear-gradient(145deg,#213c46ed,#172d38f5);box-shadow:0 12px 36px #08151aa3,inset 0 0 0 1px #738e8170;text-align:center}
 .world-transition-kicker,.world-transition-card small{font-family:monospace;font-size:11px;letter-spacing:3px;color:#c1b17b}
 .world-transition-spinner{position:relative;width:min(76vw,290px);height:160px;display:grid;place-items:center;perspective:500px}
@@ -7,6 +8,15 @@
 .world-transition-card strong{font-size:18px;letter-spacing:1px;color:#fff0c5}
 .world-transition-progress{width:min(100%,230px);height:7px;overflow:hidden;border:1px solid #8f9b89;background:#12242c}
 .world-transition-progress i{display:block;width:38%;height:100%;background:linear-gradient(90deg,#c5a85f,#fff0b1,#c5a85f);box-shadow:0 0 12px #f5db8b;animation:world-loading-progress 1.15s ease-in-out infinite}
+.world-transition-loading-compact .world-transition-card{width:min(100%,300px);min-height:225px;gap:10px;padding:14px 18px}
+.world-transition-loading-compact .world-transition-spinner{width:min(62vw,200px);height:100px}
+.world-transition-loading-compact .world-transition-orbit{width:90px;height:90px}
+.world-transition-loading-inline{position:relative;inset:auto;min-height:135px;padding:10px;background:transparent;animation:none}
+.world-transition-loading-inline .world-transition-card{width:100%;min-height:120px;gap:6px;padding:6px;border:0;background:transparent;box-shadow:none}
+.world-transition-loading-inline .world-transition-spinner{width:min(44vw,118px);height:64px}
+.world-transition-loading-inline .world-transition-orbit{width:56px;height:56px}
+.world-transition-loading-inline .world-transition-kicker,.world-transition-loading-inline .world-transition-card small{font-size:8px;letter-spacing:1px}
+.world-transition-loading-inline .world-transition-card strong{font-size:13px}
 @keyframes world-loading-car{0%{transform:rotate(-12deg) scale(.92)}50%{transform:rotate(168deg) scale(1.04)}100%{transform:rotate(348deg) scale(.92)}}
 @keyframes world-loading-orbit{to{transform:rotate(360deg)}}
 @keyframes world-loading-progress{0%{transform:translateX(-110%)}100%{transform:translateX(370%)}}
