@@ -3,6 +3,14 @@ import type {TownVenue,ShopId} from '../data/world';
 import {shopThemes} from '../data/shopThemes';
 import {SceneryPen} from './SceneryCanvas';
 
+function roofBlock(p:SceneryPen,x:number,y:number,w:number,h:number,top:string,front:string,side:string){
+ p.poly([[x,y],[x+8,y-5],[x+w+8,y-5],[x+w,y]],side);
+ p.poly([[x,y],[x+w,y],[x+w,y+h],[x,y+h]],front);
+ p.poly([[x+w,y],[x+w+8,y-5],[x+w+8,y+h-5],[x+w,y+h]],side);
+ p.poly([[x,y],[x+8,y-5],[x+w+8,y-5],[x+w,y]],top);
+ p.line([[x+3,y+2],[x+w-3,y+2]],'#ffffff55',1);
+}
+
 export function paintVenueFacade(p:SceneryPen,v:TownVenue,open:boolean){
  if(v.kind==='outdoor')return;
  const w=v.w,h=v.h,x=40,y=91,c=p.c;
@@ -24,7 +32,7 @@ export function paintVenueFacade(p:SceneryPen,v:TownVenue,open:boolean){
   // Keep the shapes large and simple; added volume comes from geometry and shadow,
   // not from increasing the pixel density.
   p.poly([[x+7,y+52],[x+w-29,y+52],[x+w+26,y+22],[x+w+26,y+h-18],[x+w-25,y+h-5],[x+7,y+h-5]],'#253b50');
-  p.poly([[x+8,y+49],[x+w-31,y+49],[x+w-31,y+h-17],[x+8,y+h-17]],'#9aaea9');
+  p.poly([[x+8,y+49],[x+w-31,y+49],[x+w-31,y+h-5],[x+8,y+h-5]],'#9aaea9');
   p.gradient(x+12,y+53,w-48,42,'#667d86','#344e61');
   for(let row=0;row<3;row++){
    const yy=y+56+row*13;p.rect(x+15,yy,w-55,2,accent);
@@ -36,14 +44,21 @@ export function paintVenueFacade(p:SceneryPen,v:TownVenue,open:boolean){
   p.poly([[x-7,y+48],[x+31,y-34],[x+31,y-20],[x+3,y+54]],accent);
   p.poly([[x+31,y-34],[x+w-35,y-34],[x+w+12,y+36],[x+w+6,y+50],[x+w/2,y-20]],'#526b79');
   p.poly([[x+w/2,y-20],[x+w+6,y+50],[x+w+6,y+57],[x+w/2,y-11]],'#263b4b');
+  roofBlock(p,x+w/2-31,y-8,62,22,'#d3d5c1',dark,'#263b4b');
+  for(const ventX of [x+22,x+w-42])roofBlock(p,ventX,y-34,17,9,'#d5d5c0','#526571','#263d4a');
   for(let band=0;band<4;band++){const yy=y-24+band*15;p.line([[x+22+band*6,yy],[x+w-28+band*6,yy+1]],band%2?'#d0d3bd77':'#263c4a88',2);}
   p.rect(x+30,y-28,w-68,2,'#e3e0c8');p.rect(x+29,y-22,w-62,2,'#1e3444');
   for(let i=0;i<8;i++){const tx=x+38+i*(w-88)/8;p.line([[tx,y-20],[tx+12,y+20],[tx+23,y-20]],'#d4d6c366',1);}
   // A modest name board sits in the canopy fascia instead of an oversized trophy emblem.
   p.round(x+w/2-55,y+24,110,17,2,'#1d3448');p.rect(x+w/2-52,y+26,104,1,'#f0dfb4');c.save();c.font='bold 7px sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillStyle='#fff0c9';c.fillText(v.name,x+w/2,y+33,100);c.restore();
-  // Glass entrance, two stair flights, side columns and a small race pennant establish use and scale.
-  const doorY=y+h-79;p.round(x+w/2-53,doorY-5,106,64,3,'#263d51');p.gradient(x+w/2-49,doorY,98,49,'#a7c5c2','#547989');
-  p.rect(x+w/2-2,doorY,4,49,'#e1d3aa');p.rect(x+w/2-42,doorY+6,34,31,'#34566a');p.rect(x+w/2+8,doorY+6,34,31,'#34566a');p.rect(x+w/2-38,doorY+9,25,2,'#c8dcd2');p.rect(x+w/2+13,doorY+9,25,2,'#c8dcd2');p.rect(x+w/2-46,doorY+47,92,3,accent);
+  // Two storey window bands sit below the canopy. The entrance overlays their
+  // center bays, leaving visible windows on both sides of the lobby.
+  for(const yy of [y+59,y+73])for(let col=0;col<6;col++){
+   const bx=x+12+col*15;p.round(bx,yy,11,9,1,'#405967');p.rect(bx+2,yy+2,7,5,'#77a6ad');p.rect(bx+2,yy+2,3,2,'#d1dfd0');p.rect(bx+1,yy+10,9,2,accent);
+  }
+  // Glass entrance, stairs, side columns and a small race pennant establish use and scale.
+  const doorY=y+h-57;p.round(x+w/2-24,doorY-5,48,64,3,'#263d51');p.gradient(x+w/2-20,doorY,40,49,'#a7c5c2','#547989');
+  p.rect(x+w/2-2,doorY,4,49,'#e1d3aa');p.rect(x+w/2-17,doorY+6,12,31,'#34566a');p.rect(x+w/2+5,doorY+6,12,31,'#34566a');p.rect(x+w/2-15,doorY+9,8,2,'#c8dcd2');p.rect(x+w/2+7,doorY+9,8,2,'#c8dcd2');p.rect(x+w/2-20,doorY+47,40,3,accent);
   for(const bx of [x+13,x+w-35]){p.rect(bx,y+56,10,h-77,'#536c75');p.rect(bx+2,y+58,2,h-81,'#d7d8c2');p.rect(bx+7,y+58,2,h-81,'#334d5a');}
   for(let step=0;step<4;step++){p.poly([[x+w/2-67-step*6,y+h-18+step*5],[x+w/2+67+step*6,y+h-18+step*5],[x+w/2+61+step*6,y+h-14+step*5],[x+w/2-61-step*6,y+h-14+step*5]],step%2?'#737f80':'#d1c7ae');}
   for(const bx of [x+4,x+w-14]){p.rect(bx,y+27,2,38,'#bac9c4');p.poly([[bx+2,y+28],[bx+22,y+33],[bx+2,y+41]],accent);p.rect(bx+4,y+31,12,2,'#fff0c4');}
@@ -59,20 +74,19 @@ export function paintVenueFacade(p:SceneryPen,v:TownVenue,open:boolean){
   // ridge and fascia establish volume at the same one-pixel source resolution.
   p.poly([[x-13,y+9],[x+21,y-57],[x+w-23,y-57],[x+w+25,y+2],[x+w+21,y+18],[x-9,y+25]],'#30464d');
   p.poly([[x-7,y+5],[x+25,y-50],[x+w-21,y-50],[x+w+16,y+3],[x+w+12,y+14],[x-4,y+17]],t.accent);
-  if(style===0||style===4||style===6){
-   p.poly([[x-7,y+5],[x+25,y-50],[x+w/2,y-30],[x+2,y+15]],t.light);
-   p.poly([[x+25,y-50],[x+w-21,y-50],[x+w+16,y+3],[x+w/2,y-30]],t.accent);
-   p.poly([[x-7,y+5],[x+25,y-50],[x+25,y-41],[x-4,y+14]],'#f4e5bf');
-   for(let band=0;band<4;band++){const yy=y-40+band*12;p.line([[x+31,y+yy+50],[x+w-18,y+yy+50]],'#f2e3bd55',1);}
-  }else if(style===2||style===5){
-   p.poly([[x-7,y+4],[x+20,y-43],[x+w-26,y-43],[x+w+16,y+5],[x+w+12,y+17],[x-3,y+17]],t.accent);
-   p.poly([[x-4,y-1],[x+24,y-38],[x+w-29,y-38],[x+w+10,y+5]],'#d6b982');
-   p.line([[x-4,y+7],[x+w+12,y+12]],'#f1d29b',3);
-  }else{
-   p.poly([[x-7,y+4],[x+22,y-45],[x+w-24,y-45],[x+w+17,y+4],[x+w+13,y+16],[x-3,y+16]],t.accent);
-   p.poly([[x+2,y+1],[x+26,y-40],[x+w-27,y-40],[x+w+9,y+5]],t.light);
-   p.poly([[x+26,y-40],[x+w-27,y-40],[x+w+9,y+5],[x+w+3,y+7]],t.accent);
-   p.rect(x+24,y-33,w-48,2,'#f4e9c4');p.rect(x+26,y-27,w-52,2,'#304c50');
+  // Keep shop roofs flat and stepped, like the low-rise commercial blocks in
+  // the references; the raised plant room and parapet make the profile read.
+  const roofTone=style===3?'#526b54':style===5?'#a65554':t.accent;
+  p.poly([[x-6,y+5],[x+25,y-50],[x+w-21,y-50],[x+w+16,y+3],[x+w+12,y+14],[x-4,y+17]],roofTone);
+  p.poly([[x+2,y+2],[x+29,y-45],[x+w-24,y-45],[x+w+10,y+5]],t.light);
+  p.poly([[x+29,y-45],[x+w-24,y-45],[x+w+10,y+5],[x+w+4,y+7]],roofTone);
+  for(let seam=0;seam<3;seam++){const yy=y-35+seam*12;p.line([[x+28+seam*5,yy],[x+w-25+seam*5,yy]],'#394c4b66',1);}
+  // Rooftop plant room and vents echo the stacked, practical shop buildings
+  // in the references. Their silhouette carries the detail, not extra pixels.
+  roofBlock(p,x+30,y-26,w-60,25,t.light,t.floorDark,t.ink);
+  for(const [vx,vy,vw,vh] of [[x+16,y-33,12,15],[x+w-34,y-27,16,10],[x+w/2+5,y-42,12,7]] as const){
+   roofBlock(p,vx,vy,vw,vh,'#c7d0bc','#667d78','#344b4d');
+   p.rect(vx+3,vy+3,Math.max(3,vw-6),2,'#263e49');
   }
   // Existing floorplans remain walkable. Compress the front elevation against
   // the unchanged ground line so the roof and right return occupy more of the
@@ -91,9 +105,14 @@ export function paintVenueFacade(p:SceneryPen,v:TownVenue,open:boolean){
   p.rect(x-8,y+2,w+16,4,t.wood);p.rect(x-7,y+2,w+14,1,t.metal);
   for(let xx=x+13;xx<x+w-18;xx+=35){p.shadow(xx,y+14,26,25);p.round(xx,y+14,26,25,1,'#5e6e7b');p.gradient(xx+2,y+16,22,20,'#a5c9c9','#7198a6');p.poly([[xx+3,y+17],[xx+10,y+17],[xx+5,y+31],[xx+3,y+31]],'#f6f3da42');p.rect(xx+4,y+17,3,17,'#e5ecce88');p.rect(xx+12,y+16,1,20,'#d8d9bc');p.rect(xx-1,y+38,28,2,t.wood);p.rect(xx,y+40,27,1,'#354c5266');}
   // Raised storefront sign and miniature machine badge identify each usable shop.
-  p.round(x+7,y+46,w-14,25,2,t.wood);p.rect(x+10,y+48,w-20,1,'#fff0cb88');p.round(x+10,y+48,w-20,21,1,t.ink);
-  p.wheel(x+w/2-14,y+60,6,t.metal);p.wheel(x+w/2+14,y+60,6,t.metal);p.poly([[x+w/2-18,y+57],[x+w/2-5,y+51],[x+w/2+15,y+53],[x+w/2+21,y+58]],t.accent);
-  p.poly([[x+w/2-9,y+55],[x+w/2-3,y+52],[x+w/2+7,y+53],[x+w/2+10,y+56]],'#e8efdc');p.poly([[x+w/2-7,y+55],[x+w/2-2,y+53],[x+w/2+5,y+54],[x+w/2+7,y+56]],'#527582');p.rect(x+w/2-20,y+58,4,2,'#f3d48a');p.rect(x+w/2+18,y+58,4,2,'#f3d48a');p.line([[x+w/2-13,y+64],[x+w/2+13,y+64]],'#f0e4bd',.7);
+  // A deep glass display bay replaces the flat emblem panel with a visible
+  // showroom window and a small machine displayed behind its shelves.
+  p.round(x+7,y+46,w-14,25,2,t.wood);p.round(x+10,y+48,w-20,21,1,'#31484d');
+  p.gradient(x+12,y+50,w-24,17,'#a8c9c4','#587986');
+  for(let shelf=0;shelf<2;shelf++)p.rect(x+14,y+56+shelf*7,w-28,1,'#e2d8b8');
+  p.wheel(x+w/2-14,y+61,6,t.metal);p.wheel(x+w/2+14,y+61,6,t.metal);p.poly([[x+w/2-20,y+58],[x+w/2-7,y+52],[x+w/2+12,y+54],[x+w/2+21,y+59]],t.accent);
+  p.poly([[x+w/2-10,y+56],[x+w/2-4,y+53],[x+w/2+6,y+54],[x+w/2+10,y+57]],'#e8efdc');p.poly([[x+w/2-8,y+56],[x+w/2-3,y+54],[x+w/2+4,y+55],[x+w/2+8,y+57]],'#527582');p.rect(x+w/2-22,y+60,4,2,'#f3d48a');p.rect(x+w/2+19,y+60,4,2,'#f3d48a');
+  for(const bx of [x+18,x+w-26])p.rect(bx,y+59,7,6,bx%2?t.light:t.accent);
   const shopNames:Record<string,string>={komorebi:'こもれび模型店',aozora:'あおぞら模型店',hinata:'ひなた模型店',wakaba:'わかば模型店',yuunagi:'ゆうなぎ模型店',akatsuki:'あかつき模型店',hoshikuzu:'ほしくず模型店',atelier:'星霧模型工房',endurance:'持久力パーツ館',torque:'トルク専門店',velocity:'スピード専門店',terrain:'オフロード専門店'};
   const signX=x+14,signY=y+7,signW=w-28;p.round(signX+2,signY+2,signW,14,2,'#21384488');p.round(signX,signY,signW,14,2,t.wood);p.round(signX+2,signY+2,signW-4,10,1,t.ink);p.rect(signX+3,signY+2,signW-6,1,t.light);
   c.save();c.font='bold 6px sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillStyle='#fff0ca';c.fillText(shopNames[shopId]??v.name,signX+signW/2,signY+7,signW-8);c.restore();
