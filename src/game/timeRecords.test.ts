@@ -10,6 +10,7 @@ import {timeBoardPlacement,timeBoardObstacle} from '../data/timeBoard';
 import {shopLayout} from '../data/shopLayout';
 import {room,shopExit} from '../data/shop';
 import {canStand,canTravel,findWalkingPath} from './navigation';
+import {personSpriteSize} from './PeopleArt';
 
 function finishedRace(course:'leaf'|'wind'='leaf'){
  const race=createRaceState(starterEquipment,42,undefined,false,course);
@@ -44,6 +45,7 @@ test('記録の保存復元・旧セーブ・不正値の検証。二重精算�
 test('看板は各店のコース端にあり、看板前と出口へ歩いて移動できる',()=>{
  for(const shop of Object.values(modelShops).filter(s=>s.id!=='atelier')){
   const spot=timeBoardPlacement(shop.id),obstacles=[...shopLayout(shop.id).map(f=>({x:f.target.x,y:f.target.y,width:f.target.w,height:f.target.h})),timeBoardObstacle(shop.id)];
+  assert.ok(spot.w<=personSpriteSize.displayWidth*2.5&&spot.h<=personSpriteSize.displayHeight,'店内記録板を人物に対して過大にしない');
   for(const target of [{x:spot.x+spot.w/2,y:spot.y+spot.h+15},{x:shopExit.x+shopExit.width/2,y:shopExit.y+2}]){
    assert.ok(canStand(target,obstacles));const route=findWalkingPath(room.spawn,target,obstacles);assert.ok(route.length>0);assert.deepEqual(route.at(-1),target);let before=room.spawn;for(const point of route){assert.ok(canTravel(before,point,obstacles));before=point;}
   }

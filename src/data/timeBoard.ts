@@ -3,7 +3,7 @@ import type {ShopId} from './world';
 /** コース台の右下の端。出口・本棚・作業台の通路は塞がない。 */
 export function timeBoardPlacement(shop:ShopId){
  const track=shopLayout(shop).find(f=>f.target.kind==='track')!.target;
- return {x:track.x+track.w-142,y:track.y+track.h+5,w:142,h:74};
+ return {x:track.x+track.w-116,y:track.y+track.h+5,w:116,h:64};
 }
 export function timeBoardObstacle(shop:ShopId){const p=timeBoardPlacement(shop);return {x:p.x+8,y:p.y+p.h-10,width:p.w-16,height:10};}
 
