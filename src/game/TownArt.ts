@@ -68,25 +68,25 @@ function house(scene:Phaser.Scene,block:typeof townBlocks[number],index:number){
   if(index%3===1){const lx=xx+6,ly=yy+h-43;p.line([[lx,ly],[lx+46,ly+2]],'#485e5a',.5);for(let i=0;i<4;i++){const x=lx+3+i*11;p.rect(x,ly+2,8,11,['#d6c7ab','#889eab','#bc8e87','#90aa92'][i]);p.rect(x+1,ly+2,6,1,'#eaddbd');p.rect(x+2,ly+4,1,7,'#344c4b22');p.rect(x+3,ly,1,3,'#dbbd80');}}
   if(index%3===2){const bx=xx+w-18,by=yy+h+6;p.wheel(bx-9,by,7,'#a8b8ad');p.wheel(bx+12,by,7,'#a8b8ad');p.line([[bx-9,by],[bx-3,by-12],[bx+5,by],[bx-9,by],[bx+1,by-10],[bx+12,by]],'#7c4f57',1.5);p.line([[bx+12,by],[bx+9,by-15],[bx+14,by-15]],'#425e62',1);p.rect(bx-6,by-14,7,2,'#3a4f55');}
   for(const fx of [xx+6,xx+w-30]){p.rect(fx,yy+h+4,23,7,'#69775d');p.rect(fx,yy+h+4,23,1,'#b0ac7a');for(let j=0;j<5;j++){const xx=fx+2+j*4;p.rect(xx,yy+h,1,5,'#46674e');p.rect(xx-1,yy+h-2,3,2,j%2?'#d3b787':'#c68c8f');p.rect(xx,yy+h-2,1,1,'#f0d8a0');}}
-  t.refresh();t.setFilter(Phaser.Textures.FilterMode.LINEAR);
+  t.refresh();t.setFilter(Phaser.Textures.FilterMode.NEAREST);
  }
  scene.add.image(x-15,y-40,key).setOrigin(0).setDisplaySize(w+40,h+64).setDepth(y+h);
  if(w>=130){tree(scene,x-32,y+h+8);tree(scene,x+w+32,y+h+8);}else tree(scene,index%2?x-42:x+w+42,y+h-8);
 }
 export function drawTown(scene:Phaser.Scene,progress:WorldProgress){
  // 大きな街でも個々の地面テクスチャは2048px以下の幅に保つ。
- for(let x=0;x<townSize.width;x+=2048){const key=`midorikawa-ground-16-${x}`;if(!scene.textures.exists(key)){const texture=scene.textures.createCanvas(key,Math.min(2048,townSize.width-x),townSize.height)!;texture.context.translate(-x,0);ground(texture.context);texture.refresh();}scene.add.image(x,0,key).setOrigin(0).setDepth(-100);}
+ for(let x=0;x<townSize.width;x+=2048){const key=`midorikawa-ground-16-${x}`;if(!scene.textures.exists(key)){const texture=scene.textures.createCanvas(key,Math.min(2048,townSize.width-x),townSize.height)!;texture.context.translate(-x,0);ground(texture.context);texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.NEAREST);}scene.add.image(x,0,key).setOrigin(0).setDepth(-100);}
 
  townBlocks.forEach((block,index)=>house(scene,block,index));
  for(const venue of townVenues)if(venue.kind==='outdoor')drawOutdoorCourse(scene,venue,isVenueOpen(venue,progress));else drawVenueFacade(scene,venue,isVenueOpen(venue,progress));
  for(const x of townRoads.vertical)for(let y=160;y<2300;y+=180){if(townVenues.some(v=>Math.abs(x-v.x)<v.w+100&&y>v.y-80&&y<v.y+v.h+70))continue;tree(scene,x-100,y);lamp(scene,x+88,y+50);}
  for(let i=0;i<55;i++){const x=110+(i*437)%2780,y=210+(i*281)%1980;if([...townVenues,...townBlocks].some(v=>x>v.x-90&&x<v.x+v.w+90&&y>v.y-100&&y<v.y+v.h+90)||townRoads.vertical.some(v=>Math.abs(v-x)<100)||townRoads.horizontal.some(v=>Math.abs(v-y)<100))continue;tree(scene,x,y);tree(scene,x+28,y+34);}
  for(const y of [100,2290])for(let x=100;x<2930;x+=125)tree(scene,x,y);
- for(const [x,y] of [[1440,1570],[1660,1570],[1440,1740],[1660,1740],[670,830],[2200,2040]]){tree(scene,x,y);const key='park-bench-16';if(!scene.textures.exists(key)){const t=scene.textures.createCanvas(key,112,64)!;t.context.scale(2,2);const p=new SceneryPen(t.context);p.shadow(3,14,45,10);for(const xx of [8,40]){p.rect(xx,14,3,15,'#3d5357');p.rect(xx+1,15,1,12,'#8fa19a');}p.rect(3,3,46,9,'#5c5d4a');for(let row=0;row<3;row++){p.gradient(4,3+row*3,44,2,'#c3ab7b','#947f5e');}p.gradient(3,14,46,7,'#d2b589','#8d7a5c');p.material(4,14,44,7,'wood',12);for(const xx of [8,41])p.rect(xx,15,1,1,'#e9d4a7');t.refresh();}scene.add.image(x+20,y+1,key).setOrigin(0).setDisplaySize(56,32).setDepth(y+24);}
+ for(const [x,y] of [[1440,1570],[1660,1570],[1440,1740],[1660,1740],[670,830],[2200,2040]]){tree(scene,x,y);const key='park-bench-16';if(!scene.textures.exists(key)){const t=scene.textures.createCanvas(key,112,64)!;t.context.scale(2,2);const p=new SceneryPen(t.context);p.shadow(3,14,45,10);for(const xx of [8,40]){p.rect(xx,14,3,15,'#3d5357');p.rect(xx+1,15,1,12,'#8fa19a');}p.rect(3,3,46,9,'#5c5d4a');for(let row=0;row<3;row++){p.gradient(4,3+row*3,44,2,'#c3ab7b','#947f5e');}p.gradient(3,14,46,7,'#d2b589','#8d7a5c');p.material(4,14,44,7,'wood',12);for(const xx of [8,41])p.rect(xx,15,1,1,'#e9d4a7');t.refresh();t.setFilter(Phaser.Textures.FilterMode.NEAREST);}scene.add.image(x+20,y+1,key).setOrigin(0).setDisplaySize(56,32).setDepth(y+24);}
 }
 function tree(scene:Phaser.Scene,x:number,y:number){
  if(townVenues.some(v=>v.kind==='outdoor'&&x>v.x-55&&x<v.x+v.w+55&&y>v.y-20&&y<v.y+v.h+95))return;
- const variant=artNoise(x,y)%7,key=`pixel-tree-16-${variant}`;if(!scene.textures.exists(key)){const t=scene.textures.createCanvas(key,192,240)!;t.context.scale(2,2);paintPixelTree(t.context,variant);t.refresh();}
+ const variant=artNoise(x,y)%7,key=`pixel-tree-16-${variant}`;if(!scene.textures.exists(key)){const t=scene.textures.createCanvas(key,192,240)!;t.context.scale(2,2);paintPixelTree(t.context,variant);t.refresh();t.setFilter(Phaser.Textures.FilterMode.NEAREST);}
  scene.add.image(x-48,y-104,key).setOrigin(0).setDisplaySize(96,120).setDepth(y+10);
 }
 function lamp(scene:Phaser.Scene,x:number,y:number){const g=scene.add.graphics().setDepth(y+4);g.fillStyle(0x334951,.15).fillEllipse(x+7,y+2,25,6);g.fillStyle(0x354b56).fillRect(x-4,y-56,8,60).fillRect(x-12,y-59,24,5);g.fillStyle(0x8ca09a).fillRect(x-2,y-53,2,55);g.fillStyle(0xd2c7a4).fillRect(x-1,y-53,1,55);g.fillStyle(0xb7b59b).fillRect(x-8,y-67,16,10);g.fillStyle(0xf1d79d).fillRect(x-6,y-66,12,7);g.fillStyle(0xffefbd).fillRect(x-5,y-66,5,5);g.fillStyle(0x3a5260).fillRect(x-11,y-70,22,4).fillRect(x-8,y-72,16,2).fillRect(x-7,y,14,4);}

@@ -1,7 +1,7 @@
 import {isPracticeCourse} from '../data/practiceCourses';
 import {isSpecialtyShop} from '../data/specialtyParts';
 import {drawPaintedScenery,drawPaintedFixture} from './PaintedScenery';
-import type Phaser from 'phaser';
+import Phaser from 'phaser';
 import type {ShopId} from '../data/world';
 import {shopThemes,type ShopTheme} from '../data/shopThemes';
 import type {Fixture} from '../data/shop';
@@ -9,6 +9,7 @@ import {SceneryPen} from './SceneryCanvas';
 
 function texture(scene:Phaser.Scene,key:string,w:number,h:number,paint:(p:SceneryPen)=>void){
  if(!scene.textures.exists(key)){const t=scene.textures.createCanvas(key,Math.ceil(w*2),Math.ceil(h*2))!;t.context.scale(2,2);paint(new SceneryPen(t.context));t.refresh();}
+ scene.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
  return key;
 }
 function car(p:SceneryPen,x:number,y:number,s:number,color:string){

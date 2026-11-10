@@ -1,4 +1,4 @@
-import type Phaser from 'phaser';
+import Phaser from 'phaser';
 import type {TownVenue,ShopId} from '../data/world';
 import {shopThemes} from '../data/shopThemes';
 import {SceneryPen} from './SceneryCanvas';
@@ -43,10 +43,11 @@ export function paintVenueFacade(p:SceneryPen,v:TownVenue,open:boolean){
   p.rect(x-8,y+2,w+16,4,t.wood);p.rect(x-7,y+2,w+14,1,t.metal);
   for(let xx=x+13;xx<x+w-18;xx+=35){p.round(xx,y+14,26,25,1,'#5e6e7b');p.gradient(xx+2,y+16,22,20,'#a5c9c9','#7198a6');p.rect(xx+4,y+17,3,17,'#e5ecce88');p.rect(xx+12,y+16,1,20,'#d8d9bc');p.rect(xx-1,y+38,28,2,t.wood);}
   // 小さな模型の壁章。看板に文字は入れない。
-  p.round(x+7,y+46,w-14,25,2,t.wood);p.round(x+10,y+48,w-20,21,1,t.ink);
+  p.round(x+7,y+46,w-14,25,2,t.wood);p.rect(x+10,y+48,w-20,1,'#fff0cb88');p.round(x+10,y+48,w-20,21,1,t.ink);
   p.wheel(x+w/2-14,y+60,6,t.metal);p.wheel(x+w/2+14,y+60,6,t.metal);p.poly([[x+w/2-18,y+57],[x+w/2-5,y+51],[x+w/2+15,y+53],[x+w/2+21,y+58]],t.accent);
+  p.poly([[x+w/2-9,y+55],[x+w/2-3,y+52],[x+w/2+7,y+53],[x+w/2+10,y+56]],'#e8efdc');p.poly([[x+w/2-7,y+55],[x+w/2-2,y+53],[x+w/2+5,y+54],[x+w/2+7,y+56]],'#527582');p.rect(x+w/2-20,y+58,4,2,'#f3d48a');p.rect(x+w/2+18,y+58,4,2,'#f3d48a');p.line([[x+w/2-13,y+64],[x+w/2+13,y+64]],'#f0e4bd',.7);
   for(let i=0;i<12;i++){const xx=x+4+i*(w-8)/12;p.rect(xx,y+76,(w-8)/12,7,i%2?'#e4dec6':t.accent);p.rect(xx,y+83,(w-8)/12-1,3,i%2?'#b9b39e':t.wood);}
-  for(const xx of [x+12,x+w-62]){p.round(xx,y+92,50,37,2,t.ink);p.gradient(xx+3,y+94,44,30,'#a3c8c7','#6d969e');p.poly([[xx+5,y+95],[xx+16,y+95],[xx+8,y+123],[xx+5,y+123]],'#f6efcc55');for(let i=0;i<4;i++){p.rect(xx+5+i*10,y+115,8,9,[t.accent,'#b87e78','#c6b884','#829fb0'][i]);p.rect(xx+6+i*10,y+116,6,1,'#eee5c6');}}
+  for(const xx of [x+12,x+w-62]){p.round(xx-2,y+90,54,42,2,'#344a50');p.round(xx,y+92,50,37,2,t.ink);p.gradient(xx+3,y+94,44,30,'#a3c8c7','#6d969e');p.poly([[xx+5,y+95],[xx+16,y+95],[xx+8,y+123],[xx+5,y+123]],'#f6efcc66');p.rect(xx+4,y+94,41,.7,'#eff0d9');for(let i=0;i<4;i++){p.rect(xx+5+i*10,y+115,8,9,[t.accent,'#b87e78','#c6b884','#829fb0'][i]);p.rect(xx+6+i*10,y+116,6,1,'#eee5c6');p.rect(xx+7+i*10,y+118,1,4,'#32464a');}p.rect(xx+2,y+130,50,2,t.wood);p.rect(xx+4,y+132,46,1,'#3b4e4d');}
   const dx=x+w/2-14;p.round(dx,y+91,28,h-94,2,t.ink);p.gradient(dx+3,y+94,22,25,'#c7d9cc','#7b9fa9');p.rect(dx+21,y+123,3,3,'#dec388');p.gradient(x+4,y+h-6,w-8,6,'#d1c6aa','#8a8a7c');
   p.plant(x+4,y+h-4,.75);p.plant(x+w-5,y+h-4,.75);
   if(v.id==='hinata'){p.wheel(x+20,y+h-14,9,'#aa9170');p.wheel(x+22,y+h-21,9,'#b5a281');}
@@ -78,6 +79,6 @@ export function paintVenueFacade(p:SceneryPen,v:TownVenue,open:boolean){
 }
 export function drawVenueFacade(scene:Phaser.Scene,v:TownVenue,open:boolean){
  const key=`facade-v3-${v.id}-${open}`,width=v.w+80,height=v.h+125;
- if(!scene.textures.exists(key)){const t=scene.textures.createCanvas(key,width*2,height*2)!;t.context.scale(2,2);paintVenueFacade(new SceneryPen(t.context),v,open);t.refresh();}
+ if(!scene.textures.exists(key)){const t=scene.textures.createCanvas(key,width*2,height*2)!;t.context.scale(2,2);paintVenueFacade(new SceneryPen(t.context),v,open);t.refresh();t.setFilter(Phaser.Textures.FilterMode.NEAREST);}
  scene.add.image(v.x-40,v.y-91,key).setOrigin(0).setDisplaySize(width,height).setDepth(v.y+v.h);
 }

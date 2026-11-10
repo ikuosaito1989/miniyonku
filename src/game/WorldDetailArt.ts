@@ -1,4 +1,4 @@
-import type Phaser from 'phaser';
+import Phaser from 'phaser';
 import {SceneryPen} from './SceneryCanvas';
 import {shopLayout} from '../data/shopLayout';
 import type {ShopId} from '../data/world';
@@ -16,7 +16,7 @@ export function drawRoomFinish(scene:Phaser.Scene,id:string,fixtures:readonly {x
   p.rect(43,110,874,2,'#263e4c77');p.rect(43,111,874,.5,accent);p.material(44,104,872,8,'metal',13);
   // Grille and small rivets along the lower wall/skirting bind every room's materials.
   for(let x=48;x<914;x+=24){p.rect(x,601,1,1,'#f5e4bb60');p.rect(x+1,602,1,1,'#243d4755');}p.rect(44,605,872,1,'#d5c39655');
-  t.refresh();}
+  t.refresh();t.setFilter(Phaser.Textures.FilterMode.NEAREST);}
  scene.add.image(0,0,key).setOrigin(0).setDisplaySize(960,640).setDepth(id==='library'?-9:id.startsWith('stadium-')?-19:-85);
 }
 export function drawShopDetails(scene:Phaser.Scene,_mirrored=false,id:ShopId='komorebi'){

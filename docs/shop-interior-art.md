@@ -1,23 +1,26 @@
-# 店内の専用背景
+# 模型店の店内アート
 
-組み込み画像生成ツールで独自の模型店を制作。既存ゲームの画像は素材として使用していません。
+## 現在の制作方式
 
-- 配置参照: [art/shop-layout-reference.png](art/shop-layout-reference.png)。既存描画から人物・UIを除いた960×640の配置図。
-- 使用画像: `src/assets/shop/interior-v1.webp`。画像生成の原画1536×1024を最近傍補間で1920×1280へ調整しWebP品質90へ変換。
-- 論理マップは960×640。画像の家具輪郭に合わせ`src/data/shop.ts`の当たり判定を調整。
-- 背景と前景は同一テクスチャを共有。家具の底辺で重なり順を決定。前景は家具の上端から切り出し、不透明な床で背後の人物を隠さない。
-- 店名・熟練度表・分類はライブテキスト。人物は60×80歩行スプライトを継続使用。
-- 背景読み込み失敗時は従来のコード描画へフォールバック。
+実際の店内表示は`src/assets/scenery/<施設ID>.webp`を`PaintedScenery`から読み込む。`src/assets/shop/interior-v1.webp`はこもれび模型店の高精細ピクセルアート原画を確認するための参照コピーで、ゲーム内では施設別の`scenery/`画像が使われる。2026-11-10に全店舗・専門店・耐久店の原画を更新し、各施設の色・壁掲示・設備を残して同じスタイルに揃えた。
 
-## 人物に合わせた家具の縮尺調整
+- 論理室内は960×640。背景は1920×1280、WebPで描画する。
+- 入口は南側の`shopExit`、開始位置は`room.spawn`。これらは変更しない。
+- 家具の論理位置は`shopLayout`が決める。通常店は入口→受付・商品棚→本棚・整備台→コースの順に見通せる。コースは実際の試走設備として扱い、`drawShopTrack`の形状と走行ロジックを使う。
+- 描画は背景と同じ画像から家具を切り出す。`drawPaintedFixture`が家具の下端で深度を決め、歩行人物が家具の後ろへ隠れる。画像全体を家具の当たり判定に使うことはせず、既存のfixture矩形と移動判定を維持する。
+- 店名、説明、記録、購入、キャラクターはゲーム内の文字・人物・UIで表示する。背景画像へ焼き込まない。
+- `shopRenderScale`はDPR2まででCSS表示寸法と描画解像度を分離する。`PaintedScenery`はNEARESTサンプリングを使い、背景のピクセル輪郭を保つ。
 
-2026-11-10、人物スプライト（48×64論理px）と比べて縦長だった熟練度掲示板と大きすぎた商品棚を見直しました。掲示板は57×80、商品棚は93〜95×102論理pxにし、床に置く棚は元の位置を保って縮小しました。配置と当たり判定は同じ `shop.ts` のFixture値から描画します。作業台・カウンター・コースと経路探索の処理は維持し、縮小した障害物に合わせて到達性を再検証しました。
+## 家具と通路の縮尺
 
-## 最終生成プロンプト
+2026-11-10、歩行スプライト（48×64ワールド単位）に対して大きすぎた掲示板と商品棚を縮小した。掲示板は57×80、商品棚は93〜95×102。床置き家具は配置基準を保ったまま縮尺を調整し、作業台・カウンター・コースと経路探索は維持した。座標は`src/data/shop.ts`と`src/data/shopLayout.ts`から共用する。
+
+## 画像更新時の品質確認
+
+画像生成や手描きでは、既存施設の画面と`docs/art/shop-layout-reference.png`を配置の根拠として使う。高詳細なピクセルクラスター、素材ごとの輪郭、段階的な接地影、店ごとの識別色を描き、単なる解像度拡大や均一な記号の商品棚で済ませない。入口、カウンター、棚、整備台、コース、観覧場所の位置と通路を保ち、操作対象の矩形に合わせてからWebP化する。
 
 ```text
-Use case: style-transfer / game environment production art. Input image is the EXACT ORIGINAL GAME MAP LAYOUT, not a visual quality target. Repaint this entire 960x640 LANDSCAPE 3:2 map into much richer, beautiful hand-crafted 16-bit Japanese console RPG pixel art of a welcoming miniature racing model hobby shop. This is a usable game background asset, NOT a mockup or cinematic illustration. CRITICAL: keep the same straight-on overhead RPG projection, same canvas bounds, same wall/floor boundary, SAME position and screen-space bounding footprint of EVERY fixture. Do not rotate, tilt, zoom, crop, center or rearrange the room. Floor grid stays axis-aligned, no vanishing point. No people, characters, UI, dialogue boxes or portraits anywhere. No logos or existing franchise graphics. No readable text: leave the top-left shop sign and the tall left ranking board as clean empty dark panels for live text overlays.
-Make the art much more detailed and inviting than the primitive reference: restrained mint/seafoam terrazzo tiles with small natural stone flecks, less heavy repetitive grid, blue-gray textured wall, warm cream and periwinkle counters with wooden trim, carefully shaded contact shadows and tiny soft reflected highlights. Add handcrafted pixel detail, not photorealism, no blurry painting, no 3D render, no isometric diorama. Rich but controlled colorful palettes and deliberate crisp pixel clusters.
-Exact objects to preserve, coordinates in the original 960x640 layout: ranking board at (56,124) size38x116, EMPTY dark middle; original glass counter at (100,150) size230x62, with tiny original racing models under glass, top tray, register, catalog and package stacks ONLY on its surface; two three-tier merchandise shelves at (100,290) and (270,290), each100x120, each packed with genuinely DIFFERENT illustrated model kit boxes, motors in blister packs, tire packets and price labels rather than abstract plus symbols; a low hint bookcase at (140,440) size190x50, recognizable book spines and magazines; a hobby workbench at (660,160) size195x85, with green cutting mat, a tiny red racing model, screwdriver, motor, organizer trays and a task lamp WITHIN its existing footprint; five-lane mini oval course at (590,340) size265x145, white guardrails, colored lane starts, small course markings and textured green infield; leafy potted plant at (70,490) size40x45; entry mat at (409,570) size145x30. The upper wall strip y35..120 contains hanging model-kit racks, pegboard tools, wall clock and the blank shop sign; enrich these existing displays without adding floor furniture. Keep all existing open floor paths clear. Do NOT add extra shelves, chairs, floor boxes, doors, tables, windows or objects in walkable areas. Favor visual craftsmanship and material detail over random clutter. All product box artwork is original tiny racing vehicles with no trademarks. No watermark.
+Repaint the supplied exact 960x640 overhead Japanese model-shop game map as original high-detail pixel art. Keep the identical top-down RPG camera, canvas bounds, wall/floor boundary, furniture footprints, course position, entrance and walkable floor paths. Preserve this shop's own palette and fixtures. Draw crisp, deliberate pixel clusters with distinct wood, painted metal, plastic, glass, tile and fabric materials, individually illustrated original model-kit boxes and tools, and stepped contact shadows under the furniture. No photorealism, 3D render, blur, glow, marble, excessive gold, text, logos, characters or UI. Do not add, remove, move, resize or rotate furniture; do not block any open walking area. Keep the actual course footprint and fixture locations aligned to the reference.
 ```
 
+画像を反映したら、`paintedSceneryLayout`、`paintedFixtureFrame`で家具の切り出しと前後関係を確認する。画面幅390px相当とDPR2で入口、人物、コース、家具の輪郭が読み取れることを確かめる。背景更新だけで当たり判定や進行を変更しない。

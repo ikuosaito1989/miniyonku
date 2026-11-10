@@ -1,4 +1,4 @@
-import type Phaser from 'phaser';
+import Phaser from 'phaser';
 import type {Fixture} from '../data/shop';
 import type {CircuitTrack} from '../data/circuit';
 import {shopTrackLayout,type ShopTrackPoint} from './shopTrackLayout';
@@ -44,7 +44,7 @@ export function drawShopTrack(scene:Phaser.Scene,f:Fixture,track:CircuitTrack,de
   // Three tiny parked/display cars communicate the scale of the miniature.
   for(let i=0;i<3;i++){const index=Math.floor(centerline.length*(.13+i*.27)),pt=centerline[index],a=centerline[index-2],b=centerline[index+2];c.save();c.translate(pt.x,pt.y);c.rotate(Math.atan2(b.y-a.y,b.x-a.x));p.rect(-2,-1.6,4,3.2,'#263c46');p.rect(-1.4,-1.2,2.8,2.4,['#bf786a','#ddc28a','#87b5bb'][i]);p.rect(-.1,-.75,1,1.5,'#263e4c');p.rect(-1.5,-1.4,.5,2.8,'#e8d6a6');c.restore();}
   if(!painted)for(const x of [4,f.w-5])for(const y of [5,f.h-6]){p.rect(x,y,1,1,'#eff0cf');p.rect(x+1,y+1,.5,.5,'#455e5c');}
-  texture.refresh();
+  texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
  }
  scene.add.image(f.x,f.y,key).setOrigin(0).setDisplaySize(f.w,f.h).setDepth(depth);
 }
