@@ -82,7 +82,7 @@ export function generateTownVenues(seed=19890421):TownVenue[]{
   const usedLots=new Set<number>();
   const civic=fixed.map(v=>{
     const special=showcase[v.id];if(special)return {...v,...special};
-    const stadium=v.kind==='stadium',building=v.kind==='shop'||v.kind==='library',w=stadium?350:building?320:v.w,h=stadium?250:building?220:v.h;
+    const stadium=v.kind==='stadium',building=v.kind==='shop'||v.kind==='library',w=stadium?350:building?320:v.w,h=stadium?250:v.kind==='shop'?294:v.kind==='library'?220:v.h;
     const lotIndex=lots.findIndex((lot,index)=>{
       if(usedLots.has(index))return false;
       const nextStreet=townRoads.horizontal.find(y=>y>lot.y)!;
