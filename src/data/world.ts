@@ -73,7 +73,7 @@ export function generateTownVenues(seed=19890421):TownVenue[]{
     // Their frontage opens onto the existing street tiles.
     'stadium-5':{x:townCivicPlaza.x,y:townCivicPlaza.y+15,w:520,h:330,entrance:'south'},
     komorebi:{x:townCivicPlaza.x+570,y:townCivicPlaza.y+20,w:375,h:340,entrance:'south'},
-    'park-waves':{x:510,y:4260,w:180,h:110,entrance:'south'},
+    'park-waves':{x:510,y:4140,w:360,h:240,entrance:'south'},
   };
   const occupied:TownVenue[]=fixed.filter(v=>showcase[v.id]).map(v=>({...v,...showcase[v.id]}));
   const artKeepout={x:townCivicPlaza.x-8,y:townCivicPlaza.y-8,w:townCivicPlaza.width+16,h:townCivicPlaza.height+16};
@@ -82,7 +82,7 @@ export function generateTownVenues(seed=19890421):TownVenue[]{
   const usedLots=new Set<number>();
   const civic=fixed.map(v=>{
     const special=showcase[v.id];if(special)return {...v,...special};
-    const stadium=v.kind==='stadium',building=v.kind==='shop'||v.kind==='library',w=stadium?350:building?320:v.w,h=stadium?250:v.kind==='shop'?294:v.kind==='library'?220:v.h;
+    const stadium=v.kind==='stadium',building=v.kind==='shop'||v.kind==='library',outdoor=v.kind==='outdoor',w=stadium?350:building?320:outdoor?360:v.w,h=stadium?250:v.kind==='shop'?294:v.kind==='library'?220:outdoor?240:v.h;
     const lotIndex=lots.findIndex((lot,index)=>{
       if(usedLots.has(index))return false;
       const nextStreet=townRoads.horizontal.find(y=>y>lot.y)!;
