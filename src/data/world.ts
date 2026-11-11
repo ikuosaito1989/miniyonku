@@ -67,8 +67,10 @@ export function generateTownVenues(seed=19890421):TownVenue[]{
   // shop, and a small race-day stall share one paved district. The remaining
   // enterable destinations still occupy the shuffled neighborhood lots.
   const showcase:Record<string,Pick<TownVenue,'x'|'y'|'w'|'h'|'entrance'>>={
-    'stadium-5':{x:2940,y:1850,w:580,h:500,entrance:'south'},
-    komorebi:{x:3600,y:2000,w:450,h:350,entrance:'south'},
+    // Fit the flagship buildings to the same world scale as an interior room.
+    // They share a frontage, so the mobile camera can frame a whole facade.
+    'stadium-5':{x:3220,y:2050,w:260,h:300,entrance:'south'},
+    komorebi:{x:3580,y:2050,w:250,h:300,entrance:'south'},
     'park-waves':{x:510,y:4260,w:180,h:110,entrance:'south'},
   };
   const occupied:TownVenue[]=fixed.filter(v=>showcase[v.id]).map(v=>({...v,...showcase[v.id]}));

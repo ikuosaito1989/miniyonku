@@ -292,9 +292,8 @@ export class ShopScene extends Phaser.Scene {
       camera.setBounds(0,0,townSize.width,townSize.height);
       if(this.player){
         camera.startFollow(this.player,false,.18,.18);
-        const state=useGame.getState();
-        const framingOffset=compact&&state.lastShop==='komorebi'&&!state.townReturnVenue?width*.3/zoom.x:0;
-        camera.setFollowOffset(framingOffset,0);
+        // Keep the venue roof in view while the avatar stands at its entrance.
+        camera.setFollowOffset(0,height*.18/zoom.y);
       }
       return;
     }

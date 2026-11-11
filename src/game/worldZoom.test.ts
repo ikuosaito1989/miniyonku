@@ -11,10 +11,8 @@ test('街でも模型店でも同じ投影を使い、スマホでは人物の�
   assert.equal(desktop.x/dpr,width/roomView.width);assert.equal(desktop.y/dpr,height/roomView.height);
  }
 });
-test('屋外の街カメラは入れる建物と中央広場を一緒に見せ、室内の倍率は変えない',()=>{
- const indoor=shopWorldZoom(390,700,true),town=townWorldZoom(390,442,true);
- assert.ok(town.x<indoor.x/3);
- assert.equal(town.x,town.y);
- assert.ok(390/town.x>=1400);
- const desktop=townWorldZoom(1280,720,false);assert.equal(desktop.x,desktop.y);assert.ok(desktop.x<shopWorldZoom(1280,720,false).x);
+test('屋外の街カメラは店舗内と同じ縮尺で人物・建物を表示する',()=>{
+ for(const [width,height] of [[320,568],[390,650],[390,844],[844,390],[1280,800]]){
+  for(const compact of [true,false])assert.deepEqual(townWorldZoom(width,height,compact),shopWorldZoom(width,height,compact));
+ }
 });

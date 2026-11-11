@@ -13,7 +13,7 @@ test('広域マップは店と大型会場を重複なく散らし、乱数の�
    assert.ok(v.x>=townWalkBounds.left&&v.x+v.w<townWalkBounds.right);
    assert.ok(v.y-80>townWalkBounds.top&&v.y+v.h+70<townWalkBounds.bottom);
    for(const other of list)if(v!==other)assert.ok(v.x+v.w+40<other.x||other.x+other.w+40<v.x||v.y+v.h+80<other.y||other.y+other.h+80<v.y);
-   if(v.kind==='stadium'&&!isPracticeCourse(v.id))assert.ok(v.w>=350&&v.h>=250);
+   if(v.kind==='stadium'&&!isPracticeCourse(v.id))assert.ok(v.w>=250&&v.h>=250);
   }
  }
 });
