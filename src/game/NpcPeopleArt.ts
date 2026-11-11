@@ -1,8 +1,9 @@
+import {withCharacterSprite} from './characterSprites';
 import {npcAppearances,type NpcAppearanceId,type NpcAppearance} from '../data/npcAppearance';
 import {personDrawing,type Facing} from './PeopleArt';
 import {pixelPen,type PixelShape} from './pixelDrawing';
 /** 名前で固定された別々の輪郭・眼・髪型。方向と歩行が変わっても同じ人物を保つ。 */
-export function npcDrawing(id:NpcAppearanceId,direction:Facing,frame=0):PixelShape[]{
+function npcDrawingFallback(id:NpcAppearanceId,direction:Facing,frame=0):PixelShape[]{
  const a:NpcAppearance=npcAppearances[id],facing=direction==='left'?'right':direction,bob=frame===1||frame===3?.5:0;
  const original=a.kind==='owner'?['#607ca0','#b0c8de','#415674']:a.kind==='guide'?['#9c568c','#e6a6c5','#693f73']:a.kind==='mechanic'?['#317d91','#9bd3cc','#24536f']:['#b14b67','#ec9aa2','#7f3757'];
  const colors:Record<string,string>={[original[0]]:a.shirt,[original[1]]:a.light,[original[2]]:a.shade};
@@ -91,4 +92,8 @@ export function npcDrawing(id:NpcAppearanceId,direction:Facing,frame=0):PixelSha
   r(x,y,w,.5,a.light);r(x+1,y+1,1,.5,a.shade);
  }
  const shapes=[...body,...pen.shapes];return direction==='left'?shapes.map(s=>s.kind==='rect'?{...s,x:60-s.x-s.w}:{...s,points:s.points.map(([x,y])=>[60-x,y] as const)}):shapes;
+}
+
+export function npcDrawing(id:NpcAppearanceId,direction:Facing,frame=0):PixelShape[]{
+ return withCharacterSprite(npcDrawingFallback(id,direction,frame),id,direction,frame);
 }

@@ -1,4 +1,5 @@
-export type PixelShape={color:string;alpha:number}&(
+import type {CharacterSpritePose} from './characterSprites';
+export type PixelShape={color:string;alpha:number;sprite?:CharacterSpritePose}&(
   {kind:'rect';x:number;y:number;w:number;h:number}|{kind:'polygon';points:readonly (readonly [number,number])[]}
 );
 export function pixelPen(){

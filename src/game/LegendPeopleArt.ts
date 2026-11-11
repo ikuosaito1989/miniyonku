@@ -1,3 +1,4 @@
+import {withCharacterSprite} from './characterSprites';
 import {personDrawing,type Facing} from './PeopleArt';
 import {pixelPen,type PixelShape} from './pixelDrawing';
 export type LegendPerson='rei'|'gaku'|'towa'|'koya';
@@ -8,7 +9,7 @@ const palettes={
  koya:{shirt:'#75828e',light:'#dce4e9',shade:'#424e5b',hair:'#252c34',highlight:'#687380'},
 };
 /** レジェンドは共通の服の原画に、各人専用の頭部・輪郭・目元を組み合わせる。 */
-export function legendPersonDrawing(id:LegendPerson,direction:Facing,frame=0):PixelShape[]{
+function legendPersonDrawingFallback(id:LegendPerson,direction:Facing,frame=0):PixelShape[]{
  const facing=direction==='left'?'right':direction,c=palettes[id],bob=frame===1||frame===3?1:0;
  const colors:Record<string,string>={'#b14b67':c.shirt,'#ec9aa2':c.light,'#7f3757':c.shade};
  const body=personDrawing('rival',facing,frame).filter(shape=>(shape.kind==='rect'?shape.y:Math.min(...shape.points.map(([,y])=>y)))>=35).map(shape=>({...shape,color:colors[shape.color]??shape.color}));
@@ -57,4 +58,8 @@ export function legendPersonDrawing(id:LegendPerson,direction:Facing,frame=0):Pi
  }
  const drawing=[...body,...pen.shapes];
  return direction==='left'?drawing.map(shape=>shape.kind==='rect'?{...shape,x:60-shape.x-shape.w}:{...shape,points:shape.points.map(([x,y])=>[60-x,y] as const)}):drawing;
+}
+
+export function legendPersonDrawing(id:LegendPerson,direction:Facing,frame=0):PixelShape[]{
+ return withCharacterSprite(legendPersonDrawingFallback(id,direction,frame),id,direction,frame);
 }

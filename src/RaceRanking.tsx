@@ -1,3 +1,4 @@
+import {characterSpriteUrl,characterSpriteRow} from './game/characterSprites';
 import {npcDrawing} from './game/NpcPeopleArt';
 import {legendPersonDrawing,type LegendPerson} from './game/LegendPeopleArt';
 import { challenger } from './data/challenger';
@@ -7,9 +8,11 @@ import { challengerDrawing, personDrawing, type PersonKind } from './game/People
 export function RacerPortrait({id,color,facing='right'}:{id:string;color:number;facing?:'down'|'right'}){
   const kind:PersonKind=id==='player'?'player':id==='nagi'||id===challenger.id?'rival':id==='momo'?'guide':'mechanic';
   const jacket=`#${color.toString(16).padStart(6,'0')}`;
+  const drawing=(id.startsWith('legend-')?legendPersonDrawing(id.slice(7) as LegendPerson,facing):id==='jin'?legendPersonDrawing('towa',facing):id===challenger.id?challengerDrawing(facing):id==='riku'?npcDrawing('offroader',facing):id==='nagi'?npcDrawing('rival',facing):id==='momo'?npcDrawing('momo',facing):id==='sou'||id==='ren'?npcDrawing(id,facing):personDrawing(kind,facing,0));
+  const pose=drawing[0]?.sprite;
   return <svg className="ranking-portrait" viewBox="0 0 60 82" aria-hidden="true">
     <ellipse cx="30" cy="79" rx="18" ry="2" fill="#050b17" opacity=".35"/>
-    {(id.startsWith('legend-')?legendPersonDrawing(id.slice(7) as LegendPerson,facing):id==='jin'?legendPersonDrawing('towa',facing):id===challenger.id?challengerDrawing(facing):id==='riku'?npcDrawing('offroader',facing):id==='nagi'?npcDrawing('rival',facing):id==='momo'?npcDrawing('momo',facing):id==='sou'||id==='ren'?npcDrawing(id,facing):personDrawing(kind,facing,0)).map((shape,i)=>{
+    {pose?<svg x="0" y="0" width="60" height="80" viewBox={`${pose.frame*180} ${characterSpriteRow[pose.direction]*240} 180 240`}><image href={characterSpriteUrl(pose.id)} width="720" height="960" style={{imageRendering:'pixelated'}}/></svg>:drawing.map((shape,i)=>{
       const fill=kind==='mechanic'&&shape.color==='#317d91'?jacket:shape.color;
       return shape.kind==='rect'
         ?<rect key={i} x={shape.x} y={shape.y} width={shape.w} height={shape.h} fill={fill} opacity={shape.alpha}/>

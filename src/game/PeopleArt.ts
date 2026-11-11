@@ -1,3 +1,4 @@
+import {withCharacterSprite} from './characterSprites';
 import {playerDrawing} from './PlayerArt';
 import { pixelPen, type PixelShape } from './pixelDrawing';
 export type Facing='down'|'up'|'left'|'right';
@@ -12,7 +13,7 @@ const outfits={
 } as const;
 const challengerColors:Record<string,string>={'#b14b67':'#514164','#ec9aa2':'#a49ab9','#7f3757':'#30283f','#39304b':'#242532','#89637c':'#535369','#4c4e70':'#343347'};
 /** 共通の小学生原画から、丸い頬・幅広の胴・太い眉で黒岩を描き分ける。 */
-export function challengerDrawing(direction:Facing,frame=0):PixelShape[]{
+function challengerDrawingFallback(direction:Facing,frame=0):PixelShape[]{
   const facing=direction==='left'?'right':direction;
   const widen=(x:number,y:number)=>Math.round(30+(x-30)*(y<36?1.25:1.45));
   const shapes:PixelShape[]=personDrawing('rival',facing,frame).map(shape=>{
@@ -41,7 +42,7 @@ export function challengerDrawing(direction:Facing,frame=0):PixelShape[]{
 }
 
 /** 役割ごとの服・体型と、方向別の独立したシルエットを持つオリジナル原画。 */
-export function personDrawing(kind:PersonKind,direction:Facing,frame:number):PixelShape[]{
+function personDrawingFallback(kind:PersonKind,direction:Facing,frame:number):PixelShape[]{
   if(['player'].includes(kind))return playerDrawing(direction,frame);
   const pen=pixelPen(),r=pen.rect,p=pen.polygon,c=outfits[kind];
   const side=direction==='left'||direction==='right',back=direction==='up';
@@ -198,7 +199,7 @@ export function personDrawing(kind:PersonKind,direction:Facing,frame:number):Pix
 }
 
 /** 店主と同じ大人の原画を基に、白衣・白髪・丸眼鏡の研究家を描く。 */
-export function doctorDrawing(direction:Facing,frame=0):PixelShape[]{
+function doctorDrawingFallback(direction:Facing,frame=0):PixelShape[]{
   const facing=direction==='left'?'right':direction;
   const colors:Record<string,string>={'#607ca0':'#e4ece6','#b0c8de':'#ffffff','#415674':'#a9c3ba','#656176':'#d6e1dc','#ada0ac':'#ffffff','#b89a72':'#e4ece6','#e0c59b':'#ffffff','#927d66':'#b9d0c7','#ead3ac':'#ffffff','#c1a888':'#d6e4dc','#d8b98b':'#e4ece6','#a78868':'#a9c3ba'};
   const shapes=personDrawing('owner',facing,frame).map(shape=>({...shape,color:colors[shape.color]??shape.color}));
@@ -215,13 +216,13 @@ export function doctorDrawing(direction:Facing,frame=0):PixelShape[]{
 }
 
 // 共通の小学生の顔・体を再利用し、森野陸は土色の髪と緑の服で統一する。
-export function offroaderDrawing(direction:Facing,frame=0):PixelShape[]{
+function offroaderDrawingFallback(direction:Facing,frame=0):PixelShape[]{
   const colors:Record<string,string>={'#317d91':'#58784b','#9bd3cc':'#c0d398','#24536f':'#3a5136','#333e54':'#5c4635','#728091':'#a08156'};
   return personDrawing('mechanic',direction,frame).map(shape=>({...shape,color:colors[shape.color]??shape.color}));
 }
 
 /** 共通原画に肩までの黒髪と落ち着いた目元を加えた橘 斗和。 */
-export function seniorDrawing(direction:Facing,frame=0):PixelShape[]{
+function seniorDrawingFallback(direction:Facing,frame=0):PixelShape[]{
  const facing=direction==='left'?'right':direction,bob=frame===1||frame===3?1:0;
  const base=personDrawing('rival',facing,frame).map(shape=>({...shape,color:({'#b14b67':'#322b3c','#ec9aa2':'#ae5266','#7f3757':'#1e2130','#39304b':'#242532','#89637c':'#535369','#4c4e70':'#343442'} as Record<string,string>)[shape.color]??shape.color}));
  const back=pixelPen(),front=pixelPen();
@@ -250,7 +251,31 @@ export function seniorDrawing(direction:Facing,frame=0):PixelShape[]{
 }
 
 /** 昊也は共通男子原画の、黒髪・銀灰色ジャケット差分。 */
-export function koyaDrawing(direction:Facing,frame=0):PixelShape[]{
+function koyaDrawingFallback(direction:Facing,frame=0):PixelShape[]{
  const colors:Record<string,string>={'#317d91':'#75828e','#9bd3cc':'#dce4e9','#24536f':'#424e5b','#333e54':'#252c34','#728091':'#687380'};
  return personDrawing('mechanic',direction,frame).map(shape=>({...shape,color:colors[shape.color]??shape.color}));
+}
+
+export function personDrawing(kind:PersonKind,direction:Facing,frame:number):PixelShape[]{
+ return withCharacterSprite(personDrawingFallback(kind,direction,frame),kind==='player'?'player':kind==='guide'?'guide':kind==='owner'?'owner':kind==='mechanic'?'mechanic':'rival',direction,frame);
+}
+
+export function challengerDrawing(direction:Facing,frame=0):PixelShape[]{
+ return withCharacterSprite(challengerDrawingFallback(direction,frame),'go',direction,frame);
+}
+
+export function doctorDrawing(direction:Facing,frame=0):PixelShape[]{
+ return withCharacterSprite(doctorDrawingFallback(direction,frame),'doctor',direction,frame);
+}
+
+export function offroaderDrawing(direction:Facing,frame=0):PixelShape[]{
+ return withCharacterSprite(offroaderDrawingFallback(direction,frame),'offroader',direction,frame);
+}
+
+export function seniorDrawing(direction:Facing,frame=0):PixelShape[]{
+ return withCharacterSprite(seniorDrawingFallback(direction,frame),'senior',direction,frame);
+}
+
+export function koyaDrawing(direction:Facing,frame=0):PixelShape[]{
+ return withCharacterSprite(koyaDrawingFallback(direction,frame),'koya',direction,frame);
 }

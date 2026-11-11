@@ -1,8 +1,9 @@
+import {withCharacterSprite} from './characterSprites';
 import {npcDrawing} from './NpcPeopleArt';
 import {pixelPen,type PixelShape} from './pixelDrawing';
 import type {Facing} from './PeopleArt';
 /** 共通の職人の体格・解像度。紺の作業服、青い帽子、大きな保護ゴーグル。 */
-export function mechanicManDrawing(direction:Facing='down',frame=0):PixelShape[]{
+function mechanicManDrawingFallback(direction:Facing='down',frame=0):PixelShape[]{
  const facing=direction==='left'?'right':direction;
  const colors:Record<string,string>={'#d5b35c':'#315d78','#d4d5c6':'#91a7b9','#4b5363':'#1e354e','#b89a72':'#284c67','#e0c59b':'#8ca4b2','#927d66':'#173b54','#ead3ac':'#b9ccd1','#c1a888':'#7896a8'};
  const base=npcDrawing('starter',facing,frame).map(s=>({...s,color:colors[s.color]??s.color}));
@@ -17,4 +18,8 @@ export function mechanicManDrawing(direction:Facing='down',frame=0):PixelShape[]
   pen.rect(28,33+bob,7,1,'#e2c7a1');pen.rect(23,48+bob,12,8,'#183a57');pen.rect(25,49+bob,3,5,'#a6bcc3');
  }
  const shapes=[...base,...pen.shapes];return direction==='left'?shapes.map(s=>s.kind==='rect'?{...s,x:60-s.x-s.w}:{...s,points:s.points.map(([x,y])=>[60-x,y] as const)}):shapes;
+}
+
+export function mechanicManDrawing(direction:Facing='down',frame=0):PixelShape[]{
+ return withCharacterSprite(mechanicManDrawingFallback(direction,frame),'starter',direction,frame);
 }

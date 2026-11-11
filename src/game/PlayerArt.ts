@@ -1,8 +1,9 @@
+import {withCharacterSprite} from './characterSprites';
 import {pixelPen,type PixelShape} from './pixelDrawing';
 import type {Facing} from './PeopleArt';
 export const playerPalette={ink:'#354653',hair:'#50372d',hairLight:'#987047',white:'#f2f4eb',whiteShade:'#9daebe',blue:'#267fc4',blueLight:'#67c5ed',blueShade:'#164877',skin:'#f0bf91',skinLight:'#ffdcab',skinShade:'#be8064'};
 /** 白青のキャップ、半袖ジャージ、短パンの小学生レーサー。既存の48×64表示を維持。 */
-export function playerDrawing(direction:Facing,frame=0):PixelShape[]{
+function playerDrawingFallback(direction:Facing,frame=0):PixelShape[]{
  const c=playerPalette,pen=pixelPen(),r=pen.rect,p=pen.polygon;
  const side=direction==='right'||direction==='left',back=direction==='up',step=frame===1?2.5:frame===3?-2.5:0,bob=step?.5:0;
  for(let leg=0;leg<2;leg++){
@@ -106,4 +107,8 @@ export function playerDrawing(direction:Facing,frame=0):PixelShape[]{
   return {...shape,x,y,w:Math.max(.5,dot(xAt(shape.x+shape.w,shape.y+shape.h/2))-x),h:Math.max(.5,dot(yAt(shape.y+shape.h))-y)};
  });
  return direction==='left'?drawing.map(s=>s.kind==='rect'?{...s,x:60-s.x-s.w}:{...s,points:s.points.map(([x,y])=>[60-x,y] as const)}):drawing;
+}
+
+export function playerDrawing(direction:Facing,frame=0):PixelShape[]{
+ return withCharacterSprite(playerDrawingFallback(direction,frame),'player',direction,frame);
 }
