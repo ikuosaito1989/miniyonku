@@ -8,6 +8,16 @@ import {SceneryPen} from './SceneryCanvas';
 export const townGroundRasterScale=.5;
 const townShopVariants:Partial<Record<ShopId,'amber'|'green'|'violet'|'red'|'teal'>>={hinata:'amber',wakaba:'green',yuunagi:'violet',akatsuki:'red',torque:'red',velocity:'teal',terrain:'green',endurance:'teal',atelier:'violet'};
 function inCivicArtwork(x:number,y:number){return x>=townCivicPlaza.x&&x<=townCivicPlaza.x+townCivicPlaza.width&&y>=townCivicPlaza.y&&y<=townCivicPlaza.y+townCivicPlaza.height;}
+function drawShopSign(scene:Phaser.Scene,venue:typeof townVenues[number]){
+ if(!venue.shopId)return;
+ const name=modelShops[venue.shopId].name,characters=[...name].length;
+ // Fit even the long specialty-shop names between the crossed-wrench emblems.
+ const fontSize=Math.max(8,Math.min(16,Math.floor(venue.w*.27/characters)));
+ scene.add.text(venue.x+venue.w*.419,venue.y+venue.h*.505,name,{
+  fontFamily:'sans-serif',fontSize:`${fontSize}px`,fontStyle:'bold',color:'#fff2cf',
+  align:'center',stroke:'#18345f',strokeThickness:1,
+ }).setOrigin(.5).setResolution(2).setDepth(venue.y+venue.h+14).setName(`town-shop-sign-${venue.shopId}`);
+}
 function drawCivicBuildings(scene:Phaser.Scene){
  const stadium=townVenues.find(v=>v.id==='stadium-5')!,shop=townVenues.find(v=>v.id==='komorebi')!;
  const arena=scene.add.image(stadium.x,stadium.y,'civic-arena-occlusion').setOrigin(0).setDisplaySize(stadium.w,stadium.h).setDepth(stadium.y+stadium.h+12);
@@ -15,6 +25,7 @@ function drawCivicBuildings(scene:Phaser.Scene){
  scene.textures.get('civic-arena-occlusion').setFilter(Phaser.Textures.FilterMode.LINEAR);
  scene.textures.get('civic-shop-occlusion').setFilter(Phaser.Textures.FilterMode.LINEAR);
  arena.setName('civic-arena-foreground');storefront.setName('civic-shop-foreground');
+ drawShopSign(scene,shop);
 }
 function drawModelShopSprite(scene:Phaser.Scene,venue:typeof townVenues[number],open:boolean){
  if(!venue.shopId){drawVenueFacade(scene,venue,open);return;}
@@ -22,6 +33,7 @@ function drawModelShopSprite(scene:Phaser.Scene,venue:typeof townVenues[number],
  if(!scene.textures.exists(key)){drawVenueFacade(scene,venue,open);return;}
  scene.textures.get(key).setFilter(Phaser.Textures.FilterMode.LINEAR);
  scene.add.image(venue.x,venue.y,key).setOrigin(0).setDisplaySize(venue.w,venue.h).setDepth(venue.y+venue.h+12).setName(`town-shop-${venue.shopId}-${modelShops[venue.shopId].color.toString(16)}`);
+ drawShopSign(scene,venue);
 }
 
 /** Terrain is baked once. Pixel clusters follow a fixed, upper-left daylight. */
