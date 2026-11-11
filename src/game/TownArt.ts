@@ -7,14 +7,16 @@ import {SceneryPen} from './SceneryCanvas';
 /** One raster pixel covers two map units; repeating vector detail avoids full-size terrain canvases. */
 export const townGroundRasterScale=.5;
 const townShopVariants:Partial<Record<ShopId,'amber'|'green'|'violet'|'red'|'teal'>>={hinata:'amber',wakaba:'green',yuunagi:'violet',akatsuki:'red',torque:'red',velocity:'teal',terrain:'green',endurance:'teal',atelier:'violet'};
-const townArenaVariants:Record<string,'occlusion'|'teal'|'violet'|'amber'>={'stadium-5':'teal','stadium-7':'occlusion','stadium-9':'violet','stadium-10':'amber'};
+const townArenaVariants:Record<string,'occlusion'|'teal'|'violet'|'amber'|'zenith'>={'stadium-5':'teal','stadium-7':'zenith','stadium-9':'violet','stadium-10':'amber'};
 function inCivicArtwork(x:number,y:number){return x>=townCivicPlaza.x&&x<=townCivicPlaza.x+townCivicPlaza.width&&y>=townCivicPlaza.y&&y<=townCivicPlaza.y+townCivicPlaza.height;}
 function drawTownArena(scene:Phaser.Scene,venue:typeof townVenues[number],progress:WorldProgress){
  const variant=townArenaVariants[venue.id]??'occlusion',key=`civic-arena-${variant}`;
  if(!scene.textures.exists(key)){drawVenueFacade(scene,venue,isVenueOpen(venue,progress));return;}
  scene.textures.get(key).setFilter(Phaser.Textures.FilterMode.LINEAR);
- const artHeight=venue.w*628/1000,artY=venue.y+venue.h-artHeight,depth=artY+artHeight+12;
+ const artHeight=venue.w*(variant==='zenith'?1024/1536:628/1000),artY=venue.y+venue.h-artHeight,depth=artY+artHeight+12;
  scene.add.image(venue.x,artY,key).setOrigin(0).setDisplaySize(venue.w,artHeight).setDepth(depth).setName(`town-arena-${venue.id}-${variant}`);
+ // The supplied final arena already includes its own sign.
+ if(variant==='zenith')return;
  const name=venue.name.replace('天頂決戦・','天頂決戦\n'),longest=Math.max(...name.split('\n').map(line=>[...line].length));
  const fontSize=Math.max(9,Math.min(18,Math.floor(venue.w*.31/longest)));
  scene.add.text(venue.x+venue.w*.42,artY+artHeight*.62,name,{
