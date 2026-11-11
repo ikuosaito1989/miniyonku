@@ -63,6 +63,29 @@ export function npcDrawing(id:NpcAppearanceId,direction:Facing,frame=0):PixelSha
   }
   r(facing==='right'?38:26,34,3,.5,'#edc0a0');
  }
+ // 束の根元に影、先端に短い反射を置き、髪を面ではなく房で読む。
+ if(a.haircut!=='bald'&&a.haircut!=='cap'){
+  const locks=facing==='up'?[[22,12],[28,10],[34,12],[39,17]]:facing==='right'?[[19,12],[24,9],[30,8]]:[[18,12],[23,8],[29,7],[35,9]];
+  for(const [x,y] of locks){
+   p([[x,y],[x+2,y-1],[x+3,y+3],[x+2,y+6],[x+1,y+3]],a.highlight);
+   r(x+3,y+2,.5,4,ink);r(x+.5,y,1,.5,'#e6cfaa');
+  }
+ }
+ if(facing!=='up'){
+  // 瞳の下部と頬の反射で、小さい表示でも目線を読みやすくする。
+  if(!a.glasses&&a.eyes!=='smile')for(const x of facing==='right'?[36]:[21,34]){
+   r(x+2,24,2,2,ink);r(x+2,23,1,1,'#fff9ed');
+   if(a.eyes==='round')r(x+2,27,2,1,a.highlight);
+  }
+  r(facing==='right'?40:19,29,2,1,'#edb39a');
+  if(facing!=='right')r(38,29,2,1,'#edb39a');
+ }
+ // 襟・前立て・ポケット・裾の折り返しを同じ服色の明暗で描く。
+ p([[24,38],[28,40],[30,43],[27,42]],a.light);
+ r(30,43,1,10,a.shade);r(29,44,.5,8,a.light);
+ r(33,44,4,.5,a.shade);r(33,45,.5,3,a.light);
+ for(const y of [44,48,52])r(30,y,.5,.5,'#e8e1ca');
+ r(23,55,5,.5,a.shade);r(33,55,4,.5,a.light);
  // Fine fabric seams sit below the portrait and move with the torso.
  for(const [x,y,w] of [[22,44,3],[34,47,3],[24,54,4]]){
   r(x,y,w,.5,a.light);r(x+1,y+1,1,.5,a.shade);
