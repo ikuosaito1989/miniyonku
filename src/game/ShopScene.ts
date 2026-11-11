@@ -98,7 +98,7 @@ export class ShopScene extends Phaser.Scene {
   private challengerSolid:Phaser.Geom.Rectangle|null=null;
   private get cast(){return shopCast(currentShop(useGame.getState().location).id);}
   constructor(){ super('shop'); }
-  preload(){const id=useGame.getState().location,image=sceneryImage(id);if(image)this.load.image(sceneryKey(id),image);if(id==='town')for(const [key,path] of [[townCivicArtworkKey,'/assets/town-civic-plaza.webp'],['civic-plaza-extension','/assets/civic-plaza-extension.webp'],['civic-arena-occlusion','/assets/civic-arena-occlusion.webp'],['civic-shop-occlusion','/assets/civic-shop-occlusion.webp']] as const)if(!this.textures.exists(key))this.load.image(key,path);}
+  preload(){const id=useGame.getState().location,image=sceneryImage(id);if(image)this.load.image(sceneryKey(id),image);if(id==='town')for(const [key,path] of [[townCivicArtworkKey,'/assets/town-civic-plaza.webp'],['civic-arena-occlusion','/assets/civic-arena-occlusion.webp'],['civic-shop-occlusion','/assets/civic-shop-occlusion.webp']] as const)if(!this.textures.exists(key))this.load.image(key,path);}
   create(){
     this.eventAudio=new EventAudio();
     const unlockAudio=()=>{if(useAudioSettings.getState().enabled)this.eventAudio.unlock();};
