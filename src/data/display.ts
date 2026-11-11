@@ -22,3 +22,10 @@ export function shopWorldZoom(width:number,height:number,compact:boolean){
   if(compact){const zoom=Math.max(width/560,height/roomView.height);return {x:zoom,y:zoom};}
   return {x:width/roomView.width,y:height/roomView.height};
 }
+/** The street view frames the civic block instead of zooming to indoor scale. */
+export function townWorldZoom(width:number,height:number,compact:boolean){
+  // Frame the civic arena and hobby shop as one landmark block on phones.
+  const targetWidth=compact?1200:1800,targetHeight=compact?1640:1100;
+  const zoom=Math.max(.16,Math.min(width/targetWidth,height/targetHeight));
+  return {x:zoom,y:zoom};
+}

@@ -41,7 +41,7 @@ import { nextShopRace } from '../data/shopHints';
 import { equippedCondition } from './condition';
 import { shopAdvice } from './shopAdvice';
 import { touchInput } from './touchInput';
-import { compactDevice, shopWorldZoom } from '../data/display';
+import { compactDevice, shopWorldZoom, townWorldZoom } from '../data/display';
 import { findWalkingPath, walkBounds, type Point } from './navigation';
 import { isSalesShop, currentShop, isVenueOpen, shopExit, townSpawn, townVenues, venueMessage, townSize, townWalkBounds, townBlocks } from '../data/world';
 import { shopCast } from '../data/shopCast';
@@ -285,12 +285,17 @@ export class ShopScene extends Phaser.Scene {
   private fitCamera(){
     this.gesture.reset();this.pendingTarget=null;this.cancelRoute();
     const {width,height}=this.scale;
-    const compact=compactDevice(),zoom=shopWorldZoom(width,height,compact);
+    const compact=compactDevice(),zoom=this.isTown?townWorldZoom(width,height,compact):shopWorldZoom(width,height,compact);
     if(this.isTown){
       const camera=this.cameras.main;
       camera.setZoom(zoom.x,zoom.y);
       camera.setBounds(0,0,townSize.width,townSize.height);
-      if(this.player)camera.startFollow(this.player,false,.18,.18);
+      if(this.player){
+        camera.startFollow(this.player,false,.18,.18);
+        const state=useGame.getState();
+        const framingOffset=compact&&state.lastShop==='komorebi'&&!state.townReturnVenue?width*.3/zoom.x:0;
+        camera.setFollowOffset(framingOffset,0);
+      }
       return;
     }
     if(compact){

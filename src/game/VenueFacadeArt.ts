@@ -11,9 +11,95 @@ function roofBlock(p:SceneryPen,x:number,y:number,w:number,h:number,top:string,f
  p.line([[x+3,y+2],[x+w-3,y+2]],'#ffffff55',1);
 }
 
+function paintRaceArena(p:SceneryPen,v:TownVenue,x:number,y:number){
+ const {c}=p,w=v.w,h=v.h,cx=x+w/2;
+ p.ellipse(cx+20,y+h+16,w*.62,30,'#22374735');
+ // The arena is a low, wide hall with a glazed oval roof and a deep right side.
+ p.poly([[x+54,y+170],[x+w-78,y+170],[x+w+24,y+111],[x+w+24,y+h-38],[x+w-56,y+h-9],[x+54,y+h-9]],'#34475c');
+ p.poly([[x+22,y+181],[x+w-78,y+181],[x+w-78,y+h-18],[x+22,y+h-18]],'#71869a');
+ p.gradient(x+28,y+191,w-112,h-217,'#e2e9ea','#9baeb8');
+ p.rect(x+34,y+h-28,w-120,8,'#526981');p.rect(x+36,y+h-27,w-124,2,'#f1e4c4');
+ // Layered ellipse bands make a dome while remaining crisp at the existing 1x raster.
+ p.ellipse(cx+10,y+137,w*.53,143,'#2a4057');
+ p.ellipse(cx+5,y+129,w*.505,136,'#cad4de');
+ p.ellipse(cx+3,y+122,w*.47,126,'#7790ac');
+ p.ellipse(cx,y+116,w*.448,119,'#2b76b4');
+ p.ellipse(cx,y+116,w*.405,105,'#58a7d5');
+ p.ellipse(cx-4,y+111,w*.34,82,'#7ac6e5');
+ c.save();c.beginPath();c.ellipse(cx,y+116,w*.448,119,0,Math.PI,Math.PI*2);c.clip();
+ for(let i=-4;i<=4;i++){
+  const dx=i*w*.085;c.strokeStyle=i%2===0?'#d9e7ed':'#a8cee1';c.lineWidth=i===0?8:5;c.beginPath();c.moveTo(cx+dx*.2,y+13);c.lineTo(cx+dx*1.58,y+228);c.stroke();
+ }
+ for(const yy of [y+66,y+104,y+145]){c.strokeStyle='#d0e2ed';c.lineWidth=4;c.beginPath();c.ellipse(cx,yy,w*.45,24,0,Math.PI,Math.PI*2);c.stroke();}
+ c.restore();
+ p.ellipse(cx,y+221,w*.515,31,'#d2dce5');p.ellipse(cx,y+216,w*.485,25,'#507392');
+ // Front portico: trophy plaque, checker trim, tall columns and glazed doors.
+ p.poly([[x-4,y+223],[cx-88,y+223],[cx-62,y+184],[cx+62,y+184],[cx+88,y+223],[x+w+4,y+223],[x+w+4,y+278],[x-4,y+278]],'#24384f');
+ p.poly([[x+5,y+218],[cx-82,y+218],[cx-58,y+190],[cx+58,y+190],[cx+82,y+218],[x+w-5,y+218],[x+w-5,y+269],[x+5,y+269]],'#3f6288');
+ p.round(cx-59,y+174,118,65,4,'#e0d9bd');p.round(cx-53,y+180,106,53,3,'#25384d');
+ p.trophy(cx,y+189,1.05);p.line([[cx-44,y+196],[cx-33,y+186],[cx-26,y+201]],'#e5c96e',3);p.line([[cx+44,y+196],[cx+33,y+186],[cx+26,y+201]],'#e5c96e',3);
+ for(const side of [x+27,x+w-51])for(let i=0;i<5;i++){p.rect(side+i*5,y+245,3,7,i%2?'#f4f1df':'#4a8dcc');p.rect(side+i*5,y+252,3,5,i%2?'#445c78':'#f4f1df');}
+ p.round(cx-111,y+258,222,52,3,'#213b59');p.round(cx-104,y+263,208,42,2,'#397bb0');
+ c.save();c.font='bold 13px sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillStyle='#fff2ca';c.fillText(v.name,cx,y+284,194);c.restore();
+ for(const bx of [x+74,x+w-102]){p.poly([[bx,y+270],[bx+18,y+270],[bx+18,y+h-112],[bx,y+h-104]],'#324a64');p.rect(bx+4,y+279,3,h-400,'#e6dcbf');p.rect(bx+12,y+279,2,h-400,'#99b4bf');}
+ const doorW=Math.min(210,w*.34),doorY=y+h-183;
+ p.round(cx-doorW/2-8,doorY-8,doorW+16,104,3,'#263b54');p.gradient(cx-doorW/2,doorY,doorW,88,'#83b7cc','#375b7c');
+ for(let i=1;i<5;i++){const dx=cx-doorW/2+i*doorW/5;p.rect(dx,doorY+8,3,73,'#d8e2d9');p.rect(dx+3,doorY+12,1,55,'#6c93a4');}
+ p.rect(cx-2,doorY+8,4,78,'#f0e0b9');
+ for(let step=0;step<6;step++){const sw=doorW/2+34+step*15,sy=y+h-85+step*8;p.poly([[cx-sw,sy],[cx+sw,sy],[cx+sw-6,sy+7],[cx-sw+6,sy+7]],step%2?'#8695a1':'#e3dfd0');}
+ p.rect(x+18,y+h-18,w-94,7,'#485e72');p.rect(x+21,y+h-18,w-100,2,'#f1e7cc');
+}
+
+function paintHobbyShop(p:SceneryPen,v:TownVenue,x:number,y:number){
+ const {c}=p,w=v.w,h=v.h;
+ p.ellipse(x+w/2+22,y+h+11,w*.61,22,'#22374735');
+ // Rooftop air handlers and a deep side wall make the workshop read as a solid block.
+ p.poly([[x+w-50,y+84],[x+w+30,y+37],[x+w+30,y+h-16],[x+w-50,y+h+2]],'#263d58');
+ p.poly([[x+4,y+105],[x+w-49,y+105],[x+w-49,y+h-10],[x+4,y+h-10]],'#405978');
+ p.poly([[x-9,y+93],[x+45,y+33],[x+w-44,y+33],[x+w+17,y+91],[x+w+11,y+111],[x-5,y+111]],'#243950');
+ p.poly([[x,y+90],[x+49,y+41],[x+w-48,y+41],[x+w+9,y+91],[x+w+4,y+100],[x-4,y+100]],'#647f9c');
+ p.poly([[x+17,y+85],[x+57,y+49],[x+w-54,y+49],[x+w-3,y+91],[x+w-9,y+96],[x+12,y+96]],'#829bb1');
+ p.poly([[x+28,y+80],[x+62,y+54],[x+w-61,y+54],[x+w-12,y+89],[x+w-18,y+93],[x+23,y+91]],'#304a68');
+ for(const [bx,by,bw,bh] of [[x+65,y+34,64,32],[x+146,y+45,42,23],[x+w-93,y+38,59,30]] as const){
+  roofBlock(p,bx,by,bw,bh,'#dce0dd','#718397','#354b62');
+  p.rect(bx+6,by+6,bw-12,3,'#354c64');p.rect(bx+7,by+12,bw-14,2,'#a8bbc4');
+ }
+ // Raised sign box and crossed wrench motif.
+ p.round(x+19,y+105,w-38,42,3,'#233955');p.round(x+25,y+110,w-50,31,2,'#2364a2');
+ p.rect(x+31,y+112,w-62,2,'#d8e8ef');
+ c.save();c.font='bold 12px sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillStyle='#fff3d2';c.fillText(v.name,x+w*.43,y+128,w*.68);c.restore();
+ const wx=x+w-64,wy=y+126;p.line([[wx-12,wy+12],[wx+12,wy-12]],'#ffd45d',7);p.ellipse(wx-14,wy+14,8,8,'#ffd45d');p.ellipse(wx-14,wy+14,3,3,'#2364a2');p.line([[wx+8,wy-16],[wx+16,wy-8]],'#ffd45d',4);
+ // Blue and cream striped awning over the display windows.
+ p.poly([[x-3,y+151],[x+w+7,y+151],[x+w+20,y+181],[x-12,y+181]],'#203852');
+ const stripeW=(w+16)/12;for(let i=0;i<12;i++)p.poly([[x-7+i*stripeW,y+153],[x-7+(i+1)*stripeW,y+153],[x-2+(i+1)*stripeW,y+178],[x-2+i*stripeW,y+178]],i%2?'#eef0e6':'#2c72b8');
+ p.rect(x-4,y+178,w+16,5,'#dde5e5');p.rect(x-4,y+183,w+16,3,'#385c7e');
+ const bayY=y+191,bayH=Math.min(86,h-222),bayW=(w-58)/3;
+ for(let i=0;i<3;i++){
+  const bx=x+12+i*(bayW+11);p.round(bx-3,bayY-4,bayW+6,bayH+8,2,'#263b54');p.gradient(bx,bayY,bayW,bayH,'#8ac5dc','#315879');
+  p.rect(bx+3,bayY+bayH*.55,bayW-6,2,'#e4d7b8');p.rect(bx+3,bayY+bayH*.77,bayW-6,2,'#e4d7b8');
+  for(let shelf=0;shelf<2;shelf++){const sy=bayY+bayH*(.34+shelf*.22);p.rect(bx+4,sy,bayW-8,2,'#d9e0d5');for(let n=0;n<2;n++){const px=bx+9+n*(bayW/2);p.round(px,sy-11,Math.min(25,bayW/2-8),8,1,n?'#e7c866':'#dd765d');p.rect(px+2,sy-8,Math.min(15,bayW/2-13),2,'#f4e8c4');}}
+  p.rect(bx+bayW*.48,bayY,2,bayH,'#e2e5db');
+ }
+ const doorX=x+w-56,doorY=y+192;p.round(doorX,doorY,40,bayH+3,2,'#273e58');p.gradient(doorX+4,doorY+4,32,bayH-5,'#a1d0dd','#527d98');p.rect(doorX+21,doorY+5,2,bayH-8,'#f3e5c5');p.rect(doorX+32,doorY+bayH/2,3,3,'#f4d776');
+ p.rect(x+5,y+h-16,w-14,7,'#334d65');p.rect(x+8,y+h-16,w-20,2,'#e8d9b4');
+ for(const bx of [x+3,x+w-15]){p.round(bx,y+h-42,12,25,2,'#c8a06d');p.ellipse(bx+6,y+h-47,9,12,'#5e8658');p.ellipse(bx+3,y+h-51,7,9,'#7ca367');}
+}
+
+function entranceCue(p:SceneryPen,v:TownVenue,open:boolean,x:number,y:number){
+ const w=v.w,h=v.h;
+ if(open)p.poly([[x+w/2-7,y+h+14],[x+w/2+7,y+h+14],[x+w/2,y+h+22]],'#e5d8a4');
+ else{p.round(x+w/2-17,y+h-30,34,22,3,'#26394be8');p.round(x+w/2-6,y+h-37,12,13,6,'#c9b87d');p.round(x+w/2-9,y+h-29,18,14,3,'#ebd99d');p.ellipse(x+w/2,y+h-23,2,2,'#596174');}
+}
+
 export function paintVenueFacade(p:SceneryPen,v:TownVenue,open:boolean){
  if(v.kind==='outdoor')return;
  const w=v.w,h=v.h,x=40,y=91,c=p.c;
+ if(v.id==='stadium-5'){
+  paintRaceArena(p,v,x,y);entranceCue(p,v,open,x,y);c.globalAlpha=1;return;
+ }
+ if(v.id==='komorebi'){
+  paintHobbyShop(p,v,x,y);entranceCue(p,v,open,x,y);c.globalAlpha=1;return;
+ }
  p.ellipse(x+w/2+10,y+h+9,w*.6,13,'#21323b33');
  if(v.kind==='library'){
   p.round(x,y,w,h,3,'#465e6c');p.gradient(x+3,y+3,w-6,h-6,'#e1d7bd','#b4b4a0');
@@ -150,7 +236,7 @@ export function paintVenueFacade(p:SceneryPen,v:TownVenue,open:boolean){
  c.globalAlpha=1;
 }
 export function drawVenueFacade(scene:Phaser.Scene,v:TownVenue,open:boolean){
- const key=`facade-v8-${v.id}-${open}`,width=v.w+80,height=v.h+145,resolution=1;
+ const key=`facade-v9-${v.id}-${open}`,width=v.w+80,height=v.h+145,resolution=1;
  if(!scene.textures.exists(key)){const t=scene.textures.createCanvas(key,width*resolution,height*resolution)!;t.context.scale(resolution,resolution);paintVenueFacade(new SceneryPen(t.context),v,open);t.refresh();t.setFilter(Phaser.Textures.FilterMode.NEAREST);}
  scene.add.image(v.x-40,v.y-91,key).setOrigin(0).setDisplaySize(width,height).setDepth(v.y+v.h);
 }
