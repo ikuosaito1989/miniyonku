@@ -58,6 +58,17 @@ function drawModelShopSprite(scene:Phaser.Scene,venue:typeof townVenues[number],
 function ground(c:CanvasRenderingContext2D,chunkX=0,chunkWidth=townSize.width,chunkY=0,chunkHeight=townSize.height){
  const p=new SceneryPen(c),r=p.rect.bind(p),noise=artNoise;
  const chunkEnd=chunkX+chunkWidth,chunkBottom=chunkY+chunkHeight;
+ // All paved lots share a world-aligned grid, including building aprons.
+ const paving=(x:number,y:number,w:number,h:number)=>{
+  if(w<=0||h<=0)return;
+  c.save();c.beginPath();c.rect(x,y,w,h);c.clip();r(x,y,w,h,'#aaa58f');
+  const top=Math.max(y,chunkY),bottom=Math.min(y+h,chunkBottom),left=Math.max(x,chunkX),right=Math.min(x+w,chunkEnd);
+  for(let yy=Math.floor(top/26)*26;yy<bottom;yy+=26){const offset=(Math.floor(yy/26)%2)*20;
+   for(let xx=Math.floor((left-offset)/40)*40+offset;xx<right;xx+=40){const n=noise(xx,yy,701),tone=['#c0baa1','#b6b39c','#cbc2a8','#acae9a'][n%4];r(xx,yy,36,22,tone);r(xx,yy,36,2,'#ded5b8');r(xx,yy+20,36,2,'#888e7c');if(n%4===0)r(xx+8,yy+8,6,1,'#e5dabc');}
+  }
+  c.restore();
+ };
+
  r(chunkX,chunkY,chunkWidth,chunkHeight,'#788f62');
  // Wide, quiet colour clusters keep the dense tufts from becoming visual noise.
  const firstGrassX=Math.max(0,Math.floor(chunkX/64)*64);
@@ -101,7 +112,7 @@ function ground(c:CanvasRenderingContext2D,chunkX=0,chunkWidth=townSize.width,ch
    for(let yy=y0+48;yy<y1-48;yy+=32)for(let xx=x0+48;xx<x1-48;xx+=38){const n=noise(xx,yy,701);r(xx,yy,28,20,n%2?'#64815d':'#718e65');r(xx+4,yy+5,17,2,n%3?'#83a071':'#bdc17e');if(n%5===0)r(xx+13,yy+2,3,4,'#d7b684');}
    const px=x0+244,py=y0+128;r(px-12,py-10,170,116,'#847c63');r(px-7,py-6,160,108,'#c0b48e');r(px,py,146,96,'#4a7c85');r(px+5,py+4,136,84,'#69a0a0');
    for(let i=0;i<22;i++){const n=noise(i,22,703),wx=px+8+n%122,wy=py+8+(n>>>5)%70;r(wx,wy,5+n%10,1,'#bbd3bd');}
-  }else for(let yy=y0+8;yy<y1-8;yy+=26)for(let xx=x0+8+(Math.floor(yy/26)%2)*20;xx<x1-8;xx+=40){const n=noise(xx,yy,701),tone=['#c0baa1','#b6b39c','#cbc2a8','#acae9a'][n%4];r(xx,yy,36,22,tone);r(xx,yy,36,2,'#ded5b8');r(xx,yy+20,36,2,'#888e7c');if(n%4===0)r(xx+8,yy+8,6,1,'#e5dabc');}
+  }else paving(x0,y0,x1-x0,y1-y0);
  }
  for(const x of townRoads.vertical){if(x+110<chunkX||x-110>chunkEnd||townWalkBounds.bottom<chunkY||townWalkBounds.top>chunkBottom)continue;road(x-70,townWalkBounds.top-24,140,townWalkBounds.bottom-townWalkBounds.top+48,true,true,'v');for(let y=Math.max(townWalkBounds.top-8,chunkY);y<Math.min(townWalkBounds.bottom,chunkBottom);y+=30){r(x-2,y,4,13,'#c9bd8d');r(x-1,y,1,11,'#e4d5a5');for(const xx of [x-70,x+63]){r(xx,y,7,1,'#6e8279');r(xx,y+1,7,1,'#d8cfaa');}}
   for(let y=Math.max(townWalkBounds.top+90,chunkY);y<Math.min(townWalkBounds.bottom-30,chunkBottom);y+=210){r(x+53,y,9,17,'#3d535a');for(let i=0;i<4;i++)r(x+54,y+2+i*4,7,1,'#85958e');}
@@ -112,21 +123,16 @@ function ground(c:CanvasRenderingContext2D,chunkX=0,chunkWidth=townSize.width,ch
   if(v.x+v.w+80<chunkX||v.x-80>chunkEnd||v.y+v.h+120<chunkY||v.y-100>chunkBottom)continue;
   const cx=v.x+v.w/2,cy=v.entrance==='south'?v.y+v.h+30:v.y-30,roadY=townRoads.horizontal.reduce((a,b)=>Math.abs(b-cy)<Math.abs(a-cy)?b:a);
   const pad=v.kind==='outdoor'?{x:v.x-8,y:v.y-8,w:v.w+16,h:v.h+28}:{x:v.x-24,y:v.y-65,w:v.w+48,h:v.h+118};
-  r(pad.x+3,pad.y+4,pad.w,pad.h,'#506d4e55');r(pad.x,pad.y,pad.w,pad.h,'#b0af8c');
-  // Broad offset stone slabs, varied aggregate and worn corners feel like a real curb walk.
-  for(let yy=pad.y;yy<pad.y+pad.h;yy+=18){const row=Math.floor((yy-pad.y)/18);for(let xx=pad.x-(row%2)*15;xx<pad.x+pad.w;xx+=36){const n=noise(xx,yy,43),left=Math.max(pad.x+1,xx+1),width=Math.min(34,pad.x+pad.w-left-1);if(width<4)continue;const color=['#b7b29a','#acae98','#c1baa0','#a9ad9a'][n%4];r(left,yy+1,width,16,color);r(left,yy+1,width,1,'#dad3b4');r(left,yy+15,width,1,'#858f7f');r(left+1,yy+2,width-2,1,'#c9c3a9');if(n%3===0){r(left+4+n%11,yy+5+n%4,3+n%6,1,'#e1d8b327');r(left+14,yy+10,2,1,'#66796b38');}if(n%7===0){r(left+width-5,yy+7,2,1,'#697b6d70');r(left+width-4,yy+8,1,2,'#697b6d70');}}}
-  const top=Math.min(cy,roadY),bottom=Math.max(cy,roadY);r(cx-30,top,60,bottom-top,'#788572');r(cx-28,top,56,bottom-top,'#aea98a');
-  for(let yy=top;yy<bottom;yy+=18){for(let col=0;col<2;col++){const xx=cx-27+col*27,n=noise(xx,yy,61),tone=['#bbb69d','#b0ae96','#c5bda2'][n%3];r(xx+1,yy+1,25,16,tone);r(xx+1,yy+1,25,1,'#ded3b0');r(xx+1,yy+15,25,1,'#89917e');if(n%3===0){r(xx+5+n%8,yy+5,5,1,'#e0d5b538');r(xx+17,yy+10,3,1,'#717d6f3d');}if(n%9===0){r(xx+20,yy+8,2,1,'#657964');r(xx+22,yy+7,1,2,'#657964');}}r(cx-29,yy+4,1,4,'#7d9663');r(cx+28,yy+9,1,3,'#6f8a5b');}
+  paving(pad.x,pad.y,pad.w,pad.h);
+  const top=Math.min(cy,roadY),bottom=Math.max(cy,roadY);
+  paving(cx-30,top,60,bottom-top);
  }
  // Small paved front courts link residential doors to the street instead of
  // leaving every building isolated in an uninterrupted grass field.
  for(const b of townBlocks){
   if(b.x+b.w+8<chunkX||b.x-8>chunkEnd||b.y+b.h+64<chunkY||b.y-30>chunkBottom)continue;
-  const y=b.y+b.h,cx=b.x+b.w/2;
-  r(b.x-12,y+2,b.w+24,62,'#60765b');r(b.x-9,y+4,b.w+18,57,'#a9a58d');r(b.x-8,y+4,b.w+16,2,'#d6c9a5');
-  for(let yy=y+7,row=0;yy<y+60;yy+=12,row++)for(let xx=b.x-7-(row%2)*10;xx<b.x+b.w+8;xx+=27){const left=Math.max(b.x-7,xx+1),ww=Math.min(25,b.x+b.w+7-left),n=noise(xx,yy,173);if(ww<4)continue;r(left,yy,ww,10,n%4?'#c0baa0':'#b0b29b');r(left,yy,ww,1,'#ded5b9');r(left,yy+9,ww,1,'#7f897a');if(n%3===0)r(left+4,yy+4,5,1,'#e5d9ba40');}
-  r(cx-18,y+4,36,58,'#b5b098');r(cx-17,y+4,34,2,'#e1d5b5');r(cx-17,y+60,34,2,'#858a77');
-  for(let yy=y+12;yy<y+58;yy+=14){r(cx-16,yy,32,1,'#777f73');r(cx-14,yy+2,28,1,'#d4c9aa');}
+  const y=b.y+b.h;
+  paving(b.x-12,y+2,b.w+24,62);
   for(const px of [b.x-3,b.x+b.w-17]){r(px,y+20,14,13,'#486c4d');r(px+1,y+19,12,2,'#9caf72');for(let j=0;j<4;j++){const flower=px+2+j*3;r(flower,y+17+(j%2)*2,2,3,j%2?'#cf9390':'#e1ca7d');r(flower,y+21,2,4,'#577b50');}}
  }
  // Planting is concentrated inside the pocket park, keeping street lots and sidewalks clear.
@@ -139,7 +145,7 @@ function ground(c:CanvasRenderingContext2D,chunkX=0,chunkWidth=townSize.width,ch
 }
 export function drawTown(scene:Phaser.Scene,progress:WorldProgress){
  // Chunk size limits canvas allocations; half-resolution raster cuts the full-world terrain buffer by 75%.
- for(let y=0;y<townSize.height;y+=2048)for(let x=0;x<townSize.width;x+=2048){const width=Math.min(2048,townSize.width-x),height=Math.min(2048,townSize.height-y),key=`midorikawa-ground-19-${x}-${y}`,rasterWidth=Math.ceil(width*townGroundRasterScale),rasterHeight=Math.ceil(height*townGroundRasterScale);if(!scene.textures.exists(key)){const texture=scene.textures.createCanvas(key,rasterWidth,rasterHeight)!;texture.context.scale(townGroundRasterScale,townGroundRasterScale);texture.context.translate(-x,-y);ground(texture.context,x,width,y,height);texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.NEAREST);}scene.add.image(x,y,key).setOrigin(0).setDisplaySize(width,height).setDepth(-100);}
+ for(let y=0;y<townSize.height;y+=2048)for(let x=0;x<townSize.width;x+=2048){const width=Math.min(2048,townSize.width-x),height=Math.min(2048,townSize.height-y),key=`midorikawa-ground-20-${x}-${y}`,rasterWidth=Math.ceil(width*townGroundRasterScale),rasterHeight=Math.ceil(height*townGroundRasterScale);if(!scene.textures.exists(key)){const texture=scene.textures.createCanvas(key,rasterWidth,rasterHeight)!;texture.context.scale(townGroundRasterScale,townGroundRasterScale);texture.context.translate(-x,-y);ground(texture.context,x,width,y,height);texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.NEAREST);}scene.add.image(x,y,key).setOrigin(0).setDisplaySize(width,height).setDepth(-100);}
 
  const hasCivicArtwork=scene.textures.exists('civic-arena-occlusion')&&scene.textures.exists('civic-shop-occlusion');
  if(hasCivicArtwork)drawCivicBuildings(scene,progress);
