@@ -6,14 +6,11 @@ import {artNoise,paintPixelTree} from './PixelArtMaterials';
 import {SceneryPen} from './SceneryCanvas';
 /** One raster pixel covers two map units; repeating vector detail avoids full-size terrain canvases. */
 export const townGroundRasterScale=.5;
-export const townCivicArtworkKey='town-civic-plaza-art';
-const civicScale=townCivicPlaza.width/2083;
+const civicScale=.76;
 function inCivicArtwork(x:number,y:number){return x>=townCivicPlaza.x&&x<=townCivicPlaza.x+townCivicPlaza.width&&y>=townCivicPlaza.y&&y<=townCivicPlaza.y+townCivicPlaza.height;}
-function drawCivicArtwork(scene:Phaser.Scene){
- const source=scene.textures.get(townCivicArtworkKey);source.setFilter(Phaser.Textures.FilterMode.NEAREST);
- scene.add.image(townCivicPlaza.x,townCivicPlaza.y,townCivicArtworkKey).setOrigin(0).setDisplaySize(townCivicPlaza.width,townCivicPlaza.height).setDepth(-90);
+function drawCivicBuildings(scene:Phaser.Scene){
  const stadium=townVenues.find(v=>v.id==='stadium-5')!,shop=townVenues.find(v=>v.id==='komorebi')!;
- const arena=scene.add.image(townCivicPlaza.x+90*civicScale,townCivicPlaza.y+50*civicScale,'civic-arena-occlusion').setOrigin(0).setDisplaySize(660*civicScale,520*civicScale).setDepth(stadium.y+stadium.h+12);
+ const arena=scene.add.image(townCivicPlaza.x+70*civicScale,townCivicPlaza.y+50*civicScale,'civic-arena-occlusion').setOrigin(0).setDisplaySize(680*civicScale,520*civicScale).setDepth(stadium.y+stadium.h+12);
  const storefront=scene.add.image(townCivicPlaza.x+780*civicScale,townCivicPlaza.y+60*civicScale,'civic-shop-occlusion').setOrigin(0).setDisplaySize(390*civicScale,390*civicScale).setDepth(shop.y+shop.h+12);
  scene.textures.get('civic-arena-occlusion').setFilter(Phaser.Textures.FilterMode.NEAREST);
  scene.textures.get('civic-shop-occlusion').setFilter(Phaser.Textures.FilterMode.NEAREST);
@@ -107,8 +104,8 @@ export function drawTown(scene:Phaser.Scene,progress:WorldProgress){
  // Chunk size limits canvas allocations; half-resolution raster cuts the full-world terrain buffer by 75%.
  for(let y=0;y<townSize.height;y+=2048)for(let x=0;x<townSize.width;x+=2048){const width=Math.min(2048,townSize.width-x),height=Math.min(2048,townSize.height-y),key=`midorikawa-ground-19-${x}-${y}`,rasterWidth=Math.ceil(width*townGroundRasterScale),rasterHeight=Math.ceil(height*townGroundRasterScale);if(!scene.textures.exists(key)){const texture=scene.textures.createCanvas(key,rasterWidth,rasterHeight)!;texture.context.scale(townGroundRasterScale,townGroundRasterScale);texture.context.translate(-x,-y);ground(texture.context,x,width,y,height);texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.NEAREST);}scene.add.image(x,y,key).setOrigin(0).setDisplaySize(width,height).setDepth(-100);}
 
- const hasCivicArtwork=scene.textures.exists(townCivicArtworkKey);
- if(hasCivicArtwork)drawCivicArtwork(scene);
+ const hasCivicArtwork=scene.textures.exists('civic-arena-occlusion')&&scene.textures.exists('civic-shop-occlusion');
+ if(hasCivicArtwork)drawCivicBuildings(scene);
  for(const venue of townVenues){
   if(hasCivicArtwork&&(venue.id==='stadium-5'||venue.id==='komorebi'))continue;
   if(venue.kind==='outdoor')drawOutdoorCourse(scene,venue,isVenueOpen(venue,progress));else drawVenueFacade(scene,venue,isVenueOpen(venue,progress));

@@ -51,8 +51,8 @@ export const townSize={width:7000,height:4600};
 export const townWalkBounds={left:64,right:6880,top:96,bottom:4536};
 export const townRoads={vertical:[400,1200,2000,2800,3600,4400],horizontal:[420,1100,1780,2460,3140,3820,4480]};
 export const townPlaza={x:2050,y:1840,w:700,h:500};
-/** Bounds of the reference-matched civic plaza illustration in town world units. */
-export const townCivicPlaza={x:2800,y:1688,width:1584,height:711};
+/** Clear frontage reserved for the two landmark buildings, measured in town units. */
+export const townCivicPlaza={x:2800,y:1688,width:900,height:500};
 export function generateTownVenues(seed=19890421):TownVenue[]{
   let state=seed>>>0;const random=()=>{state=(Math.imul(state,1664525)+1013904223)>>>0;return state/4294967296;};
   const fixed:TownVenue[]=[...venueTemplates,
