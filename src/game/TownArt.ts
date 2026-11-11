@@ -7,7 +7,21 @@ import {SceneryPen} from './SceneryCanvas';
 /** One raster pixel covers two map units; repeating vector detail avoids full-size terrain canvases. */
 export const townGroundRasterScale=.5;
 const townShopVariants:Partial<Record<ShopId,'amber'|'green'|'violet'|'red'|'teal'>>={hinata:'amber',wakaba:'green',yuunagi:'violet',akatsuki:'red',torque:'red',velocity:'teal',terrain:'green',endurance:'teal',atelier:'violet'};
+const townArenaVariants:Record<string,'occlusion'|'teal'|'violet'|'amber'>={'stadium-5':'teal','stadium-7':'occlusion','stadium-9':'violet','stadium-10':'amber'};
 function inCivicArtwork(x:number,y:number){return x>=townCivicPlaza.x&&x<=townCivicPlaza.x+townCivicPlaza.width&&y>=townCivicPlaza.y&&y<=townCivicPlaza.y+townCivicPlaza.height;}
+function drawTownArena(scene:Phaser.Scene,venue:typeof townVenues[number],progress:WorldProgress){
+ const variant=townArenaVariants[venue.id]??'occlusion',key=`civic-arena-${variant}`;
+ if(!scene.textures.exists(key)){drawVenueFacade(scene,venue,isVenueOpen(venue,progress));return;}
+ scene.textures.get(key).setFilter(Phaser.Textures.FilterMode.LINEAR);
+ const artHeight=venue.w*628/1000,artY=venue.y+venue.h-artHeight,depth=artY+artHeight+12;
+ scene.add.image(venue.x,artY,key).setOrigin(0).setDisplaySize(venue.w,artHeight).setDepth(depth).setName(`town-arena-${venue.id}-${variant}`);
+ const name=venue.name.replace('天頂決戦・','天頂決戦\n'),longest=Math.max(...name.split('\n').map(line=>[...line].length));
+ const fontSize=Math.max(9,Math.min(18,Math.floor(venue.w*.31/longest)));
+ scene.add.text(venue.x+venue.w*.42,artY+artHeight*.62,name,{
+  fontFamily:'sans-serif',fontSize:`${fontSize}px`,fontStyle:'bold',color:'#fff2cf',
+  align:'center',stroke:'#17345f',strokeThickness:1,lineSpacing:-2,
+ }).setOrigin(.5).setResolution(2).setDepth(depth+2).setName(`town-arena-sign-${venue.id}`);
+}
 function drawShopSign(scene:Phaser.Scene,venue:typeof townVenues[number]){
  if(!venue.shopId)return;
  const name=modelShops[venue.shopId].name,characters=[...name].length;
@@ -18,13 +32,12 @@ function drawShopSign(scene:Phaser.Scene,venue:typeof townVenues[number]){
   align:'center',stroke:'#18345f',strokeThickness:1,
  }).setOrigin(.5).setResolution(2).setDepth(venue.y+venue.h+14).setName(`town-shop-sign-${venue.shopId}`);
 }
-function drawCivicBuildings(scene:Phaser.Scene){
+function drawCivicBuildings(scene:Phaser.Scene,progress:WorldProgress){
  const stadium=townVenues.find(v=>v.id==='stadium-5')!,shop=townVenues.find(v=>v.id==='komorebi')!;
- const arena=scene.add.image(stadium.x,stadium.y,'civic-arena-occlusion').setOrigin(0).setDisplaySize(stadium.w,stadium.h).setDepth(stadium.y+stadium.h+12);
+ drawTownArena(scene,stadium,progress);
  const storefront=scene.add.image(shop.x,shop.y,'civic-shop-occlusion').setOrigin(0).setDisplaySize(shop.w,shop.h).setDepth(shop.y+shop.h+12);
- scene.textures.get('civic-arena-occlusion').setFilter(Phaser.Textures.FilterMode.LINEAR);
  scene.textures.get('civic-shop-occlusion').setFilter(Phaser.Textures.FilterMode.LINEAR);
- arena.setName('civic-arena-foreground');storefront.setName('civic-shop-foreground');
+ storefront.setName('civic-shop-foreground');
  drawShopSign(scene,shop);
 }
 function drawModelShopSprite(scene:Phaser.Scene,venue:typeof townVenues[number],open:boolean){
@@ -124,10 +137,10 @@ export function drawTown(scene:Phaser.Scene,progress:WorldProgress){
  for(let y=0;y<townSize.height;y+=2048)for(let x=0;x<townSize.width;x+=2048){const width=Math.min(2048,townSize.width-x),height=Math.min(2048,townSize.height-y),key=`midorikawa-ground-19-${x}-${y}`,rasterWidth=Math.ceil(width*townGroundRasterScale),rasterHeight=Math.ceil(height*townGroundRasterScale);if(!scene.textures.exists(key)){const texture=scene.textures.createCanvas(key,rasterWidth,rasterHeight)!;texture.context.scale(townGroundRasterScale,townGroundRasterScale);texture.context.translate(-x,-y);ground(texture.context,x,width,y,height);texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.NEAREST);}scene.add.image(x,y,key).setOrigin(0).setDisplaySize(width,height).setDepth(-100);}
 
  const hasCivicArtwork=scene.textures.exists('civic-arena-occlusion')&&scene.textures.exists('civic-shop-occlusion');
- if(hasCivicArtwork)drawCivicBuildings(scene);
+ if(hasCivicArtwork)drawCivicBuildings(scene,progress);
  for(const venue of townVenues){
   if(hasCivicArtwork&&(venue.id==='stadium-5'||venue.id==='komorebi'))continue;
-  if(venue.kind==='outdoor')drawOutdoorCourse(scene,venue,isVenueOpen(venue,progress));else if(venue.kind==='shop')drawModelShopSprite(scene,venue,isVenueOpen(venue,progress));else drawVenueFacade(scene,venue,isVenueOpen(venue,progress));
+  if(venue.kind==='outdoor')drawOutdoorCourse(scene,venue,isVenueOpen(venue,progress));else if(venue.kind==='shop')drawModelShopSprite(scene,venue,isVenueOpen(venue,progress));else if(venue.kind==='stadium'&&hasCivicArtwork)drawTownArena(scene,venue,progress);else drawVenueFacade(scene,venue,isVenueOpen(venue,progress));
  }
  if(!hasCivicArtwork)drawCivicRacePlaza(scene);
  for(const x of townRoads.vertical)for(let y=townWalkBounds.top+64;y<townWalkBounds.bottom-70;y+=180){if(inCivicArtwork(x-100,y)||townVenues.some(v=>Math.abs(x-v.x)<v.w+100&&y>v.y-80&&y<v.y+v.h+70))continue;tree(scene,x-100,y);lamp(scene,x+88,y+50);}
