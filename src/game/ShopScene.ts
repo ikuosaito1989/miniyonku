@@ -53,7 +53,7 @@ import { drawTown } from './TownArt';
 import { drawShopDetails } from './WorldDetailArt';
 import { getCircuitTrack,type CircuitId } from '../data/circuit';
 
-interface ShopTarget {circuitId?:CircuitId;x:number;y:number;w:number;h:number;label:string;speaker:string;shopAfter:boolean;text:string;libraryCategory?:Category|'all';kind?:Fixture['kind']|'library-shelf'|'library-catalogue'|'mechanic-man'|'town-person'|'time-records'|'exit'|'venue'|'challenger'|'legend-challenger'|'official-speed'|'official-dirt'|'official-reception'|'official-technical'|'official-final'|'official-zenith';venueId?:string}
+interface ShopTarget {resolveText?:()=>string;circuitId?:CircuitId;x:number;y:number;w:number;h:number;label:string;speaker:string;shopAfter:boolean;text:string;libraryCategory?:Category|'all';kind?:Fixture['kind']|'library-shelf'|'library-catalogue'|'mechanic-man'|'town-person'|'time-records'|'exit'|'venue'|'challenger'|'legend-challenger'|'official-speed'|'official-dirt'|'official-reception'|'official-technical'|'official-final'|'official-zenith';venueId?:string}
 export class ShopScene extends Phaser.Scene {
   private gesture=createShopGesture();
   private screenPoint(pointer:Phaser.Input.Pointer){return {x:pointer.x*this.scale.displaySize.width/this.scale.width,y:pointer.y*this.scale.displaySize.height/this.scale.height};}
@@ -82,6 +82,7 @@ export class ShopScene extends Phaser.Scene {
   private arrivalKind:ArrivalKind|null=null;
   private arriving:{state:ArrivalActor;container:Phaser.GameObjects.Container;kind:string;solid:Phaser.Geom.Rectangle|null}[]=[];
   private eventAudio=new EventAudio();
+  private townTargets:ShopTarget[]|null=null;
   private isTown=false;
   private updateTownCrowd:((time:number)=>void)|null=null;
   private approach(target:ShopTarget){
@@ -108,7 +109,7 @@ export class ShopScene extends Phaser.Scene {
     this.fitCamera();
     this.scale.on(Phaser.Scale.Events.RESIZE,this.fitCamera,this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN,()=>this.scale.off(Phaser.Scale.Events.RESIZE,this.fitCamera,this));
-    this.solids=[];this.updateTownCrowd=null;
+    this.solids=[];this.updateTownCrowd=null;this.townTargets=null;
     createPeopleTextures(this);
     if(this.isTown){
       drawTown(this,useGame.getState());
@@ -503,17 +504,23 @@ export class ShopScene extends Phaser.Scene {
     if(dx)this.facing=dx<0?'left':'right';else if(dy)this.facing=dy<0?'up':'down';
     const manual=dx!==0||dy!==0;
     if(manual||action){this.cancelRoute();this.pendingTarget=null;}
-    const step=(this.isTown?walkingSpeed.town:walkingSpeed.interior)*Math.min(delta,40)/1000;
+    const step=(this.isTown?walkingSpeed.town:walkingSpeed.interior)*Math.min(delta,250)/1000;
     const waypoint=this.route[0];let travel=step;
     if(!manual&&waypoint){
       const xDistance=waypoint.x-this.player.x,yDistance=waypoint.y-this.player.y;
       if(Math.abs(xDistance)>.01){dx=Math.sign(xDistance);travel=Math.min(step,Math.abs(xDistance));this.facing=dx<0?'left':'right';}
       else if(Math.abs(yDistance)>.01){dy=Math.sign(yDistance);travel=Math.min(step,Math.abs(yDistance));this.facing=dy<0?'up':'down';}
     }
-    const x=Phaser.Math.Clamp(this.player.x+dx*travel,this.bounds.left,this.bounds.right), y=Phaser.Math.Clamp(this.player.y+dy*travel,this.bounds.top,this.bounds.bottom);
-    const feet=new Phaser.Geom.Rectangle(x-11,y-3,22,17);
-    const moving=(dx!==0||dy!==0)&&!this.solids.some(r=>Phaser.Geom.Intersects.RectangleToRectangle(feet,r))&&(x!==this.player.x||y!==this.player.y);
-    if(moving){this.player.setPosition(x,y);this.walkTime+=delta;}else this.walkTime=0;
+    // Sweep in small increments so a delayed frame cannot tunnel through people or walls.
+    let moving=false;
+    const count=Math.max(1,Math.ceil(travel/2));
+    for(let i=0;i<count;i++){
+      const x=Phaser.Math.Clamp(this.player.x+dx*travel/count,this.bounds.left,this.bounds.right),y=Phaser.Math.Clamp(this.player.y+dy*travel/count,this.bounds.top,this.bounds.bottom);
+      const feet=new Phaser.Geom.Rectangle(x-11,y-3,22,17);
+      if(this.solids.some(r=>Phaser.Geom.Intersects.RectangleToRectangle(feet,r)))break;
+      if(x!==this.player.x||y!==this.player.y){this.player.setPosition(x,y);moving=true;}
+    }
+    if(moving)this.walkTime+=delta;else this.walkTime=0;
     if(waypoint&&Math.hypot(this.player.x-waypoint.x,this.player.y-waypoint.y)<.1)this.route.shift();
     if(waypoint&&(dx!==0||dy!==0)&&!moving)this.cancelRoute();
     if(!this.route.length)this.destination.setVisible(false);
@@ -525,8 +532,9 @@ export class ShopScene extends Phaser.Scene {
     else if(this.transitionArmed){this.transitionArmed=false;this.cancelRoute();useGame.getState().leaveShop();return;}
     const targets=this.getTargets();
     const distance=(t:ShopTarget)=>Math.hypot(this.player.x-Phaser.Math.Clamp(this.player.x,t.x,t.x+t.w),this.player.y-Phaser.Math.Clamp(this.player.y,t.y,t.y+t.h));
-    const nearest=targets.map(t=>({t,d:distance(t)})).sort((a,b)=>a.d-b.d)[0];
-    const target=nearest?.d<62?nearest.t:null;
+    let nearest:{t:ShopTarget;d:number}|undefined;
+    for(const t of targets){const d=distance(t);if(!nearest||d<nearest.d)nearest={t,d};}
+    const target=nearest&&nearest.d<62?nearest.t:null;
     const nearby=target?.label??'';
     if(useGame.getState().nearby!==nearby)useGame.setState({nearby});
     if(this.pendingTarget&&(this.isTown?Math.hypot(this.player.x-this.approach(this.pendingTarget).x,this.player.y-this.approach(this.pendingTarget).y)<22:distance(this.pendingTarget)<62)){const selected=this.pendingTarget;this.pendingTarget=null;this.cancelRoute();this.interactWith(selected);}
@@ -535,12 +543,12 @@ export class ShopScene extends Phaser.Scene {
   }
   private getTargets():ShopTarget[]{
     if(this.isLibrary)return [...libraryShelves.map(s=>({...s,y:s.y-42,h:s.h+60,kind:'library-shelf' as const,libraryCategory:s.category,speaker:s.label,shopAfter:false,text:'本棚の資料を読む。'})),{...libraryReadingDesk,x:libraryReadingDesk.x-10,y:libraryReadingDesk.y-36,w:100,h:92,kind:'library-catalogue' as const,libraryCategory:'all' as const,speaker:'閲覧台',shopAfter:false,text:'全パーツの資料を読む。'},{...libraryExit,h:40,kind:'exit' as const,label:'図書館の出口',speaker:'図書館',shopAfter:false,text:'街へ戻る。'}];
-    if(this.isTown)return [
+    if(this.isTown)return this.townTargets??= [
       {x:hiddenMechanicSpot.x-16,y:hiddenMechanicSpot.y-80,w:32,h:92,label:mechanicManName,speaker:mechanicManName,shopAfter:false,text:'……よく見つけたな。',kind:'mechanic-man'},
       ...townVenues.filter(v=>v.kind==='outdoor').map(v=>({...outdoorTimeBoardPlacement(v),label:'歴代ベストタイム TOP 5',speaker:v.name,shopAfter:false,text:'タイムを見る。',kind:'time-records' as const,circuitId:v.id as import('../data/practiceCourses').PracticeCourseId})),
       ...townVenues.map(v=>({x:v.x,y:v.y,w:v.w,h:v.h,label:v.name,speaker:v.name,shopAfter:false,text:venueMessage(v),kind:'venue' as const,venueId:v.id})),
-      ...outdoorAdvisors.map(p=>({x:p.x-16,y:p.y-80,w:32,h:92,label:`${p.name}（パーツ相談）`,speaker:p.name,shopAfter:false,text:outdoorAdvice(p.courseId),kind:'town-person' as const})),
-      ...townPeople.map(p=>({x:p.x-16,y:p.y-80,w:32,h:92,label:p.name,speaker:p.name,shopAfter:false,text:townPersonAdvice(p,useGame.getState()),kind:'town-person' as const})),
+      ...outdoorAdvisors.map(p=>({x:p.x-16,y:p.y-80,w:32,h:92,label:`${p.name}（パーツ相談）`,speaker:p.name,shopAfter:false,text:'',resolveText:()=>outdoorAdvice(p.courseId),kind:'town-person' as const})),
+      ...townPeople.map(p=>({x:p.x-16,y:p.y-80,w:32,h:92,label:p.name,speaker:p.name,shopAfter:false,text:'',resolveText:()=>townPersonAdvice(p,useGame.getState()),kind:'town-person' as const})),
     ];
     if(this.isOfficial)return [
       ...officialTimeBoards(useGame.getState().location).map(p=>({...p,kind:'time-records' as const,label:`${getCircuitTrack(p.circuitId).circuit.name}・歴代タイム`,speaker:'コース記録の看板',shopAfter:false,text:'歴代タイムを見る。'})),
@@ -596,6 +604,7 @@ export class ShopScene extends Phaser.Scene {
 
   private interactWith(target:ShopTarget){
       this.gesture.reset();
+      if(target.resolveText)target={...target,text:target.resolveText()};
       if(target.kind==='library-shelf'||target.kind==='library-catalogue')useGame.getState().openLibrary(target.libraryCategory);
       else if(target.kind==='mechanic-man')useGame.getState().talkMechanicMan();
       else if(target.kind==='town-person')useGame.getState().talk(target.speaker,target.text);

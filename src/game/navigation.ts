@@ -12,6 +12,9 @@ export function canTravel(a:Point,b:Point,obstacles:Obstacle[],bounds=walkBounds
   return true;
 }
 
+// Cache by obstacle geometry, so moved or added actors invalidate the graph.
+const grids=new WeakMap<Obstacle[],{signature:string;free:boolean[];edges:Map<string,boolean>}>();
+
 // 足元の衝突サイズで障害物を膨らませ、屋外は28px・屋内は8px格子で4方向探索する。
 // 棚をタップした場合は、タップ位置に最も近い到達可能な通路へ案内する。
 export function findWalkingPath(start:Point,target:Point,obstacles:Obstacle[],bounds=walkBounds):Point[]{
@@ -19,24 +22,39 @@ export function findWalkingPath(start:Point,target:Point,obstacles:Obstacle[],bo
   if(Math.hypot(start.x-target.x,start.y-target.y)<1)return [target];
   const size=bounds.right-bounds.left>1000?28:8,cols=Math.floor((bounds.right-bounds.left)/size)+1,rows=Math.floor((bounds.bottom-bounds.top)/size)+1;
   const point=(id:number):Point=>({x:bounds.left+(id%cols)*size,y:bounds.top+Math.floor(id/cols)*size});
-  const free=Array.from({length:cols*rows},(_,id)=>canStand(point(id),obstacles,bounds));
+  const signature=[bounds.left,bounds.right,bounds.top,bounds.bottom,...obstacles.flatMap(r=>[r.x,r.y,r.width,r.height])].join(',');
+  let grid=grids.get(obstacles);
+  if(!grid||grid.signature!==signature){grid={signature,free:Array.from({length:cols*rows},(_,id)=>canStand(point(id),obstacles,bounds)),edges:new Map()};grids.set(obstacles,grid);}
+  const {free,edges}=grid;
+  const edge=(a:number,b:number)=>{const key=`${Math.min(a,b)}:${Math.max(a,b)}`;let valid=edges.get(key);if(valid===undefined){valid=canTravel(point(a),point(b),obstacles,bounds);edges.set(key,valid);}return valid;};
   const connect=(a:Point,b:Point):Point[]|null=>{
     for(const corner of [{x:b.x,y:a.y},{x:a.x,y:b.y}])if(canTravel(a,corner,obstacles,bounds)&&canTravel(corner,b,obstacles,bounds))return [corner,b];
     return null;
   };
+  const direct=connect(start,target);
+  if(direct)return direct.filter((p,i)=>i===0?p.x!==start.x||p.y!==start.y:p.x!==direct[i-1].x||p.y!==direct[i-1].y);
+  let closestScore=Infinity;
+  for(let id=0;id<free.length;id++)if(free[id]){const p=point(id);closestScore=Math.min(closestScore,(p.x-target.x)**2+(p.y-target.y)**2);}
   let first=-1;
-  const candidates=free.flatMap((available,id)=>available?[id]:[]).sort((a,b)=>{
-    const pa=point(a),pb=point(b);return (pa.x-start.x)**2+(pa.y-start.y)**2-((pb.x-start.x)**2+(pb.y-start.y)**2);
-  });
-  for(const id of candidates)if(connect(start,point(id))){first=id;break;}
+  // Try the nearest free cell before sorting fallback candidates for awkward corners.
+  let nearest=-1,nearestDistance=Infinity;
+  for(let id=0;id<free.length;id++)if(free[id]){const p=point(id),d=(p.x-start.x)**2+(p.y-start.y)**2;if(d<nearestDistance){nearest=id;nearestDistance=d;}}
+  if(nearest>=0&&connect(start,point(nearest)))first=nearest;
+  else {
+    const candidates=free.flatMap((available,id)=>available?[id]:[]).sort((a,b)=>{
+      const pa=point(a),pb=point(b);return (pa.x-start.x)**2+(pa.y-start.y)**2-((pb.x-start.x)**2+(pb.y-start.y)**2);
+    });
+    for(const id of candidates)if(connect(start,point(id))){first=id;break;}
+  }
   if(first<0)return [];
   const previous=new Int32Array(free.length).fill(-1),distance=new Int32Array(free.length);previous[first]=first;
   const queue=[first];let best=first,bestDistance=Infinity;
   for(let head=0;head<queue.length;head++){
     const id=queue[head],p=point(id),score=(p.x-target.x)**2+(p.y-target.y)**2;
     if(score<bestDistance||(score===bestDistance&&distance[id]<distance[best])){best=id;bestDistance=score;}
+    if(score===closestScore)break;
     const candidates=[id%cols>0?id-1:-1,id%cols<cols-1?id+1:-1,id-cols,id+cols];
-    for(const next of candidates)if(next>=0&&next<free.length&&free[next]&&previous[next]===-1&&canTravel(p,point(next),obstacles,bounds)){
+    for(const next of candidates)if(next>=0&&next<free.length&&free[next]&&previous[next]===-1&&edge(id,next)){
       previous[next]=id;distance[next]=distance[id]+1;queue.push(next);
     }
   }
