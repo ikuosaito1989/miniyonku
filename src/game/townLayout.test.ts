@@ -1,7 +1,7 @@
 import {isPracticeCourse} from '../data/practiceCourses';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {generateTownVenues,townVenues,townSize,townWalkBounds,townSpawn,townBlocks,townRoads,townPlaza} from '../data/world';
+import {generateTownVenues,townVenues,townSize,townWalkBounds,townSpawn,townBlocks,townRoads,townPlaza,townCivicPlaza} from '../data/world';
 import {canStand,canTravel,findWalkingPath} from './navigation';
 test('広域マップは店と大型会場を重複なく散らし、乱数の種ごとに配置を再現する',()=>{
  assert.ok(townSize.width*townSize.height>=960*640*12);
@@ -22,7 +22,12 @@ test('街区は舗装道路でつながり、店舗の玄関は次の通りに�
  for(const v of townVenues.filter(v=>v.kind!=='outdoor')){
   const entrance=townSpawn(v.id as Parameters<typeof townSpawn>[0]);
   const nextStreet=townRoads.horizontal.find(y=>y>v.y)!;
-  assert.ok(nextStreet-entrance.y<=80&&nextStreet-entrance.y>=55,`${v.id} entrance should connect to its frontage street`);
+  if(v.id==='stadium-5'||v.id==='komorebi'){
+   assert.ok(entrance.x>=townCivicPlaza.x&&entrance.x<=townCivicPlaza.x+townCivicPlaza.width);
+   assert.ok(entrance.y>=townCivicPlaza.y&&entrance.y<=townCivicPlaza.y+townCivicPlaza.height);
+   const path=findWalkingPath(entrance,{x:entrance.x,y:nextStreet},[...townVenues,...townBlocks].map(q=>({x:q.x,y:q.y,width:q.w,height:q.h})),townWalkBounds);
+   assert.ok(path,`${v.id} entrance should connect through the shared civic plaza to the road`);
+  }else assert.ok(nextStreet-entrance.y<=80&&nextStreet-entrance.y>=55,`${v.id} entrance should connect to its frontage street`);
  }
  assert.equal(townBlocks.length,0,'non-enterable buildings are not drawn or placed as obstacles');
  assert.equal(townVenues.some(v=>v.x<townPlaza.x+townPlaza.w&&v.x+v.w>townPlaza.x&&v.y<townPlaza.y+townPlaza.h&&v.y+v.h>townPlaza.y),false);

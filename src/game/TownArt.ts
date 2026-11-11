@@ -1,11 +1,27 @@
 import {drawOutdoorCourse} from './OutdoorCourseArt';
 import {drawVenueFacade} from './VenueFacadeArt';
 import Phaser from 'phaser';
-import {isVenueOpen,townVenues,townSize,townRoads,townBlocks,townPlaza,townWalkBounds,type WorldProgress} from '../data/world';
+import {isVenueOpen,townVenues,townSize,townRoads,townBlocks,townPlaza,townWalkBounds,townCivicPlaza,type WorldProgress} from '../data/world';
 import {artNoise,paintPixelTree} from './PixelArtMaterials';
 import {SceneryPen} from './SceneryCanvas';
 /** One raster pixel covers two map units; repeating vector detail avoids full-size terrain canvases. */
 export const townGroundRasterScale=.5;
+export const townCivicArtworkKey='town-civic-plaza-art';
+const civicScale=townCivicPlaza.width/1683;
+const civicExtensionWidth=400*civicScale;
+function inCivicArtwork(x:number,y:number){return x>=townCivicPlaza.x&&x<=townCivicPlaza.x+townCivicPlaza.width+civicExtensionWidth&&y>=townCivicPlaza.y&&y<=townCivicPlaza.y+townCivicPlaza.height;}
+function drawCivicArtwork(scene:Phaser.Scene){
+ const source=scene.textures.get(townCivicArtworkKey);source.setFilter(Phaser.Textures.FilterMode.NEAREST);
+ scene.add.image(townCivicPlaza.x,townCivicPlaza.y,townCivicArtworkKey).setOrigin(0).setDisplaySize(townCivicPlaza.width,townCivicPlaza.height).setDepth(-90);
+ scene.add.image(townCivicPlaza.x+townCivicPlaza.width,townCivicPlaza.y,'civic-plaza-extension').setOrigin(0).setDisplaySize(civicExtensionWidth,townCivicPlaza.height).setDepth(-90);
+ scene.textures.get('civic-plaza-extension').setFilter(Phaser.Textures.FilterMode.NEAREST);
+ const stadium=townVenues.find(v=>v.id==='stadium-5')!,shop=townVenues.find(v=>v.id==='komorebi')!;
+ const arena=scene.add.image(townCivicPlaza.x+90*civicScale,townCivicPlaza.y+50*civicScale,'civic-arena-occlusion').setOrigin(0).setDisplaySize(660*civicScale,520*civicScale).setDepth(stadium.y+stadium.h+12);
+ const storefront=scene.add.image(townCivicPlaza.x+780*civicScale,townCivicPlaza.y+60*civicScale,'civic-shop-occlusion').setOrigin(0).setDisplaySize(390*civicScale,390*civicScale).setDepth(shop.y+shop.h+12);
+ scene.textures.get('civic-arena-occlusion').setFilter(Phaser.Textures.FilterMode.NEAREST);
+ scene.textures.get('civic-shop-occlusion').setFilter(Phaser.Textures.FilterMode.NEAREST);
+ arena.setName('civic-arena-foreground');storefront.setName('civic-shop-foreground');
+}
 
 /** Terrain is baked once. Pixel clusters follow a fixed, upper-left daylight. */
 function ground(c:CanvasRenderingContext2D,chunkX=0,chunkWidth=townSize.width,chunkY=0,chunkHeight=townSize.height){
@@ -94,12 +110,17 @@ export function drawTown(scene:Phaser.Scene,progress:WorldProgress){
  // Chunk size limits canvas allocations; half-resolution raster cuts the full-world terrain buffer by 75%.
  for(let y=0;y<townSize.height;y+=2048)for(let x=0;x<townSize.width;x+=2048){const width=Math.min(2048,townSize.width-x),height=Math.min(2048,townSize.height-y),key=`midorikawa-ground-19-${x}-${y}`,rasterWidth=Math.ceil(width*townGroundRasterScale),rasterHeight=Math.ceil(height*townGroundRasterScale);if(!scene.textures.exists(key)){const texture=scene.textures.createCanvas(key,rasterWidth,rasterHeight)!;texture.context.scale(townGroundRasterScale,townGroundRasterScale);texture.context.translate(-x,-y);ground(texture.context,x,width,y,height);texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.NEAREST);}scene.add.image(x,y,key).setOrigin(0).setDisplaySize(width,height).setDepth(-100);}
 
- for(const venue of townVenues)if(venue.kind==='outdoor')drawOutdoorCourse(scene,venue,isVenueOpen(venue,progress));else drawVenueFacade(scene,venue,isVenueOpen(venue,progress));
- drawCivicRacePlaza(scene);
- for(const x of townRoads.vertical)for(let y=townWalkBounds.top+64;y<townWalkBounds.bottom-70;y+=180){if(townVenues.some(v=>Math.abs(x-v.x)<v.w+100&&y>v.y-80&&y<v.y+v.h+70))continue;tree(scene,x-100,y);lamp(scene,x+88,y+50);}
- for(let i=0;i<28;i++){const x=110+(i*487)%(townSize.width-220),y=210+(i*337)%(townSize.height-420);if([...townVenues].some(v=>x>v.x-90&&x<v.x+v.w+90&&y>v.y-100&&y<v.y+v.h+90)||townRoads.vertical.some(v=>Math.abs(v-x)<100)||townRoads.horizontal.some(v=>Math.abs(v-y)<100))continue;tree(scene,x,y);tree(scene,x+28,y+34);}
- for(const y of [townWalkBounds.top+8,townWalkBounds.bottom-16])for(let x=100;x<townSize.width-300;x+=125)tree(scene,x,y);
- for(const [x,y] of [[2140,1995],[2660,1995],[2140,2220],[2660,2220],[720,780],[3900,2530]]){tree(scene,x,y);const key='park-bench-16';if(!scene.textures.exists(key)){const t=scene.textures.createCanvas(key,112,64)!;t.context.scale(2,2);const p=new SceneryPen(t.context);p.shadow(3,14,45,10);for(const xx of [8,40]){p.rect(xx,14,3,15,'#3d5357');p.rect(xx+1,15,1,12,'#8fa19a');}p.rect(3,3,46,9,'#5c5d4a');for(let row=0;row<3;row++){p.gradient(4,3+row*3,44,2,'#c3ab7b','#947f5e');}p.gradient(3,14,46,7,'#d2b589','#8d7a5c');p.material(4,14,44,7,'wood',12);for(const xx of [8,41])p.rect(xx,15,1,1,'#e9d4a7');t.refresh();t.setFilter(Phaser.Textures.FilterMode.NEAREST);}scene.add.image(x+20,y+1,key).setOrigin(0).setDisplaySize(56,32).setDepth(y+24);}
+ const hasCivicArtwork=scene.textures.exists(townCivicArtworkKey);
+ if(hasCivicArtwork)drawCivicArtwork(scene);
+ for(const venue of townVenues){
+  if(hasCivicArtwork&&(venue.id==='stadium-5'||venue.id==='komorebi'))continue;
+  if(venue.kind==='outdoor')drawOutdoorCourse(scene,venue,isVenueOpen(venue,progress));else drawVenueFacade(scene,venue,isVenueOpen(venue,progress));
+ }
+ if(!hasCivicArtwork)drawCivicRacePlaza(scene);
+ for(const x of townRoads.vertical)for(let y=townWalkBounds.top+64;y<townWalkBounds.bottom-70;y+=180){if(inCivicArtwork(x-100,y)||townVenues.some(v=>Math.abs(x-v.x)<v.w+100&&y>v.y-80&&y<v.y+v.h+70))continue;tree(scene,x-100,y);lamp(scene,x+88,y+50);}
+ for(let i=0;i<28;i++){const x=110+(i*487)%(townSize.width-220),y=210+(i*337)%(townSize.height-420);if(inCivicArtwork(x,y)||[...townVenues].some(v=>x>v.x-90&&x<v.x+v.w+90&&y>v.y-100&&y<v.y+v.h+90)||townRoads.vertical.some(v=>Math.abs(v-x)<100)||townRoads.horizontal.some(v=>Math.abs(v-y)<100))continue;tree(scene,x,y);tree(scene,x+28,y+34);}
+ for(const y of [townWalkBounds.top+8,townWalkBounds.bottom-16])for(let x=100;x<townSize.width-300;x+=125)if(!inCivicArtwork(x,y))tree(scene,x,y);
+ for(const [x,y] of [[2140,1995],[2660,1995],[2140,2220],[2660,2220],[720,780],[3900,2530]]){if(inCivicArtwork(x,y))continue;tree(scene,x,y);const key='park-bench-16';if(!scene.textures.exists(key)){const t=scene.textures.createCanvas(key,112,64)!;t.context.scale(2,2);const p=new SceneryPen(t.context);p.shadow(3,14,45,10);for(const xx of [8,40]){p.rect(xx,14,3,15,'#3d5357');p.rect(xx+1,15,1,12,'#8fa19a');}p.rect(3,3,46,9,'#5c5d4a');for(let row=0;row<3;row++){p.gradient(4,3+row*3,44,2,'#c3ab7b','#947f5e');}p.gradient(3,14,46,7,'#d2b589','#8d7a5c');p.material(4,14,44,7,'wood',12);for(const xx of [8,41])p.rect(xx,15,1,1,'#e9d4a7');t.refresh();t.setFilter(Phaser.Textures.FilterMode.NEAREST);}scene.add.image(x+20,y+1,key).setOrigin(0).setDisplaySize(56,32).setDepth(y+24);}
 }
 /** Flagstones, race banners, lamps and planters tie the two landmark buildings into one plaza. */
 function drawCivicRacePlaza(scene:Phaser.Scene){
