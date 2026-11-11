@@ -33,12 +33,17 @@ function drawShopSign(scene:Phaser.Scene,venue:typeof townVenues[number]){
  }).setOrigin(.5).setResolution(2).setDepth(venue.y+venue.h+14).setName(`town-shop-sign-${venue.shopId}`);
 }
 function drawCivicBuildings(scene:Phaser.Scene,progress:WorldProgress){
- const stadium=townVenues.find(v=>v.id==='stadium-5')!,shop=townVenues.find(v=>v.id==='komorebi')!;
+ const stadium=townVenues.find(v=>v.id==='stadium-5')!,shop=townVenues.find(v=>v.id==='komorebi')!,library=townVenues.find(v=>v.id==='library')!;
  drawTownArena(scene,stadium,progress);
  const storefront=scene.add.image(shop.x,shop.y,'civic-shop-occlusion').setOrigin(0).setDisplaySize(shop.w,shop.h).setDepth(shop.y+shop.h+12);
  scene.textures.get('civic-shop-occlusion').setFilter(Phaser.Textures.FilterMode.LINEAR);
  storefront.setName('civic-shop-foreground');
  drawShopSign(scene,shop);
+ if(scene.textures.exists('civic-library')){
+  const artHeight=library.w*1086/1448,visibleBottom=1038/1086,artY=library.y+library.h-artHeight*visibleBottom;
+  scene.textures.get('civic-library').setFilter(Phaser.Textures.FilterMode.LINEAR);
+  scene.add.image(library.x,artY,'civic-library').setOrigin(0).setDisplaySize(library.w,artHeight).setDepth(library.y+library.h+12).setName('civic-library-foreground');
+ }
 }
 function drawModelShopSprite(scene:Phaser.Scene,venue:typeof townVenues[number],open:boolean){
  if(!venue.shopId){drawVenueFacade(scene,venue,open);return;}
@@ -138,8 +143,10 @@ export function drawTown(scene:Phaser.Scene,progress:WorldProgress){
 
  const hasCivicArtwork=scene.textures.exists('civic-arena-occlusion')&&scene.textures.exists('civic-shop-occlusion');
  if(hasCivicArtwork)drawCivicBuildings(scene,progress);
+ const hasLibraryArtwork=scene.textures.exists('civic-library');
  for(const venue of townVenues){
   if(hasCivicArtwork&&(venue.id==='stadium-5'||venue.id==='komorebi'))continue;
+  if(hasCivicArtwork&&hasLibraryArtwork&&venue.id==='library')continue;
   if(venue.kind==='outdoor')drawOutdoorCourse(scene,venue,isVenueOpen(venue,progress));else if(venue.kind==='shop')drawModelShopSprite(scene,venue,isVenueOpen(venue,progress));else if(venue.kind==='stadium'&&hasCivicArtwork)drawTownArena(scene,venue,progress);else drawVenueFacade(scene,venue,isVenueOpen(venue,progress));
  }
  if(!hasCivicArtwork)drawCivicRacePlaza(scene);
