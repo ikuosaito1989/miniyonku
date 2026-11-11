@@ -6,14 +6,13 @@ import {artNoise,paintPixelTree} from './PixelArtMaterials';
 import {SceneryPen} from './SceneryCanvas';
 /** One raster pixel covers two map units; repeating vector detail avoids full-size terrain canvases. */
 export const townGroundRasterScale=.5;
-const civicScale=.76;
 function inCivicArtwork(x:number,y:number){return x>=townCivicPlaza.x&&x<=townCivicPlaza.x+townCivicPlaza.width&&y>=townCivicPlaza.y&&y<=townCivicPlaza.y+townCivicPlaza.height;}
 function drawCivicBuildings(scene:Phaser.Scene){
  const stadium=townVenues.find(v=>v.id==='stadium-5')!,shop=townVenues.find(v=>v.id==='komorebi')!;
- const arena=scene.add.image(townCivicPlaza.x+70*civicScale,townCivicPlaza.y+50*civicScale,'civic-arena-occlusion').setOrigin(0).setDisplaySize(680*civicScale,520*civicScale).setDepth(stadium.y+stadium.h+12);
- const storefront=scene.add.image(townCivicPlaza.x+780*civicScale,townCivicPlaza.y+60*civicScale,'civic-shop-occlusion').setOrigin(0).setDisplaySize(390*civicScale,390*civicScale).setDepth(shop.y+shop.h+12);
- scene.textures.get('civic-arena-occlusion').setFilter(Phaser.Textures.FilterMode.NEAREST);
- scene.textures.get('civic-shop-occlusion').setFilter(Phaser.Textures.FilterMode.NEAREST);
+ const arena=scene.add.image(stadium.x,stadium.y,'civic-arena-occlusion').setOrigin(0).setDisplaySize(stadium.w,stadium.h).setDepth(stadium.y+stadium.h+12);
+ const storefront=scene.add.image(shop.x,shop.y,'civic-shop-occlusion').setOrigin(0).setDisplaySize(shop.w,shop.h).setDepth(shop.y+shop.h+12);
+ scene.textures.get('civic-arena-occlusion').setFilter(Phaser.Textures.FilterMode.LINEAR);
+ scene.textures.get('civic-shop-occlusion').setFilter(Phaser.Textures.FilterMode.LINEAR);
  arena.setName('civic-arena-foreground');storefront.setName('civic-shop-foreground');
 }
 
