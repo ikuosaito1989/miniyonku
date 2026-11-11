@@ -22,17 +22,25 @@ export function findWalkingPath(start:Point,target:Point,obstacles:Obstacle[],bo
   if(Math.hypot(start.x-target.x,start.y-target.y)<1)return [target];
   const size=bounds.right-bounds.left>1000?28:8,cols=Math.floor((bounds.right-bounds.left)/size)+1,rows=Math.floor((bounds.bottom-bounds.top)/size)+1;
   const point=(id:number):Point=>({x:bounds.left+(id%cols)*size,y:bounds.top+Math.floor(id/cols)*size});
-  const signature=[bounds.left,bounds.right,bounds.top,bounds.bottom,...obstacles.flatMap(r=>[r.x,r.y,r.width,r.height])].join(',');
-  let grid=grids.get(obstacles);
-  if(!grid||grid.signature!==signature){grid={signature,free:Array.from({length:cols*rows},(_,id)=>canStand(point(id),obstacles,bounds)),edges:new Map()};grids.set(obstacles,grid);}
-  const {free,edges}=grid;
-  const edge=(a:number,b:number)=>{const key=`${Math.min(a,b)}:${Math.max(a,b)}`;let valid=edges.get(key);if(valid===undefined){valid=canTravel(point(a),point(b),obstacles,bounds);edges.set(key,valid);}return valid;};
   const connect=(a:Point,b:Point):Point[]|null=>{
     for(const corner of [{x:b.x,y:a.y},{x:a.x,y:b.y}])if(canTravel(a,corner,obstacles,bounds)&&canTravel(corner,b,obstacles,bounds))return [corner,b];
     return null;
   };
   const direct=connect(start,target);
   if(direct)return direct.filter((p,i)=>i===0?p.x!==start.x||p.y!==start.y:p.x!==direct[i-1].x||p.y!==direct[i-1].y);
+  const signature=[bounds.left,bounds.right,bounds.top,bounds.bottom,...obstacles.flatMap(r=>[r.x,r.y,r.width,r.height])].join(',');
+  let grid=grids.get(obstacles);
+  if(!grid||grid.signature!==signature){
+    const free=new Array<boolean>(cols*rows).fill(true);
+    for(const obstacle of obstacles){
+      const left=Math.max(0,Math.ceil((obstacle.x-11-bounds.left)/size)),right=Math.min(cols-1,Math.floor((obstacle.x+obstacle.width+11-bounds.left)/size));
+      const top=Math.max(0,Math.ceil((obstacle.y-14-bounds.top)/size)),bottom=Math.min(rows-1,Math.floor((obstacle.y+obstacle.height+3-bounds.top)/size));
+      for(let y=top;y<=bottom;y++)for(let x=left;x<=right;x++)free[y*cols+x]=false;
+    }
+    grid={signature,free,edges:new Map()};grids.set(obstacles,grid);
+  }
+  const {free,edges}=grid;
+  const edge=(a:number,b:number)=>{const key=`${Math.min(a,b)}:${Math.max(a,b)}`;let valid=edges.get(key);if(valid===undefined){valid=canTravel(point(a),point(b),obstacles,bounds);edges.set(key,valid);}return valid;};
   let closestScore=Infinity;
   for(let id=0;id<free.length;id++)if(free[id]){const p=point(id);closestScore=Math.min(closestScore,(p.x-target.x)**2+(p.y-target.y)**2);}
   let first=-1;
