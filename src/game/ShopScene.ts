@@ -1,7 +1,7 @@
-import {characterSpriteIds,characterSpriteUrl} from './characterSprites';
+import {characterSpriteUrl,type CharacterSpriteId} from './characterSprites';
 import {outdoorAdvisors,outdoorAdvice} from '../data/outdoorAdvisors';
 import {drawTownCrowd} from './TownCrowdArt';
-import {townCrowdObstacles} from '../data/townCrowd';
+import {townCrowd,townCrowdObstacles} from '../data/townCrowd';
 import {drawRecordBoard} from './RecordBoardArt';
 import {isPracticeCourse} from '../data/practiceCourses';
 import {drawLibraryRoom} from './LibraryRoomArt';
@@ -100,7 +100,26 @@ export class ShopScene extends Phaser.Scene {
   private challengerSolid:Phaser.Geom.Rectangle|null=null;
   private get cast(){return shopCast(currentShop(useGame.getState().location).id);}
   constructor(){ super('shop'); }
-  preload(){for(const id of characterSpriteIds)if(!this.textures.exists(`character-atlas-${id}`))this.load.image(`character-atlas-${id}`,characterSpriteUrl(id));const id=useGame.getState().location,image=sceneryImage(id);if(image)this.load.image(sceneryKey(id),image);if(id==='town')for(const [key,path] of [['civic-arena-occlusion','/assets/civic-arena-occlusion.webp'],['civic-arena-zenith','/assets/civic-arena-zenith.webp'],['civic-arena-teal','/assets/civic-arena-teal.webp'],['civic-arena-violet','/assets/civic-arena-violet.webp'],['civic-arena-amber','/assets/civic-arena-amber.webp'],['civic-library','/assets/civic-library.webp'],['civic-shop-occlusion','/assets/civic-shop-occlusion.webp'],['civic-shop-amber','/assets/civic-shop-amber.webp'],['civic-shop-green','/assets/civic-shop-green.webp'],['civic-shop-violet','/assets/civic-shop-violet.webp'],['civic-shop-red','/assets/civic-shop-red.webp'],['civic-shop-teal','/assets/civic-shop-teal.webp'],['town-course-arena','/assets/town-course-arena.webp']] as const)if(!this.textures.exists(key))this.load.image(key,path);}
+  preload(){
+    const location=useGame.getState().location;
+    const characters=new Set<CharacterSpriteId>(['player','owner','rival','guide','mechanic']);
+    const addName=(name:string)=>{const id=npcAppearanceId(name);if(id)characters.add(id);};
+    if(location==='town'){
+      townCrowd.forEach(p=>characters.add(p.appearance));townPeople.forEach(p=>addName(p.name));
+      characters.add('starter');characters.add('koya');characters.add('towa');
+    }else if(location.startsWith('stadium-')){
+      officialPeopleFor(location).forEach(p=>addName(p.name));
+      for(const id of ['rei','gaku','towa','koya','go','offroader'] as const)characters.add(id);
+    }else if(location!=='library'){
+      const cast=shopCast(currentShop(location).id);
+      addName(cast.owner.name);addName(cast.rival.name);cast.visitors.forEach(p=>addName(p.name));
+      if(location==='komorebi')for(const id of ['doctor','rei','gaku'] as const)characters.add(id);
+      if(location==='aozora')characters.add('go');
+      if(location==='wakaba')characters.add('koya');
+      if(location==='yuunagi')characters.add('towa');
+      if(location==='akatsuki'||location==='hoshikuzu')for(const id of ['rei','gaku','towa','koya'] as const)characters.add(id);
+    }
+    for(const id of characters)if(!this.textures.exists(`character-atlas-${id}`))this.load.image(`character-atlas-${id}`,characterSpriteUrl(id));const id=useGame.getState().location,image=sceneryImage(id);if(image)this.load.image(sceneryKey(id),image);if(id==='town')for(const [key,path] of [['civic-arena-occlusion','/assets/civic-arena-occlusion.webp'],['civic-arena-zenith','/assets/civic-arena-zenith.webp'],['civic-arena-teal','/assets/civic-arena-teal.webp'],['civic-arena-violet','/assets/civic-arena-violet.webp'],['civic-arena-amber','/assets/civic-arena-amber.webp'],['civic-library','/assets/civic-library.webp'],['civic-shop-occlusion','/assets/civic-shop-occlusion.webp'],['civic-shop-amber','/assets/civic-shop-amber.webp'],['civic-shop-green','/assets/civic-shop-green.webp'],['civic-shop-violet','/assets/civic-shop-violet.webp'],['civic-shop-red','/assets/civic-shop-red.webp'],['civic-shop-teal','/assets/civic-shop-teal.webp'],['town-course-arena','/assets/town-course-arena.webp']] as const)if(!this.textures.exists(key))this.load.image(key,path);}
   create(){
     this.eventAudio=new EventAudio();
     const unlockAudio=()=>{if(useAudioSettings.getState().enabled)this.eventAudio.unlock();};
@@ -275,7 +294,7 @@ export class ShopScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN,()=>this.game.events.off(Phaser.Core.Events.BLUR,this.resetKeys,this));
     if(new URLSearchParams(window.location.search).has('renderstats')){
       const textures=Object.values(this.textures.list) as Phaser.Textures.Texture[],sources=textures.flatMap(texture=>texture.source),uniqueImages=new Set(sources.map(source=>source.image));
-      const estimatedGpuBytes=sources.reduce((sum,source)=>sum+source.width*source.height*4,0);
+      const estimatedGpuBytes=[...new Set(sources)].reduce((sum,source)=>sum+source.width*source.height*4,0);
       const stats={location:useGame.getState().location,renderer:this.game.renderer.type,textureCount:textures.length,sourceCount:sources.length,uniqueImages:uniqueImages.size,estimatedGpuMiB:Number((estimatedGpuBytes/1048576).toFixed(1)),canvasWidth:this.game.canvas.width,canvasHeight:this.game.canvas.height};
       console.info(`[seiran-renderstats] ${JSON.stringify(stats)} (RGBA estimate; driver overhead and CPU canvas buffers excluded)`);
       window.dispatchEvent(new CustomEvent('seiran:renderstats',{detail:stats}));
