@@ -9,7 +9,9 @@ export function drawPaintedScenery(scene:Phaser.Scene,id:string){
  // when the 960x640 map is rendered at the device's capped DPR2 resolution.
  scene.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
  const {bounds,mirrored}=paintedSceneryLayout(id);
- scene.add.image(bounds.x,bounds.y,key).setOrigin(0).setDisplaySize(bounds.width,bounds.height).setFlipX(mirrored).setDepth(-100);return true;
+ // Fixture crops become Phaser's default frame after the first visit. Always
+ // select the full source explicitly when reusing this texture for a room.
+ scene.add.image(bounds.x,bounds.y,key,'__BASE').setOrigin(0).setDisplaySize(bounds.width,bounds.height).setFlipX(mirrored).setDepth(-100);return true;
 }
 export function drawPaintedFixture(scene:Phaser.Scene,id:string,f:Pick<Fixture,'x'|'y'|'w'|'h'>){
  const key=sceneryKey(id);if(!scene.textures.exists(key))return false;
