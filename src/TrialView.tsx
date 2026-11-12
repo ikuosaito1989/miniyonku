@@ -77,7 +77,6 @@ export default function TrialView(){
   const [error,setError]=useState('');
   const onlineMessage=useOnlineStatus(s=>s.message);
   const [skipped,setSkipped]=useState(false);
-  const sound=useAudioSettings(s=>s.enabled),volume=useAudioSettings(s=>s.volume);
 
   useEffect(()=>{
     setRendererReady(false);
@@ -98,13 +97,16 @@ export default function TrialView(){
           else useOnlineStatus.setState({message:skippedRace.current?'裏技でスキップしたレースはオンライン登録対象外です。':tutorialActive(current.tutorialStage)?'チュートリアル中はオンライン登録対象外です。':'星皇装備、または対象外の記録のためオンライン登録しません。'});
         }
         setState(race);
-      },setFinish,condition,stored.raceSeed,challenge,circuitId,setIntro,stored.bodyPaint,online?.records??null,!!mob,stored.playerName||undefined);}
+      },setFinish,condition,stored.raceSeed,challenge,circuitId,setIntro,stored.bodyPaint,online?.records??null,!!mob,stored.playerName||undefined);
+      const audio=useAudioSettings.getState();renderer.current.setSound(audio.enabled,audio.volume);}
       catch{setError('3D表示を開始できませんでした。WebGL対応ブラウザで再試行してください。');}
       finally{setRendererReady(true);}
     });});
     return()=>{cancelAnimationFrame(firstFrame);cancelAnimationFrame(secondFrame);renderer.current?.dispose();renderer.current=null;};
   },[equipment,challenge,circuitId,online,mob]);
-  useEffect(()=>{renderer.current?.setSound(sound,volume);},[sound,volume,equipment]);
+  useEffect(()=>useAudioSettings.subscribe((state,previous)=>{
+    if(state.enabled!==previous.enabled||state.volume!==previous.volume)renderer.current?.setSound(state.enabled,state.volume);
+  }),[]);
 
   const requestClose=useCallback(()=>{
     if(courseIntroPreview){closeCourseIntroPreview();return;}

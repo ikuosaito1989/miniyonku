@@ -18,22 +18,25 @@ export function GameAudio(){
   },[]);
   const player=useRef<MusicPlayer|null>(null);
   const scene=useGame(selectMusicScene);
-  const enabled=useAudioSettings(s=>s.enabled),volume=useAudioSettings(s=>s.volume);
   useEffect(()=>{
     const music=new MusicPlayer(musicTracks,status=>useAudioSettings.setState({status}));player.current=music;
+    const applySettings=()=>{const {enabled,volume}=useAudioSettings.getState();music.setSettings(enabled,volume);};
+    applySettings();
+    // Apply the toggle during the user gesture; a later React effect may no
+    // longer be allowed to resume audio on browsers with autoplay restrictions.
+    const unsubscribe=useAudioSettings.subscribe((state,previous)=>{if(state.enabled!==previous.enabled||state.volume!==previous.volume)applySettings();});
     const unlock=()=>music.unlock();
     const key=(event:KeyboardEvent)=>{if(!event.repeat)unlock();};
     const visibility=()=>music.setVisible(!document.hidden);
     window.addEventListener('pointerdown',unlock,true);window.addEventListener('pointerup',unlock,true);window.addEventListener('touchend',unlock,true);window.addEventListener('keydown',key,true);
     document.addEventListener('visibilitychange',visibility);
     window.addEventListener('focus',visibility);window.addEventListener('pageshow',visibility);visibility();
-    return()=>{window.removeEventListener('pointerdown',unlock,true);window.removeEventListener('pointerup',unlock,true);window.removeEventListener('touchend',unlock,true);window.removeEventListener('keydown',key,true);document.removeEventListener('visibilitychange',visibility);window.removeEventListener('focus',visibility);window.removeEventListener('pageshow',visibility);music.dispose();player.current=null;};
+    return()=>{unsubscribe();window.removeEventListener('pointerdown',unlock,true);window.removeEventListener('pointerup',unlock,true);window.removeEventListener('touchend',unlock,true);window.removeEventListener('keydown',key,true);document.removeEventListener('visibilitychange',visibility);window.removeEventListener('focus',visibility);window.removeEventListener('pageshow',visibility);music.dispose();player.current=null;};
   },[]);
   useEffect(()=>{
     const fallback:Record<typeof scene,typeof scene>={shop:'shop',race:'race',event:musicTracks.event.ready?'event':'shop',official:musicTracks.official.ready?'official':'race',podium:musicTracks.podium.ready?'podium':musicTracks.event.ready?'event':'shop'};
     player.current?.setScene(fallback[scene]);
   },[scene]);
-  useEffect(()=>{player.current?.setSettings(enabled,volume);},[enabled,volume]);
   return null;
 }
 
