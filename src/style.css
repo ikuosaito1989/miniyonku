@@ -179,7 +179,7 @@ kbd { font-family: inherit; font-size: 10px; padding: 2px 5px; border: 1px solid
 .modal h2{color:#294952;text-shadow:0 1px #fffbed}
 .primary{border:1px solid #304b4b;border-radius:2px;background:linear-gradient(#53786a,#36594f);box-shadow:inset 1px 1px #afc2a477,inset -1px -2px #213f4166,0 2px #203b3d}
 .close{border-color:#969d87;border-radius:2px;box-shadow:inset 1px 1px #fffbed,inset -1px -1px #b4b69a55}
-.world-toolbar{background:linear-gradient(#192e3899,#192e3855);box-shadow:inset 0 -1px #bda97d66}
+.world-toolbar{background:transparent;box-shadow:none}
 .world-toolbar .mission-hud,.mission-panel,.town-map-panel,.time-board,.proficiency-board{border-radius:2px;box-shadow:inset 1px 1px #fff0c333,inset -1px -1px #0a213c77,3px 4px 0 #0b263955}
 .game-settings-open,.audio-controls button,.town-map-button{border-radius:2px;box-shadow:inset 1px 1px #e9dfbc44,inset -1px -2px #0a263b66,2px 2px #10273266}
 .interaction,.game-bottom{border-radius:2px;border-color:#a9b797;box-shadow:inset 0 0 0 1px #456156,2px 3px #172c3255}
