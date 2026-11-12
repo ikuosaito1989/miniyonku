@@ -44,7 +44,7 @@ import { shopAdvice } from './shopAdvice';
 import { touchInput } from './touchInput';
 import { compactDevice, shopWorldZoom, townWorldZoom } from '../data/display';
 import { findWalkingPath, walkBounds, type Point } from './navigation';
-import { isSalesShop, currentShop, isVenueOpen, shopExit, townSpawn, townVenues, venueMessage, townSize, townWalkBounds, townBlocks } from '../data/world';
+import { isSalesShop, currentShop, isVenueOpen, shopExit, townSpawn, townVenues, townEntranceX, venueMessage, townSize, townWalkBounds, townBlocks } from '../data/world';
 import { shopCast } from '../data/shopCast';
 import { mirroredShop, shopLayout } from '../data/shopLayout';
 import { challenger, challengerSpot } from '../data/challenger';
@@ -90,7 +90,7 @@ export class ShopScene extends Phaser.Scene {
   private isTown=false;
   private updateTownCrowd:((time:number)=>void)|null=null;
   private approach(target:ShopTarget){
-    if(this.isTown)return {x:target.x+target.w/2,y:target.y+target.h+(target.kind==='town-person'||target.kind==='mechanic-man'?20:28)};
+    if(this.isTown){const venue=target.kind==='venue'?townVenues.find(v=>v.id===target.venueId):undefined;return {x:venue?townEntranceX(venue):target.x+target.w/2,y:target.y+target.h+(target.kind==='town-person'||target.kind==='mechanic-man'?20:28)};}
     return {x:target.x+target.w/2,y:target.y+target.h/2};
   }
   private get bounds(){return this.isTown?townWalkBounds:walkBounds;}
@@ -231,6 +231,9 @@ export class ShopScene extends Phaser.Scene {
       this.solids.push(new Phaser.Geom.Rectangle(koyaVenueSpot.x-12,koyaVenueSpot.y-9,24,21));
     }
     if(this.isTown)window.dispatchEvent(new CustomEvent('town-position',{detail:spawn}));
+    if(!this.isTown){
+      this.add.text(480,583,'▼ タップで街へ',{fontFamily:'sans-serif',fontSize:'11px',fontStyle:'bold',color:'#fff3cc',backgroundColor:'#263e50ee',padding:{x:5,y:2},stroke:'#142736',strokeThickness:2}).setOrigin(.5).setResolution(2).setDepth(9990).setName('exit-tap-hint');
+    }
     this.destination=this.add.graphics().setDepth(9999).setVisible(false);
     this.destination.lineStyle(2,0xffdf87).strokeCircle(0,0,8).lineBetween(-12,0,-5,0).lineBetween(5,0,12,0).lineBetween(0,-12,0,-5).lineBetween(0,5,0,12);
     if(this.isTown){
@@ -264,7 +267,8 @@ export class ShopScene extends Phaser.Scene {
         const targets=this.getTargets();
         const ownerPosition=this.cast.owner;
         const owner=!this.isTown&&!this.isLibrary&&Math.abs(point.x-ownerPosition.x)<24&&point.y>ownerPosition.y-44&&point.y<ownerPosition.y+16;
-        const target=owner?targets.find(t=>t.kind==='counter'):targets.find(t=>point.x>=t.x-5&&point.x<=t.x+t.w+5&&point.y>=t.y-5&&point.y<=t.y+t.h+5);
+        const inside=(t:ShopTarget)=>point.x>=t.x-5&&point.x<=t.x+t.w+5&&point.y>=t.y-5&&point.y<=t.y+t.h+5;
+        const target=targets.find(t=>t.kind==='exit'&&inside(t))??(owner?targets.find(t=>t.kind==='counter'):targets.find(inside));
         const emptyFloor=!target&&point.x>=this.bounds.left&&point.x<=this.bounds.right&&point.y>=this.bounds.top&&point.y<=this.bounds.bottom&&!this.solids.some(r=>r.contains(point.x,point.y));
         const action=this.gesture.up(pointer.id,screen.x,screen.y,pointer.upTime,emptyFloor);
         if(action==='setting'){this.cancelRoute();this.pendingTarget=null;if(this.isLibrary)useGame.getState().openLibrary();else useGame.getState().openSetting();}
@@ -277,7 +281,7 @@ export class ShopScene extends Phaser.Scene {
       const start=tap;tap=null;
       if(!start||start.id!==pointer.id||useGame.getState().overlay||Math.hypot(screen.x-start.x,screen.y-start.y)>12||pointer.upTime-start.time>700)return;
       const target=this.cameras.main.getWorldPoint(pointer.x,pointer.y);
-      const board=this.getTargets().find(t=>(t.kind==='time-records'||this.isLibrary)&&target.x>=t.x&&target.x<=t.x+t.w&&target.y>=t.y&&target.y<=t.y+t.h);
+      const board=this.getTargets().find(t=>(t.kind==='time-records'||t.kind==='venue'||t.kind==='exit'||this.isLibrary)&&target.x>=t.x&&target.x<=t.x+t.w&&target.y>=t.y&&target.y<=t.y+t.h);
       this.pendingTarget=board??null;
       this.navigateAsync(board?this.approach(board):target,true);
     });
@@ -596,12 +600,12 @@ export class ShopScene extends Phaser.Scene {
     const target=nearest&&nearest.d<62?nearest.t:null;
     const nearby=target?.label??'';
     if(useGame.getState().nearby!==nearby)useGame.setState({nearby});
-    if(this.pendingTarget&&(this.isTown?Math.hypot(this.player.x-this.approach(this.pendingTarget).x,this.player.y-this.approach(this.pendingTarget).y)<22:distance(this.pendingTarget)<62)){const selected=this.pendingTarget;this.pendingTarget=null;this.cancelRoute();this.interactWith(selected);}
+    if(this.pendingTarget&&(this.isTown?Math.hypot(this.player.x-this.approach(this.pendingTarget).x,this.player.y-this.approach(this.pendingTarget).y)<22:distance(this.pendingTarget)<(this.pendingTarget.kind==='exit'?12:62))){const selected=this.pendingTarget;this.pendingTarget=null;this.cancelRoute();this.interactWith(selected);}
     else if(this.pendingTarget&&!this.route.length&&!this.routePending)this.pendingTarget=null;
     if(action&&target)this.interactWith(target);
   }
   private getTargets():ShopTarget[]{
-    if(this.isLibrary)return [...libraryShelves.map(s=>({...s,y:s.y-42,h:s.h+60,kind:'library-shelf' as const,libraryCategory:s.category,speaker:s.label,shopAfter:false,text:'本棚の資料を読む。'})),{...libraryReadingDesk,x:libraryReadingDesk.x-10,y:libraryReadingDesk.y-36,w:100,h:92,kind:'library-catalogue' as const,libraryCategory:'all' as const,speaker:'閲覧台',shopAfter:false,text:'全パーツの資料を読む。'},{...libraryExit,h:40,kind:'exit' as const,label:'図書館の出口',speaker:'図書館',shopAfter:false,text:'街へ戻る。'}];
+    if(this.isLibrary)return [...libraryShelves.map(s=>({...s,y:s.y-42,h:s.h+60,kind:'library-shelf' as const,libraryCategory:s.category,speaker:s.label,shopAfter:false,text:'本棚の資料を読む。'})),{...libraryReadingDesk,x:libraryReadingDesk.x-10,y:libraryReadingDesk.y-36,w:100,h:92,kind:'library-catalogue' as const,libraryCategory:'all' as const,speaker:'閲覧台',shopAfter:false,text:'全パーツの資料を読む。'},{...libraryExit,x:420,y:559,w:120,h:45,kind:'exit' as const,label:'図書館の出口',speaker:'図書館',shopAfter:false,text:'街へ戻る。'}];
     if(this.isTown)return this.townTargets??= [
       {x:hiddenMechanicSpot.x-16,y:hiddenMechanicSpot.y-80,w:32,h:92,label:mechanicManName,speaker:mechanicManName,shopAfter:false,text:'……よく見つけたな。',kind:'mechanic-man'},
       ...townVenues.filter(v=>v.kind==='outdoor').map(v=>({...outdoorTimeBoardPlacement(v),label:'歴代ベストタイム TOP 5',speaker:v.name,shopAfter:false,text:'タイムを見る。',kind:'time-records' as const,circuitId:v.id as import('../data/practiceCourses').PracticeCourseId})),
@@ -614,7 +618,7 @@ export class ShopScene extends Phaser.Scene {
       ...(useGame.getState().location==='stadium-9'&&this.escortGuide?[{x:koyaVenueSpot.x-16,y:koyaVenueSpot.y-42,w:32,h:54,label:'山城 昊也',speaker:'山城 昊也',shopAfter:false,text:useGame.getState().yuunagiUnlocked?'入賞おめでとう！ 次はゆうなぎ模型店の一本道コースだ。君ならもっと速くなれるよ。':'長距離の連続コーナーでは、ローラーと電池が大切だよ。ピットで準備してからコースに向かおう。コースでは僕もライバルだ。いいレースにしよう。'}]:[]),
       ...officialFixturesFor(useGame.getState().location).filter(f=>f.kind!=='decoration').map(f=>({...f,speaker:f.label,shopAfter:false,text:f.kind==='bench'?'ここでマシンを組み直そう。':'コースに出場する。',kind:f.kind as ShopTarget['kind']})),
       ...officialPeopleFor(useGame.getState().location).map(p=>({x:p.x-16,y:p.y-42,w:32,h:54,label:p.name,speaker:p.name,shopAfter:false,text:(useGame.getState().location==='stadium-10'&&useGame.getState().grandprixCleared||useGame.getState().zenithCleared)&&p.id==='rei'?'おめでとう、湊くん！ 決勝で2位以内に入った君の走り、しっかり見届けたよ。セイランと一緒に、ここまで来たんだね。':(useGame.getState().location==='stadium-10'&&useGame.getState().grandprixCleared||useGame.getState().zenithCleared)&&p.id==='gaku'?'よくやった！ 最後まで走り切ったな。今日は君が主役だ。これからも自分だけのセッティングで、速さを追いかけようぜ！':p.text})),
-      {...officialVenue.exit,label:'緑川町への出口',speaker:officialVenue.name,shopAfter:false,text:'町へ戻る。',kind:'exit' as const},
+      {...officialVenue.exit,x:420,y:559,w:120,h:45,label:'緑川町への出口',speaker:officialVenue.name,shopAfter:false,text:'町へ戻る。',kind:'exit' as const},
     ];
     const cast=this.cast;
     const targets:ShopTarget[]=[...shopLayout(currentShop(useGame.getState().location).id).map(({target:f})=>({...f,speaker:f.label,shopAfter:f.kind==='counter'})),{x:cast.rival.x-16,y:cast.rival.y-42,w:32,h:54,label:`ライバル ${cast.rival.name}`,speaker:cast.rival.name,shopAfter:false,text:'湊くん、速いモーターだけじゃなく、ギアやタイヤの組み合わせも大事だよ。'}];
@@ -623,7 +627,7 @@ export class ShopScene extends Phaser.Scene {
     if(!isSalesShop(shop.id))targets.push({...timeBoardPlacement(shop.id),kind:'time-records',label:'歴代ベストタイム TOP 5',speaker:'ベストタイムの看板',shopAfter:false,text:'コースのベストタイムを見る。'});
     const counter=targets.find(t=>t.kind==='counter')!;counter.label=`店主 ${shop.owner}`;counter.speaker=shop.owner;counter.text=shop.welcome;if(isPracticeCourse(shop.id)){counter.shopAfter=false;counter.label='受付係';}
     const track=targets.find(t=>t.kind==='track')!;track.label=isSalesShop(shop.id)?'パーツ展示':getCircuitTrack(shop.circuitId).circuit.name;
-    targets.push({...shopExit,label:'緑川町への出口',speaker:shop.name,shopAfter:false,text:'外の町へ出よう。',kind:'exit'});
+    targets.push({...shopExit,x:420,y:559,w:120,h:45,label:'緑川町への出口',speaker:shop.name,shopAfter:false,text:'外の町へ出よう。',kind:'exit'});
     if(shop.id==='komorebi'&&!state.legendRaceCompleted){
       for(const actor of this.arriving.filter(actor=>actor.state.arrived&&(actor.kind==='rei'||actor.kind==='gaku'))){
         targets.push({x:actor.container.x-16,y:actor.container.y-42,w:32,h:54,label:actor.kind==='rei'?'風見 怜（特別レース）':'火野 岳（特別レース）',speaker:actor.kind==='rei'?'風見 怜':'火野 岳',shopAfter:false,text:'特別レースに挑む。',kind:'legend-challenger'});

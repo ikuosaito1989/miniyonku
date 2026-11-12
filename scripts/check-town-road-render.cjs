@@ -7,7 +7,7 @@ const {chromium}=require('playwright');
   const page=await browser.newPage();await page.goto(process.argv[2]||'http://127.0.0.1:5173/');
   const result=await page.evaluate(async()=>{
    const {paintTownGround}=await import('/src/game/TownArt.ts');
-   const {townVenues,townRoads,townSize,townWalkBounds}=await import('/src/data/world.ts');
+   const {townVenues,townRoads,townSize,townWalkBounds,townEntranceX}=await import('/src/data/world.ts');
    const failures=[],tiles=new Map();
    const canvas=(width,height)=>{const c=document.createElement('canvas');c.width=width;c.height=height;return c;};
    const asphalt=(rgba)=>rgba[0]<170&&rgba[1]<170&&rgba[2]>=rgba[0];
@@ -29,7 +29,7 @@ const {chromium}=require('playwright');
     }
    }
    for(const v of townVenues){
-    const x=v.x+v.w/2,cy=v.entrance==='south'?v.y+v.h+30:v.y-30;
+    const x=townEntranceX(v),cy=v.entrance==='south'?v.y+v.h+30:v.y-30;
     if(x<64||x>townSize.width-256)continue;
     const roadY=townRoads.horizontal.reduce((a,b)=>Math.abs(b-cy)<Math.abs(a-cy)?b:a),y=roadY+(cy<roadY?-20:20),rgba=pixel(x,y);
     venues++;if(!asphalt(rgba))failures.push({kind:'venue',id:v.id,x,y,rgba});

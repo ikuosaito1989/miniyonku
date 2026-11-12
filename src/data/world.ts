@@ -51,8 +51,6 @@ export const townSize={width:7000,height:4600};
 export const townWalkBounds={left:64,right:6880,top:96,bottom:4536};
 export const townRoads={vertical:[400,1200,2000,2800,3600,4400],horizontal:[420,1100,1780,2460,3140,3820,4480]};
 export const townPlaza={x:2050,y:1840,w:700,h:500};
-/** Clear frontage reserved for the two landmark buildings, measured in town units. */
-export const townCivicPlaza={x:2800,y:1688,width:1000,height:450};
 export function generateTownVenues(seed=19890421):TownVenue[]{
   let state=seed>>>0;const random=()=>{state=(Math.imul(state,1664525)+1013904223)>>>0;return state/4294967296;};
   const fixed:TownVenue[]=[...venueTemplates,
@@ -62,39 +60,35 @@ export function generateTownVenues(seed=19890421):TownVenue[]{
     {id:'endurance',name:modelShops.endurance.name,kind:'shop' as const,stage:1,x:0,y:0,w:190,h:140,entrance:'south' as const,color:modelShops.endurance.color,shopId:'endurance' as ShopId},
     ...practiceCourseIds.filter(id=>!isMasterCourse(id)).map((id):TownVenue=>({id,name:practiceCourses[id].name,kind:'outdoor',stage:1,x:0,y:0,w:180,h:110,entrance:'south',color:modelShops[id].color,shopId:id})),
   ];
-  // Six columns keep enough destination lots clear of the illustrated civic plaza.
-  const lots=Array.from({length:36},(_,i)=>({x:500+(i%6)*800,y:470+Math.floor(i/6)*680})).filter((_,i)=>i!==12);
+  // Seeded block order and positions keep every destination within a clear street block.
+  const lots=Array.from({length:36},(_,i)=>({x:500+(i%6)*800,y:470+Math.floor(i/6)*680}));
   for(let i=lots.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[lots[i],lots[j]]=[lots[j],lots[i]];}
-  // A civic race plaza anchors the town: a flagship arena, its starter hobby
-  // shop, and a small race-day stall share one paved district. The remaining
-  // enterable destinations still occupy the shuffled neighborhood lots.
-  const showcase:Record<string,Pick<TownVenue,'x'|'y'|'w'|'h'|'entrance'>>={
-    // Interactive footprints line up with the two isolated landmark sprites.
-    // Their frontage opens onto the existing street tiles.
-    'stadium-5':{x:townCivicPlaza.x,y:townCivicPlaza.y+15,w:520,h:330,entrance:'south'},
-    komorebi:{x:townCivicPlaza.x+570,y:townCivicPlaza.y+20,w:375,h:340,entrance:'south'},
-    'park-waves':{x:510,y:4140,w:420,h:250,entrance:'south'},
-  };
-  const occupied:TownVenue[]=fixed.filter(v=>showcase[v.id]).map(v=>({...v,...showcase[v.id]}));
-  const artKeepout={x:townCivicPlaza.x-8,y:townCivicPlaza.y-8,w:townCivicPlaza.width+16,h:townCivicPlaza.height+16};
+  // Keep the special outdoor course fixed; buildings use seeded positions inside their blocks.
+  const special=fixed.find(v=>v.id==='park-waves')!;
+  const occupied:TownVenue[]=[{...special,x:510,y:4140,w:420,h:250,entrance:'south'}];
   const masters=masterCourseIds.map((id,i):TownVenue=>({id,name:masterCourses[id].name,kind:'outdoor',stage:8,x:i%2===0?4740:5600,y:i<2?1165:1845,w:760,h:450,entrance:'south',color:masterCourses[id].color,shopId:id}));
-  const reservedAreas=[artKeepout,{x:townPlaza.x,y:townPlaza.y,w:townPlaza.w,h:townPlaza.h},...masters.map(v=>({x:v.x-40,y:v.y-40,w:v.w+80,h:v.h+80}))];
+  const reservedAreas=[{x:townPlaza.x,y:townPlaza.y,w:townPlaza.w,h:townPlaza.h},...masters.map(v=>({x:v.x-40,y:v.y-40,w:v.w+80,h:v.h+80}))];
   const usedLots=new Set<number>();
   const civic=fixed.map(v=>{
-    const special=showcase[v.id];if(special)return {...v,...special};
-    const stadium=v.kind==='stadium',building=v.kind==='shop'||v.kind==='library',outdoor=v.kind==='outdoor',w=stadium?350:building?320:outdoor?420:v.w,h=stadium?250:v.kind==='shop'?294:v.kind==='library'?220:outdoor?250:v.h;
-    const lotIndex=lots.findIndex((lot,index)=>{
-      if(usedLots.has(index))return false;
-      const nextStreet=townRoads.horizontal.find(y=>y>lot.y)!;
-      const candidate={...v,x:lot.x+Math.floor(random()*13),y:nextStreet-h-110,w,h};
-      const outsideArtwork=reservedAreas.every(area=>candidate.x+w+40<area.x||area.x+area.w+40<candidate.x||candidate.y+h+80<area.y||area.y+area.h+80<candidate.y);
-      return outsideArtwork&&occupied.every(other=>candidate.x+w+40<other.x||other.x+other.w+40<candidate.x||candidate.y+h+80<other.y||other.y+other.h+80<candidate.y);
-    });
-    if(lotIndex<0)throw new Error(`No clear town lot for ${v.id}`);
-    usedLots.add(lotIndex);
-    const lot=lots[lotIndex],nextStreet=townRoads.horizontal.find(y=>y>lot.y)!;
-    const placed={...v,x:lot.x+Math.floor(random()*13),y:nextStreet-h-110,w,h,entrance:'south' as const};
-    occupied.push(placed);return placed;
+    if(v.id==='park-waves')return occupied[0];
+    const stadium=v.kind==='stadium',building=v.kind==='shop'||v.kind==='library',outdoor=v.kind==='outdoor';
+    const w=v.id==='stadium-5'?520:v.id==='komorebi'?375:stadium?350:building?320:outdoor?420:v.w;
+    const h=v.id==='stadium-5'?330:v.id==='komorebi'?340:stadium?250:v.kind==='shop'?294:v.kind==='library'?220:outdoor?250:v.h;
+    for(let i=0;i<lots.length;i++){
+      if(usedLots.has(i))continue;
+      const lot=lots[i],nextStreet=townRoads.horizontal.find(y=>y>lot.y)!;
+      const previousStreet=townRoads.horizontal.filter(y=>y<lot.y).at(-1)!;
+      const minX=lot.x,maxX=lot.x+600-w,minY=previousStreet+100,maxY=nextStreet-100-h;
+      if(maxX<minX||maxY<minY)continue;
+      for(let attempt=0;attempt<12;attempt++){
+        const x=minX+Math.floor(random()*(maxX-minX+1)),y=minY+Math.floor(random()*(maxY-minY+1));
+        const candidate={...v,x,y,w,h,entrance:'south' as const};
+        const clear=reservedAreas.every(area=>x+w+40<area.x||area.x+area.w+40<x||y+h+80<area.y||area.y+area.h+80<y);
+        if(!clear||!occupied.every(other=>x+w+40<other.x||other.x+other.w+40<x||y+h+80<other.y||other.y+other.h+80<y))continue;
+        usedLots.add(i);occupied.push(candidate);return candidate;
+      }
+    }
+    throw new Error(`No clear town lot for ${v.id}`);
   });
   // Four master courses share a road-connected campus beyond the neighborhood.
   return [...civic,...masters];
@@ -104,7 +98,9 @@ export const townVenues=generateTownVenues();
 // Non-enterable residential set dressing is intentionally omitted.
 export const townBlocks:Array<{x:number;y:number;w:number;h:number}>=[];
 export const shopExit={x:440,y:575,w:80,h:7};
-export function townSpawn(shop:ShopId|'library'|'stadium-5'|'stadium-9'|'stadium-10'|'stadium-7'){const venue=townVenues.find(v=>v.id===shop)!;return {x:venue.x+venue.w/2,y:venue.entrance==='north'?venue.y-42:venue.y+venue.h+42};}
+/** Door position follows the artwork; outdoor tracks and the library use their center. */
+export function townEntranceX(venue:TownVenue){return venue.x+venue.w*(venue.kind==='shop'?.60:venue.kind==='stadium'?.42:.5);}
+export function townSpawn(shop:ShopId|'library'|'stadium-5'|'stadium-9'|'stadium-10'|'stadium-7'){const venue=townVenues.find(v=>v.id===shop)!;return {x:townEntranceX(venue),y:venue.entrance==='north'?venue.y-42:venue.y+venue.h+42};}
 export function venueMessage(venue:TownVenue){
   if(isMasterCourse(venue.id))return '天頂決戦クリア後に開放される巨大マスターコース。'+modelShops[venue.id].welcome;
   if(isPracticeCourse(venue.id))return modelShops[venue.id].welcome;

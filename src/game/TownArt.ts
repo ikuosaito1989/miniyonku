@@ -1,14 +1,13 @@
 import {drawOutdoorCourse} from './OutdoorCourseArt';
 import {drawVenueFacade} from './VenueFacadeArt';
 import Phaser from 'phaser';
-import {isVenueOpen,townVenues,townSize,townRoads,townBlocks,townPlaza,townWalkBounds,townCivicPlaza,modelShops,type ShopId,type WorldProgress} from '../data/world';
+import {isVenueOpen,townVenues,townSize,townRoads,townBlocks,townPlaza,townWalkBounds,townEntranceX,modelShops,type ShopId,type WorldProgress} from '../data/world';
 import {artNoise,paintPixelTree} from './PixelArtMaterials';
 import {SceneryPen} from './SceneryCanvas';
 /** One raster pixel covers two map units; repeating vector detail avoids full-size terrain canvases. */
 export const townGroundRasterScale=.5;
 const townShopVariants:Partial<Record<ShopId,'amber'|'green'|'violet'|'red'|'teal'>>={hinata:'amber',wakaba:'green',yuunagi:'violet',akatsuki:'red',torque:'red',velocity:'teal',terrain:'green',endurance:'teal',atelier:'violet'};
 const townArenaVariants:Record<string,'occlusion'|'teal'|'violet'|'amber'|'zenith'>={'stadium-5':'teal','stadium-7':'zenith','stadium-9':'violet','stadium-10':'amber'};
-function inCivicArtwork(x:number,y:number){return x>=townCivicPlaza.x&&x<=townCivicPlaza.x+townCivicPlaza.width&&y>=townCivicPlaza.y&&y<=townCivicPlaza.y+townCivicPlaza.height;}
 function drawTownArena(scene:Phaser.Scene,venue:typeof townVenues[number],progress:WorldProgress){
  const variant=townArenaVariants[venue.id]??'occlusion',key=`civic-arena-${variant}`;
  if(!scene.textures.exists(key)){drawVenueFacade(scene,venue,isVenueOpen(venue,progress));return;}
@@ -135,12 +134,12 @@ export function paintTownGround(c:CanvasRenderingContext2D,chunkX=0,chunkWidth=t
  for(const y of townRoads.horizontal){if(y+70<chunkY||y-70>chunkBottom)continue;const roadStart=64,roadEnd=townSize.width-256,start=Math.max(roadStart,chunkX),end=Math.min(roadEnd,chunkEnd);if(end>start)road(roadStart,y-70,roadEnd-roadStart,140,true,true,'h');const firstMarker=80+Math.ceil((Math.max(80,chunkX-13)-80)/30)*30;for(let x=firstMarker;x<Math.min(roadEnd,chunkEnd);x+=30){r(x,y-2,13,4,'#c9bd8d');r(x,y-2,12,1,'#e2d3a2');for(const yy of [y-70,y+63])r(x,yy,1,7,'#70847d');}}
  for(const x of townRoads.vertical)for(const y of townRoads.horizontal){if(y+64<chunkY||y-64>chunkBottom)continue;r(x-53,y-53,106,106,'#667377');for(let i=0;i<5;i++){r(x-44+i*19,y-64,9,30,'#d8d1b0');r(x-44+i*19,y+34,9,30,'#d8d1b0');}p.ellipse(x+29,y+20,9,7,'#485e64');p.ellipse(x+29,y+19,8,6,'#879188');for(let i=0;i<3;i++)r(x+24,y+16+i*3,10,1,'#596f70');}
  for(const v of townVenues){
-  if(v.x+v.w+80<chunkX||v.x-80>chunkEnd||v.y+v.h+120<chunkY||v.y-100>chunkBottom)continue;
-  const cx=v.x+v.w/2,cy=v.entrance==='south'?v.y+v.h+30:v.y-30,roadY=townRoads.horizontal.reduce((a,b)=>Math.abs(b-cy)<Math.abs(a-cy)?b:a);
+  const cx=townEntranceX(v),cy=v.entrance==='south'?v.y+v.h+30:v.y-30,roadY=townRoads.horizontal.reduce((a,b)=>Math.abs(b-cy)<Math.abs(a-cy)?b:a);
   const pad=v.kind==='outdoor'?{x:v.x-8,y:v.y-8,w:v.w+16,h:v.h+28}:{x:v.x-24,y:v.y-65,w:v.w+48,h:v.h+118};
-  paving(pad.x,pad.y,pad.w,pad.h);
   const top=Math.min(cy,roadY),bottom=Math.max(cy,roadY);
-  paving(cx-30,top,60,bottom-top);
+  const visible=(x:number,y:number,w:number,h:number)=>x+w>chunkX&&x<chunkEnd&&y+h>chunkY&&y<chunkBottom;
+  if(visible(pad.x,pad.y,pad.w,pad.h))paving(pad.x,pad.y,pad.w,pad.h);
+  if(visible(cx-30,top,60,bottom-top))paving(cx-30,top,60,bottom-top);
  }
  // Small paved front courts link residential doors to the street instead of
  // leaving every building isolated in an uninterrupted grass field.
@@ -189,40 +188,17 @@ export function drawTown(scene:Phaser.Scene,progress:WorldProgress){
   if(hasCivicArtwork&&hasLibraryArtwork&&venue.id==='library')continue;
   if(venue.kind==='outdoor')drawOutdoorCourse(scene,venue,isVenueOpen(venue,progress));else if(venue.kind==='shop')drawModelShopSprite(scene,venue,isVenueOpen(venue,progress));else if(venue.kind==='stadium'&&hasCivicArtwork)drawTownArena(scene,venue,progress);else drawVenueFacade(scene,venue,isVenueOpen(venue,progress));
  }
- if(!hasCivicArtwork)drawCivicRacePlaza(scene);
- for(const x of townRoads.vertical)for(let y=townWalkBounds.top+64;y<townWalkBounds.bottom-70;y+=180){if(inCivicArtwork(x-100,y)||townVenues.some(v=>Math.abs(x-v.x)<v.w+100&&y>v.y-80&&y<v.y+v.h+70))continue;tree(scene,x-100,y);lamp(scene,x+88,y+50);}
- for(let i=0;i<28;i++){const x=110+(i*487)%(townSize.width-220),y=210+(i*337)%(townSize.height-420);if(inCivicArtwork(x,y)||[...townVenues].some(v=>x>v.x-90&&x<v.x+v.w+90&&y>v.y-100&&y<v.y+v.h+90)||townRoads.vertical.some(v=>Math.abs(v-x)<100)||townRoads.horizontal.some(v=>Math.abs(v-y)<100))continue;tree(scene,x,y);tree(scene,x+28,y+34);}
- for(const y of [townWalkBounds.top+8,townWalkBounds.bottom-16])for(let x=100;x<townSize.width-300;x+=125)if(!inCivicArtwork(x,y))tree(scene,x,y);
- for(const [x,y] of [[2140,1995],[2660,1995],[2140,2220],[2660,2220],[720,780],[3900,2530]]){if(inCivicArtwork(x,y))continue;tree(scene,x,y);const key='park-bench-16';if(!scene.textures.exists(key)){const t=scene.textures.createCanvas(key,112,64)!;t.context.scale(2,2);const p=new SceneryPen(t.context);p.shadow(3,14,45,10);for(const xx of [8,40]){p.rect(xx,14,3,15,'#3d5357');p.rect(xx+1,15,1,12,'#8fa19a');}p.rect(3,3,46,9,'#5c5d4a');for(let row=0;row<3;row++){p.gradient(4,3+row*3,44,2,'#c3ab7b','#947f5e');}p.gradient(3,14,46,7,'#d2b589','#8d7a5c');p.material(4,14,44,7,'wood',12);for(const xx of [8,41])p.rect(xx,15,1,1,'#e9d4a7');t.refresh();t.setFilter(Phaser.Textures.FilterMode.NEAREST);}scene.add.image(x+20,y+1,key).setOrigin(0).setDisplaySize(56,32).setDepth(y+24);}
-}
-/** Flagstones, race banners, lamps and planters tie the two landmark buildings into one plaza. */
-function drawCivicRacePlaza(scene:Phaser.Scene){
- const arena=townVenues.find(v=>v.id==='stadium-5'),shop=townVenues.find(v=>v.id==='komorebi');if(!arena||!shop)return;
- const banner=(x:number,y:number)=>{
-  const b=scene.add.graphics().setDepth(y+12);
-  b.fillStyle(0x26394c,.24).fillEllipse(x+3,y+2,20,6);
-  b.fillStyle(0x33495c).fillRect(x-2,y-104,4,104);b.fillStyle(0xe1d9bf).fillRect(x-1,y-102,1,99);
-  b.fillStyle(0xf0ead9).fillCircle(x,y-106,5);
-  b.fillStyle(0x264f91).fillRect(x+3,y-99,25,62);b.fillStyle(0x4282c5).fillRect(x+6,y-96,19,52);
-  b.fillStyle(0xf3edda).fillTriangle(x+6,y-46,x+18,y-54,x+25,y-46);
-  for(let row=0;row<3;row++)for(let col=0;col<3;col++)b.fillStyle((row+col)%2?0xf6f0dc:0x356fb1).fillRect(x+5+col*7,y-48+row*4,7,4);
- };
- const lampPost=(x:number,y:number)=>{
-  const l=scene.add.graphics().setDepth(y+8);l.fillStyle(0x263b4b,.25).fillEllipse(x+4,y+2,22,6);
-  l.fillStyle(0x344b5c).fillRect(x-3,y-52,6,53).fillRect(x-12,y-57,24,7);
-  l.fillStyle(0xb5c4c2).fillRect(x-1,y-50,2,49);l.fillStyle(0xf0d48a).fillRoundedRect(x-8,y-72,16,16,3);l.fillStyle(0xfff0b2,.45).fillRoundedRect(x-15,y-78,30,27,7);
- };
- const planter=(x:number,y:number,w:number)=>{
-  const f=scene.add.graphics().setDepth(y+5);f.fillStyle(0x344958,.2).fillRect(x+4,y+4,w,28);
-  f.fillStyle(0x52687a).fillRect(x,y,w,25);f.fillStyle(0xe0d9c0).fillRect(x+3,y+2,w-6,19);f.fillStyle(0x51784e).fillRect(x+6,y+5,w-12,13);
-  for(let i=0;i<Math.floor(w/12);i++){const fx=x+9+i*12;f.fillStyle(i%3?0xf1d575:0xe38f9a).fillCircle(fx,y+10+(i%2)*3,2.5);f.fillStyle(0x6f955b).fillRect(fx-1,y+11,2,6);}
- };
- for(const x of [arena.x-62,arena.x+arena.w+46,shop.x-44,shop.x+shop.w+38])banner(x,arena.y+arena.h+67);
- for(const x of [arena.x+30,arena.x+arena.w-30,shop.x+24,shop.x+shop.w-24])lampPost(x,arena.y+arena.h+76);
- planter(arena.x+42,arena.y+arena.h+20,150);planter(arena.x+arena.w-192,arena.y+arena.h+20,150);
- planter(shop.x+12,shop.y+shop.h+18,112);planter(shop.x+shop.w-130,shop.y+shop.h+18,112);
- // Border trees create the green frame around the open paved forecourt.
- for(const [x,y] of [[arena.x-92,arena.y-25],[arena.x+arena.w+92,arena.y-25],[arena.x-96,arena.y+arena.h+88],[shop.x+shop.w+70,shop.y+shop.h+78]] as const)tree(scene,x,y);
+ // The label sits inside the same building hit area used by tap navigation.
+ for(const venue of townVenues){
+  if(venue.kind==='outdoor')continue;
+  const label=isVenueOpen(venue,progress)?'▼ タップで入る':'▼ タップで確認';
+  scene.add.text(townEntranceX(venue),venue.y+venue.h-18,label,{fontFamily:'sans-serif',fontSize:'11px',fontStyle:'bold',color:'#fff3cc',backgroundColor:'#263e50ee',padding:{x:5,y:2},stroke:'#142736',strokeThickness:2})
+   .setOrigin(.5).setResolution(2).setDepth(venue.y+venue.h+30).setName(`town-entry-hint-${venue.id}`);
+ }
+ for(const x of townRoads.vertical)for(let y=townWalkBounds.top+64;y<townWalkBounds.bottom-70;y+=180){if(townVenues.some(v=>Math.abs(x-v.x)<v.w+100&&y>v.y-80&&y<v.y+v.h+70))continue;tree(scene,x-100,y);lamp(scene,x+88,y+50);}
+ for(let i=0;i<28;i++){const x=110+(i*487)%(townSize.width-220),y=210+(i*337)%(townSize.height-420);if([...townVenues].some(v=>x>v.x-90&&x<v.x+v.w+90&&y>v.y-100&&y<v.y+v.h+90)||townRoads.vertical.some(v=>Math.abs(v-x)<100)||townRoads.horizontal.some(v=>Math.abs(v-y)<100))continue;tree(scene,x,y);tree(scene,x+28,y+34);}
+ for(const y of [townWalkBounds.top+8,townWalkBounds.bottom-16])for(let x=100;x<townSize.width-300;x+=125)tree(scene,x,y);
+ for(const [x,y] of [[2140,1995],[2660,1995],[2140,2220],[2660,2220],[720,780],[3900,2530]]){if(townVenues.some(v=>x>v.x-90&&x<v.x+v.w+90&&y>v.y-120&&y<v.y+v.h+90))continue;tree(scene,x,y);const key='park-bench-16';if(!scene.textures.exists(key)){const t=scene.textures.createCanvas(key,112,64)!;t.context.scale(2,2);const p=new SceneryPen(t.context);p.shadow(3,14,45,10);for(const xx of [8,40]){p.rect(xx,14,3,15,'#3d5357');p.rect(xx+1,15,1,12,'#8fa19a');}p.rect(3,3,46,9,'#5c5d4a');for(let row=0;row<3;row++){p.gradient(4,3+row*3,44,2,'#c3ab7b','#947f5e');}p.gradient(3,14,46,7,'#d2b589','#8d7a5c');p.material(4,14,44,7,'wood',12);for(const xx of [8,41])p.rect(xx,15,1,1,'#e9d4a7');t.refresh();t.setFilter(Phaser.Textures.FilterMode.NEAREST);}scene.add.image(x+20,y+1,key).setOrigin(0).setDisplaySize(56,32).setDepth(y+24);}
 }
 function tree(scene:Phaser.Scene,x:number,y:number){
  if(townVenues.some(v=>x>v.x-74&&x<v.x+v.w+74&&y>v.y-130&&y<v.y+v.h+62)||townBlocks.some(b=>x>b.x-62&&x<b.x+b.w+62&&y>b.y-72&&y<b.y+b.h+56))return;
