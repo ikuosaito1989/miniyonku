@@ -21,5 +21,5 @@ test('16人は別の顔・原画セルを持ち、全方向・歩行フレーム
 test('全店舗・練習場は共通の模型店の床を保ち、配色を変え、歩行は約2割速くする',()=>{
  assert.equal(new Set(Object.values(shopThemes).map(t=>t.style)).size,7);
  assert.equal(new Set(Object.values(shopThemes).map(t=>t.floor)).size,Object.keys(modelShops).length);assert.ok(Object.values(shopThemes).every(t=>t.pattern==='tile'));
- assert.ok(walkingSpeed.town>235&&walkingSpeed.town<300);assert.ok(walkingSpeed.interior>155&&walkingSpeed.interior<210);
+ assert.ok(walkingSpeed.town===352);assert.ok(walkingSpeed.interior===238);
 });

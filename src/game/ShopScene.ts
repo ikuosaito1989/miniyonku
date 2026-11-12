@@ -493,14 +493,14 @@ export class ShopScene extends Phaser.Scene {
       if(actor.arrived){this.escortArrival=null;advance(step);}return;
     }
     if(this.escortPlayerWalk&&this.escortGuideWalk){
-      const beat=Math.floor(this.escortPlayerWalk.walkTime/260),speed=step===4?walkingSpeed.town:walkingSpeed.interior;
+      const beat=Math.floor(this.escortPlayerWalk.walkTime/210),speed=step===4?walkingSpeed.town:walkingSpeed.interior;
       this.escortPlayerWalk=stepOpeningWalk(this.escortPlayerWalk,delta,speed);this.escortGuideWalk=stepOpeningWalk(this.escortGuideWalk,delta,speed);
       const hero=this.escortPlayerWalk,guide=this.escortGuideWalk;
-      if(Math.floor(hero.walkTime/260)>beat)this.playEventSound('step');
+      if(Math.floor(hero.walkTime/210)>beat)this.playEventSound('step');
       this.player.setPosition(hero.position.x,hero.position.y).setDepth(hero.position.y);
-      this.playerSprite.setTexture(`person-player-${hero.facing}-${hero.done?0:Math.floor(hero.walkTime/150)%4}`);
+      this.playerSprite.setTexture(`person-player-${hero.facing}-${hero.done?0:Math.floor(hero.walkTime/120)%4}`);
       this.escortGuide!.setPosition(guide.position.x,guide.position.y).setDepth(guide.position.y);
-      (this.escortGuide!.list[1] as Phaser.GameObjects.Image).setTexture(this.arrivalTexture(kind,guide.facing,guide.done?0:Math.floor(guide.walkTime/150)%4));
+      (this.escortGuide!.list[1] as Phaser.GameObjects.Image).setTexture(this.arrivalTexture(kind,guide.facing,guide.done?0:Math.floor(guide.walkTime/120)%4));
       if(hero.done&&guide.done)advance(step);
     }
   }
@@ -576,7 +576,7 @@ export class ShopScene extends Phaser.Scene {
     if(waypoint&&Math.hypot(this.player.x-waypoint.x,this.player.y-waypoint.y)<.1)this.route.shift();
     if(waypoint&&(dx!==0||dy!==0)&&!moving)this.cancelRoute();
     if(!this.route.length)this.destination.setVisible(false);
-    this.playerSprite.setTexture(`person-player-${this.facing}-${moving?Math.floor(this.walkTime/130)%4:0}`);
+    this.playerSprite.setTexture(`person-player-${this.facing}-${moving?Math.floor(this.walkTime/105)%4:0}`);
     this.player.setDepth(this.player.y);
     if(this.isTown&&(this.time.now-this.mapTime>350)){this.mapTime=this.time.now;window.dispatchEvent(new CustomEvent('town-position',{detail:{x:this.player.x,y:this.player.y}}));}
     const atExit=!this.isTown&&this.player.y>=567&&Math.abs(this.player.x-480)<32;

@@ -15,4 +15,4 @@ export const shopThemes:Record<ShopId,ShopTheme>={...baseThemes,...Object.fromEn
 velocity:{...baseThemes.aozora,accent:'#63c2dc',floor:'#d8e3ea',wall:'#738d9f',style:'glass'},
 terrain:{...baseThemes.wakaba,accent:'#91aa58',floor:'#c4cbaa',wall:'#8b967e',style:'garden'},
 endurance:{...baseThemes.komorebi,accent:'#d1ad70',floor:'#c6d5ce',wall:'#738b87',style:'timber'}};
-export const walkingSpeed={town:282,interior:190} as const;
+export const walkingSpeed={town:352,interior:238} as const;
