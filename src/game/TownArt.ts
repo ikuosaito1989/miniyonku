@@ -4,6 +4,7 @@ import Phaser from 'phaser';
 import {isVenueOpen,townVenues,townSize,townRoads,townBlocks,townPlaza,townWalkBounds,townEntranceX,modelShops,type ShopId,type WorldProgress} from '../data/world';
 import {artNoise,paintPixelTree} from './PixelArtMaterials';
 import {SceneryPen} from './SceneryCanvas';
+import {townPaths} from '../data/townPaths';
 /** One raster pixel covers two map units; repeating vector detail avoids full-size terrain canvases. */
 export const townGroundRasterScale=.5;
 const houseImages=import.meta.glob<string>('../assets/scenery/houses/*.webp',{eager:true,query:'?url',import:'default'});
@@ -128,14 +129,14 @@ export function paintTownGround(c:CanvasRenderingContext2D,chunkX=0,chunkWidth=t
    for(let yy=y0+48;yy<y1-48;yy+=32)for(let xx=x0+48;xx<x1-48;xx+=38){const n=noise(xx,yy,701);r(xx,yy,28,20,n%2?'#64815d':'#718e65');r(xx+4,yy+5,17,2,n%3?'#83a071':'#bdc17e');if(n%5===0)r(xx+13,yy+2,3,4,'#d7b684');}
    const px=x0+244,py=y0+128;r(px-12,py-10,170,116,'#847c63');r(px-7,py-6,160,108,'#c0b48e');r(px,py,146,96,'#4a7c85');r(px+5,py+4,136,84,'#69a0a0');
    for(let i=0;i<22;i++){const n=noise(i,22,703),wx=px+8+n%122,wy=py+8+(n>>>5)%70;r(wx,wy,5+n%10,1,'#bbd3bd');}
-  }else{
-   // Smaller paths cross green plots and turn into short spurs, while the
-   // arterial streets and the individual venue approaches stay continuous.
-   const laneX=x0+210+(row%2)*90,laneY=y0+140+(col%2)*90;
-   paving(laneX,y0,52,y1-y0);
-   paving(x0,laneY,x1-x0,52);
-   if((row+col)%2===0)paving(laneX+52,laneY+150,Math.min(180,x1-laneX-52),42);
   }
+ }
+ // The same obstacle-checked routes used by the layout checks draw each
+ // residential alley, including the optional short dead ends.
+ for(const path of townPaths)for(let i=1;i<path.points.length;i++){
+  const a=path.points[i-1],b=path.points[i],width=path.kind==='spur'?36:44;
+  const x=Math.min(a.x,b.x)-width/2,y=Math.min(a.y,b.y)-width/2,w=Math.abs(a.x-b.x)+width,h=Math.abs(a.y-b.y)+width;
+  if(x+w>chunkX&&x<chunkEnd&&y+h>chunkY&&y<chunkBottom)paving(x,y,w,h);
  }
  for(const x of townRoads.vertical){if(x+110<chunkX||x-110>chunkEnd||townWalkBounds.bottom<chunkY||townWalkBounds.top>chunkBottom)continue;road(x-70,townWalkBounds.top-24,140,townWalkBounds.bottom-townWalkBounds.top+48,true,true,'v');for(let y=aligned(townWalkBounds.top-8,chunkY,30);y<Math.min(townWalkBounds.bottom,chunkBottom);y+=30){r(x-2,y,4,13,'#c9bd8d');r(x-1,y,1,11,'#e4d5a5');for(const xx of [x-70,x+63]){r(xx,y,7,1,'#6e8279');r(xx,y+1,7,1,'#d8cfaa');}}
   for(let y=aligned(townWalkBounds.top+90,chunkY,210);y<Math.min(townWalkBounds.bottom-30,chunkBottom);y+=210){r(x+53,y,9,17,'#3d535a');for(let i=0;i<4;i++)r(x+54,y+2+i*4,7,1,'#85958e');}

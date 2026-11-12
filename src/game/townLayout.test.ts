@@ -3,6 +3,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {generateTownVenues,generateTownBlocks,townVenues,townSize,townWalkBounds,townSpawn,townBlocks,townRoads,townPlaza} from '../data/world';
 import {hiddenMechanicSpot} from '../data/hiddenMechanic';
+import {townPaths} from '../data/townPaths';
 import {canStand,canTravel,findWalkingPath} from './navigation';
 test('広域マップは店と大型会場を重複なく散らし、乱数の種ごとに配置を再現する',()=>{
  assert.ok(townSize.width*townSize.height>=960*640*12);
@@ -45,6 +46,13 @@ test('住宅は再生成しても同じ位置で、主要道路と施設の余�
   for(const y of townRoads.horizontal)assert.ok(block.y>=y+100||block.y+block.h<=y-100);
   for(const v of townVenues){const gap=v.kind==='stadium'?190:150;assert.ok(block.x>=v.x+v.w+gap||block.x+block.w+gap<=v.x||block.y>=v.y+v.h+gap||block.y+block.h+gap<=v.y,v.id);}
  }
+});
+test('住宅の脇道は通行できる幅で幹線道路へつながり、職人へも寄り道できる',()=>{
+ const obstacles=[...townVenues,...townBlocks].map(b=>({x:b.x-12,y:b.y-12,width:b.w+24,height:b.h+24}));
+ const lanes=townPaths.filter(p=>p.kind==='lane');assert.ok(lanes.length>townBlocks.length);
+ for(const path of townPaths){for(let i=1;i<path.points.length;i++)assert.ok(canTravel(path.points[i-1],path.points[i],obstacles,townWalkBounds));}
+ for(const path of lanes)assert.ok(townRoads.horizontal.includes(path.points.at(-1)!.y));
+ assert.ok(townPaths.some(p=>p.kind==='spur'&&p.points.at(-1)?.x===hiddenMechanicSpot.x&&p.points.at(-1)?.y===hiddenMechanicSpot.y+32));
 });
 test('広域マップの帰還地点と遠方への道は、店内の歩行制限と独立している',()=>{
  const obstacles=[...townVenues,...townBlocks].map(v=>({x:v.x,y:v.y,width:v.w,height:v.h}));
