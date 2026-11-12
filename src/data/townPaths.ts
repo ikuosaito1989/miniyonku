@@ -2,7 +2,7 @@ import {townBlocks,townRoads,townVenues,townWalkBounds} from './world';
 import {hiddenMechanicSpot} from './hiddenMechanic';
 import {canStand,canTravel,findWalkingPath,type Point} from '../game/navigation';
 
-export interface TownPath {points:Point[];kind:'lane'|'spur'}
+export interface TownPath {points:Point[];kind:'lane'|'spur'|'hidden'}
 // Extra clearance leaves room for the visible path as well as the player's feet.
 const obstacles=[...townVenues,...townBlocks].map(b=>({x:b.x-12,y:b.y-12,width:b.w+24,height:b.h+24}));
 const same=(a:Point,b:Point)=>a.x===b.x&&a.y===b.y;
@@ -36,7 +36,7 @@ function generatePaths():TownPath[]{
  // A quieter turn off the southern road leads toward the existing hidden
  // mechanic; the location and reward remain unchanged and unmarked on maps.
  const hiddenLane=[{x:6600,y:4480},{x:6600,y:4380},{x:hiddenMechanicSpot.x,y:4380},{x:hiddenMechanicSpot.x,y:hiddenMechanicSpot.y+32}];
- if(hiddenLane.every((p,i)=>i===0?canStand(p,obstacles,townWalkBounds):canTravel(hiddenLane[i-1],p,obstacles,townWalkBounds)))result.push({kind:'spur',points:hiddenLane});
+ if(hiddenLane.every((p,i)=>i===0?canStand(p,obstacles,townWalkBounds):canTravel(hiddenLane[i-1],p,obstacles,townWalkBounds)))result.push({kind:'hidden',points:hiddenLane});
  return result;
 }
 export const townPaths=generatePaths();

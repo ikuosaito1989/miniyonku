@@ -50,6 +50,15 @@ const venueTemplates:TownVenue[]=[
 export const townSize={width:7000,height:4600};
 export const townWalkBounds={left:64,right:6880,top:96,bottom:4536};
 export const townRoads={vertical:[400,1200,2000,2800,3600,4400],horizontal:[420,1100,1780,2460,3140,3820,4480]};
+/** Actual road extents; gaps leave irregular blocks and smaller side streets. */
+export const townMainRoads={
+ vertical:[
+  {x:400,from:72,to:4560},{x:1200,from:420,to:1780},{x:1200,from:2460,to:4480},
+  {x:2000,from:1100,to:3140},{x:2800,from:72,to:4560},
+  {x:3600,from:420,to:2460},{x:3600,from:3140,to:4480},{x:4400,from:72,to:4560},
+ ],
+ horizontal:townRoads.horizontal.map(y=>({y,from:64,to:[420,3140,3820].includes(y)?5200:townSize.width-256})),
+};
 export const townPlaza={x:2050,y:1840,w:700,h:500};
 export function generateTownVenues(seed=19890421):TownVenue[]{
   let state=seed>>>0;const random=()=>{state=(Math.imul(state,1664525)+1013904223)>>>0;return state/4294967296;};

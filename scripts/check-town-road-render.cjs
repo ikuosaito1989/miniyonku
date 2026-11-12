@@ -7,7 +7,7 @@ const {chromium}=require('playwright');
   const page=await browser.newPage();await page.goto(process.argv[2]||'http://127.0.0.1:5173/');
   const result=await page.evaluate(async()=>{
    const {paintTownGround}=await import('/src/game/TownArt.ts');
-   const {townVenues,townRoads,townSize,townWalkBounds,townEntranceX}=await import('/src/data/world.ts');
+   const {townVenues,townRoads,townMainRoads,townSize,townWalkBounds,townEntranceX}=await import('/src/data/world.ts');
    const failures=[],tiles=new Map();
    const canvas=(width,height)=>{const c=document.createElement('canvas');c.width=width;c.height=height;return c;};
    const asphalt=(rgba)=>rgba[0]<170&&rgba[1]<170&&rgba[2]>=rgba[0];
@@ -21,17 +21,18 @@ const {chromium}=require('playwright');
    };
    const pixel=(x,y)=>{const {c,x0,y0}=tile(x,y);return [...c.getContext('2d').getImageData(Math.floor((x-x0)/2),Math.floor((y-y0)/2),1,1).data];};
    let intersections=0,venues=0,seams=0;
-   for(const y of townRoads.horizontal)for(const x of townRoads.vertical){
+   for(const v of townMainRoads.vertical)for(const h of townMainRoads.horizontal){
+    const {x}=v,{y}=h;if(y<v.from||y>v.to||x<h.from||x>h.to)continue;
     intersections++;
     for(const dy of [-90,90]){
-     if(y+dy<townWalkBounds.top-24||y+dy>townWalkBounds.bottom+24)continue;
+     if(y+dy<v.from||y+dy>v.to||y+dy<townWalkBounds.top-24||y+dy>townWalkBounds.bottom+24)continue;
      const rgba=pixel(x+20,y+dy);if(!asphalt(rgba))failures.push({kind:'intersection',x,y,dy,rgba});
     }
    }
    for(const v of townVenues){
     const x=townEntranceX(v),cy=v.entrance==='south'?v.y+v.h+30:v.y-30;
     if(x<64||x>townSize.width-256)continue;
-    const roadY=townRoads.horizontal.reduce((a,b)=>Math.abs(b-cy)<Math.abs(a-cy)?b:a),y=roadY+(cy<roadY?-20:20),rgba=pixel(x,y);
+    const road=townMainRoads.horizontal.filter(r=>x>=r.from&&x<=r.to).reduce((a,b)=>Math.abs(b.y-cy)<Math.abs(a.y-cy)?b:a),roadY=road.y,y=roadY+(cy<roadY?-20:20),rgba=pixel(x,y);
     venues++;if(!asphalt(rgba))failures.push({kind:'venue',id:v.id,x,y,rgba});
    }
    // A single painted region and adjacent independently painted chunks must agree at the boundary.

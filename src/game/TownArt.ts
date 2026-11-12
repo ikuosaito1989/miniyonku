@@ -1,7 +1,7 @@
 import {drawOutdoorCourse} from './OutdoorCourseArt';
 import {drawVenueFacade} from './VenueFacadeArt';
 import Phaser from 'phaser';
-import {isVenueOpen,townVenues,townSize,townRoads,townBlocks,townPlaza,townWalkBounds,townEntranceX,modelShops,type ShopId,type WorldProgress} from '../data/world';
+import {isVenueOpen,townVenues,townSize,townRoads,townMainRoads,townBlocks,townPlaza,townWalkBounds,townEntranceX,modelShops,type ShopId,type WorldProgress} from '../data/world';
 import {artNoise,paintPixelTree} from './PixelArtMaterials';
 import {SceneryPen} from './SceneryCanvas';
 import {townPaths} from '../data/townPaths';
@@ -70,8 +70,8 @@ export function paintTownGround(c:CanvasRenderingContext2D,chunkX=0,chunkWidth=t
    if(x+w<=rx||x>=rx+rw||y+h<=ry||y>=ry+rh)return;
    c.beginPath();c.rect(0,0,townSize.width,townSize.height);c.rect(rx,ry,rw,rh);c.clip('evenodd');
   };
-  for(const roadX of townRoads.vertical)exclude(roadX-70,townWalkBounds.top-24,140,townWalkBounds.bottom-townWalkBounds.top+48);
-  for(const roadY of townRoads.horizontal)exclude(64,roadY-70,townSize.width-320,140);
+  for(const road of townMainRoads.vertical)exclude(road.x-70,road.from,140,road.to-road.from);
+  for(const road of townMainRoads.horizontal)exclude(road.from,road.y-70,road.to-road.from,140);
  };
  // All paved lots share a world-aligned grid, including building aprons.
  const paving=(x:number,y:number,w:number,h:number)=>{
@@ -138,13 +138,13 @@ export function paintTownGround(c:CanvasRenderingContext2D,chunkX=0,chunkWidth=t
   const x=Math.min(a.x,b.x)-width/2,y=Math.min(a.y,b.y)-width/2,w=Math.abs(a.x-b.x)+width,h=Math.abs(a.y-b.y)+width;
   if(x+w>chunkX&&x<chunkEnd&&y+h>chunkY&&y<chunkBottom)paving(x,y,w,h);
  }
- for(const x of townRoads.vertical){if(x+110<chunkX||x-110>chunkEnd||townWalkBounds.bottom<chunkY||townWalkBounds.top>chunkBottom)continue;road(x-70,townWalkBounds.top-24,140,townWalkBounds.bottom-townWalkBounds.top+48,true,true,'v');for(let y=aligned(townWalkBounds.top-8,chunkY,30);y<Math.min(townWalkBounds.bottom,chunkBottom);y+=30){r(x-2,y,4,13,'#c9bd8d');r(x-1,y,1,11,'#e4d5a5');for(const xx of [x-70,x+63]){r(xx,y,7,1,'#6e8279');r(xx,y+1,7,1,'#d8cfaa');}}
-  for(let y=aligned(townWalkBounds.top+90,chunkY,210);y<Math.min(townWalkBounds.bottom-30,chunkBottom);y+=210){r(x+53,y,9,17,'#3d535a');for(let i=0;i<4;i++)r(x+54,y+2+i*4,7,1,'#85958e');}
+ for(const section of townMainRoads.vertical){const {x,from,to}=section;if(x+110<chunkX||x-110>chunkEnd||to<chunkY||from>chunkBottom)continue;road(x-70,from,140,to-from,true,true,'v');for(let y=aligned(from+16,chunkY,30);y<Math.min(to-16,chunkBottom);y+=30){r(x-2,y,4,13,'#c9bd8d');r(x-1,y,1,11,'#e4d5a5');for(const xx of [x-70,x+63]){r(xx,y,7,1,'#6e8279');r(xx,y+1,7,1,'#d8cfaa');}}
+  for(let y=aligned(from+90,chunkY,210);y<Math.min(to-30,chunkBottom);y+=210){r(x+53,y,9,17,'#3d535a');for(let i=0;i<4;i++)r(x+54,y+2+i*4,7,1,'#85958e');}
  }
- for(const y of townRoads.horizontal){if(y+70<chunkY||y-70>chunkBottom)continue;const roadStart=64,roadEnd=townSize.width-256,start=Math.max(roadStart,chunkX),end=Math.min(roadEnd,chunkEnd);if(end>start)road(roadStart,y-70,roadEnd-roadStart,140,true,true,'h');const firstMarker=80+Math.ceil((Math.max(80,chunkX-13)-80)/30)*30;for(let x=firstMarker;x<Math.min(roadEnd,chunkEnd);x+=30){r(x,y-2,13,4,'#c9bd8d');r(x,y-2,12,1,'#e2d3a2');for(const yy of [y-70,y+63])r(x,yy,1,7,'#70847d');}}
- for(const x of townRoads.vertical)for(const y of townRoads.horizontal){if(y+64<chunkY||y-64>chunkBottom)continue;r(x-53,y-53,106,106,'#667377');for(let i=0;i<5;i++){r(x-44+i*19,y-64,9,30,'#d8d1b0');r(x-44+i*19,y+34,9,30,'#d8d1b0');}p.ellipse(x+29,y+20,9,7,'#485e64');p.ellipse(x+29,y+19,8,6,'#879188');for(let i=0;i<3;i++)r(x+24,y+16+i*3,10,1,'#596f70');}
+ for(const section of townMainRoads.horizontal){const {y,from:roadStart,to:roadEnd}=section;if(y+70<chunkY||y-70>chunkBottom)continue;const start=Math.max(roadStart,chunkX),end=Math.min(roadEnd,chunkEnd);if(end>start)road(roadStart,y-70,roadEnd-roadStart,140,true,true,'h');const firstMarker=80+Math.ceil((Math.max(80,chunkX-13)-80)/30)*30;for(let x=firstMarker;x<Math.min(roadEnd,chunkEnd);x+=30){r(x,y-2,13,4,'#c9bd8d');r(x,y-2,12,1,'#e2d3a2');for(const yy of [y-70,y+63])r(x,yy,1,7,'#70847d');}}
+ for(const v of townMainRoads.vertical)for(const h of townMainRoads.horizontal){const {x}=v,{y}=h;if(y<v.from||y>v.to||x<h.from||x>h.to||y+64<chunkY||y-64>chunkBottom)continue;r(x-53,y-53,106,106,'#667377');for(let i=0;i<5;i++){r(x-44+i*19,y-64,9,30,'#d8d1b0');r(x-44+i*19,y+34,9,30,'#d8d1b0');}p.ellipse(x+29,y+20,9,7,'#485e64');p.ellipse(x+29,y+19,8,6,'#879188');for(let i=0;i<3;i++)r(x+24,y+16+i*3,10,1,'#596f70');}
  for(const v of townVenues){
-  const cx=townEntranceX(v),cy=v.entrance==='south'?v.y+v.h+30:v.y-30,roadY=townRoads.horizontal.reduce((a,b)=>Math.abs(b-cy)<Math.abs(a-cy)?b:a);
+  const cx=townEntranceX(v),cy=v.entrance==='south'?v.y+v.h+30:v.y-30,roadY=townMainRoads.horizontal.filter(r=>cx>=r.from&&cx<=r.to).reduce((a,b)=>Math.abs(b.y-cy)<Math.abs(a.y-cy)?b:a).y;
   const pad=v.kind==='outdoor'?{x:v.x-8,y:v.y-8,w:v.w+16,h:v.h+28}:{x:v.x-24,y:v.y-65,w:v.w+48,h:v.h+118};
   const top=Math.min(cy,roadY),bottom=Math.max(cy,roadY);
   const visible=(x:number,y:number,w:number,h:number)=>x+w>chunkX&&x<chunkEnd&&y+h>chunkY&&y<chunkBottom;
@@ -212,7 +212,7 @@ export function drawTown(scene:Phaser.Scene,progress:WorldProgress){
   scene.add.text(townEntranceX(venue),venue.y+venue.h-18,label,{fontFamily:'sans-serif',fontSize:'11px',fontStyle:'bold',color:'#fff3cc',backgroundColor:'#263e50ee',padding:{x:5,y:2},stroke:'#142736',strokeThickness:2})
    .setOrigin(.5).setResolution(2).setDepth(venue.y+venue.h+30).setName(`town-entry-hint-${venue.id}`);
  }
- for(const x of townRoads.vertical)for(let y=townWalkBounds.top+64;y<townWalkBounds.bottom-70;y+=180){if(townVenues.some(v=>Math.abs(x-v.x)<v.w+100&&y>v.y-80&&y<v.y+v.h+70))continue;tree(scene,x-100,y);lamp(scene,x+88,y+50);}
+ for(const {x,from,to} of townMainRoads.vertical)for(let y=from+64;y<to-70;y+=180){if(townVenues.some(v=>Math.abs(x-v.x)<v.w+100&&y>v.y-80&&y<v.y+v.h+70))continue;tree(scene,x-100,y);lamp(scene,x+88,y+50);}
  for(let i=0;i<28;i++){const x=110+(i*487)%(townSize.width-220),y=210+(i*337)%(townSize.height-420);if([...townVenues].some(v=>x>v.x-90&&x<v.x+v.w+90&&y>v.y-100&&y<v.y+v.h+90)||townRoads.vertical.some(v=>Math.abs(v-x)<100)||townRoads.horizontal.some(v=>Math.abs(v-y)<100))continue;tree(scene,x,y);tree(scene,x+28,y+34);}
  for(const y of [townWalkBounds.top+8,townWalkBounds.bottom-16])for(let x=100;x<townSize.width-300;x+=125)tree(scene,x,y);
  for(const [x,y] of [[2140,1995],[2660,1995],[2140,2220],[2660,2220],[720,780],[3900,2530]]){if(townVenues.some(v=>x>v.x-90&&x<v.x+v.w+90&&y>v.y-120&&y<v.y+v.h+90))continue;tree(scene,x,y);const key='park-bench-16';if(!scene.textures.exists(key)){const t=scene.textures.createCanvas(key,112,64)!;t.context.scale(2,2);const p=new SceneryPen(t.context);p.shadow(3,14,45,10);for(const xx of [8,40]){p.rect(xx,14,3,15,'#3d5357');p.rect(xx+1,15,1,12,'#8fa19a');}p.rect(3,3,46,9,'#5c5d4a');for(let row=0;row<3;row++){p.gradient(4,3+row*3,44,2,'#c3ab7b','#947f5e');}p.gradient(3,14,46,7,'#d2b589','#8d7a5c');p.material(4,14,44,7,'wood',12);for(const xx of [8,41])p.rect(xx,15,1,1,'#e9d4a7');t.refresh();t.setFilter(Phaser.Textures.FilterMode.NEAREST);}scene.add.image(x+20,y+1,key).setOrigin(0).setDisplaySize(56,32).setDepth(y+24);}

@@ -1,7 +1,7 @@
 import {isPracticeCourse} from '../data/practiceCourses';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {generateTownVenues,generateTownBlocks,townVenues,townSize,townWalkBounds,townSpawn,townBlocks,townRoads,townPlaza} from '../data/world';
+import {generateTownVenues,generateTownBlocks,townVenues,townSize,townWalkBounds,townSpawn,townBlocks,townRoads,townMainRoads,townPlaza,townEntranceX} from '../data/world';
 import {hiddenMechanicSpot} from '../data/hiddenMechanic';
 import {townPaths} from '../data/townPaths';
 import {canStand,canTravel,findWalkingPath} from './navigation';
@@ -52,7 +52,14 @@ test('住宅の脇道は通行できる幅で幹線道路へつながり、職�
  const lanes=townPaths.filter(p=>p.kind==='lane');assert.ok(lanes.length>townBlocks.length);
  for(const path of townPaths){for(let i=1;i<path.points.length;i++)assert.ok(canTravel(path.points[i-1],path.points[i],obstacles,townWalkBounds));}
  for(const path of lanes)assert.ok(townRoads.horizontal.includes(path.points.at(-1)!.y));
- assert.ok(townPaths.some(p=>p.kind==='spur'&&p.points.at(-1)?.x===hiddenMechanicSpot.x&&p.points.at(-1)?.y===hiddenMechanicSpot.y+32));
+ assert.ok(townPaths.some(p=>p.kind==='hidden'&&p.points.at(-1)?.x===hiddenMechanicSpot.x&&p.points.at(-1)?.y===hiddenMechanicSpot.y+32));
+});
+test('途切れた幹線は交差点で一つにつながり、各施設の入口と接続する',()=>{
+ const roads=[...townMainRoads.vertical.map(r=>({x1:r.x,y1:r.from,x2:r.x,y2:r.to})),...townMainRoads.horizontal.map(r=>({x1:r.from,y1:r.y,x2:r.to,y2:r.y}))];
+ const intersects=(a:typeof roads[number],b:typeof roads[number])=>Math.max(Math.min(a.x1,a.x2),Math.min(b.x1,b.x2))<=Math.min(Math.max(a.x1,a.x2),Math.max(b.x1,b.x2))&&Math.max(Math.min(a.y1,a.y2),Math.min(b.y1,b.y2))<=Math.min(Math.max(a.y1,a.y2),Math.max(b.y1,b.y2));
+ const seen=new Set([0]),queue=[0];for(let i=0;i<queue.length;i++)roads.forEach((r,j)=>{if(!seen.has(j)&&intersects(roads[queue[i]],r)){seen.add(j);queue.push(j);}});
+ assert.equal(seen.size,roads.length);
+ for(const v of townVenues){const x=townEntranceX(v),y=v.y+v.h+30;const available=townMainRoads.horizontal.filter(r=>x>=r.from&&x<=r.to);assert.ok(available.length,v.id);const road=available.reduce((a,b)=>Math.abs(a.y-y)<Math.abs(b.y-y)?a:b);assert.ok(canTravel(townSpawn(v.id as Parameters<typeof townSpawn>[0]),{x,y:road.y},[...townVenues,...townBlocks].map(b=>({x:b.x,y:b.y,width:b.w,height:b.h})),townWalkBounds),v.id);}
 });
 test('広域マップの帰還地点と遠方への道は、店内の歩行制限と独立している',()=>{
  const obstacles=[...townVenues,...townBlocks].map(v=>({x:v.x,y:v.y,width:v.w,height:v.h}));
