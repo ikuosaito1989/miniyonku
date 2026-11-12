@@ -59,6 +59,9 @@ export class ShopScene extends Phaser.Scene {
   private gesture=createShopGesture();
   private screenPoint(pointer:Phaser.Input.Pointer){return {x:pointer.x*this.scale.displaySize.width/this.scale.width,y:pointer.y*this.scale.displaySize.height/this.scale.height};}
   private pendingTarget:ShopTarget|null=null;
+  private routeWorker:Worker|null=null;
+  private routeRequest=0;
+  private routePending=false;
   private player!: Phaser.GameObjects.Container;
   private keys!: Record<string, Phaser.Input.Keyboard.Key>;
   private solids:Phaser.Geom.Rectangle[]=[];
@@ -237,12 +240,13 @@ export class ShopScene extends Phaser.Scene {
         if(!target)return;
         this.inputVersion=touchInput.version();
         this.pendingTarget=target;
-        this.route=findWalkingPath({x:this.player.x,y:this.player.y},this.approach(target),this.solids,this.bounds);
+        this.navigateAsync(this.approach(target));
       };
       window.addEventListener('town-navigate',navigate);
       this.events.once(Phaser.Scenes.Events.SHUTDOWN,()=>window.removeEventListener('town-navigate',navigate));
     }
 
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN,()=>{this.cancelRoute();this.routeWorker?.terminate();this.routeWorker=null;});
     this.inputVersion=touchInput.version();
     let tap:{x:number;y:number;time:number;id:number}|null=null;
     this.input.on('pointerdown',(pointer:Phaser.Input.Pointer)=>{
@@ -266,7 +270,7 @@ export class ShopScene extends Phaser.Scene {
         if(action==='setting'){this.cancelRoute();this.pendingTarget=null;if(this.isLibrary)useGame.getState().openLibrary();else useGame.getState().openSetting();}
         else if(action==='tap'&&target){
           this.pendingTarget=target;
-          this.route=findWalkingPath({x:this.player.x,y:this.player.y},this.approach(target),this.solids,this.bounds);
+          this.navigateAsync(this.approach(target));
         }
         return;
       }
@@ -275,9 +279,7 @@ export class ShopScene extends Phaser.Scene {
       const target=this.cameras.main.getWorldPoint(pointer.x,pointer.y);
       const board=this.getTargets().find(t=>(t.kind==='time-records'||this.isLibrary)&&target.x>=t.x&&target.x<=t.x+t.w&&target.y>=t.y&&target.y<=t.y+t.h);
       this.pendingTarget=board??null;
-      this.route=findWalkingPath({x:this.player.x,y:this.player.y},board?this.approach(board):target,this.solids,this.bounds);
-      const end=this.route.at(-1);
-      this.destination.setVisible(!!end);if(end)this.destination.setPosition(end.x,end.y);
+      this.navigateAsync(board?this.approach(board):target,true);
     });
     this.input.on('pointerupoutside',()=>this.resetKeys());
     this.input.on('gameout',()=>this.resetKeys());
@@ -301,7 +303,37 @@ export class ShopScene extends Phaser.Scene {
     }
     window.dispatchEvent(new CustomEvent('miniyonku:world-ready',{detail:{location:useGame.getState().location}}));
   }
-  private cancelRoute(){this.route=[];this.destination?.setVisible(false);}
+  private navigateAsync(target:Point,showDestination=false){
+    this.cancelRoute();
+    const id=++this.routeRequest,start={x:this.player.x,y:this.player.y},bounds={...this.bounds};
+    const obstacles=this.solids.map(r=>({x:r.x,y:r.y,width:r.width,height:r.height}));
+    this.routePending=true;window.dispatchEvent(new CustomEvent('town-route-status',{detail:true}));
+    const complete=(route:Point[])=>{
+      if(id!==this.routeRequest||!this.routePending)return;
+      if(useGame.getState().overlay!==null){this.pendingTarget=null;this.cancelRoute();return;}
+      if(this.solids.length!==obstacles.length||this.solids.some((r,i)=>r.x!==obstacles[i].x||r.y!==obstacles[i].y||r.width!==obstacles[i].width||r.height!==obstacles[i].height)){
+        this.pendingTarget=null;this.cancelRoute();return;
+      }
+      this.routePending=false;this.route=route;
+      if(showDestination){const end=route.at(-1);this.destination.setVisible(!!end);if(end)this.destination.setPosition(end.x,end.y);}
+      window.dispatchEvent(new CustomEvent('town-route-status',{detail:false}));
+    };
+    const fallback=()=>setTimeout(()=>{if(id===this.routeRequest&&this.routePending)complete(findWalkingPath(start,target,obstacles,bounds));},0);
+    try{
+      this.routeWorker?.terminate();
+      this.routeWorker=new Worker(new URL('./navigation.worker.ts',import.meta.url),{type:'module'});
+      this.routeWorker.onmessage=(event:MessageEvent<{id:number;route?:Point[];error?:boolean}>)=>{
+        if(event.data.id!==id)return;
+        if(event.data.error)fallback();else complete(event.data.route??[]);
+      };
+      this.routeWorker.onerror=()=>fallback();
+      this.routeWorker.postMessage({id,start,target,obstacles,bounds});
+    }catch{fallback();}
+  }
+  private cancelRoute(){
+    this.routeRequest++;this.route=[];this.destination?.setVisible(false);
+    if(this.routePending){this.routePending=false;window.dispatchEvent(new CustomEvent('town-route-status',{detail:false}));}
+  }
   private resetKeys(){this.input.keyboard?.resetKeys();touchInput.reset();this.cancelRoute();this.gesture.reset();this.pendingTarget=null;}
   private fitCamera(){
     this.gesture.reset();this.pendingTarget=null;this.cancelRoute();
@@ -558,7 +590,7 @@ export class ShopScene extends Phaser.Scene {
     const nearby=target?.label??'';
     if(useGame.getState().nearby!==nearby)useGame.setState({nearby});
     if(this.pendingTarget&&(this.isTown?Math.hypot(this.player.x-this.approach(this.pendingTarget).x,this.player.y-this.approach(this.pendingTarget).y)<22:distance(this.pendingTarget)<62)){const selected=this.pendingTarget;this.pendingTarget=null;this.cancelRoute();this.interactWith(selected);}
-    else if(this.pendingTarget&&!this.route.length)this.pendingTarget=null;
+    else if(this.pendingTarget&&!this.route.length&&!this.routePending)this.pendingTarget=null;
     if(action&&target)this.interactWith(target);
   }
   private getTargets():ShopTarget[]{

@@ -11,8 +11,23 @@ export function ShopWorld(){
     let game:Phaser.Game|null=null,observer:ResizeObserver|null=null,resizeHandler:(()=>void)|null=null;
     let secondFrame=0;
     let sceneReady=false;
+    let activeLocation=useGame.getState().location;
+    let transitionQueued=false;
     const syncLoop=()=>{
-      if(!game||!sceneReady)return;
+      if(!game)return;
+      const nextLocation=useGame.getState().location;
+      if(nextLocation!==activeLocation&&!transitionQueued){
+        transitionQueued=true;
+        queueMicrotask(()=>{
+          transitionQueued=false;
+          if(!game||!game.isBooted)return;
+          const destination=useGame.getState().location;
+          if(destination===activeLocation)return;
+          activeLocation=destination;sceneReady=false;game.loop.wake();
+          game.scene.stop('shop');game.scene.remove('shop');game.scene.add('shop',ShopScene,true);
+        });
+      }
+      if(!sceneReady)return;
       const overlay=useGame.getState().overlay;
       if(overlay==='race'||overlay==='setting'||overlay==='settings')game.loop.sleep();
       else game.loop.wake();
@@ -38,7 +53,7 @@ export function ShopWorld(){
         window.addEventListener('resize',resize);
       });
     });
-    return ()=>{unsubscribe();window.removeEventListener('miniyonku:world-ready',worldReady);game?.loop.wake();cancelAnimationFrame(firstFrame);cancelAnimationFrame(secondFrame);observer?.disconnect();if(resizeHandler)window.removeEventListener('resize',resizeHandler);game?.destroy(true);};
-  },[location]);
+    return ()=>{unsubscribe();window.removeEventListener('miniyonku:world-ready',worldReady);cancelAnimationFrame(firstFrame);cancelAnimationFrame(secondFrame);observer?.disconnect();if(resizeHandler)window.removeEventListener('resize',resizeHandler);const previousGame=game;game=null;previousGame?.loop.wake();previousGame?.destroy(true);};
+  },[]);
   return <div className="world" ref={host} role="img" aria-label={`${location==='library'?'緑川町立図書館':location==='town'?'緑川町':location==='stadium-7'?'天頂決戦・ゼニス・クラウン':location==='stadium-10'?'緑川グランプリ決勝会場':location==='stadium-9'?'星空公式レース会場':location==='stadium-5'?'若葉公式レース会場':currentShop(location).name}。${location==='library'?'指を滑らせて移動、本棚をタップして読む。閲覧台か床のダブルタップで全パーツ図鑑、下の出口から街へ戻れます。':'スマホは指を滑らせて移動、人物・入口・設備をタップで調査、床をダブルタップでセッティング。'}`}/>;
 }

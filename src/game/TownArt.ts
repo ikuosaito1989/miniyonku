@@ -146,8 +146,27 @@ function ground(c:CanvasRenderingContext2D,chunkX=0,chunkWidth=townSize.width,ch
  }
 }
 export function drawTown(scene:Phaser.Scene,progress:WorldProgress){
- // Chunk size limits canvas allocations; half-resolution raster cuts the full-world terrain buffer by 75%.
- for(let y=0;y<townSize.height;y+=2048)for(let x=0;x<townSize.width;x+=2048){const width=Math.min(2048,townSize.width-x),height=Math.min(2048,townSize.height-y),key=`midorikawa-ground-20-${x}-${y}`,rasterWidth=Math.ceil(width*townGroundRasterScale),rasterHeight=Math.ceil(height*townGroundRasterScale);if(!scene.textures.exists(key)){const texture=scene.textures.createCanvas(key,rasterWidth,rasterHeight)!;texture.context.scale(townGroundRasterScale,townGroundRasterScale);texture.context.translate(-x,-y);ground(texture.context,x,width,y,height);texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.NEAREST);}scene.add.image(x,y,key).setOrigin(0).setDisplaySize(width,height).setDepth(-100);}
+ // Keep nearby terrain tiles ready while releasing tiles far outside the camera.
+ const active=new Map<string,Phaser.GameObjects.Image>();
+ const updateGround=()=>{
+  const view=scene.cameras.main.worldView,margin=1024;
+  for(let y=0;y<townSize.height;y+=2048)for(let x=0;x<townSize.width;x+=2048){
+   const width=Math.min(2048,townSize.width-x),height=Math.min(2048,townSize.height-y),key=`midorikawa-ground-20-${x}-${y}`;
+   const near=x<view.right+margin&&x+width>view.left-margin&&y<view.bottom+margin&&y+height>view.top-margin;
+   if(near&&!active.has(key)){
+    if(!scene.textures.exists(key)){
+     const texture=scene.textures.createCanvas(key,Math.ceil(width*townGroundRasterScale),Math.ceil(height*townGroundRasterScale))!;
+     texture.context.scale(townGroundRasterScale,townGroundRasterScale);texture.context.translate(-x,-y);ground(texture.context,x,width,y,height);texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+    }
+    active.set(key,scene.add.image(x,y,key).setOrigin(0).setDisplaySize(width,height).setDepth(-100));
+   }else if(!near&&active.has(key)){
+    active.get(key)!.destroy();active.delete(key);scene.textures.remove(key);
+   }
+  }
+ };
+ scene.events.on(Phaser.Scenes.Events.POST_UPDATE,updateGround);
+ scene.events.once(Phaser.Scenes.Events.SHUTDOWN,()=>{scene.events.off(Phaser.Scenes.Events.POST_UPDATE,updateGround);for(const [key,image] of active){image.destroy();scene.textures.remove(key);}active.clear();});
+ updateGround();
 
  const hasCivicArtwork=scene.textures.exists('civic-arena-occlusion')&&scene.textures.exists('civic-shop-occlusion');
  if(hasCivicArtwork)drawCivicBuildings(scene,progress);
