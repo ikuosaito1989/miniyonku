@@ -22,17 +22,17 @@ function drawTownArena(scene:Phaser.Scene,venue:typeof townVenues[number],progre
  scene.add.text(venue.x+venue.w*.42,artY+artHeight*.62,name,{
   fontFamily:'sans-serif',fontSize:`${fontSize}px`,fontStyle:'bold',color:'#fff2cf',
   align:'center',stroke:'#17345f',strokeThickness:1,lineSpacing:-2,
- }).setOrigin(.5).setResolution(2).setDepth(depth+2).setName(`town-arena-sign-${venue.id}`);
+ }).setOrigin(.5).setRotation(Math.atan2(artHeight*.041,venue.w*.4)).setResolution(2).setDepth(depth+2).setName(`town-arena-sign-${venue.id}`);
 }
 function drawShopSign(scene:Phaser.Scene,venue:typeof townVenues[number]){
  if(!venue.shopId)return;
  const name=modelShops[venue.shopId].name,characters=[...name].length;
  // Fit even the long specialty-shop names between the crossed-wrench emblems.
  const fontSize=Math.max(8,Math.min(16,Math.floor(venue.w*.27/characters)));
- scene.add.text(venue.x+venue.w*.419,venue.y+venue.h*.505,name,{
+ scene.add.text(venue.x+venue.w*.419,venue.y+venue.h*.515,name,{
   fontFamily:'sans-serif',fontSize:`${fontSize}px`,fontStyle:'bold',color:'#fff2cf',
   align:'center',stroke:'#18345f',strokeThickness:1,
- }).setOrigin(.5).setResolution(2).setDepth(venue.y+venue.h+14).setName(`town-shop-sign-${venue.shopId}`);
+ }).setOrigin(.5).setRotation(Math.atan2(venue.h*.034,venue.w*.508)).setResolution(2).setDepth(venue.y+venue.h+14).setName(`town-shop-sign-${venue.shopId}`);
 }
 function drawCivicBuildings(scene:Phaser.Scene,progress:WorldProgress){
  const stadium=townVenues.find(v=>v.id==='stadium-5')!,shop=townVenues.find(v=>v.id==='komorebi')!,library=townVenues.find(v=>v.id==='library')!;
@@ -57,13 +57,24 @@ function drawModelShopSprite(scene:Phaser.Scene,venue:typeof townVenues[number],
 }
 
 /** Terrain is baked once. Pixel clusters follow a fixed, upper-left daylight. */
-function ground(c:CanvasRenderingContext2D,chunkX=0,chunkWidth=townSize.width,chunkY=0,chunkHeight=townSize.height){
+export function paintTownGround(c:CanvasRenderingContext2D,chunkX=0,chunkWidth=townSize.width,chunkY=0,chunkHeight=townSize.height){
  const p=new SceneryPen(c),r=p.rect.bind(p),noise=artNoise;
  const chunkEnd=chunkX+chunkWidth,chunkBottom=chunkY+chunkHeight;
+ // Keep every repeating mark anchored to world coordinates across terrain chunks.
+ const aligned=(start:number,minimum:number,step:number)=>start+Math.max(0,Math.floor((minimum-start)/step))*step;
+ // Subtract every road separately: intersections must remain excluded even where roads overlap.
+ const clipRoads=(x:number,y:number,w:number,h:number)=>{
+  const exclude=(rx:number,ry:number,rw:number,rh:number)=>{
+   if(x+w<=rx||x>=rx+rw||y+h<=ry||y>=ry+rh)return;
+   c.beginPath();c.rect(0,0,townSize.width,townSize.height);c.rect(rx,ry,rw,rh);c.clip('evenodd');
+  };
+  for(const roadX of townRoads.vertical)exclude(roadX-70,townWalkBounds.top-24,140,townWalkBounds.bottom-townWalkBounds.top+48);
+  for(const roadY of townRoads.horizontal)exclude(64,roadY-70,townSize.width-320,140);
+ };
  // All paved lots share a world-aligned grid, including building aprons.
  const paving=(x:number,y:number,w:number,h:number)=>{
   if(w<=0||h<=0)return;
-  c.save();c.beginPath();c.rect(x,y,w,h);c.clip();r(x,y,w,h,'#aaa58f');
+  c.save();c.beginPath();c.rect(x,y,w,h);c.clip();clipRoads(x,y,w,h);r(x,y,w,h,'#aaa58f');
   const top=Math.max(y,chunkY),bottom=Math.min(y+h,chunkBottom),left=Math.max(x,chunkX),right=Math.min(x+w,chunkEnd);
   for(let yy=Math.floor(top/26)*26;yy<bottom;yy+=26){const offset=(Math.floor(yy/26)%2)*20;
    for(let xx=Math.floor((left-offset)/40)*40+offset;xx<right;xx+=40){const n=noise(xx,yy,701),tone=['#c0baa1','#b6b39c','#cbc2a8','#acae9a'][n%4];r(xx,yy,36,22,tone);r(xx,yy,36,2,'#ded5b8');r(xx,yy+20,36,2,'#888e7c');if(n%4===0)r(xx+8,yy+8,6,1,'#e5dabc');}
@@ -85,24 +96,26 @@ function ground(c:CanvasRenderingContext2D,chunkX=0,chunkWidth=townSize.width,ch
   for(let x=shore+25;x<townSize.width;x+=37){const n=noise(x,y);r(x+n%11,y+4,14+n%9,1,'#8ec3be');r(x+7,y+6,8,1,'#2e677f');if(n%9===0){r(shore-13,y-3,2,10,'#486c53');r(shore-10,y-5,1,11,'#9aa372');}}
  }
  const sidewalk=(x:number,y:number,w:number,h:number,orientation:'v'|'h')=>{
+  c.save();clipRoads(x,y,w+4,h+5);
   r(x+3,y+4,w,h,'#263b3b22');r(x,y,w,h,'#8d9a83');
   const cell=orientation==='v'?18:20;
-  if(orientation==='v')for(let yy=Math.max(y+2,chunkY),row=0;yy<Math.min(y+h-2,chunkBottom);yy+=cell,row++)for(let xx=x+2;xx<x+w-2;xx+=16){const n=noise(xx,yy,221),ww=Math.min(14,x+w-xx-2);r(xx+1,yy+1,ww,cell-2,n%3?'#c2bea2':'#b8b79e');r(xx+1,yy+1,ww,1,'#e0d8bb');r(xx+1,yy+cell-2,ww,1,'#899482');if((row+Math.floor(xx/16))%2===0)r(xx+Math.floor(ww/2),yy+1,1,cell-3,'#89948266');}
-  else for(let yy=Math.max(y+2,chunkY);yy<Math.min(y+h-2,chunkBottom);yy+=12)for(let xx=x+2;xx<x+w-2;xx+=cell){const n=noise(xx,yy,221),ww=Math.min(cell-2,x+w-xx-2);r(xx+1,yy+1,ww,9,n%3?'#c2bea2':'#b8b79e');r(xx+1,yy+1,ww,1,'#e0d8bb');r(xx+1,yy+9,ww,1,'#899482');if((Math.floor(yy/12)+Math.floor(xx/cell))%2===0)r(xx+1+Math.floor(ww/2),yy+1,1,8,'#89948266');}
+  if(orientation==='v')for(let yy=aligned(y+2,chunkY,cell),row=Math.floor((yy-y-2)/cell);yy<Math.min(y+h-2,chunkBottom);yy+=cell,row++)for(let xx=x+2;xx<x+w-2;xx+=16){const n=noise(xx,yy,221),ww=Math.min(14,x+w-xx-2);r(xx+1,yy+1,ww,cell-2,n%3?'#c2bea2':'#b8b79e');r(xx+1,yy+1,ww,1,'#e0d8bb');r(xx+1,yy+cell-2,ww,1,'#899482');if((row+Math.floor(xx/16))%2===0)r(xx+Math.floor(ww/2),yy+1,1,cell-3,'#89948266');}
+  else for(let yy=aligned(y+2,chunkY,12);yy<Math.min(y+h-2,chunkBottom);yy+=12)for(let xx=aligned(66,Math.max(x+2,chunkX),cell);xx<Math.min(x+w-2,chunkEnd);xx+=cell){const n=noise(xx,yy,221),ww=Math.min(cell-2,x+w-xx-2);r(xx+1,yy+1,ww,9,n%3?'#c2bea2':'#b8b79e');r(xx+1,yy+1,ww,1,'#e0d8bb');r(xx+1,yy+9,ww,1,'#899482');if((Math.floor(yy/12)+Math.floor(xx/cell))%2===0)r(xx+1+Math.floor(ww/2),yy+1,1,8,'#89948266');}
   if(orientation==='v'){r(x,y,w,2,'#d6caa5');r(x+w-2,y,2,h,'#747e70');}
   else{r(x,y,w,2,'#d6caa5');r(x,y+h-2,w,2,'#747e70');}
+  c.restore();
  };
  const road=(x:number,y:number,w:number,h:number,trimLeft=true,trimRight=true,orientation:'v'|'h'='v')=>{
   if(orientation==='v'){sidewalk(x-42,y,36,h,'v');sidewalk(x+w+6,y,36,h,'v');}
   else{sidewalk(x,y-42,w,36,'h');sidewalk(x,y+h+6,w,36,'h');}
   r(x+4,y+5,w,h,'#34474a55');r(x,y,w,h,'#414f55');r(x+3,y+3,w-6,h-6,'#59666a');r(x+7,y+7,w-14,h-14,'#626f72');
-  for(let yy=Math.max(y+10,chunkY);yy<Math.min(y+h-7,chunkBottom);yy+=11)for(let xx=x+10;xx<x+w-7;xx+=13){const n=noise(xx,yy);if(n%3===0)r(xx,yy,2,1,n%2?'#85918a':'#51646a');}
+  for(let yy=aligned(y+10,chunkY,11);yy<Math.min(y+h-7,chunkBottom);yy+=11)for(let xx=aligned((orientation==='h'?64:x)+10,chunkX,13);xx<Math.min(x+w-7,chunkEnd);xx+=13){const n=noise(xx,yy);if(n%3===0)r(xx,yy,2,1,n%2?'#85918a':'#51646a');}
   // Irregular aggregate, tire polishing and repairs replace the flat asphalt fill.
-  for(let yy=Math.max(y+8,chunkY);yy<Math.min(y+h-8,chunkBottom);yy+=7)for(let xx=x+8;xx<x+w-8;xx+=9){const n=noise(xx,yy,91);if(n%4===0)continue;const px=xx+n%6,py=yy+(n>>>5)%5;r(px,py,1+n%3,1,n%3===0?'#abb0a336':n%2?'#34494e36':'#d4c9a21b');if(n%11===0)r(px+1,py+1,2,1,'#253b4230');}
-  for(let yy=Math.max(y+20,chunkY);yy<Math.min(y+h-16,chunkBottom);yy+=67)for(let xx=x+26;xx<x+w-24;xx+=83){const n=noise(xx,yy,193);if(n%5)continue;const px=xx+n%13,py=yy+(n>>>6)%14;r(px,py,9+n%14,1,'#283f4626');r(px+2,py+1,5+n%9,1,'#aab0a11b');}
+  for(let yy=aligned(y+8,chunkY,7);yy<Math.min(y+h-8,chunkBottom);yy+=7)for(let xx=aligned((orientation==='h'?64:x)+8,chunkX,9);xx<Math.min(x+w-8,chunkEnd);xx+=9){const n=noise(xx,yy,91);if(n%4===0)continue;const px=xx+n%6,py=yy+(n>>>5)%5;r(px,py,1+n%3,1,n%3===0?'#abb0a336':n%2?'#34494e36':'#d4c9a21b');if(n%11===0)r(px+1,py+1,2,1,'#253b4230');}
+  for(let yy=aligned(y+20,chunkY,67);yy<Math.min(y+h-16,chunkBottom);yy+=67)for(let xx=aligned((orientation==='h'?64:x)+26,chunkX,83);xx<Math.min(x+w-24,chunkEnd);xx+=83){const n=noise(xx,yy,193);if(n%5)continue;const px=xx+n%13,py=yy+(n>>>6)%14;r(px,py,9+n%14,1,'#283f4626');r(px+2,py+1,5+n%9,1,'#aab0a11b');}
   // Raised curbs, chipped paint and paired gutter lines give every road a profile.
   r(x,y,w,3,'#c8c2a0');r(x,y+3,w,1,'#e0d3a5');if(trimLeft)r(x,y+4,2,h-8,'#c8c39c');if(trimRight)r(x+w-3,y+4,3,h-8,'#8e9988');r(x,y+h-4,w,1,'#a7a995');r(x,y+h-3,w,3,'#77877f');
-  for(let yy=Math.max(y+12,chunkY);yy<Math.min(y+h-12,chunkBottom);yy+=22){if(trimLeft){r(x+5,yy,2,8,'#30454b');r(x+6,yy+1,1,6,'#abb1a3');}if(trimRight){r(x+w-8,yy,2,8,'#30454b');r(x+w-7,yy+1,1,6,'#abb1a3');}}
+  for(let yy=aligned(y+12,chunkY,22);yy<Math.min(y+h-12,chunkBottom);yy+=22){if(trimLeft){r(x+5,yy,2,8,'#30454b');r(x+6,yy+1,1,6,'#abb1a3');}if(trimRight){r(x+w-8,yy,2,8,'#30454b');r(x+w-7,yy+1,1,6,'#abb1a3');}}
  };
  // Paved urban blocks fill the gaps between streets; green is reserved for the central park.
  for(let row=0;row<townRoads.horizontal.length-1;row++)for(let col=0;col<townRoads.vertical.length-1;col++){
@@ -116,10 +129,10 @@ function ground(c:CanvasRenderingContext2D,chunkX=0,chunkWidth=townSize.width,ch
    for(let i=0;i<22;i++){const n=noise(i,22,703),wx=px+8+n%122,wy=py+8+(n>>>5)%70;r(wx,wy,5+n%10,1,'#bbd3bd');}
   }else paving(x0,y0,x1-x0,y1-y0);
  }
- for(const x of townRoads.vertical){if(x+110<chunkX||x-110>chunkEnd||townWalkBounds.bottom<chunkY||townWalkBounds.top>chunkBottom)continue;road(x-70,townWalkBounds.top-24,140,townWalkBounds.bottom-townWalkBounds.top+48,true,true,'v');for(let y=Math.max(townWalkBounds.top-8,chunkY);y<Math.min(townWalkBounds.bottom,chunkBottom);y+=30){r(x-2,y,4,13,'#c9bd8d');r(x-1,y,1,11,'#e4d5a5');for(const xx of [x-70,x+63]){r(xx,y,7,1,'#6e8279');r(xx,y+1,7,1,'#d8cfaa');}}
-  for(let y=Math.max(townWalkBounds.top+90,chunkY);y<Math.min(townWalkBounds.bottom-30,chunkBottom);y+=210){r(x+53,y,9,17,'#3d535a');for(let i=0;i<4;i++)r(x+54,y+2+i*4,7,1,'#85958e');}
+ for(const x of townRoads.vertical){if(x+110<chunkX||x-110>chunkEnd||townWalkBounds.bottom<chunkY||townWalkBounds.top>chunkBottom)continue;road(x-70,townWalkBounds.top-24,140,townWalkBounds.bottom-townWalkBounds.top+48,true,true,'v');for(let y=aligned(townWalkBounds.top-8,chunkY,30);y<Math.min(townWalkBounds.bottom,chunkBottom);y+=30){r(x-2,y,4,13,'#c9bd8d');r(x-1,y,1,11,'#e4d5a5');for(const xx of [x-70,x+63]){r(xx,y,7,1,'#6e8279');r(xx,y+1,7,1,'#d8cfaa');}}
+  for(let y=aligned(townWalkBounds.top+90,chunkY,210);y<Math.min(townWalkBounds.bottom-30,chunkBottom);y+=210){r(x+53,y,9,17,'#3d535a');for(let i=0;i<4;i++)r(x+54,y+2+i*4,7,1,'#85958e');}
  }
- for(const y of townRoads.horizontal){if(y+70<chunkY||y-70>chunkBottom)continue;const roadStart=64,roadEnd=townSize.width-256,start=Math.max(roadStart,chunkX),end=Math.min(roadEnd,chunkEnd);if(end>start)road(start,y-70,end-start,140,start===roadStart,end===roadEnd,'h');const firstMarker=80+Math.ceil((Math.max(80,chunkX-13)-80)/30)*30;for(let x=firstMarker;x<Math.min(roadEnd,chunkEnd);x+=30){r(x,y-2,13,4,'#c9bd8d');r(x,y-2,12,1,'#e2d3a2');for(const yy of [y-70,y+63])r(x,yy,1,7,'#70847d');}}
+ for(const y of townRoads.horizontal){if(y+70<chunkY||y-70>chunkBottom)continue;const roadStart=64,roadEnd=townSize.width-256,start=Math.max(roadStart,chunkX),end=Math.min(roadEnd,chunkEnd);if(end>start)road(roadStart,y-70,roadEnd-roadStart,140,true,true,'h');const firstMarker=80+Math.ceil((Math.max(80,chunkX-13)-80)/30)*30;for(let x=firstMarker;x<Math.min(roadEnd,chunkEnd);x+=30){r(x,y-2,13,4,'#c9bd8d');r(x,y-2,12,1,'#e2d3a2');for(const yy of [y-70,y+63])r(x,yy,1,7,'#70847d');}}
  for(const x of townRoads.vertical)for(const y of townRoads.horizontal){if(y+64<chunkY||y-64>chunkBottom)continue;r(x-53,y-53,106,106,'#667377');for(let i=0;i<5;i++){r(x-44+i*19,y-64,9,30,'#d8d1b0');r(x-44+i*19,y+34,9,30,'#d8d1b0');}p.ellipse(x+29,y+20,9,7,'#485e64');p.ellipse(x+29,y+19,8,6,'#879188');for(let i=0;i<3;i++)r(x+24,y+16+i*3,10,1,'#596f70');}
  for(const v of townVenues){
   if(v.x+v.w+80<chunkX||v.x-80>chunkEnd||v.y+v.h+120<chunkY||v.y-100>chunkBottom)continue;
@@ -156,7 +169,7 @@ export function drawTown(scene:Phaser.Scene,progress:WorldProgress){
    if(near&&!active.has(key)){
     if(!scene.textures.exists(key)){
      const texture=scene.textures.createCanvas(key,Math.ceil(width*townGroundRasterScale),Math.ceil(height*townGroundRasterScale))!;
-     texture.context.scale(townGroundRasterScale,townGroundRasterScale);texture.context.translate(-x,-y);ground(texture.context,x,width,y,height);texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+     texture.context.scale(townGroundRasterScale,townGroundRasterScale);texture.context.translate(-x,-y);paintTownGround(texture.context,x,width,y,height);texture.refresh();texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
     }
     active.set(key,scene.add.image(x,y,key).setOrigin(0).setDisplaySize(width,height).setDepth(-100));
    }else if(!near&&active.has(key)){
