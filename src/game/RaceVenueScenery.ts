@@ -4,6 +4,14 @@ import {StaticInstances,fixtureMaterial} from './StaticInstances';
 import {contactShadowTexture} from './contactShadow';
 import type {SpectatorRig,StaffRig} from './VenueAnimation';
 
+// Sub-pixel features can be omitted in the full-course view. Keep the larger
+// silhouettes, course, gate and labels visible in every camera mode.
+const overviewDetailNames=new Set(['venue-spectator-eyes','venue-spectator-hands','venue-spectator-shoes','venue-cap-visors','venue-chair-backs','pit-toolbox-handles','pit-tools','pit-miniature-canopies','pit-spare-tires','pit-staff-working-hands','pit-staff-resting-hands','pit-staff-held-tools','venue-post-feet','venue-light-lenses']);
+export function setVenueOverviewDetail(venue:THREE.Group,overview:boolean,pixelsPerUnit:number){
+ const show=!overview||pixelsPerUnit*.08>=2;
+ for(const child of venue.children)if(overviewDetailNames.has(child.name))child.visible=show;
+}
+
 function venueFloorTexture(official:boolean){
  const size=128,data=new Uint8Array(size*size*4);
  for(let y=0;y<size;y++)for(let x=0;x<size;x++){

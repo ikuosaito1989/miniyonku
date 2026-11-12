@@ -3,10 +3,18 @@ import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import {getCircuitTrack,type CircuitId} from '../data/circuit';
 import {raceCourseDetails} from './RaceCourseDetails';
-import {raceVenueScenery} from './RaceVenueScenery';
+import {raceVenueScenery,setVenueOverviewDetail} from './RaceVenueScenery';
 import {disposeSceneResources} from './modelFinish';
 
 const tracks:CircuitId[]=['leaf','sun','grove','trail','grandprix','forge','zenith','park-jump'];
+test('全景で小さな会場の細部だけを省き、拡大・追従では復元する',()=>{
+ const venue=raceVenueScenery(getCircuitTrack('zenith'),true);
+ const eyes=venue.getObjectByName('venue-spectator-eyes')!,seats=venue.getObjectByName('venue-chair-seats')!;
+ setVenueOverviewDetail(venue,true,10);assert.equal(eyes.visible,false);assert.equal(seats.visible,true);
+ setVenueOverviewDetail(venue,false,10);assert.equal(eyes.visible,true);
+ setVenueOverviewDetail(venue,true,30);assert.equal(eyes.visible,true);
+ disposeSceneResources(venue);
+});
 test('全種のコースに下部構造と固定具を有限な座標で追加し、描画を少数のバッチへ収める',()=>{
  for(const id of tracks){
   const track=getCircuitTrack(id),before=[0,.2,.5,.8].map(f=>track.sampleLanePath(track.circuitLength*f,2)),model=raceCourseDetails(track);

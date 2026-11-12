@@ -10,7 +10,7 @@ import {RaceShadows} from './RaceShadows';
 import {disposeSceneResources} from './modelFinish';
 import {withOnlineRivals} from './onlineRace';
 import type {OnlineRecord} from './onlineRecords';
-import {raceVenueScenery} from './RaceVenueScenery';
+import {raceVenueScenery,setVenueOverviewDetail} from './RaceVenueScenery';
 import {animateRunningGear,handlingProfile,handlingPose} from './raceMotion';
 import { studioEnvironment } from './studioEnvironment';
 import { lappedPose, lappedPresentationSeconds } from './lappedPresentation';
@@ -50,6 +50,7 @@ export class TrialRenderer {
   private introFrame:ReturnType<typeof overviewFrame>|null=null;
   private overviewFrame:ReturnType<typeof overviewFrame>|null=null;
   private overviewMarkers=new Map<string,THREE.Sprite>();
+  private venue!:THREE.Group;
   private cameraZoom=defaultRaceZoom;
   private displayedCameraZoom=defaultRaceZoom;
   private activeCamera:THREE.Camera=this.camera;
@@ -83,7 +84,7 @@ export class TrialRenderer {
     grass.repeat.set(groundSize/1.5,groundSize/1.5);
     const ground=new THREE.Mesh(new THREE.PlaneGeometry(groundSize,groundSize),new THREE.MeshStandardMaterial((challenge==='official'||challenge==='time-attack')?{color:0x7c928f,roughness:.86,envMapIntensity:.35}:{map:grass,roughness:1,envMapIntensity:.25}));
     ground.rotation.x=-Math.PI/2;ground.position.y=-0.025;ground.receiveShadow=true;this.scene.add(ground);
-    const venue=raceVenueScenery(this.track,(challenge==='official'||challenge==='time-attack'),isPracticeCourse(circuitId));this.scene.add(venue);this.venueAnimation=new VenueAnimation(venue);
+    const venue=this.venue=raceVenueScenery(this.track,(challenge==='official'||challenge==='time-attack'),isPracticeCourse(circuitId));this.scene.add(venue);this.venueAnimation=new VenueAnimation(venue);
     this.buildTrack();this.scene.add(raceCourseDetails(this.track));this.buildObstacles();this.buildStart();this.venueAnimation.attachMarshal(this.scene);
     for(const racer of this.state.racers){
       const car=buildRaceMachineModel(racer);car.userData.handling=handlingProfile(racer.equipment,racer.performance);this.cars.set(racer.id,car);this.scene.add(car);this.shadows.add(racer.id,car);
@@ -341,6 +342,7 @@ export class TrialRenderer {
     const overview=this.cameraZoom===0&&this.intro.stage==='done';
     const frame=this.overviewFrame??(this.overviewFrame=overviewViewportFrame(this.track,this.host.clientWidth,this.host.clientHeight));
     const pixelsPerUnit=this.host.clientHeight/frame.height;
+    setVenueOverviewDetail(this.venue,overview,pixelsPerUnit);
     const carScale=overview?overviewCarScale(this.host.clientHeight,frame.height,(this.circuitId==='forge'||this.circuitId==='zenith'||isMasterCourse(this.circuitId))?64:8):1;
     const labelBoxes:Array<{x:number;y:number}>=[];
     for(const racer of this.state.racers){
