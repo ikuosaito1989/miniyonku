@@ -15,7 +15,7 @@ export function buildPartProduct(part:Part){
  const screw=(x:number,y:number,z:number,parent:THREE.Object3D=group)=>{cylinder(x,y,z,.044,.024,steel,'y',parent);box(x,y+.013,z,.055,.004,.008,black,parent);box(x,y+.013,z,.008,.004,.055,black,parent);};
  const label=(text:string,w:number,h:number,bg:string,fg='#e9f2f7')=>{
   if(typeof document==='undefined')return new THREE.Mesh(new THREE.PlaneGeometry(w,h),mat(bg,.2,.45));
-  const canvas=document.createElement('canvas');canvas.width=768;canvas.height=256;const ctx=canvas.getContext('2d')!;ctx.fillStyle=bg;ctx.fillRect(0,0,768,256);ctx.fillStyle=fg;ctx.font='bold 85px sans-serif';ctx.textAlign='center';ctx.fillText(text,384,116);ctx.font='25px monospace';ctx.fillText('TINY DRIVE / PERFORMANCE PARTS',384,174);ctx.fillRect(70,208,628,3);
+  const canvas=document.createElement('canvas');canvas.width=768;canvas.height=256;const ctx=canvas.getContext('2d')!;ctx.fillStyle=bg;ctx.fillRect(0,0,768,256);ctx.fillStyle=fg;ctx.font='bold 85px sans-serif';ctx.textAlign='center';ctx.fillText(text,384,116);ctx.font='25px monospace';ctx.fillText('SEIRAN / PERFORMANCE PARTS',384,174);ctx.fillRect(70,208,628,3);
   const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;
   return new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshStandardMaterial({map:texture,metalness:.2,roughness:.45}));
  };

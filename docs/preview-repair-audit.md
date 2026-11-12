@@ -7,7 +7,7 @@
 | 外と模型店の倍率を模型店に合わせる | ShopScene の両方で shopWorldZoom を共用。縦横・DPR・リサイズ時の人物表示サイズを確認 |
 | 狭い外を削除し、初期化後も広い街へ | ShopWorld / ShopScene と data/world の 3200×2400 の街。persistence の初期化先は town |
 | PCキー操作の案内を削除 | タイトル・会話・レースの表示から除去。キーボード操作自体は維持 |
-| タイトルのこもれび表記を削除 | TitleScreen から除去済み。ブラウザのページタイトルも TINY DRIVE のみに統一 |
+| タイトルのこもれび表記を削除 | TitleScreen から除去済み。ブラウザのページタイトルもゲーム名に統一 |
 | 電池・モーターの状態をカード上部へ | PartCondition の長いバー1本と状態テキスト。右ランプは実際の装着時だけ赤 |
 | レースの3つの表示とマシン表示倍率 | raceCameraViews の拡大・全体・マシンを見る。machineViewScale は1.5 |
 | 火野 岳を男キャラにし、レジェンドの顔を描き分け | legendPortraits / LegendPeopleArt / dialoguePeople。展示と会話は同じ専用画像 |
