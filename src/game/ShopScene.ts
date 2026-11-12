@@ -320,8 +320,7 @@ export class ShopScene extends Phaser.Scene {
     };
     const fallback=()=>setTimeout(()=>{if(id===this.routeRequest&&this.routePending)complete(findWalkingPath(start,target,obstacles,bounds));},0);
     try{
-      this.routeWorker?.terminate();
-      this.routeWorker=new Worker(new URL('./navigation.worker.ts',import.meta.url),{type:'module'});
+      this.routeWorker??=new Worker(new URL('./navigation.worker.ts',import.meta.url),{type:'module'});
       this.routeWorker.onmessage=(event:MessageEvent<{id:number;route?:Point[];error?:boolean}>)=>{
         if(event.data.id!==id)return;
         if(event.data.error)fallback();else complete(event.data.route??[]);
@@ -332,6 +331,8 @@ export class ShopScene extends Phaser.Scene {
   }
   private cancelRoute(){
     this.routeRequest++;this.route=[];this.destination?.setVisible(false);
+    // A worker executing synchronous pathfinding cannot process a cancel message.
+    if(this.routePending){this.routeWorker?.terminate();this.routeWorker=null;}
     if(this.routePending){this.routePending=false;window.dispatchEvent(new CustomEvent('town-route-status',{detail:false}));}
   }
   private resetKeys(){this.input.keyboard?.resetKeys();touchInput.reset();this.cancelRoute();this.gesture.reset();this.pendingTarget=null;}
@@ -566,10 +567,16 @@ export class ShopScene extends Phaser.Scene {
     // Sweep in small increments so a delayed frame cannot tunnel through people or walls.
     let moving=false;
     const count=Math.max(1,Math.ceil(travel/2));
+    // The small sweep steps all lie within this rectangle. Filter once per
+    // frame, while keeping the exact intersection check at every step.
+    const endX=Phaser.Math.Clamp(this.player.x+dx*travel,this.bounds.left,this.bounds.right);
+    const endY=Phaser.Math.Clamp(this.player.y+dy*travel,this.bounds.top,this.bounds.bottom);
+    const sweep=new Phaser.Geom.Rectangle(Math.min(this.player.x,endX)-11,Math.min(this.player.y,endY)-3,Math.abs(endX-this.player.x)+22,Math.abs(endY-this.player.y)+17);
+    const nearbySolids=this.solids.filter(r=>Phaser.Geom.Intersects.RectangleToRectangle(sweep,r));
     for(let i=0;i<count;i++){
       const x=Phaser.Math.Clamp(this.player.x+dx*travel/count,this.bounds.left,this.bounds.right),y=Phaser.Math.Clamp(this.player.y+dy*travel/count,this.bounds.top,this.bounds.bottom);
       const feet=new Phaser.Geom.Rectangle(x-11,y-3,22,17);
-      if(this.solids.some(r=>Phaser.Geom.Intersects.RectangleToRectangle(feet,r)))break;
+      if(nearbySolids.some(r=>Phaser.Geom.Intersects.RectangleToRectangle(feet,r)))break;
       if(x!==this.player.x||y!==this.player.y){this.player.setPosition(x,y);moving=true;}
     }
     if(moving)this.walkTime+=delta;else this.walkTime=0;
