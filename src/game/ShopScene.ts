@@ -50,7 +50,7 @@ import { mirroredShop, shopLayout } from '../data/shopLayout';
 import { challenger, challengerSpot } from '../data/challenger';
 import { challengerDrawing, doctorDrawing } from './PeopleArt';
 import { createPersonTexture } from './PersonTexture';
-import { drawTown } from './TownArt';
+import { drawTown, townHouseArt } from './TownArt';
 import { drawShopDetails } from './WorldDetailArt';
 import { getCircuitTrack,type CircuitId } from '../data/circuit';
 
@@ -105,6 +105,7 @@ export class ShopScene extends Phaser.Scene {
   constructor(){ super('shop'); }
   preload(){
     const location=useGame.getState().location;
+    if(location==='town')townHouseArt.forEach((url,i)=>{const key=`town-house-art-${i}`;if(url&&!this.textures.exists(key))this.load.image(key,url);});
     const characters=new Set<CharacterSpriteId>(['player','owner','rival','guide','mechanic']);
     const addName=(name:string)=>{const id=npcAppearanceId(name);if(id)characters.add(id);};
     if(location==='town'){

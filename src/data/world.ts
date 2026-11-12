@@ -94,9 +94,26 @@ export function generateTownVenues(seed=19890421):TownVenue[]{
   return [...civic,...masters];
 }
 export const townVenues=generateTownVenues();
-// Only enterable destinations and race facilities occupy the town map.
-// Non-enterable residential set dressing is intentionally omitted.
-export const townBlocks:Array<{x:number;y:number;w:number;h:number}>=[];
+export interface TownBlock {x:number;y:number;w:number;h:number;style:number}
+/** Small buildings leave broad access around venues and continuous main streets. */
+export function generateTownBlocks():TownBlock[]{
+ const blocks:TownBlock[]=[];
+ const overlaps=(a:{x:number;y:number;w:number;h:number},b:{x:number;y:number;w:number;h:number},gap:number)=>a.x<b.x+b.w+gap&&a.x+a.w+gap>b.x&&a.y<b.y+b.h+gap&&a.y+a.h+gap>b.y;
+ for(let row=0;row<townRoads.horizontal.length-1;row++)for(let col=0;col<townRoads.vertical.length-1;col++){
+  if(row===2&&col===2)continue;
+  const left=townRoads.vertical[col],top=townRoads.horizontal[row];
+  // Offset rows and vary density so the secondary lanes do not form a grid.
+  for(let slot=0;slot<4;slot++){
+   if((row*7+col*3+slot)%5===0)continue;
+   const style=(row*11+col*7+slot)%6,w=120+(style%3)*12,h=92+(style%2)*12;
+   const candidate={x:left+150+(slot%2)*255+((row+col)%2)*24,y:top+140+Math.floor(slot/2)*225+((col+slot)%2)*20,w,h,style};
+   if(overlaps(candidate,townPlaza,80)||townVenues.some(v=>overlaps(candidate,v,v.kind==='stadium'?190:150))||blocks.some(b=>overlaps(candidate,b,70)))continue;
+   blocks.push(candidate);
+  }
+ }
+ return blocks;
+}
+export const townBlocks=generateTownBlocks();
 export const shopExit={x:440,y:575,w:80,h:7};
 /** Door position follows the artwork; outdoor tracks and the library use their center. */
 export function townEntranceX(venue:TownVenue){return venue.x+venue.w*(venue.kind==='shop'?.60:venue.kind==='stadium'?.42:.5);}

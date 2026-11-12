@@ -12,10 +12,10 @@ import {canStand,canTravel,findWalkingPath} from './navigation';
 const buildings=[...townVenues,...townBlocks].map(v=>({x:v.x,y:v.y,width:v.w,height:v.h}));
 const obstacles=[...buildings,...[...townPeople,hiddenMechanicSpot].map(crowdFootprint),...townCrowdObstacles];
 
-test('観客と住民を再現可能に配置し、全コースに観客を配置し、入れない住宅を描かない',()=>{
+test('観客と住民を再現可能に配置し、全コースに観客を配置する',()=>{
  assert.deepEqual(generateTownCrowd(),townCrowd);
  assert.ok(townCrowd.length>=120);
- assert.equal(townBlocks.length,0);
+ assert.ok(townBlocks.length>10);
  assert.ok(new Set(townCrowd.map(p=>p.appearance)).size>=12);
  for(const v of townVenues.filter(v=>v.kind==='outdoor'))assert.ok(townCrowd.filter(p=>p.venue===v.id&&p.activity==='watch').length>=2,v.id);
  for(const p of townCrowd){assert.ok(canStand(p,buildings,townWalkBounds),p.id);assert.ok(canStand(p,[...townPeople,hiddenMechanicSpot,...townCrowd.filter(q=>q!==p)].map(crowdFootprint),townWalkBounds),p.id+' spacing');}

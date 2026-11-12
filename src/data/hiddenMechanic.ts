@@ -1,7 +1,7 @@
-import {townVenues,townWalkBounds,townSpawn} from './world';
+import {townVenues,townBlocks,townWalkBounds,townSpawn} from './world';
 import {townPeople} from './townPeople';
 import {canStand,findWalkingPath} from '../game/navigation';
-const buildings=townVenues.map(v=>({x:v.x,y:v.y,width:v.w,height:v.h}));
+const buildings=[...townVenues,...townBlocks].map(v=>({x:v.x,y:v.y,width:v.w,height:v.h}));
 const start=townSpawn('komorebi');
 const candidates=[] as Array<{x:number;y:number}>;
 for(let y=townWalkBounds.top+72;y<townWalkBounds.bottom-72;y+=112){

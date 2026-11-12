@@ -6,6 +6,8 @@ import {artNoise,paintPixelTree} from './PixelArtMaterials';
 import {SceneryPen} from './SceneryCanvas';
 /** One raster pixel covers two map units; repeating vector detail avoids full-size terrain canvases. */
 export const townGroundRasterScale=.5;
+const houseImages=import.meta.glob<string>('../assets/scenery/houses/*.webp',{eager:true,query:'?url',import:'default'});
+export const townHouseArt=Array.from({length:6},(_,i)=>houseImages[`../assets/scenery/houses/house-${i}.webp`]);
 const townShopVariants:Partial<Record<ShopId,'amber'|'green'|'violet'|'red'|'teal'>>={hinata:'amber',wakaba:'green',yuunagi:'violet',akatsuki:'red',torque:'red',velocity:'teal',terrain:'green',endurance:'teal',atelier:'violet'};
 const townArenaVariants:Record<string,'occlusion'|'teal'|'violet'|'amber'|'zenith'>={'stadium-5':'teal','stadium-7':'zenith','stadium-9':'violet','stadium-10':'amber'};
 function drawTownArena(scene:Phaser.Scene,venue:typeof townVenues[number],progress:WorldProgress){
@@ -120,13 +122,20 @@ export function paintTownGround(c:CanvasRenderingContext2D,chunkX=0,chunkWidth=t
  for(let row=0;row<townRoads.horizontal.length-1;row++)for(let col=0;col<townRoads.vertical.length-1;col++){
   const x0=townRoads.vertical[col]+82,y0=townRoads.horizontal[row]+82,x1=townRoads.vertical[col+1]-82,y1=townRoads.horizontal[row+1]-82;
   if(x1<chunkX||x0>chunkEnd||y1<chunkY||y0>chunkBottom)continue;
-  const park=col===2&&row===2;r(x0,y0,x1-x0,y1-y0,park?'#718c66':'#aaa58f');
+  const park=col===2&&row===2;r(x0,y0,x1-x0,y1-y0,park?'#718c66':['#879b77','#91a183','#83977a'][(row+col)%3]);
   if(park){
    r(x0+18,y0+18,x1-x0-36,y1-y0-36,'#68845f');r(x0+18,y0+18,x1-x0-36,22,'#c3b99a');r(x0+18,y1-40,x1-x0-36,22,'#c3b99a');r(x0+18,y0+18,22,y1-y0-36,'#c3b99a');r(x1-40,y0+18,22,y1-y0-36,'#c3b99a');
    for(let yy=y0+48;yy<y1-48;yy+=32)for(let xx=x0+48;xx<x1-48;xx+=38){const n=noise(xx,yy,701);r(xx,yy,28,20,n%2?'#64815d':'#718e65');r(xx+4,yy+5,17,2,n%3?'#83a071':'#bdc17e');if(n%5===0)r(xx+13,yy+2,3,4,'#d7b684');}
    const px=x0+244,py=y0+128;r(px-12,py-10,170,116,'#847c63');r(px-7,py-6,160,108,'#c0b48e');r(px,py,146,96,'#4a7c85');r(px+5,py+4,136,84,'#69a0a0');
    for(let i=0;i<22;i++){const n=noise(i,22,703),wx=px+8+n%122,wy=py+8+(n>>>5)%70;r(wx,wy,5+n%10,1,'#bbd3bd');}
-  }else paving(x0,y0,x1-x0,y1-y0);
+  }else{
+   // Smaller paths cross green plots and turn into short spurs, while the
+   // arterial streets and the individual venue approaches stay continuous.
+   const laneX=x0+210+(row%2)*90,laneY=y0+140+(col%2)*90;
+   paving(laneX,y0,52,y1-y0);
+   paving(x0,laneY,x1-x0,52);
+   if((row+col)%2===0)paving(laneX+52,laneY+150,Math.min(180,x1-laneX-52),42);
+  }
  }
  for(const x of townRoads.vertical){if(x+110<chunkX||x-110>chunkEnd||townWalkBounds.bottom<chunkY||townWalkBounds.top>chunkBottom)continue;road(x-70,townWalkBounds.top-24,140,townWalkBounds.bottom-townWalkBounds.top+48,true,true,'v');for(let y=aligned(townWalkBounds.top-8,chunkY,30);y<Math.min(townWalkBounds.bottom,chunkBottom);y+=30){r(x-2,y,4,13,'#c9bd8d');r(x-1,y,1,11,'#e4d5a5');for(const xx of [x-70,x+63]){r(xx,y,7,1,'#6e8279');r(xx,y+1,7,1,'#d8cfaa');}}
   for(let y=aligned(townWalkBounds.top+90,chunkY,210);y<Math.min(townWalkBounds.bottom-30,chunkBottom);y+=210){r(x+53,y,9,17,'#3d535a');for(let i=0;i<4;i++)r(x+54,y+2+i*4,7,1,'#85958e');}
@@ -181,6 +190,13 @@ export function drawTown(scene:Phaser.Scene,progress:WorldProgress){
  updateGround();
 
  const hasCivicArtwork=scene.textures.exists('civic-arena-occlusion')&&scene.textures.exists('civic-shop-occlusion');
+ for(const block of townBlocks){
+  const key=`town-house-art-${block.style}`;
+  if(!scene.textures.exists(key))continue;
+  scene.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
+  const size=block.w+64;
+  scene.add.image(block.x-32,block.y+block.h+14-size,key).setOrigin(0).setDisplaySize(size,size).setDepth(block.y+block.h);
+ }
  if(hasCivicArtwork)drawCivicBuildings(scene,progress);
  const hasLibraryArtwork=scene.textures.exists('civic-library');
  for(const venue of townVenues){

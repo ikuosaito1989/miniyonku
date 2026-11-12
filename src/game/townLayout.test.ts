@@ -1,7 +1,8 @@
 import {isPracticeCourse} from '../data/practiceCourses';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {generateTownVenues,townVenues,townSize,townWalkBounds,townSpawn,townBlocks,townRoads,townPlaza} from '../data/world';
+import {generateTownVenues,generateTownBlocks,townVenues,townSize,townWalkBounds,townSpawn,townBlocks,townRoads,townPlaza} from '../data/world';
+import {hiddenMechanicSpot} from '../data/hiddenMechanic';
 import {canStand,canTravel,findWalkingPath} from './navigation';
 test('広域マップは店と大型会場を重複なく散らし、乱数の種ごとに配置を再現する',()=>{
  assert.ok(townSize.width*townSize.height>=960*640*12);
@@ -32,8 +33,18 @@ test('街区は舗装道路でつながり、店舗の玄関は次の通りに�
  }
  const offsets=townVenues.filter(v=>v.kind==='shop').map(v=>v.y-townRoads.horizontal.filter(y=>y<v.y).at(-1)!);
  assert.ok(new Set(offsets).size>5,'shops occupy varied positions within their blocks');
- assert.equal(townBlocks.length,0,'non-enterable buildings are not drawn or placed as obstacles');
+ assert.ok(townBlocks.length>10,'residential buildings add varied blocks');
  assert.equal(townVenues.some(v=>v.x<townPlaza.x+townPlaza.w&&v.x+v.w>townPlaza.x&&v.y<townPlaza.y+townPlaza.h&&v.y+v.h>townPlaza.y),false);
+});
+test('住宅は再生成しても同じ位置で、主要道路と施設の余白を保つ',()=>{
+ assert.deepEqual(generateTownBlocks(),townBlocks);
+ assert.deepEqual(hiddenMechanicSpot,{x:6744,y:4424});
+ assert.ok(new Set(townBlocks.map(b=>b.style)).size>=4);
+ for(const block of townBlocks){
+  for(const x of townRoads.vertical)assert.ok(block.x>=x+100||block.x+block.w<=x-100);
+  for(const y of townRoads.horizontal)assert.ok(block.y>=y+100||block.y+block.h<=y-100);
+  for(const v of townVenues){const gap=v.kind==='stadium'?190:150;assert.ok(block.x>=v.x+v.w+gap||block.x+block.w+gap<=v.x||block.y>=v.y+v.h+gap||block.y+block.h+gap<=v.y,v.id);}
+ }
 });
 test('広域マップの帰還地点と遠方への道は、店内の歩行制限と独立している',()=>{
  const obstacles=[...townVenues,...townBlocks].map(v=>({x:v.x,y:v.y,width:v.w,height:v.h}));
