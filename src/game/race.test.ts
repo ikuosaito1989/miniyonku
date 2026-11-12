@@ -155,7 +155,7 @@ test('オンラインCPUは保存装備・開始時の消耗をそのまま使�
  const record={circuitId:'leaf' as const,rulesVersion:raceRulesVersion,time:30,equipment:{...starterEquipment},condition,displayName:'記録プレイヤー',playerId:'a'.repeat(64),recordedAt:new Date(0).toISOString()};
  const base=createRaceState(starterEquipment,123,undefined,'time-attack');
  const race=withOnlineRivals(base,[record]);
- assert.equal(race.racers.length,5);assert.equal(new Set(race.racers.map(r=>r.lane)).size,5);assert.equal(race.racers.filter(r=>r.name.endsWith('（モブ）')).length,3);
+ assert.equal(race.racers.length,5);assert.equal(new Set(race.racers.map(r=>r.lane)).size,5);assert.equal(race.racers.filter(r=>r.name.endsWith('（CPU）')).length,3);
  assert.deepEqual(race.racers[1].performance,machinePerformance(starterEquipment,condition));
  assert.equal(race.racers[1].name,record.displayName);assert.equal(race.racers[1].driving.status,'ready');
  assert.equal(base.racers.length,1);assert.notEqual(race.racers[1].equipment,record.equipment);
@@ -189,7 +189,7 @@ test('オンラインは上位4名をタイム順で選び、足りないとき�
   const input=records.slice(0,count),expected=topOnlineOpponents(input),base=createRaceState(starterEquipment,123,undefined,'time-attack','park-sand'),race=withOnlineRivals(base,input);
   assert.equal(race.racers.length,5);assert.equal(new Set(race.racers.map(r=>r.id)).size,5);assert.equal(new Set(race.racers.map(r=>r.lane)).size,5);
   assert.deepEqual(race.racers.filter(r=>r.id.startsWith('online-')).map(r=>r.name),expected.map(r=>r.displayName));
-  assert.equal(race.racers.filter(r=>r.name.endsWith('（モブ）')).length,4-expected.length);
+  assert.equal(race.racers.filter(r=>r.name.endsWith('（CPU）')).length,4-expected.length);
   assert.equal(input[0].time,50);assert.equal(base.racers.length,1);
  }
 });

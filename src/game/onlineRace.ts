@@ -9,7 +9,7 @@ export const topOnlineOpponents=(records:OnlineRecord[])=>[...records].sort((a,b
 export function withOnlineRivals(race:RaceState,records:OnlineRecord[]):RaceState {
  const colors=[0x4a9ce0,0x8bc864,0xc881db,0xe1ae4b];
  const ranked=topOnlineOpponents(records);
- const fillers=withMobRivals(race).racers.filter(r=>r.id!=='player').slice(0,4-ranked.length).map(r=>({...r,name:`${r.name}（モブ）`}));
+ const fillers=withMobRivals(race).racers.filter(r=>r.id!=='player').slice(0,4-ranked.length).map(r=>({...r,name:`${r.name}（CPU）`}));
  return {...race,racers:[race.racers.find(r=>r.id==='player')!,...ranked.map((record,index)=>({
   id:`online-${record.playerId}`,name:record.displayName,lane:index,color:colors[index],equipment:{...record.equipment},
   performance:machinePerformance(record.equipment,record.condition),driving:createDrivingState(),

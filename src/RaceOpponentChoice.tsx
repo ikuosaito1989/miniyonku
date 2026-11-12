@@ -21,8 +21,8 @@ export function RaceOpponentChoice(){
   <details className="opponent-course-intro"><summary>レース開始前のコース紹介を見る</summary><section><h3>{intro.name}</h3><p>{intro.feature}</p><p>{intro.advice}</p><small>{intro.surface} ／ {intro.lanes}レーン・{intro.laps}周 ／ 全長 約{intro.distance}m</small></section></details>
   <div className="opponent-options">
    <section><h3>CPU</h3><p>4台のCPUと走ります。{regularRewards?'賞金・熟練度・消耗は通常どおりです。':'賞金・熟練度・ストーリー進行は変わらず、消耗と記録だけ反映します。'}</p><button className="primary" onClick={()=>startMob(id)}>CPUと走る</button></section>
-   <section><h3>オンライン記録保持者</h3><p>オンライン上位4名の装備・走行開始時の状態を使うCPUと、自分を含めた5台で走ります。記録が4名未満なら不足分はモブが参加します。賞金・熟練度・ストーリー進行は変わらず、消耗と記録だけ反映します。</p>
-    {loading?<SeiranLoading label="オンライン記録を読み込んでいます" compact inline/>:<div role="status">{error||(!records.length?'まだオンライン記録がありません。':`記録保持者${records.length}名${records.length<4?`＋モブ${4-records.length}名`:''}と走ります。`)}</div>}
+   <section><h3>オンライン記録保持者</h3><p>オンライン上位4名の装備・走行開始時の状態を使うCPUと、自分を含めた5台で走ります。記録が4名未満なら不足分はCPUが参加します。賞金・熟練度・ストーリー進行は変わらず、消耗と記録だけ反映します。</p>
+    {loading?<SeiranLoading label="オンライン記録を読み込んでいます" compact inline/>:<div role="status">{error||(!records.length?'まだオンライン記録がありません。':`記録保持者${records.length}名${records.length<4?`＋CPU${4-records.length}名`:''}と走ります。`)}</div>}
     {!!records.length&&<ol>{records.map(record=><li key={record.playerId}><span>{record.displayName}</span><strong>{formatRecordTime(record.time,id==='trail')}</strong></li>)}</ol>}
     <button className="primary" disabled={loading||!!error||!records.length} onClick={()=>startRecords(id,records)}>記録保持者と走る</button>
     {(error||!loading&&!records.length)&&<button disabled={loading} onClick={()=>setRevision(n=>n+1)}>記録を再取得</button>}

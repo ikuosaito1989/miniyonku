@@ -34,7 +34,7 @@ export function OnlineTimeBoard({circuitId}:{circuitId:CircuitId}){
   </li>)}</ol>
   {records.map(record=><details key={record.playerId}><summary>{record.displayName}の装備・開始時の状態</summary><dl>{Object.entries(equipmentSlots).map(([slot,meta])=><div key={slot}><dt>{meta.label}</dt><dd>{parts.find(p=>p.id===record.equipment[slot as keyof typeof equipmentSlots])?.name}</dd></div>)}</dl><p>モーター使用 {record.condition.motorSeconds.toFixed(1)}秒 / 電池使用 {record.condition.batterySeconds.toFixed(1)}秒</p></details>)}
   <button disabled={!unlocked||loading||!records.length} onClick={()=>start(circuitId,topOnlineOpponents(records))}>オンライン上位4名と走る（自分を含め5台）</button>
-  {!!records.length&&records.length<4&&<p>現在の記録保持者は{records.length}名です。不足分の{4-records.length}台はモブが参加します。</p>}
+  {!!records.length&&records.length<4&&<p>現在の記録保持者は{records.length}名です。不足分の{4-records.length}台はCPUが参加します。</p>}
   {unlocked?<button onClick={()=>choose(circuitId)}>対戦相手を選ぶ（CPU／記録保持者）</button>:<p className="record-opponent-lock">このストーリーコースの記録保持者対戦は、天頂決戦をクリアすると解放されます。</p>}
   <p>装備と開始時の状態を使ったCPUとの対戦です。記録時の走行を再現するゴーストではなく、発進やレーンによってタイムが変わります。賞金・大会進行への影響はありません。完走すると通常どおり電池・モーターを消耗します。</p>
  </section>;
