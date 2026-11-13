@@ -57,7 +57,7 @@ export const townMainRoads={
   {x:2000,from:1100,to:3140},{x:2800,from:72,to:4560},
   {x:3600,from:420,to:2460},{x:3600,from:3140,to:4480},{x:4400,from:72,to:4560},
  ],
- horizontal:townRoads.horizontal.map(y=>({y,from:64,to:[420,3140,3820].includes(y)?5200:townSize.width-256})),
+ horizontal:townRoads.horizontal.map(y=>({y,from:64,to:[420,3140].includes(y)?5200:townSize.width-256})),
 };
 export const townPlaza={x:2050,y:1840,w:700,h:500};
 export function generateTownVenues(seed=19890421):TownVenue[]{
@@ -74,6 +74,9 @@ export function generateTownVenues(seed=19890421):TownVenue[]{
   for(let i=lots.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[lots[i],lots[j]]=[lots[j],lots[i]];}
   // Keep the special outdoor course fixed; buildings use seeded positions inside their blocks.
   const special=fixed.find(v=>v.id==='park-waves')!;
+  const zenithTemplate=fixed.find(v=>v.id==='stadium-7')!;
+  const zenith:TownVenue={...zenithTemplate,x:5350,y:2680,w:1050,h:750,entrance:'south'};
+  // Preserve the existing random sequence and positions of every other venue.
   const occupied:TownVenue[]=[{...special,x:510,y:4140,w:420,h:250,entrance:'south'}];
   const masters=masterCourseIds.map((id,i):TownVenue=>({id,name:masterCourses[id].name,kind:'outdoor',stage:8,x:i%2===0?4740:5600,y:i<2?1165:1845,w:760,h:450,entrance:'south',color:masterCourses[id].color,shopId:id}));
   const reservedAreas=[{x:townPlaza.x,y:townPlaza.y,w:townPlaza.w,h:townPlaza.h},...masters.map(v=>({x:v.x-40,y:v.y-40,w:v.w+80,h:v.h+80}))];
@@ -100,7 +103,7 @@ export function generateTownVenues(seed=19890421):TownVenue[]{
     throw new Error(`No clear town lot for ${v.id}`);
   });
   // Four master courses share a road-connected campus beyond the neighborhood.
-  return [...civic,...masters];
+  return [...civic.map(v=>v.id==='stadium-7'?zenith:v),...masters];
 }
 export const townVenues=generateTownVenues();
 export interface TownBlock {x:number;y:number;w:number;h:number;style:number}
@@ -125,7 +128,7 @@ export function generateTownBlocks():TownBlock[]{
 export const townBlocks=generateTownBlocks();
 export const shopExit={x:440,y:575,w:80,h:7};
 /** Door position follows the artwork; outdoor tracks and the library use their center. */
-export function townEntranceX(venue:TownVenue){return venue.x+venue.w*(venue.kind==='shop'?.60:venue.kind==='stadium'?.42:.5);}
+export function townEntranceX(venue:TownVenue){return venue.x+venue.w*(venue.kind==='shop'?.60:venue.id==='stadium-7'?.5:venue.kind==='stadium'?.42:.5);}
 export function townSpawn(shop:ShopId|'library'|'stadium-5'|'stadium-9'|'stadium-10'|'stadium-7'){const venue=townVenues.find(v=>v.id===shop)!;return {x:townEntranceX(venue),y:venue.entrance==='north'?venue.y-42:venue.y+venue.h+42};}
 export function venueMessage(venue:TownVenue){
   if(isMasterCourse(venue.id))return '天頂決戦クリア後に開放される巨大マスターコース。'+modelShops[venue.id].welcome;

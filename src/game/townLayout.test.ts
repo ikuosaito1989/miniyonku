@@ -17,8 +17,8 @@ test('広域マップは店と大型会場を重複なく散らし、乱数の�
    for(const other of list)if(v!==other)assert.ok(v.x+v.w+40<other.x||other.x+other.w+40<v.x||v.y+v.h+80<other.y||other.y+other.h+80<v.y);
    if(v.kind==='stadium'&&!isPracticeCourse(v.id))assert.ok(v.w>=250&&v.h>=250);
    if(v.kind!=='outdoor'){
-    for(const x of townRoads.vertical)assert.ok(v.x>=x+70||v.x+v.w<=x-70,`${v.id} overlaps vertical road`);
-    for(const y of townRoads.horizontal)assert.ok(v.y>=y+70||v.y+v.h<=y-70,`${v.id} overlaps horizontal road`);
+    for(const r of townMainRoads.vertical)assert.ok(v.x>=r.x+70||v.x+v.w<=r.x-70||v.y>=r.to||v.y+v.h<=r.from,`${v.id} overlaps vertical road`);
+    for(const r of townMainRoads.horizontal)assert.ok(v.y>=r.y+70||v.y+v.h<=r.y-70||v.x>=r.to||v.x+v.w<=r.from,`${v.id} overlaps horizontal road`);
    }
   }
  }
@@ -27,7 +27,7 @@ test('街区は舗装道路でつながり、店舗の玄関は次の通りに�
  assert.deepEqual(townSize,{width:7000,height:4600});
  for(const v of townVenues.filter(v=>v.kind!=='outdoor')){
   const entrance=townSpawn(v.id as Parameters<typeof townSpawn>[0]);
-  const nextStreet=townRoads.horizontal.find(y=>y>v.y)!;
+  const nextStreet=townMainRoads.horizontal.filter(r=>entrance.x>=r.from&&entrance.x<=r.to&&r.y>entrance.y).map(r=>r.y)[0];
   assert.ok(nextStreet-entrance.y>=58&&nextStreet-entrance.y<=350,`${v.id} entrance should connect to its frontage street`);
   const path=findWalkingPath(entrance,{x:entrance.x,y:nextStreet},[...townVenues,...townBlocks].map(q=>({x:q.x,y:q.y,width:q.w,height:q.h})),townWalkBounds);
   assert.ok(path.length>0,`${v.id} entrance should connect to the road`);
@@ -36,6 +36,10 @@ test('街区は舗装道路でつながり、店舗の玄関は次の通りに�
  assert.ok(new Set(offsets).size>5,'shops occupy varied positions within their blocks');
  assert.ok(townBlocks.length>10,'residential buildings add varied blocks');
  assert.equal(townVenues.some(v=>v.x<townPlaza.x+townPlaza.w&&v.x+v.w>townPlaza.x&&v.y<townPlaza.y+townPlaza.h&&v.y+v.h>townPlaza.y),false);
+});
+test('天頂決戦会場は幅・奥行とも3倍で、他施設の座標を維持する',()=>{
+ const venue=townVenues.find(v=>v.id==='stadium-7')!;assert.equal(venue.w,1050);assert.equal(venue.h,750);
+ const komorebi=townVenues.find(v=>v.id==='komorebi')!;assert.deepEqual({x:komorebi.x,y:komorebi.y},{x:643,y:1327});
 });
 test('住宅は再生成しても同じ位置で、主要道路と施設の余白を保つ',()=>{
  assert.deepEqual(generateTownBlocks(),townBlocks);
