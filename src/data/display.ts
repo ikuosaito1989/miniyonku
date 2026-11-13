@@ -2,7 +2,7 @@ import {roomView} from './shop';
 export function compactDevice(){return typeof window!=='undefined'&&(matchMedia('(pointer: coarse)').matches||innerWidth<=720);}
 export const shopRenderOptions={pixelArt:true,roundPixels:true,antialias:false,antialiasGL:false} as const;
 // 実ピクセルに合わせつつDPR・長辺・総ピクセル数でGPU負荷を制限する。
-export const raceRenderLimits={desktop:{edge:2560,pixels:2560*1440},mobile:{edge:1600,pixels:1600*900},dpr:2} as const;
+export const raceRenderLimits={desktop:{edge:2560,pixels:2560*1440},mobile:{edge:1440,pixels:1280*900},dpr:2} as const;
 export function raceRenderSize(compact:boolean,width:number,height:number,dpr=1){
   const dimension=(value:number)=>Number.isFinite(value)?Math.max(1,value):1;
   const w=dimension(width),h=dimension(height),limits=compact?raceRenderLimits.mobile:raceRenderLimits.desktop;

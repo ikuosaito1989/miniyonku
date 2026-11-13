@@ -34,15 +34,20 @@ export type { TrialCamera } from '../data/raceCamera';
 
 export class TrialRenderer {
   private renderer: THREE.WebGLRenderer;
-  private environment:THREE.WebGLRenderTarget;
-  private shadows:RaceShadows;
-  private venueAnimation:VenueAnimation;
+  private environment:THREE.WebGLRenderTarget|null=null;
+  private shadows!:RaceShadows;
+  private venueAnimation!:VenueAnimation;
   private scene = new THREE.Scene();
   private camera = new THREE.OrthographicCamera(-2,2,1,-1,0.01,1000);
   private cars = new Map<string,THREE.Group>();
   private state: RaceState;
   private playerMarker = new THREE.Mesh(new THREE.ConeGeometry(0.035,0.07,3),new THREE.MeshBasicMaterial({color:0xffe66b}));
-  private observer: ResizeObserver;
+  private observer: ResizeObserver|null=null;
+  private disposed=false;
+  private initialized=false;
+  private readonly preparationTimings={environment:0,venue:0,course:0,cars:0,firstRender:0};
+  private firstRenderPending=true;
+  readonly ready:Promise<void>;
   private frame = 0;
   private lastTime = 0;
   private accumulator = 0;
@@ -82,31 +87,56 @@ export class TrialRenderer {
     this.renderer.setPixelRatio(1);
     this.renderer.setClearColor((challenge==='official'||challenge==='time-attack')?0x344d5b:0x315b2a);
     physicalRenderer(this.renderer);
-    this.environment=studioEnvironment(this.renderer);this.scene.environment=this.environment.texture;
     this.renderer.domElement.style.width='100%';
     this.renderer.domElement.style.height='100%';
     host.append(this.renderer.domElement);
-    const sun=modelLighting(this.scene);this.shadows=new RaceShadows(this.scene,sun,true);
+    this.playerMarker.rotation.z=Math.PI;this.scene.add(this.playerMarker);
+    this.audio=new RaceAudio();
+    this.ready=this.initialize();
+  }
+
+  private async yieldPreparation(){
+    await new Promise<void>(resolve=>setTimeout(resolve,0));
+    return !this.disposed;
+  }
+
+  private async initialize(){
+    if(!await this.yieldPreparation())return;
+    let started=performance.now();
+    this.environment=studioEnvironment(this.renderer);this.scene.environment=this.environment.texture;
+    this.preparationTimings.environment=performance.now()-started;
+    if(!await this.yieldPreparation())return;
+    started=performance.now();
+    const sun=modelLighting(this.scene);this.shadows=new RaceShadows(this.scene,sun,true);this.textures.push(this.shadows.texture);
     const grass=this.grassTexture();
     const groundSize=Math.max(this.track.open?600:100,this.track.circuit.radiusX*2+40,this.track.circuit.radiusZ*2+40);
     grass.repeat.set(groundSize/1.5,groundSize/1.5);
-    const ground=new THREE.Mesh(new THREE.PlaneGeometry(groundSize,groundSize),new THREE.MeshStandardMaterial((challenge==='official'||challenge==='time-attack')?{color:0x7c928f,roughness:.86,envMapIntensity:.35}:{map:grass,roughness:1,envMapIntensity:.25}));
+    const ground=new THREE.Mesh(new THREE.PlaneGeometry(groundSize,groundSize),new THREE.MeshStandardMaterial((this.challenge==='official'||this.challenge==='time-attack')?{color:0x7c928f,roughness:.86,envMapIntensity:.35}:{map:grass,roughness:1,envMapIntensity:.25}));
     ground.rotation.x=-Math.PI/2;ground.position.y=-0.025;ground.receiveShadow=true;this.scene.add(ground);
-    const venue=this.venue=raceVenueScenery(this.track,(challenge==='official'||challenge==='time-attack'),isPracticeCourse(circuitId));this.scene.add(venue);this.venueAnimation=new VenueAnimation(venue);
+    const venue=this.venue=raceVenueScenery(this.track,(this.challenge==='official'||this.challenge==='time-attack'),isPracticeCourse(this.circuitId));this.scene.add(venue);this.venueAnimation=new VenueAnimation(venue);
+    this.preparationTimings.venue=performance.now()-started;
+    if(!await this.yieldPreparation())return;
+    started=performance.now();
     this.buildTrack();this.scene.add(raceCourseDetails(this.track));this.buildObstacles();this.buildStart();this.venueAnimation.attachMarshal(this.scene);
+    this.preparationTimings.course=performance.now()-started;
     for(const racer of this.state.racers){
+      if(!await this.yieldPreparation())return;
+      started=performance.now();
       const car=buildRaceMachineModel(racer);batchRaceWheelSpokes(car);car.userData.handling=handlingProfile(racer.equipment,racer.performance);this.cars.set(racer.id,car);this.scene.add(car);this.shadows.add(racer.id,car);
       const canvas=document.createElement('canvas');canvas.width=144;canvas.height=54;
       const ctx=canvas.getContext('2d')!;ctx.fillStyle=racer.id==='player'?'#ffe16d':'#18293e';ctx.strokeStyle=racer.id==='player'?'#fff5d7':`#${racer.color.toString(16).padStart(6,'0')}`;ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(3,3,138,48,12);ctx.fill();ctx.stroke();
       ctx.font='bold 30px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=racer.id==='player'?'#18293e':'#fff4db';ctx.fillText(racer.id==='player'?'▼ 自分':racer.name.split(/[ 　]/).at(-1)!,72,28);
       const texture=new THREE.CanvasTexture(canvas);this.textures.push(texture);
       const marker=new THREE.Sprite(new THREE.SpriteMaterial({map:texture,depthTest:false,depthWrite:false,transparent:true}));marker.renderOrder=100;marker.visible=false;marker.name=`overview-marker-${racer.id}`;this.overviewMarkers.set(racer.id,marker);this.scene.add(marker);
+      this.preparationTimings.cars+=performance.now()-started;
     }
-    this.playerMarker.rotation.z=Math.PI;this.scene.add(this.playerMarker);
-    this.observer=new ResizeObserver(()=>this.resize());this.observer.observe(host);this.resize();
-    this.audio=new RaceAudio();
+    if(!await this.yieldPreparation())return;
+    this.observer=new ResizeObserver(()=>this.resize());this.observer.observe(this.host);this.resize();
     document.addEventListener('visibilitychange',this.resetIntroClock);
+    this.initialized=true;
     this.report({...this.state});this.reportFinish(this.finishPresentation);this.reportIntro(this.intro);this.frame=requestAnimationFrame(this.animate);
+    // Keep the loading screen until the first scheduled draw has completed.
+    await new Promise<void>(resolve=>requestAnimationFrame(()=>resolve()));
   }
 
   skipIntro(){
@@ -117,6 +147,7 @@ export class TrialRenderer {
     this.intro=raceIntroAt(0);this.introLastTime=0;this.lastTime=0;this.accumulator=0;this.introFrame=null;this.reportIntro(this.intro);
   }
   start(){
+    if(!this.initialized||this.disposed)return;
     if(this.intro.stage!=='done'){this.skipIntro();return;}
     this.audio.unlock();
     const previous=this.state;
@@ -137,6 +168,7 @@ export class TrialRenderer {
     this.report({...this.state});this.reportFinish(this.finishPresentation);
   }
   skipRace(){
+    if(!this.initialized||this.disposed)return;
     if(this.state.phase==='finished')return;
     const finishDistance=this.track.circuitLength*(this.track.open?1:this.track.circuit.laps);
     const skippedWinner=this.challenge===true?this.state.racers.findIndex(racer=>racer.id.startsWith('legend-')):0;
@@ -419,17 +451,20 @@ export class TrialRenderer {
     this.playerMarker.visible=this.intro.stage==='done'&&!overview;
     this.venueAnimation.update(now/1000,this.state.phase,this.reducedMotion);
     this.updateCamera(elapsed);const focus=this.cars.get('player')!.position,right=this.scratchRight.set(1,0,0).applyQuaternion(this.activeCamera.quaternion);
-    this.audio.update(this.state,{track:this.track,listener:focus,right});this.renderer.render(this.scene,this.activeCamera);
+    this.audio.update(this.state,{track:this.track,listener:focus,right});
+    const renderStarted=this.firstRenderPending?performance.now():0;this.renderer.render(this.scene,this.activeCamera);
+    if(this.firstRenderPending){this.firstRenderPending=false;this.preparationTimings.firstRender=performance.now()-renderStarted;if(new URLSearchParams(window.location.search).has('renderstats'))console.info('[seiran-race-preparation]',this.circuitId,JSON.stringify(this.preparationTimings));}
     if(now-this.lastReport>100){this.report({...this.state});this.reportFinish(this.finishPresentation);this.reportIntro(this.intro);this.lastReport=now;}
     this.frame=requestAnimationFrame(this.animate);
   };
   dispose(){
+    if(this.disposed)return;this.disposed=true;
     document.removeEventListener('visibilitychange',this.resetIntroClock);
     this.audio.dispose();
-    this.report({...this.state});
-    cancelAnimationFrame(this.frame);this.observer.disconnect();
+    if(this.initialized)this.report({...this.state});
+    cancelAnimationFrame(this.frame);this.observer?.disconnect();
     disposeSceneResources(this.scene,this.textures);
-    this.environment.dispose();
+    this.environment?.dispose();
     this.renderer.dispose();this.renderer.forceContextLoss();this.renderer.domElement.remove();
   }
 }

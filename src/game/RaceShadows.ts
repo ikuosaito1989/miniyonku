@@ -4,7 +4,7 @@ import {configureShadow} from './sceneLighting';
 
 type Surface={x:number;y:number;z:number;sideX:number;sideY:number;sideZ:number;upX:number;upY:number;upZ:number;forwardX:number;forwardY:number;forwardZ:number};
 export class RaceShadows{
- private texture=contactShadowTexture();
+ readonly texture=contactShadowTexture();
  private contacts=new Map<string,THREE.Group>();
  private basis=new THREE.Matrix4();
  private side=new THREE.Vector3();private up=new THREE.Vector3();private forward=new THREE.Vector3();

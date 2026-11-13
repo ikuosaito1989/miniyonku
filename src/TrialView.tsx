@@ -98,9 +98,13 @@ export default function TrialView(){
         }
         setState(race);
       },setFinish,condition,stored.raceSeed,challenge,circuitId,setIntro,stored.bodyPaint,online?.records??null,!!mob,stored.playerName||undefined);
-      const audio=useAudioSettings.getState();renderer.current.setSound(audio.enabled,audio.volume);}
-      catch{setError('3D表示を開始できませんでした。WebGL対応ブラウザで再試行してください。');}
-      finally{setRendererReady(true);}
+      const instance=renderer.current;
+      const audio=useAudioSettings.getState();instance.setSound(audio.enabled,audio.volume);
+      void instance.ready.then(()=>{if(renderer.current===instance)setRendererReady(true);}).catch(()=>{
+        if(renderer.current!==instance)return;
+        instance.dispose();renderer.current=null;setError('3D表示を開始できませんでした。WebGL対応ブラウザで再試行してください。');setRendererReady(true);
+      });}
+      catch{setError('3D表示を開始できませんでした。WebGL対応ブラウザで再試行してください。');setRendererReady(true);}
     });});
     return()=>{cancelAnimationFrame(firstFrame);cancelAnimationFrame(secondFrame);renderer.current?.dispose();renderer.current=null;};
   },[equipment,challenge,circuitId,online,mob]);
