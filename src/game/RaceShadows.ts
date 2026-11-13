@@ -25,7 +25,7 @@ export class RaceShadows{
   const shadow=root.children[0] as THREE.Mesh<THREE.PlaneGeometry,THREE.MeshBasicMaterial>;shadow.material.opacity=.48*(1-height/1.2);
  }
  follow(position:THREE.Vector3,overview:boolean){
-  this.key.position.copy(position).add(new THREE.Vector3(-3,6,4));this.key.target.position.copy(position);
+  this.key.position.copy(position);this.key.position.x-=3;this.key.position.y+=6;this.key.position.z+=4;this.key.target.position.copy(position);
   // Contact shading remains available in overview; detailed shadow draws stay nearby.
   for(const object of this.scene.children)if(object instanceof THREE.Group&&!object.name.startsWith('contact-')&&object.userData.rotatingWheels){
    const near=!overview&&object.position.distanceToSquared(position)<16;
