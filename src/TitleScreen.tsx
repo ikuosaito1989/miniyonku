@@ -4,19 +4,25 @@ import machine from './assets/title/seiran-machine.webp';
 import './title.css';
 
 export function TitleScreen({ onStart,needsName,onName }: { onStart: () => void;needsName:boolean;onName:(name:string)=>void }) {
-  const [naming,setNaming]=useState(false),[name,setName]=useState('朝倉 湊');
-  const start=()=>{if(needsName){setNaming(true);return;}onStart();};
+  const [naming,setNaming]=useState(false),[name,setName]=useState('朝倉 湊'),[burst,setBurst]=useState(false);
+  const timer=useRef<ReturnType<typeof setTimeout>|null>(null),starting=useRef(false);
+  const start=()=>{
+    if(starting.current||naming)return;
+    starting.current=true;setBurst(true);
+    const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    timer.current=setTimeout(()=>{timer.current=null;starting.current=false;setBurst(false);if(needsName)setNaming(true);else onStart();},reduced?0:650);
+  };
   const startButton = useRef<HTMLButtonElement>(null);
   useEffect(() => {
-    startButton.current?.focus();
     const startWithZ = (event: KeyboardEvent) => {
-      if (event.key.toLowerCase() === 'z' && document.activeElement === startButton.current) {
+      if (event.key.toLowerCase() === 'z' && !naming && (document.activeElement === startButton.current||document.activeElement === document.body)) {
         event.preventDefault();start();
       }
     };
     window.addEventListener('keyup', startWithZ);
     return () => window.removeEventListener('keyup', startWithZ);
-  }, [onStart]);
+  }, [onStart,needsName,naming]);
+  useEffect(()=>()=>{if(timer.current!==null)clearTimeout(timer.current);},[]);
 
   return <section className="title-screen" aria-labelledby="game-title">
     <div className="title-artboard">
@@ -37,7 +43,7 @@ export function TitleScreen({ onStart,needsName,onName }: { onStart: () => void;
         <p className="title-tagline">走れ、きみだけの一台。</p>
       </div>
       <img className="title-machine" src={machine} alt="青と白のボディに金色のラインが入ったセイラン" fetchPriority="high"/>
-      <button className="title-start" aria-label="ゲーム開始" ref={startButton} onClick={start}>
+      <button className={`title-start${burst?' title-start-burst':''}`} aria-label="ゲーム開始" aria-disabled={burst} ref={startButton} onClick={start}>
         <span className="title-start-coins" aria-hidden="true">{'START'.split('').map((letter,i)=><span key={i}>{letter}</span>)}</span>
         <span className="title-start-caption">ゲーム開始</span>
       </button>
