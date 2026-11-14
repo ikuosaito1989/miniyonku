@@ -1,5 +1,10 @@
 import type {CircuitTrack} from '../data/circuit';
 import {raceCamera} from '../data/raceCamera';
+/** 大きなコースでも、カメラから路面までの距離と画面奥の余裕を確保する。 */
+export function raceCameraFar(height:number,aspect:number){
+ const distance=Math.hypot(...raceCamera.start.offset)*Math.max(1,height/6);
+ return Math.max(1000,distance+height*Math.max(2,aspect*2));
+}
 /** 実際の立体レーンをカメラ平面へ投影し、縦横どちらの画面でも余白少なめで全景を収める。 */
 export function overviewFrame(track:CircuitTrack,aspect:number,allowPortraitRotation=true){
  const [ox,oy,oz]=raceCamera.running.offset,r=Math.hypot(ox,oz),length=Math.hypot(ox,oy,oz);

@@ -25,7 +25,7 @@ import { getCircuitTrack, type CircuitId, type CircuitTrack } from '../data/circ
 import type { Equipment } from '../data/machine';
 import { FIXED_STEP } from './driving';
 import { canViewRaceResults, completeRaceAfterPlayerFinish, createRaceState, launchPlayer, startRace, stepRace, type RaceState, type RaceChallenge } from './race';
-import {overviewFrame,overviewViewportFrame,overviewCarScale} from './overviewCamera';
+import {overviewFrame,overviewViewportFrame,overviewCarScale,raceCameraFar} from './overviewCamera';
 import { defaultRaceZoom, raceCamera, raceZoomSteps } from '../data/raceCamera';
 import { createFinishPresentation, finishTrackDistance, finishSequence, shouldUseFinishCamera, stepFinishPresentation, type FinishPresentation } from './finishPresentation';
 import { RaceAudio } from './RaceAudio';
@@ -332,7 +332,7 @@ export class TrialRenderer {
       }else if(this.intro.stage==='grid'&&!this.reducedMotion){
         const zoom=smooth((age-raceIntroTiming.overview-raceIntroTiming.tour)/raceIntroTiming.grid);target=new THREE.Vector3(start.x-start.tangentX*raceCamera.start.lookBehind*zoom,start.y,start.z-start.tangentZ*raceCamera.start.lookBehind*zoom);height=THREE.MathUtils.lerp(tourHeight,gridHeight,zoom);
       }
-      this.camera.left=-height*this.aspect/2;this.camera.right=height*this.aspect/2;this.camera.top=height/2;this.camera.bottom=-height/2;this.camera.updateProjectionMatrix();
+      this.camera.left=-height*this.aspect/2;this.camera.right=height*this.aspect/2;this.camera.top=height/2;this.camera.bottom=-height/2;this.camera.far=raceCameraFar(height,this.aspect);this.camera.updateProjectionMatrix();
       this.camera.position.copy(target).add(new THREE.Vector3(...raceCamera.start.offset).multiplyScalar(Math.max(1,height/6)));this.camera.lookAt(target);return;
     }
     this.activeCamera=this.camera;
@@ -348,7 +348,7 @@ export class TrialRenderer {
     const worldUp=new THREE.Vector3(0,1,0),overviewUp=new THREE.Vector3(frame.up.x,frame.up.y,frame.up.z);
     this.camera.up.copy(overviewUp.lerp(worldUp,zoomBlend).normalize());
     this.camera.left=-viewHeight*this.aspect/2;this.camera.right=viewHeight*this.aspect/2;
-    this.camera.top=viewHeight/2;this.camera.bottom=-viewHeight/2;this.camera.updateProjectionMatrix();
+    this.camera.top=viewHeight/2;this.camera.bottom=-viewHeight/2;this.camera.far=raceCameraFar(frame.height,this.aspect);this.camera.updateProjectionMatrix();
     // 拡大の最初の1段階でマシンへ寄せ切る。画角と同じ割合で注視点を
     // 補間すると、広いコースでは拡大中もコース中央を映してしまう。
     const focusProgress=THREE.MathUtils.clamp(this.displayedCameraZoom,0,1);
