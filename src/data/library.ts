@@ -2,6 +2,7 @@ import {parts,categories,type Category,type Part} from './parts';
 import {modelShops} from './world';
 import {isStocked} from './progression';
 import {mechanicMotorStages} from './mechanicMotor';
+import {craftStages} from './craftParts';
 export const libraryGuides:Record<Category,{title:string;text:string}>={
  motor:{title:'回転数とトルクは別の性能',text:'回転数（rpm）は最高速の目安。トルクは発進・登坂・砂地で押し出す力。回転数だけ高くても負荷に負けると失速する。通常モーターは約60秒のブレークインで好調になり、その後は摩耗する。消耗なしの型はブレークイン不要。ブレークインでは電池残量は減らない。'},
  gear:{title:'ギア比が大きいほど力、小さいほど最高速',text:'5:1はモーター5回転でタイヤが1回転する減速比。5:1→4:1→3.5:1と小さくすると理論最高速は上がるが、車輪を押す力は減る。同じモーターなら5:1は発進・坂・砂地に、3.5:1は抵抗の少ない高速区間に向く。速さと駆動力の両立を見て選ぼう。'},
@@ -25,6 +26,7 @@ export const specGlossary:Record<string,{label:string;unit:string;meaning:string
 export function formatSpec(key:string,value:number){if(key==='frontMotor')return value===1?'前置き（FM）':'後置き（RM）';const unit=specGlossary[key]?.unit??'';const number=key==='damping'?Math.round(value*10000)/100:value;return unit==='×'?`×${number.toLocaleString('ja-JP',{maximumFractionDigits:4})}`:unit===':1'?`${number}:1`:`${number.toLocaleString('ja-JP',{maximumFractionDigits:4})}${unit?' '+unit:''}`;}
 export function librarySource(part:Part){
  const stage=mechanicMotorStages.find(s=>s.id===part.id);if(stage)return `メカニックマンからの贈り物・成長段階${stage.level}（熟練度${stage.points}pt${stage.level===9?'・単独1位':''}）`;
+ const craft=craftStages.find(s=>s.body===part.id||s.chassis===part.id);if(craft)return `街の職人からの贈り物・成長段階${craft.level}（熟練度${craft.points}pt${craft.level===9?'・単独1位':''}）`;
  if(part.id==='motor-rescue'||part.id==='battery-recharge')return 'セッティングで無料装着';
  if(part.id==='accessory-none')return 'セッティングで補助パーツを外す';
  if(part.id==='body-champion')return '青葉博士からの贈り物';

@@ -7,6 +7,8 @@ import type {CircuitId} from '../data/circuit';
 import {towaEscortLocation} from './towaEscort';
 import {KOYA_ESCORT_END,koyaEscortActive,koyaEscortLocation} from './koyaEscort';
 import {syncMechanicMotor} from './mechanicMotor';
+import {syncCraftParts} from './craftParts';
+import {craftStageFor,craftStages,isCraftPart,type CraftKind} from '../data/craftParts';
 import {mechanicMotorFor,mechanicMotorStages} from '../data/mechanicMotor';
 import {mechanicManName} from '../data/hiddenMechanic';
 import {decodeBodyPaint} from '../data/bodyPaint';
@@ -73,7 +75,7 @@ export interface GameState extends Wallet {
   legendEventSeen:boolean;legendEventPending:boolean;legendDebriefPending:boolean;legendChallengeActive:boolean;dialogueStage:DialogueStage;startLegendChallenge:()=>void;
   raceSeed:number;
   equipment: Equipment;
-  proficiencyPoints:number;talkMechanicMan:()=>void;
+  proficiencyPoints:number;talkMechanicMan:()=>void;talkCraftsperson:(kind:CraftKind)=>void;
   openProficiency:()=>void;
   openLegends:()=>void;
   units:UnitInventory; selectedUnits:Record<'motor'|'battery',string>; unitSerial:number; usageSeconds:number;
@@ -232,6 +234,13 @@ export const useGame = create<GameState>((set) => ({
    const owned=Object.keys(s.inventory).some(id=>id.startsWith('motor-mechanic-')&&s.inventory[id]>0);
    return {...update,overlay:'dialogue',speaker:mechanicManName,shopAfter:false,dialogueStage:'none',dialogue:`よくこの路地を見つけたな。私はメカニックマン。${owned?'贈ったモーターの調子はどうだ？':'君に、メカニック・リンクを一つ贈ろう。模型店の作業台で装着できるぞ。'} 今の君の熟練度は${Math.floor(s.proficiencyPoints)}pt。モーターはLv.${stage.level}、${stage.rpm.toLocaleString('en-US')}rpm・トルク${stage.torque.toFixed(2)}。消耗せず、ブレークインもいらない。熟練度が上がれば、私のところに戻らなくても自動で強化される。${next?`次は${next.points}ptだ。`:'熟練度ランキング単独1位、おめでとう！ 最高段階の力を託そう。'} 最高段階は、レジェンドも含めた熟練度ランキングの単独1位になったときだけだ。腕を磨いてこい！`};
   }),
+  talkCraftsperson:kind=>set(s=>{
+   if(s.location!=='town'||s.overlay||s.openingActive)return {};
+   const update=syncCraftParts(s,kind),stage=craftStageFor(s.proficiencyPoints),next=craftStages[stage.level];
+   const owned=Object.keys(s.inventory).some(id=>s.inventory[id]>0&&isCraftPart(id,kind));
+   const speaker=kind==='body'?'風間 紬':'鉄谷 朔',part=kind==='body'?'風紡ぎ・カウル':'結び・フレーム';
+   return {...update,overlay:'dialogue',speaker,shopAfter:false,dialogueStage:'none',dialogue:`よくここを見つけたね。${owned?`${part}は元気に走っているかな？`:`私の作った${part}を一つ、君に贈るよ。作業台で装着してね。`} 今の熟練度は${Math.floor(s.proficiencyPoints)}pt、${part}はLv.${stage.level}。持っていれば、装着していなくても自動で成長するよ。${next?`次の成長は${next.points}pt。`:'熟練度ランキング単独1位の最高段階だよ。'}`};
+  }),
   openProficiency:()=>set({overlay:'proficiency',shopAfter:false,notice:''}),
   openLegends:()=>set({overlay:'legends',shopAfter:false,notice:''}),
   units:createStarterUnits(),selectedUnits:{motor:'starter-motor',battery:'starter-battery'},unitSerial:0,usageSeconds:0,
@@ -346,4 +355,5 @@ function tutorialStart(state:GameState,practice:boolean):Partial<GameState>{
 useGame.subscribe((state,previous)=>{
  if(state.overlay==='race'||state.proficiencyPoints===previous.proficiencyPoints&&state.overlay===previous.overlay)return;
  const update=syncMechanicMotor(state);if(update)useGame.setState(update);
+ const craft=syncCraftParts(useGame.getState());if(craft)useGame.setState(craft);
 });

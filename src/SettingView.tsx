@@ -1,6 +1,7 @@
 import {isPracticeCourse} from './data/practiceCourses';
 import {SetupDashboard} from './SetupDashboard';
 import {bodyPaints} from './data/bodyPaint';
+import {isCraftPart} from './data/craftParts';
 import {TutorialGuide} from './TutorialGuide';
 import {TUTORIAL_PART} from './game/tutorial';
 import { lazy, Suspense, useState } from 'react';
@@ -33,7 +34,9 @@ export function SettingView(){
   const freePart=category==='motor'?'motor-rescue':category==='battery'?'battery-recharge':null;
   const [cursor,setCursor]=useState<string|null>(null);
   const current=parts.find(p=>p.id===equipment[slot])!;
-  const selected=parts.find(p=>p.id===cursor&&p.category===category&&(inventory[p.id]>0||p.id===freePart))??current;
+  const craftKind=cursor&&isCraftPart(cursor,'body')?'body':cursor&&isCraftPart(cursor,'chassis')?'chassis':null;
+  const resolvedCursor=craftKind&&cursor&&!inventory[cursor]?Object.keys(inventory).find(id=>inventory[id]>0&&isCraftPart(id,craftKind))??cursor:cursor;
+  const selected=parts.find(p=>p.id===resolvedCursor&&p.category===category&&(inventory[p.id]>0||p.id===freePart))??current;
   const condition=equippedCondition(equipment,units,selectedUnits);
   const performance=machinePerformance(equipment,condition);
   const previewEquipment=equipPart(equipment,selected.id===freePart?{...inventory,[selected.id]:1}:inventory,selected.id,slot);

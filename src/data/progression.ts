@@ -2,6 +2,7 @@ import {specialtyPartIds} from './specialtyParts';
 import {postClearPartIds} from './postClearParts';
 import {sovereignPartIds,isSovereignPart} from './sovereignParts';
 import {mechanicMotorStages} from './mechanicMotor';
+import {craftStages} from './craftParts';
 import {zenithParts} from './zenithParts';
 export const MAX_PART_LEVEL=10;
 import { bodies } from './bodies';
@@ -12,6 +13,7 @@ export const partLevels:Record<string,number>={
  ...Object.fromEntries(postClearPartIds.map(id=>[id,10])),
  ...Object.fromEntries(sovereignPartIds.map(id=>[id,10])),
  ...Object.fromEntries(mechanicMotorStages.map(stage=>[stage.id,stage.level])),
+ ...Object.fromEntries(craftStages.flatMap(stage=>[[stage.body,stage.level],[stage.chassis,stage.level]])),
   ...Object.fromEntries(zenithParts.map(p=>[p.id,9])),
   'accessory-slide-rear':6,'roller-ceramic':6,'roller-lowdouble':6,'motor-surge':6,'wheel-floating':6,'tire-landing':6,
   'motor-sovereign':10,'chassis-sovereign':10,
@@ -35,5 +37,5 @@ export const starterShop:ShopStock={name:'こもれび模型店',maxPartLevel:2}
 export function isStocked(part:{id:string;level:number},shop:ShopStock=starterShop){
   if(shop.exclusiveParts)return shop.exclusiveParts.includes(part.id);
   if(specialtyPartIds.includes(part.id)||isSovereignPart(part.id)||postClearPartIds.includes(part.id))return false;
-  return !part.id.startsWith('motor-mechanic-')&&!part.id.startsWith('body-legend-')&&part.id!=='body-entry'&&part.id!=='body-champion'&&part.id!=='accessory-none'&&part.id!=='battery-recharge'&&part.id!=='motor-rescue'&&part.level>=1&&part.level<=Math.min(MAX_PART_LEVEL,shop.maxPartLevel);
+  return !part.id.startsWith('motor-mechanic-')&&!part.id.startsWith('body-craft-')&&!part.id.startsWith('chassis-craft-')&&!part.id.startsWith('body-legend-')&&part.id!=='body-entry'&&part.id!=='body-champion'&&part.id!=='accessory-none'&&part.id!=='battery-recharge'&&part.id!=='motor-rescue'&&part.level>=1&&part.level<=Math.min(MAX_PART_LEVEL,shop.maxPartLevel);
 }

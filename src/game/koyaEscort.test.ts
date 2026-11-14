@@ -12,6 +12,7 @@ import {koyaEscortLocation,koyaEscortSpawn,townEscortWalks,escortWalk} from './k
 import {townBlocks,townVenues,townWalkBounds} from '../data/world';
 import {townPeople} from '../data/townPeople';
 import {hiddenMechanicSpot} from '../data/hiddenMechanic';
+import {hiddenCrafts} from '../data/hiddenCrafts';
 import {shopCast} from '../data/shopCast';
 import {shopLayout} from '../data/shopLayout';
 import {timeBoardObstacle} from '../data/timeBoard';
@@ -48,7 +49,7 @@ test('模型店は家具・人を避けて迎えと退店。街では共通経�
  const cast=shopCast('wakaba'),obstacles=[...shopLayout('wakaba').map(({target:f})=>({x:f.x,y:f.y,width:f.w,height:f.h})),...[cast.rival,...cast.visitors].map(p=>({x:p.x-12,y:p.y-9,width:24,height:21})),timeBoardObstacle('wakaba')];
  const hero=koyaEscortSpawn(1);let arrival=createArrival(hero,obstacles,1)[0];for(let i=0;i<2000&&!arrival.arrived;i++){const before=arrival;arrival=stepArrivalActor(arrival,hero,40);assert.ok(canTravel(before.position,arrival.position,obstacles));}assert.ok(arrival.arrived);
  for(const [from,to] of [[hero,{x:480,y:557}],[arrival.position,{x:480,y:581}]] as const){let w=escortWalk(from,to,obstacles);for(let i=0;i<2000&&!w.done;i++){const before=w;w=stepOpeningWalk(w,40,190);assert.ok(canTravel(before.position,w.position,obstacles));}assert.ok(w.done);}
- const townObstacles=[...[...townVenues,...townBlocks].map(v=>({x:v.x,y:v.y,width:v.w,height:v.h})),...[...townPeople,hiddenMechanicSpot].map(p=>({x:p.x-12,y:p.y-9,width:24,height:21}))];
+ const townObstacles=[...[...townVenues,...townBlocks].map(v=>({x:v.x,y:v.y,width:v.w,height:v.h})),...[...townPeople,hiddenMechanicSpot,...hiddenCrafts].map(p=>({x:p.x-12,y:p.y-9,width:24,height:21}))];
  let {player,guide}=townEscortWalks(townObstacles),frames=0;
  while((!player.done||!guide.done)&&frames++<5000){const before=player,oldGuide=guide;player=stepOpeningWalk(player,40,282);guide=stepOpeningWalk(guide,40,282);assert.ok(canTravel(before.position,player.position,townObstacles,townWalkBounds));assert.ok(canTravel(oldGuide.position,guide.position,townObstacles,townWalkBounds));assert.ok(Math.hypot(player.position.x-guide.position.x,player.position.y-guide.position.y)<=33);}
  assert.ok(player.done&&guide.done);assert.ok(frames>20);

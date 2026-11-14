@@ -14,6 +14,7 @@ import {townEscortWalks,escortWalk} from './koyaEscort';
 import {townVenues,townBlocks,townWalkBounds} from '../data/world';
 import {townPeople} from '../data/townPeople';
 import {hiddenMechanicSpot} from '../data/hiddenMechanic';
+import {hiddenCrafts} from '../data/hiddenCrafts';
 import {shopLayout} from '../data/shopLayout';
 import {shopCast} from '../data/shopCast';
 import {timeBoardObstacle} from '../data/timeBoard';
@@ -50,5 +51,5 @@ test('既存の出場権を持つセーブも次の規定内クリアで迎え�
 test('斗和の迎えと退店は家具を避け、街は二人で同じ道を通って緑川会場まで到達する',()=>{
  const cast=shopCast('yuunagi'),obstacles=[...shopLayout('yuunagi').map(({target:f})=>({x:f.x,y:f.y,width:f.w,height:f.h})),...[cast.rival,...cast.visitors].map(p=>({x:p.x-12,y:p.y-9,width:24,height:21})),timeBoardObstacle('yuunagi')],hero={x:480,y:535};
  let actor=createArrival(hero,obstacles,1)[0];for(let i=0;i<2000&&!actor.arrived;i++)actor=stepArrivalActor(actor,hero,40);assert.ok(actor.arrived);let w=escortWalk(actor.position,{x:480,y:581},obstacles);for(let i=0;i<2000&&!w.done;i++)w=stepOpeningWalk(w,40,190);assert.ok(w.done);
- const town=[...[...townVenues,...townBlocks].map(v=>({x:v.x,y:v.y,width:v.w,height:v.h})),...[...townPeople,hiddenMechanicSpot].map(p=>({x:p.x-12,y:p.y-9,width:24,height:21}))];let {player,guide}=townEscortWalks(town,'yuunagi','stadium-10');for(let i=0;i<5000&&(!player.done||!guide.done);i++){const p=player,g=guide;player=stepOpeningWalk(player,40,282);guide=stepOpeningWalk(guide,40,282);assert.ok(canTravel(p.position,player.position,town,townWalkBounds));assert.ok(canTravel(g.position,guide.position,town,townWalkBounds));assert.ok(Math.hypot(player.position.x-guide.position.x,player.position.y-guide.position.y)<=33);}assert.ok(player.done&&guide.done);
+ const town=[...[...townVenues,...townBlocks].map(v=>({x:v.x,y:v.y,width:v.w,height:v.h})),...[...townPeople,hiddenMechanicSpot,...hiddenCrafts].map(p=>({x:p.x-12,y:p.y-9,width:24,height:21}))];let {player,guide}=townEscortWalks(town,'yuunagi','stadium-10');for(let i=0;i<5000&&(!player.done||!guide.done);i++){const p=player,g=guide;player=stepOpeningWalk(player,40,282);guide=stepOpeningWalk(guide,40,282);assert.ok(canTravel(p.position,player.position,town,townWalkBounds));assert.ok(canTravel(g.position,guide.position,town,townWalkBounds));assert.ok(Math.hypot(player.position.x-guide.position.x,player.position.y-guide.position.y)<=33);}assert.ok(player.done&&guide.done);
 });

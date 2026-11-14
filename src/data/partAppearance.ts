@@ -2,6 +2,7 @@ import {specialtyParts} from './specialtyParts';
 import {postClearParts} from './postClearParts';
 import {sovereignPartIds} from './sovereignParts';
 import {mechanicMotorStages} from './mechanicMotor';
+import {craftStages} from './craftParts';
 import {zenithParts} from './zenithParts';
 import type { Part } from './parts';
 import { bodies } from './bodies';
@@ -12,6 +13,7 @@ export const partAppearances:Record<string,PartAppearance>={
  'accessory-brake-soft':{color:'#43586a',accent:'#7ec7df',detail:6,mark:'SOFT BRAKE'},
  'accessory-brake-hard':{color:'#36434e',accent:'#e28ca0',detail:8,mark:'GRIP BRAKE'},
  ...Object.fromEntries(mechanicMotorStages.map((stage,index)=>[stage.id,{color:index===8?'#6c4c92':'#315d78',accent:index===8?'#f4d77d':'#b9d4d5',detail:6,mark:`LINK ${stage.level}`} ])),
+ ...Object.fromEntries(craftStages.map((stage,index)=>[stage.chassis,{color:index>=8?'#64567e':index>=5?'#425a67':'#526761',accent:index>=8?'#f2d17c':'#a9d3c6',detail:5,mark:`MUSUBI ${stage.level}`} ])),
   ...Object.fromEntries(zenithParts.map((p,i)=>[p.id,{color:i%3?'#42577b':'#665078',accent:'#e6cb79',detail:p.category==='wheel'?8:6,mark:p.id.includes('slide')?'CROWN SLIDE':p.id.includes('motor')?'ZENITH':'CROWN'}])),
   'accessory-slide-rear':{color:'#3d4559',accent:'#c6a4f0',detail:6,mark:'REAR SLIDE'},
   'roller-ceramic':{color:'#d1dce4',accent:'#9b7bd3',detail:6,mark:'CERAMIC'},

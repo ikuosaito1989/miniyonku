@@ -1,3 +1,4 @@
+import {craftBodyDesigns} from './craftParts';
 export type BodyShape = 'kei'|'hatch'|'sedan'|'suv'|'coupe'|'wagon'|'gt'|'prototype';
 export interface BodyDesign {
   id:string; name:string; grade:number; price:number; shape:BodyShape; className:string;
@@ -26,5 +27,6 @@ export const bodies:BodyDesign[]=[
   {id:'body-legend-towa',name:'銀嵐フェンサー',grade:10,price:18000,shape:'prototype',className:'レジェンド専用シルバーカウル',weight:11,drag:.66,cornering:1.25,roughGrip:.8,roughResistance:1.1,width:.078,cabinHeight:.017,cabinFront:.018,cabinRear:-.045,color:'#bdc7ce',description:'橘 斗和の専用マシン。銀色の三分割ノーズ、黒いキャノピー、4つの金色の吸気口、左右の金属パイプ、赤いライトと白いホイール。'},
   {id:'body-legend-muscle',name:'ランブラー・ツインR',grade:10,price:18000,shape:'gt',silhouette:'muscle',className:'レジェンド専用重装FM風',weight:16,drag:.98,cornering:1.11,roughGrip:1.45,roughResistance:.48,width:.068,cabinHeight:.029,cabinFront:.028,cabinRear:-.036,color:'#303941',description:'山城 昊也の専用マシン。黒銀の幅広カウル、露出した前部駆動カバー、青いキャノピーとライン、黄色いライト、緑色のホイール。'},
  {id:'body-sovereign',name:'星皇アストラル・クラウン',grade:10,price:250000,shape:'prototype',className:'星皇最上位プロト',weight:8,drag:.55,cornering:1.65,roughGrip:.75,roughResistance:.95,width:.075,cabinHeight:.017,cabinFront:.025,cabinRear:-.065,color:'#7456a3',description:'最軽量・最小空気抵抗・最高旋回性能の星皇ボディ。紫と金を基調に低く構えた舗装向けカウル。砂地での接地は重装FMや悪路ボディに譲るため、タイヤ・シャーシの追従性と合わせて選ぶ。'},
+  ...craftBodyDesigns,
 ];
 export function bodyDesign(id:string):BodyDesign{return bodies.find(b=>b.id===id)??bodies[0];}

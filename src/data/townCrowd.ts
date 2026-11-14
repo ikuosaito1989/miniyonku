@@ -2,6 +2,7 @@ import {isMasterCourse} from './masterCourses';
 import {townVenues,townBlocks,townRoads,townWalkBounds,townSpawn} from './world';
 import {townPeople} from './townPeople';
 import {hiddenMechanicSpot} from './hiddenMechanic';
+import {hiddenCrafts} from './hiddenCrafts';
 import {outdoorTimeBoardPlacement} from './timeBoard';
 import {canStand,type Point,type Obstacle} from '../game/navigation';
 import type {NpcAppearanceId} from './npcAppearance';
@@ -11,7 +12,7 @@ export interface TownCrowdPerson extends Point {id:string;appearance:NpcAppearan
 const appearances:NpcAppearanceId[]=['ren','guide','owner','momo','offroader','venueStaff','sou','wakabaOwner','mechanic','atelierOwner','rival','hinataOwner','aozoraOwner','yuunagiOwner'];
 export const crowdFootprint=(p:Point):Obstacle=>({x:p.x-12,y:p.y-9,width:24,height:21});
 const buildings=[...townVenues,...townBlocks].map(v=>({x:v.x,y:v.y,width:v.w,height:v.h}));
-const people=[...townPeople,hiddenMechanicSpot];
+const people=[...townPeople,hiddenMechanicSpot,...hiddenCrafts];
 const spawns=townVenues.map(v=>townSpawn(v.id as Parameters<typeof townSpawn>[0]));
 const boards=townVenues.filter(v=>v.kind==='outdoor').map(outdoorTimeBoardPlacement);
 /** Crowd placement is stable and leaves the entrance, return point and sign approach open. */

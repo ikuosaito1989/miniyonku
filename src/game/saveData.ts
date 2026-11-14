@@ -3,6 +3,7 @@ import {isPracticeCourse} from '../data/practiceCourses';
 import {towaEscortLocation} from './towaEscort';
 import {KOYA_ESCORT_END,koyaEscortActive,koyaEscortLocation} from './koyaEscort';
 import {isMechanicMotor,mechanicMotorFor} from '../data/mechanicMotor';
+import {craftStageFor,isCraftPart} from '../data/craftParts';
 import {decodeBodyPaint} from '../data/bodyPaint';
 import {decodeTutorialStage} from './tutorial';
 import {OPENING_END} from './opening';
@@ -59,6 +60,10 @@ export function decodeSave(value:unknown):SaveData{
   }
   const giftIds=Object.keys(inventory).filter(id=>isMechanicMotor(id)&&inventory[id]>0);
   if(giftIds.length>1||giftIds.some(id=>Number(id.split('-').at(-1))>mechanicMotorFor(number(game.proficiencyPoints)).level-1))throw new Error('成長モーターの熟練度が不正です。');
+  for(const kind of ['body','chassis'] as const){
+    const ids=Object.keys(inventory).filter(id=>isCraftPart(id,kind)&&inventory[id]>0);
+    if(ids.length>1||ids.some(id=>inventory[id]!==1||Number(id.split('-').at(-1))>craftStageFor(number(game.proficiencyPoints)).level-1))throw new Error('職人パーツの熟練度が不正です。');
+  }
   const units:UnitInventory={},ids=new Set<string>();let maxSerial=0;
   for(const [id,list]of Object.entries(object(game.units))){
     const part=byId.get(id);

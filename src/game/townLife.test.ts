@@ -6,11 +6,12 @@ import assert from 'node:assert/strict';
 import {townCrowd,townCrowdObstacles,generateTownCrowd,crowdFootprint} from '../data/townCrowd';
 import {townPeople} from '../data/townPeople';
 import {hiddenMechanicSpot} from '../data/hiddenMechanic';
+import {hiddenCrafts} from '../data/hiddenCrafts';
 import {townVenues,townBlocks,townWalkBounds,townSpawn} from '../data/world';
 import {outdoorTimeBoardPlacement} from '../data/timeBoard';
 import {canStand,canTravel,findWalkingPath} from './navigation';
 const buildings=[...townVenues,...townBlocks].map(v=>({x:v.x,y:v.y,width:v.w,height:v.h}));
-const obstacles=[...buildings,...[...townPeople,hiddenMechanicSpot].map(crowdFootprint),...townCrowdObstacles];
+const obstacles=[...buildings,...[...townPeople,hiddenMechanicSpot,...hiddenCrafts].map(crowdFootprint),...townCrowdObstacles];
 
 test('観客と住民を再現可能に配置し、全コースに観客を配置する',()=>{
  assert.deepEqual(generateTownCrowd(),townCrowd);
@@ -18,7 +19,7 @@ test('観客と住民を再現可能に配置し、全コースに観客を配�
  assert.ok(townBlocks.length>10);
  assert.ok(new Set(townCrowd.map(p=>p.appearance)).size>=12);
  for(const v of townVenues.filter(v=>v.kind==='outdoor'))assert.ok(townCrowd.filter(p=>p.venue===v.id&&p.activity==='watch').length>=2,v.id);
- for(const p of townCrowd){assert.ok(canStand(p,buildings,townWalkBounds),p.id);assert.ok(canStand(p,[...townPeople,hiddenMechanicSpot,...townCrowd.filter(q=>q!==p)].map(crowdFootprint),townWalkBounds),p.id+' spacing');}
+ for(const p of townCrowd){assert.ok(canStand(p,buildings,townWalkBounds),p.id);assert.ok(canStand(p,[...townPeople,hiddenMechanicSpot,...hiddenCrafts,...townCrowd.filter(q=>q!==p)].map(crowdFootprint),townWalkBounds),p.id+' spacing');}
 });
 test('群衆がいても全入口・看板・案内人・職人へ実際の歩行経路で到達できる',()=>{
  const start=townSpawn('komorebi');

@@ -2,6 +2,7 @@ import {specialtyParts} from './specialtyParts';
 import {postClearParts} from './postClearParts';
 import {sovereignParts} from './sovereignParts';
 import {mechanicMotorParts} from './mechanicMotor';
+import {craftChassisParts} from './craftParts';
 import {zenithParts} from './zenithParts';
 import { partLevels } from './progression';
 import { bodies } from './bodies';
@@ -14,6 +15,7 @@ const definitions: PartDefinition[] = [
   ...sovereignParts,
   ...postClearParts,
   ...mechanicMotorParts,
+  ...craftChassisParts,
   ...zenithParts,
   {id:'accessory-brake-soft',category:'accessory',name:'ソフト・リヤブレーキ',price:900,description:'坂の入口で路面に当たる低いパッド。ジャンプの飛びすぎを抑えるが、効かせすぎると飛距離不足になる。直線と縦ループでは制動しない。',specs:{weight:3,stability:1,efficiency:1,brake:.3},performance:'3 g / 制動0.30 / スロープ接触時のみ'},
   {id:'accessory-brake-hard',category:'accessory',name:'ハイグリップ・リヤブレーキ',price:1900,description:'高速マシン向けの強めの制動パッド。飛びすぎる立体コース向け。低速車や大きい減速比ではソフトへ替えるか外そう。',specs:{weight:4,stability:1,efficiency:1,brake:.65},performance:'4 g / 制動0.65 / スロープ接触時のみ'},

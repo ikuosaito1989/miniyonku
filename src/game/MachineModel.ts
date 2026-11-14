@@ -10,6 +10,7 @@ import { buildKazamiBody } from './KazamiBody';
 import { buildSeiranBody } from './SeiranBody';
 import { challenger } from '../data/challenger';
 import * as THREE from 'three';
+import {addCraftDetails} from './CraftBody';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 import type { Equipment } from '../data/machine';
 import type { Entrant } from '../data/rivals';
@@ -352,6 +353,7 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
   car.userData.rotatingWheels=rotatingWheels;car.userData.rotatingRollers=rotatingRollers;
   car.userData.rearSlideCarriages=slideCarriages;
   machineFineDetails(car,frontMotor);
+  addCraftDetails(car,equipment.body,equipment.chassis);
   finishMachineMaterials(car);
   machineSurfaceDetails(car);
   car.scale.setScalar(.85);return car;

@@ -10,6 +10,9 @@ import type {Category} from '../data/parts';
 import {towaEscortLocation,towaEscortSpawn} from './towaEscort';
 import {koyaEscortActive,koyaEscortLocation,koyaEscortSpawn,koyaVenueSpot,escortWalk,townEscortWalks} from './koyaEscort';
 import {hiddenMechanicSpot,mechanicManName} from '../data/hiddenMechanic';
+import {hiddenCrafts} from '../data/hiddenCrafts';
+import {craftspersonDrawing} from './CraftspersonArt';
+import type {CraftKind} from '../data/craftParts';
 import {mechanicManDrawing} from './MechanicManArt';
 import {townPeople,townPersonAdvice} from '../data/townPeople';
 import {tutorialActive} from './tutorial';
@@ -54,7 +57,7 @@ import { drawTown, townHouseArt } from './TownArt';
 import { drawShopDetails } from './WorldDetailArt';
 import { getCircuitTrack,type CircuitId } from '../data/circuit';
 
-interface ShopTarget {resolveText?:()=>string;circuitId?:CircuitId;x:number;y:number;w:number;h:number;label:string;speaker:string;shopAfter:boolean;text:string;libraryCategory?:Category|'all';kind?:Fixture['kind']|'library-shelf'|'library-catalogue'|'mechanic-man'|'town-person'|'time-records'|'exit'|'venue'|'challenger'|'legend-challenger'|'official-speed'|'official-dirt'|'official-reception'|'official-technical'|'official-final'|'official-zenith';venueId?:string}
+interface ShopTarget {resolveText?:()=>string;circuitId?:CircuitId;craftKind?:CraftKind;x:number;y:number;w:number;h:number;label:string;speaker:string;shopAfter:boolean;text:string;libraryCategory?:Category|'all';kind?:Fixture['kind']|'library-shelf'|'library-catalogue'|'mechanic-man'|'craftsperson'|'town-person'|'time-records'|'exit'|'venue'|'challenger'|'legend-challenger'|'official-speed'|'official-dirt'|'official-reception'|'official-technical'|'official-final'|'official-zenith';venueId?:string}
 export class ShopScene extends Phaser.Scene {
   private gesture=createShopGesture();
   private screenPoint(pointer:Phaser.Input.Pointer){return {x:pointer.x*this.scale.displaySize.width/this.scale.width,y:pointer.y*this.scale.displaySize.height/this.scale.height};}
@@ -90,7 +93,7 @@ export class ShopScene extends Phaser.Scene {
   private isTown=false;
   private updateTownCrowd:((time:number)=>void)|null=null;
   private approach(target:ShopTarget){
-    if(this.isTown){const venue=target.kind==='venue'?townVenues.find(v=>v.id===target.venueId):undefined;return {x:venue?townEntranceX(venue):target.x+target.w/2,y:target.y+target.h+(target.kind==='town-person'||target.kind==='mechanic-man'?20:28)};}
+    if(this.isTown){const venue=target.kind==='venue'?townVenues.find(v=>v.id===target.venueId):undefined;return {x:venue?townEntranceX(venue):target.x+target.w/2,y:target.y+target.h+(target.kind==='town-person'||target.kind==='mechanic-man'||target.kind==='craftsperson'?20:28)};}
     return {x:target.x+target.w/2,y:target.y+target.h/2};
   }
   private get bounds(){return this.isTown?townWalkBounds:walkBounds;}
@@ -110,6 +113,7 @@ export class ShopScene extends Phaser.Scene {
     const addName=(name:string)=>{const id=npcAppearanceId(name);if(id)characters.add(id);};
     if(location==='town'){
       townCrowd.forEach(p=>characters.add(p.appearance));townPeople.forEach(p=>addName(p.name));
+      hiddenCrafts.forEach(p=>addName(p.name));
       characters.add('starter');characters.add('koya');characters.add('towa');
     }else if(location.startsWith('stadium-')){
       officialPeopleFor(location).forEach(p=>addName(p.name));
@@ -145,6 +149,12 @@ export class ShopScene extends Phaser.Scene {
       const hiddenKey='mechanic-man-down';if(!this.textures.exists(hiddenKey))createPersonTexture(this,hiddenKey,mechanicManDrawing());
       (hidden.list[1] as Phaser.GameObjects.Image).setTexture(hiddenKey);
       this.solids.push(new Phaser.Geom.Rectangle(hiddenMechanicSpot.x-12,hiddenMechanicSpot.y-9,24,21));
+      for(const craft of hiddenCrafts){
+        const person=this.person(craft.x,craft.y,'owner',craft.name),key=`craftsperson-${craft.kind}`;
+        if(!this.textures.exists(key))createPersonTexture(this,key,craftspersonDrawing(craft.kind));
+        (person.list[1] as Phaser.GameObjects.Image).setTexture(key);
+        this.solids.push(new Phaser.Geom.Rectangle(craft.x-12,craft.y-9,24,21));
+      }
       for(const npc of townPeople){
         this.addConversationMarker(this.person(npc.x,npc.y,'rival',npc.name));
         this.solids.push(new Phaser.Geom.Rectangle(npc.x-12,npc.y-9,24,21));
@@ -609,6 +619,7 @@ export class ShopScene extends Phaser.Scene {
     if(this.isLibrary)return [...libraryShelves.map(s=>({...s,y:s.y-42,h:s.h+60,kind:'library-shelf' as const,libraryCategory:s.category,speaker:s.label,shopAfter:false,text:'本棚の資料を読む。'})),{...libraryReadingDesk,x:libraryReadingDesk.x-10,y:libraryReadingDesk.y-36,w:100,h:92,kind:'library-catalogue' as const,libraryCategory:'all' as const,speaker:'閲覧台',shopAfter:false,text:'全パーツの資料を読む。'},{...libraryExit,x:420,y:559,w:120,h:45,kind:'exit' as const,label:'図書館の出口',speaker:'図書館',shopAfter:false,text:'街へ戻る。'}];
     if(this.isTown)return this.townTargets??= [
       {x:hiddenMechanicSpot.x-16,y:hiddenMechanicSpot.y-80,w:32,h:92,label:mechanicManName,speaker:mechanicManName,shopAfter:false,text:'……よく見つけたな。',kind:'mechanic-man'},
+      ...hiddenCrafts.map(p=>({x:p.x-16,y:p.y-80,w:32,h:92,label:p.name,speaker:p.name,shopAfter:false,text:'',kind:'craftsperson' as const,craftKind:p.kind})),
       ...townVenues.filter(v=>v.kind==='outdoor').map(v=>({...outdoorTimeBoardPlacement(v),label:'歴代ベストタイム TOP 5',speaker:v.name,shopAfter:false,text:'タイムを見る。',kind:'time-records' as const,circuitId:v.id as import('../data/practiceCourses').PracticeCourseId})),
       ...townVenues.map(v=>({x:v.x,y:v.y,w:v.w,h:v.h,label:v.name,speaker:v.name,shopAfter:false,text:venueMessage(v),kind:'venue' as const,venueId:v.id})),
       ...outdoorAdvisors.map(p=>({x:p.x-16,y:p.y-80,w:32,h:92,label:`${p.name}（パーツ相談）`,speaker:p.name,shopAfter:false,text:'',resolveText:()=>outdoorAdvice(p.courseId),kind:'town-person' as const})),
@@ -671,6 +682,7 @@ export class ShopScene extends Phaser.Scene {
       if(target.resolveText)target={...target,text:target.resolveText()};
       if(target.kind==='library-shelf'||target.kind==='library-catalogue')useGame.getState().openLibrary(target.libraryCategory);
       else if(target.kind==='mechanic-man')useGame.getState().talkMechanicMan();
+      else if(target.kind==='craftsperson'&&target.craftKind)useGame.getState().talkCraftsperson(target.craftKind);
       else if(target.kind==='town-person')useGame.getState().talk(target.speaker,target.text);
       else if(target.kind==='official-speed'||target.kind==='official-dirt'||target.kind==='official-technical'||target.kind==='official-final'||target.kind==='official-zenith')useGame.getState().openOfficialRace(target.kind==='official-zenith'?'zenith':target.kind==='official-final'?'final':target.kind==='official-technical'?'technical':target.kind==='official-speed'?'speed':'dirt');
       else if(target.kind==='official-reception'||this.isOfficial&&target.speaker==='大会受付係')useGame.getState().openOfficialRace();
