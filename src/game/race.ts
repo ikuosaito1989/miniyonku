@@ -11,6 +11,7 @@ import { story } from '../data/story';
 import { legends } from '../data/legends';
 import { getCircuitTrack, type CircuitId } from '../data/circuit';
 import { challenger } from '../data/challenger';
+import {bodyDesign} from '../data/bodies';
 export type RaceChallenge=boolean|'villain'|'official'|'time-attack';
 
 export interface Racer extends Entrant { driving: DrivingState; performance: Performance; }
@@ -34,10 +35,11 @@ export function createRaceState(equipment:Equipment,seed=0x5eed,condition:Machin
   let randomState=seed>>>0||1;
   const random=()=>{randomState^=randomState<<13;randomState^=randomState>>>17;randomState^=randomState<<5;return (randomState>>>0)/4294967296;};
   const lanes=[0,1,2,3,4];
+  const playerColor=Number.parseInt(bodyDesign(equipment.body).color.slice(1),16);
   for(let i=lanes.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[lanes[i],lanes[j]]=[lanes[j],lanes[i]];}
   const entrants:Entrant[]=legendChallenge
-    ?[{id:'player',name:playerName,lane:2,color:0xd94232,equipment:{...equipment}},...legends.slice(0,2).map((legend,index)=>({id:legend.id,name:legend.name,lane:index,color:index?0xe5b839:0x477de0,motorSeconds:90,equipment:{...legend.equipment}})),...rivals.slice(0,2).map(r=>({...r,equipment:{...r.equipment}}))]
-    :[{id:'player',name:playerName,lane:2,color:0xd94232,equipment:{...equipment}},...(challenge==='time-attack'?[]:isPracticeCourse(circuitId)?practiceRivals(circuitId):(circuitId==='forge'||circuitId==='zenith')?zenithRivals:circuitId==='trail'?[]:challenge==='official'?(circuitId==='grandprix'?grandprixRivals:circuitId==='comet'?technicalRivals:circuitId==='sprint'?officialSpeedRivals:officialRivals):challenge==='villain'?[challenger,...aozoraRivals.slice(0,3)]:circuitId==='grove'?wakabaRivals:circuitId==='sun'?hinataRivals:circuitId==='wind'?aozoraRivals:rivals).map(r=>({...r,equipment:{...r.equipment}}))];
+    ?[{id:'player',name:playerName,lane:2,color:playerColor,equipment:{...equipment}},...legends.slice(0,2).map((legend,index)=>({id:legend.id,name:legend.name,lane:index,color:index?0xe5b839:0x477de0,motorSeconds:90,equipment:{...legend.equipment}})),...rivals.slice(0,2).map(r=>({...r,equipment:{...r.equipment}}))]
+    :[{id:'player',name:playerName,lane:2,color:playerColor,equipment:{...equipment}},...(challenge==='time-attack'?[]:isPracticeCourse(circuitId)?practiceRivals(circuitId):(circuitId==='forge'||circuitId==='zenith')?zenithRivals:circuitId==='trail'?[]:challenge==='official'?(circuitId==='grandprix'?grandprixRivals:circuitId==='comet'?technicalRivals:circuitId==='sprint'?officialSpeedRivals:officialRivals):challenge==='villain'?[challenger,...aozoraRivals.slice(0,3)]:circuitId==='grove'?wakabaRivals:circuitId==='sun'?hinataRivals:circuitId==='wind'?aozoraRivals:rivals).map(r=>({...r,equipment:{...r.equipment}}))];
   if(bodyPaint!==null){const player=entrants.find(e=>e.id==='player')!;player.bodyPaint=bodyPaint;player.color=bodyPaint;}
   return {event:challenge==='official'||challenge==='time-attack'?'official':'shop',circuitId,phase:'ready',countdownTicks:COUNTDOWN_TICKS,time:0,seed,playerStartOffset:null,falseStartPenalty:0,racers:entrants.map((entry,index)=>{
     const entrant={...entry,lane:circuitId==='trail'||challenge==='time-attack'?2:lanes[index]};
