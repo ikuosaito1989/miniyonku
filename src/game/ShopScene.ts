@@ -669,7 +669,7 @@ export class ShopScene extends Phaser.Scene {
     }
     if(isPracticeCourse(shop.id)||isSalesShop(shop.id)&&shop.id!=='atelier'){for(const visitor of visitors)visitor.text=shop.welcome;for(const target of targets)if(target.speaker===cast.rival.name)target.text=shop.welcome;}
     if(isPracticeCourse(shop.id)){for(let i=targets.length-1;i>=0;i--)if(targets[i].kind==='legends'||targets[i].kind==='bookshelf')targets.splice(i,1);}
-    if(shop.id==='atelier'){for(const visitor of visitors)visitor.text='星皇シリーズは全種類そろっているよ。各25万円、13品で325万円。砂地では悪路タイヤや追従するシャーシを混ぜると、もっと速くできるんだ。レースはほかの模型店で挑戦してね。';for(const target of targets)if(target.speaker===cast.rival.name)target.text='ここは最初から入れる特別な工房。星皇は全種類にある最上位シリーズ。硬いスリックと悪路タイヤ、ギア比の違いなど、得意な路面は組み合わせで変わるよ。';}
+    if(shop.id==='atelier'){for(const visitor of visitors)visitor.text='星皇シリーズは全種類そろっているよ。各25万円、13品で325万円。砂地では悪路タイヤや追従するシャーシを混ぜると、もっと速くできるんだ。レースはほかの模型店で挑戦してね。';for(const target of targets)if(target.speaker===cast.rival.name)target.text='天頂決戦をクリアした人が入れる特別な工房。星皇は全種類にある最上位シリーズ。硬いスリックと悪路タイヤ、ギア比の違いなど、得意な路面は組み合わせで変わるよ。';}
     return [...targets,...visitors];
   }
   private drawTimeBoard(){

@@ -34,9 +34,9 @@ test('星皇一式は全コース完走し、悪路タイヤ混成はダート�
  // Different ratios still matter even with the strongest lightweight gear.
  assert.ok(drive('wind',{...sovereignEquipment,gear:'gear-3.5'})<paved);
 });
-test('初期から全品を購入・装着・保存再開でき、所持数と財布・主進行を維持する',async()=>{
+test('クリア後に全品を購入・装着・保存再開でき、所持数と財布を維持する',async()=>{
  const original=useGame.getState();try{
-  useGame.setState({...useGame.getInitialState(),location:'town',money:3250000,openingStep:9,tutorialStage:'done'},true);useGame.getState().enterShop('atelier');for(const id of sovereignPartIds)useGame.getState().buy(id);assert.equal(useGame.getState().money,0);
+  useGame.setState({...useGame.getInitialState(),location:'town',money:3250000,openingStep:9,tutorialStage:'done',zenithCleared:true},true);useGame.getState().enterShop('atelier');for(const id of sovereignPartIds)useGame.getState().buy(id);assert.equal(useGame.getState().money,0);
   for(const [slot,id] of Object.entries(sovereignEquipment))useGame.getState().equip(id,slot as keyof Equipment);assert.deepEqual(useGame.getState().equipment,sovereignEquipment);for(const id of sovereignPartIds)assert.equal(useGame.getState().inventory[id],1);
   const save=decodeSave({version:1,savedAt:123,game:snapshotGame(useGame.getState())});await loadSavedGame({read:async()=>save,write:async()=>{}});assert.deepEqual(useGame.getState().equipment,sovereignEquipment);assert.equal(useGame.getState().money,0);assert.equal(useGame.getState().legendRaceCompleted,false);assert.equal(useGame.getState().finalQualified,false);
  }finally{useGame.setState(original,true);}

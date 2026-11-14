@@ -358,6 +358,7 @@ export const useGame = create<GameState>((set,get) => ({
   buy: id => set(s => {
     if(s.overlay==='race'||(s.overlay==='escort'||s.overlay==='towa-escort'||s.overlay==='podium')||s.overlay==='arrival')return s;
     if(s.location==='library'||s.location==='town'||s.location==='stadium-5'||s.location==='stadium-9'||s.location==='stadium-10'||s.location==='stadium-7')return {notice:'パーツは模型店の店主から購入できます。'};
+    if(isSalesShop(s.location)&&!canEnterShop(s.location,s))return {notice:'この専門店はまだ開放されていません。街の入口で開放条件を確認してください。'};
     const result=purchase(s,id,currentShop(s.location));
     if(!result.success)return {notice:result.message};
     const consumable=id.startsWith('motor-')||id.startsWith('battery-');

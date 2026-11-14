@@ -20,9 +20,9 @@ test('星皇13品は特別店だけで販売し、従来2品の価格はわか�
  assert.equal(purchase({money:249999,inventory:{}},ids[0],modelShops.atelier).success,false);
  assert.equal(purchase({money:250000,inventory:{}},ids[0],modelShops.atelier).success,true);
 });
-test('序盤でも特別店に入り、購入・装着・保存・再開できる。主進行は解放しない',async()=>{
+test('クリア後に特別店へ入り、購入・装着・保存・再開できる',async()=>{
  const original=useGame.getState();try{
-  useGame.setState({...useGame.getInitialState(),location:'town',money:500000});
+  useGame.setState({...useGame.getInitialState(),location:'town',money:500000,zenithCleared:true});
   assert.ok(canEnterShop('atelier',useGame.getState()));assert.ok(isVenueOpen(townVenues.find(v=>v.id==='atelier')!,useGame.getState()));
   useGame.getState().enterShop('atelier');assert.equal(useGame.getState().location,'atelier');
   useGame.getState().buy(ids[0]);useGame.getState().buy(ids[1]);useGame.getState().equip(ids[1]);

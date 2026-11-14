@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {specialtyParts,specialtyShopIds,specialtyStock} from '../data/specialtyParts';
-import {modelShops,townVenues,townBlocks,townSpawn,townWalkBounds,canEnterShop,townRoads} from '../data/world';
+import {modelShops,townVenues,townBlocks,townSpawn,townWalkBounds,canEnterShop,isVenueOpen,venueMessage,townRoads} from '../data/world';
 import {isStocked} from '../data/progression';
 import {searchLibrary,librarySource} from '../data/library';
 import {parts} from '../data/parts';
@@ -17,7 +17,7 @@ test('four specialty shops have exclusive stock, catalog entries and reachable s
  assert.equal(specialtyParts.length,40);
  const obstacles=[...townVenues.map(v=>({x:v.x,y:v.y,width:v.w,height:v.h})),...townBlocks.map(v=>({x:v.x,y:v.y,width:v.w,height:v.h}))];
  for(const id of specialtyShopIds){
-  assert.equal(specialtyStock(id).length,10);assert.ok(canEnterShop(id,{legendRaceCompleted:false,villainDefeated:false}));
+  assert.equal(specialtyStock(id).length,10);assert.equal(canEnterShop(id,{legendRaceCompleted:false,villainDefeated:false}),false);
   const v=townVenues.find(v=>v.id===id)!;assert.ok(v);
   for(const road of townRoads.vertical)assert.ok(road<v.x-43||road>v.x+v.w+43);
   assert.ok(canStand(townSpawn(id),obstacles,townWalkBounds));
@@ -28,9 +28,26 @@ test('four specialty shops have exclusive stock, catalog entries and reachable s
   }
  }
 });
+test('専門店は大会の進行に合わせて開放し、入口で条件を案内する',()=>{
+ const base=useGame.getInitialState();
+ for(const [id,flag,description] of [['torque','wakabaUnlocked','若葉公式杯'],['terrain','wakabaUnlocked','若葉公式杯'],['endurance','yuunagiUnlocked','星空テクニカル杯'],['velocity','grandprixCleared','緑川グランプリ'],['atelier','zenithCleared','天頂決戦']] as const){
+  const venue=townVenues.find(v=>v.id===id)!;
+  assert.equal(canEnterShop(id,base),false,id);assert.equal(isVenueOpen(venue,base),false,id);assert.match(venueMessage(venue),new RegExp(description));
+  const unlocked={...base,[flag]:true};assert.equal(canEnterShop(id,unlocked),true,id);assert.equal(isVenueOpen(venue,unlocked),true,id);
+ }
+});
+test('旧セーブで未開放の専門店にいても購入できず、所持パーツは保持して外へ出られる',()=>{
+ const original=useGame.getState();try{
+  const id='motor-special-velocity-dash',initial=useGame.getInitialState();
+  useGame.setState({...initial,location:'velocity',money:20000,inventory:{...initial.inventory,[id]:1},equipment:{...initial.equipment,motor:id}},true);
+  useGame.getState().buy('gear-special-velocity-high');assert.equal(useGame.getState().money,20000);
+  assert.equal(useGame.getState().equipment.motor,id);assert.equal(useGame.getState().inventory[id],1);
+  useGame.getState().leaveShop();assert.equal(useGame.getState().location,'town');useGame.getState().enterShop('velocity');assert.equal(useGame.getState().location,'town');
+ }finally{useGame.setState(original,true);}
+});
 test('buy, equip and save in every new shop without changing story progression or allowing shop races',()=>{
  const original=useGame.getState();try{for(const id of specialtyShopIds){
-  useGame.setState({...useGame.getInitialState(),location:'town',money:100000,openingStep:9,tutorialStage:'done'},true);
+  useGame.setState({...useGame.getInitialState(),location:'town',money:100000,openingStep:9,tutorialStage:'done',wakabaUnlocked:true,yuunagiUnlocked:true,grandprixCleared:true},true);
   useGame.getState().enterShop(id);assert.equal(useGame.getState().location,id);
   for(const pid of specialtyStock(id))useGame.getState().buy(pid);
   const state=useGame.getState();for(const pid of specialtyStock(id))assert.equal(state.inventory[pid],1);
