@@ -361,15 +361,15 @@ export class ShopScene extends Phaser.Scene {
       camera.setBounds(0,0,townSize.width,townSize.height);
       if(this.player){
         camera.startFollow(this.player,false,.18,.18);
-        // Keep the venue roof in view while the avatar stands at its entrance.
-        camera.setFollowOffset(0,height*.18/zoom.y);
+        // 導入中は下部の会話枠に主人公が隠れない位置へ寄せる。
+        camera.setFollowOffset(0,height*(useGame.getState().openingActive?-.2:.18)/zoom.y);
       }
       return;
     }
     if(compact){
       const camera=this.cameras.main;
       camera.setZoom(zoom.x,zoom.y);camera.setBounds(roomView.x,roomView.y,roomView.width,roomView.height);
-      if(this.player)camera.startFollow(this.player,false,.15,.15);
+      if(this.player){camera.startFollow(this.player,false,.15,.15);camera.setFollowOffset(0,useGame.getState().openingActive?-height*.2/zoom.y:0);}
       return;
     }
     this.cameras.main.stopFollow();this.cameras.main.removeBounds();
@@ -543,6 +543,7 @@ export class ShopScene extends Phaser.Scene {
     if(!this.player)return;
     this.updateTownCrowd?.(_time);
     if(useGame.getState().openingActive){this.updateOpening(delta);return;}
+    if(this.openingPhase!==-1)this.fitCamera();
     this.openingPhase=-1;this.openingWalk=null;
     if(!useGame.getState().overlay&&koyaEscortActive(useGame.getState().koyaEscortStep))useGame.getState().resumeKoyaEscort();
     if(!useGame.getState().overlay&&koyaEscortActive(useGame.getState().towaEscortStep))useGame.getState().resumeTowaEscort();
