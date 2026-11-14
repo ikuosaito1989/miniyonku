@@ -93,7 +93,7 @@ export default function TrialView(){
         if(!submitted&&race.racers.find(r=>r.id==='player')?.driving.status==='finished'){
           submitted=true;
           const current=useGame.getState(),record=raceSubmission(race,current.playerName,skippedRace.current);
-          if(record&&!tutorialActive(current.tutorialStage))void queueOnlineRecord(record);
+          if(record&&!current.eventReplay&&!tutorialActive(current.tutorialStage))void queueOnlineRecord(record);
           else useOnlineStatus.setState({message:skippedRace.current?'裏技でスキップしたレースはオンライン登録対象外です。':tutorialActive(current.tutorialStage)?'チュートリアル中はオンライン登録対象外です。':'星皇装備、または対象外の記録のためオンライン登録しません。'});
         }
         setState(race);

@@ -22,6 +22,7 @@ import {emptyCup,cupComplete,cupPlayerPlace,cupProgression,enterCupHeat,finishCu
 import { officialRace, type OfficialRound } from '../data/officialRace';
 import { doctor, doctorGiftBody, doctorGiftMessage } from '../data/doctor';
 import {story} from '../data/story';
+import {replayEvents,type ReplayEventId} from './eventReplay';
 import { replaceConsumable } from './consumables';
 import { reviewRace, type RaceReview } from './raceAdvice';
 import type { ArrivalKind } from './arrival';
@@ -67,6 +68,7 @@ export interface GameState extends Wallet {
   leaveShop:()=>void;enterShop:(id:ShopId)=>void;
   outdoorCourse:PracticeCourseId|null;startOutdoorRace:(id:PracticeCourseId)=>void;
   cheatUsed:boolean;cheatReturnToSettings:boolean;
+  eventReplay:{game:SavedGame;checkpoint:SavedGame|null}|null;startEventReplay:(id:ReplayEventId)=>void;endEventReplay:()=>void;
   openCheat:(fromSettings?:boolean)=>void;applyCheat:(amount:'max'|1000)=>void;
   purchaseCount:number;
   lastRaceReview:RaceReview|null;
@@ -100,7 +102,7 @@ function outdoorRaceState(s:GameState,id:PracticeCourseId):Partial<GameState>{
  if(s.location!=='town'||s.overlay!==null||s.openingActive||s.gameOver||!isPracticeCourse(id)||!canEnterShop(id,s))return {};
  return {raceChoiceCircuit:null,raceChoiceFromBoard:false,mobChallenge:null,onlineChallenge:null,outdoorCourse:id,townReturnVenue:id,overlay:'race',officialChallengeActive:false,officialReplayActive:false,officialQualificationNotice:false,shopAfter:false,notice:'',legendChallengeActive:false,legendDebriefPending:false,villainChallengeActive:false,villainDebriefPending:false,raceAttempt:s.raceAttempt+1,raceSeed:nextRaceSeed(s.raceSeed),lastPrize:0,usageSeconds:0,qualificationNotice:false};
 }
-export const useGame = create<GameState>((set) => ({
+export const useGame = create<GameState>((set,get) => ({
   playerName:'',playSeconds:0,setPlayerName:name=>set({playerName:name.trim().slice(0,24)}),
   adviceThinking:false,bodyPaint:null,setBodyPaint:color=>set({bodyPaint:decodeBodyPaint(color)}),tutorialStage:'pending',tutorialReturn:null,retryCheckpoint:null,
   retryFromSave:()=>set(s=>{
@@ -294,6 +296,22 @@ export const useGame = create<GameState>((set) => ({
   openSettings:()=>set(s=>(s.overlay==='escort'||s.overlay==='towa-escort'||s.overlay==='podium')?{}:{overlay:'settings',shopAfter:false,notice:''}),
   openCheat:(fromSettings=false)=>set({overlay:'cheat',shopAfter:false,notice:'',cheatReturnToSettings:fromSettings}),
   applyCheat:(amount)=>set(s=>({money:amount==='max'?9_999_999:s.money+1000,cheatUsed:s.cheatUsed||amount==='max',overlay:s.cheatReturnToSettings?'settings':null,cheatReturnToSettings:false,notice:''})),
+  eventReplay:null,
+  startEventReplay:id=>{
+    const s=get();if(!s.cheatUsed||s.overlay!=='cheat'||s.eventReplay||!replayEvents.some(event=>event.id===id))return;
+    const eventReplay={game:snapshotGame(s),checkpoint:s.retryCheckpoint?structuredClone(s.retryCheckpoint):null};
+    const common={eventReplay,openingActive:false,openingTour:null,openingStep:OPENING_END,tutorialStage:'done' as const,tutorialReturn:null,gameOver:false,podiumPending:false,officialChallengeActive:false,legendChallengeActive:false,villainChallengeActive:false,arrivalEvent:null,dialogueStage:'none' as const,shopAfter:false,townReturnVenue:null,notice:'',koyaEscortStep:0,towaEscortStep:0};
+    if(id==='opening'){set({...common,openingActive:true,openingStep:0,tutorialStage:'pending',location:'town',lastShop:'komorebi',overlay:'opening'});return;}
+    if(id==='legend'){set({...common,location:'komorebi',lastShop:'komorebi',overlay:'arrival',arrivalEvent:'legend',legendRaceCompleted:false,unlockedRaces:[...new Set([...s.unlockedRaces,nextShopRace.id])]});return;}
+    if(id==='doctor'){set({...common,location:'komorebi',lastShop:'komorebi',overlay:'arrival',arrivalEvent:'doctor',legendRaceCompleted:true,doctorGiftReceived:false});return;}
+    if(id==='seiran'){set({...common,location:'komorebi',lastShop:'komorebi',overlay:'dialogue',speaker:s.playerName||story.player,dialogue:'これがうわさのセイランかー！ このマシンと一緒に、1番を目指して頑張るぞー！',dialogueStage:'doctor-reveal'});return;}
+    if(id==='villain'){set({...common,location:'aozora',lastShop:'aozora',overlay:'arrival',arrivalEvent:'villain',aozoraWon:true,villainDefeated:false});return;}
+    if(id==='koya'){set({...common,location:'wakaba',lastShop:'wakaba',overlay:'escort',koyaEscortStep:1});return;}
+    if(id==='towa'){set({...common,location:'yuunagi',lastShop:'yuunagi',overlay:'towa-escort',towaEscortStep:1});return;}
+    const location=id==='wakaba-cup'?'stadium-5':id==='technical-cup'?'stadium-9':id==='final-cup'?'stadium-10':'stadium-7';
+    set({...common,location,overlay:null,officialQualified:true,thirdOfficialQualified:true,finalQualified:true,zenithQualified:true,zenithCleared:false,wakabaCup:emptyCup(),technicalCup:emptyCup(),finalCup:emptyCup(),zenithCup:emptyCup()});get().openOfficialRace();
+  },
+  endEventReplay:()=>set(s=>s.eventReplay?{...useGame.getInitialState(),...s.eventReplay.game,retryCheckpoint:s.eventReplay.checkpoint,eventReplay:null,overlay:'cheat',cheatReturnToSettings:true}:s),
   equip: (id,slot) => set(s => {
     if(s.overlay==='race')return s;
     const equipment=equipPart(s.equipment,s.inventory,id,slot),selectedUnits={...s.selectedUnits};

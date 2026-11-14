@@ -86,6 +86,7 @@ export function App(){
   },[]);
   return <main>
     <GameAudio/>
+    {started&&game.eventReplay&&<button className="event-replay-exit" onClick={game.endEventReplay}>イベントを終了して戻る</button>}
     {!started ? <TitleScreen needsName={!game.playerName} onName={name=>{useGame.getState().setPlayerName(name);void setOnlineDisplayName(name).catch(()=>{});}} onStart={()=>{useGame.getState().startOpening();useGame.getState().resumeTutorial();useGame.getState().resumeKoyaEscort();useGame.getState().resumeTowaEscort();setStarted(true);}}/> : <section className="game-shell" aria-label="ゲーム画面">
       <div className="stage"><ShopWorld/><WorldTransitionLoading active={started} initialLoading={started}/>
         {game.overlay===null&&<div className="world-toolbar"><button className="game-settings-open" onClick={game.openSettings}>設定</button>{game.location==='library'?<div className="library-room-guide"><div><strong>緑川町立図書館</strong><span>{game.nearby||'本棚をタップして近づくと読めます'}</span></div><button onClick={()=>game.openLibrary()}>全蔵書</button></div>:!tutorialActive(game.tutorialStage)&&<MissionGuide/>}<AudioControls floating/></div>}

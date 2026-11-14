@@ -29,7 +29,8 @@ export function startAutoSave(storage:SaveStorage,status:(status:SaveStatus)=>vo
         const game=pending;pending=null;
         status({phase:'saving',savedAt:lastSaved,message:'保存中…'});
         try{
-          const data=decodeSave({version:1,savedAt:Date.now(),game,...(store.getState().retryCheckpoint?{checkpoint:store.getState().retryCheckpoint}:{})});
+          const state=store.getState(),checkpoint=state.eventReplay?state.eventReplay.checkpoint:state.retryCheckpoint;
+          const data=decodeSave({version:1,savedAt:Date.now(),game,...(checkpoint?{checkpoint}:{})});
           await storage.write(data);lastSaved=data.savedAt;
           status({phase:'saved',savedAt:lastSaved,message:'自動セーブ済み'});
         }catch(error){
