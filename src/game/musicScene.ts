@@ -1,5 +1,5 @@
 import type { GameState } from './store';
-export type MusicScene='shop'|'race'|'official'|'podium'|'event';
+export type MusicScene='shop'|'model-shop'|'race'|'official'|'podium'|'event';
 type SceneState=Pick<GameState,'overlay'|'arrivalEvent'|'dialogueStage'|'speaker'|'officialChallengeActive'|'location'>;
 const eventSpeakers=['風見怜','火野岳','黒岩豪','橘斗和','山城昊也','青葉源蔵'];
 export function selectMusicScene(state:SceneState):MusicScene{
@@ -12,5 +12,6 @@ export function selectMusicScene(state:SceneState):MusicScene{
     const speaker=state.speaker.replace(/[\s　]/g,'');
     if(eventSpeakers.some(name=>speaker.includes(name)))return 'event';
   }
+  if(['komorebi','aozora','hinata','wakaba','yuunagi','akatsuki','hoshikuzu'].includes(state.location))return 'model-shop';
   return 'shop';
 }

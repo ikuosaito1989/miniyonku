@@ -37,7 +37,7 @@ test('初回操作後だけ再生。ロード中のシーン切替で旧BGMが�
   }
   Object.defineProperty(globalThis,'AudioContext',{configurable:true,value:FakeContext});
   globalThis.fetch=(url)=>new Promise<Response>(resolve=>pending.set(String(url),resolve));
-  const player=new MusicPlayer({shop:{url:'shop'},race:{url:'race'},event:{url:'event'},official:{url:'official'},podium:{url:'podium'}},()=>{});
+  const player=new MusicPlayer({'model-shop':{url:'model-shop'},shop:{url:'shop'},race:{url:'race'},event:{url:'event'},official:{url:'official'},podium:{url:'podium'}},()=>{});
   const settle=()=>new Promise(resolve=>setTimeout(resolve,25));
   try{
     assert.equal(contexts.length,0);player.unlock();await settle();
@@ -78,7 +78,7 @@ test('Safariで最初のresumeが未解決でも次の操作で再試行し、BG
   }
   Object.defineProperty(globalThis,'AudioContext',{configurable:true,value:Context});
   globalThis.fetch=async()=>new Response(packed);
-  const player=new MusicPlayer({shop:{url:'shop'},race:{url:'race'},event:{url:'event'},official:{url:'official'},podium:{url:'podium'}},()=>{});
+  const player=new MusicPlayer({'model-shop':{url:'model-shop'},shop:{url:'shop'},race:{url:'race'},event:{url:'event'},official:{url:'official'},podium:{url:'podium'}},()=>{});
   const flush=()=>new Promise(resolve=>setTimeout(resolve,25));
   try{
     player.unlock();assert.equal(context!.requests,1);
