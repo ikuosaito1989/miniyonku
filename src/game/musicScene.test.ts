@@ -10,8 +10,13 @@ test('兄弟・黒岩・博士は登場からイベント会話まで同じ曲�
  for(const location of ['stadium-5','stadium-9','stadium-10','stadium-7'] as const)assert.equal(selectMusicScene({...base,overlay:'race',location,officialChallengeActive:false}),'official');
  for(const overlay of ['escort','towa-escort'] as const)assert.equal(selectMusicScene({...base,overlay}),'event');
  assert.equal(selectMusicScene({...base,overlay:'podium',officialChallengeActive:true}),'podium');
- for(const overlay of [null,'setting','shop','settings'] as const)assert.equal(selectMusicScene({...base,overlay,speaker:'青葉 源蔵',dialogueStage:'doctor-gift'}),'shop');
+ for(const overlay of [null,'shop','settings'] as const)assert.equal(selectMusicScene({...base,overlay,speaker:'青葉 源蔵',dialogueStage:'doctor-gift'}),'shop');
  assert.equal(selectMusicScene({...base,overlay:'dialogue',speaker:'佐伯 匠'}),'shop');
+});
+test('セッティング画面を開くと専用曲に切り替わり、閉じると店の曲に戻る',()=>{
+ const base={...useGame.getInitialState(),location:'komorebi' as const};
+ assert.equal(selectMusicScene({...base,overlay:'setting'}),'setting');
+ assert.equal(selectMusicScene({...base,overlay:null}),'model-shop');
 });
 test('模型店では専用 BGM、街や専門店では従来の BGM を使う',()=>{
  const base=useGame.getInitialState();

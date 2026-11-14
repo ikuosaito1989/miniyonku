@@ -34,7 +34,7 @@ export function GameAudio(){
     return()=>{unsubscribe();window.removeEventListener('pointerdown',unlock,true);window.removeEventListener('pointerup',unlock,true);window.removeEventListener('touchend',unlock,true);window.removeEventListener('keydown',key,true);document.removeEventListener('visibilitychange',visibility);window.removeEventListener('focus',visibility);window.removeEventListener('pageshow',visibility);music.dispose();player.current=null;};
   },[]);
   useEffect(()=>{
-    const fallback:Record<typeof scene,typeof scene>={shop:'shop','model-shop':'model-shop',race:'race',event:musicTracks.event.ready?'event':'shop',official:musicTracks.official.ready?'official':'race',podium:musicTracks.podium.ready?'podium':musicTracks.event.ready?'event':'shop'};
+    const fallback:Record<typeof scene,typeof scene>={setting:'setting',shop:'shop','model-shop':'model-shop',race:'race',event:musicTracks.event.ready?'event':'shop',official:musicTracks.official.ready?'official':'race',podium:musicTracks.podium.ready?'podium':musicTracks.event.ready?'event':'shop'};
     player.current?.setScene(fallback[scene]);
   },[scene]);
   return null;
