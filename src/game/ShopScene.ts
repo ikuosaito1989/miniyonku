@@ -369,6 +369,9 @@ export class ShopScene extends Phaser.Scene {
     if(compact){
       const camera=this.cameras.main;
       camera.setZoom(zoom.x,zoom.y);camera.setBounds(roomView.x,roomView.y,roomView.width,roomView.height);
+      if(useGame.getState().openingActive&&openingIndex(useGame.getState())===3){
+        const owner=this.cast.owner;camera.stopFollow();camera.centerOn(owner.x,owner.y+height*.2/zoom.y);return;
+      }
       if(this.player){camera.startFollow(this.player,false,.15,.15);camera.setFollowOffset(0,useGame.getState().openingActive?-height*.2/zoom.y:0);}
       return;
     }
@@ -526,6 +529,7 @@ export class ShopScene extends Phaser.Scene {
     if(this.openingPhase!==step){
       this.openingPhase=step;this.cancelRoute();this.gesture.reset();this.pendingTarget=null;this.input.keyboard?.resetKeys();
       const spawn=openingSpawn(step);this.player.setPosition(spawn.x,spawn.y);this.player.setDepth(spawn.y);
+      this.fitCamera();
       this.playerSprite.setTexture(`person-player-${step<2?'down':'up'}-0`);
       this.openingWalk=openingIsWalk(step)?createOpeningWalk(step,spawn,this.solids):null;
       if(step===3)this.playEventSound('arrival');
