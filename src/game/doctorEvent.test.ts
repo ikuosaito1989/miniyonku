@@ -45,7 +45,10 @@ test('兄弟とのレース後の会話→博士の歩行登場→接触でセ�
     assert.equal(useGame.getState().speaker,doctor.name);assert.equal(useGame.getState().dialogueStage,'doctor-gift');
     assert.equal(useGame.getState().inventory[doctorGiftBody],1);assert.equal(useGame.getState().doctorGiftReceived,true);
     assert.equal(useGame.getState().equipment.body,starterEquipment.body);
-    useGame.getState().completeArrival();useGame.getState().close();useGame.getState().beginArrival('doctor');
+    useGame.getState().completeArrival();useGame.getState().close();
+    assert.equal(useGame.getState().dialogueStage,'doctor-reveal');assert.match(useGame.getState().dialogue,/うわさのセイラン/);assert.match(useGame.getState().dialogue,/1番/);
+    assert.equal(useGame.getState().inventory[doctorGiftBody],1);assert.equal(useGame.getState().equipment.body,starterEquipment.body);
+    useGame.getState().close();useGame.getState().beginArrival('doctor');
     assert.equal(useGame.getState().overlay,null);assert.equal(useGame.getState().inventory[doctorGiftBody],1);
     const game=snapshotGame(useGame.getState());assert.deepEqual(decodeSave({version:1,savedAt:123,game}).game,game);
   }finally{useGame.setState(original);}

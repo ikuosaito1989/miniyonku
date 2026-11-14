@@ -21,6 +21,7 @@ import {yuunagiTimeLimit} from '../data/yuunagiCircuit';
 import {emptyCup,cupComplete,cupPlayerPlace,cupProgression,enterCupHeat,finishCupHeat,forfeitCupHeat,raceCupHeat,type CupProgress} from './cup';
 import { officialRace, type OfficialRound } from '../data/officialRace';
 import { doctor, doctorGiftBody, doctorGiftMessage } from '../data/doctor';
+import {story} from '../data/story';
 import { replaceConsumable } from './consumables';
 import { reviewRace, type RaceReview } from './raceAdvice';
 import type { ArrivalKind } from './arrival';
@@ -39,7 +40,7 @@ import { breakInPractice } from '../data/proficiency';
 import { hintBooks, nextShopRace } from '../data/shopHints';
 import { isSalesShop, canEnterShop, currentShop, type ShopId, type WorldLocation } from '../data/world';
 import { challenger, challengerInvitation } from '../data/challenger';
-export type DialogueStage='none'|'legend-intro'|'legend-invite'|'legend-debrief'|'villain-intro'|'villain-win'|'villain-loss'|'doctor-gift'|'official-invite';
+export type DialogueStage='none'|'legend-intro'|'legend-invite'|'legend-debrief'|'villain-intro'|'villain-win'|'villain-loss'|'doctor-gift'|'doctor-reveal'|'official-invite';
 export interface GameState extends Wallet {
   playerName:string;playSeconds:number;setPlayerName:(name:string)=>void;
   raceChoiceCircuit:CircuitId|null;raceChoiceFromBoard:boolean;mobChallenge:CircuitId|null;openRaceChoice:(id:CircuitId)=>void;startMobTrial:(id:CircuitId)=>void;
@@ -322,6 +323,7 @@ export const useGame = create<GameState>((set) => ({
     if(s.overlay==='race'&&s.location==='wakaba'&&s.koyaEscortStep===1)return {overlay:'escort',shopAfter:false,notice:''};
     if(s.overlay==='race'&&s.location==='komorebi'&&!s.officialChallengeActive&&!s.legendChallengeActive&&tutorialActive(s.tutorialStage))return {overlay:null,shopAfter:false,notice:''};
     if(s.overlay==='dialogue'&&s.dialogueStage==='legend-debrief'&&s.legendRaceCompleted&&!s.doctorGiftReceived)return {overlay:'arrival',arrivalEvent:'doctor',dialogueStage:'none',shopAfter:false};
+    if(s.overlay==='dialogue'&&s.dialogueStage==='doctor-gift')return {overlay:'dialogue',speaker:s.playerName||story.player,dialogue:'これがうわさのセイランかー！ このマシンと一緒に、1番を目指して頑張るぞー！',dialogueStage:'doctor-reveal',shopAfter:false};
     if(s.overlay==='cheat')return {overlay:s.cheatReturnToSettings?'settings':null,cheatReturnToSettings:false,shopAfter:false,notice:''};
     if((s.overlay==='race'||s.overlay==='podium')&&s.officialChallengeActive){
       const updated=updateCup(s,forfeitCupHeat(activeCup(s))),cup=s.location==='stadium-7'?updated.zenithCup:s.location==='stadium-10'?updated.finalCup:s.location==='stadium-9'?updated.technicalCup:updated.wakabaCup,done=cupComplete(cup,cupKind(s));

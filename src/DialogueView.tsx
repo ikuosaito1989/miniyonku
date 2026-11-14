@@ -17,6 +17,9 @@ import gaku from './assets/portraits/gaku-pop.webp';
 import koya from './assets/portraits/koya-pop.webp';
 import mechanic from './assets/portraits/mechanic-pop.webp';
 import './dialogue.css';
+import seiranMachine from './assets/title/seiran-machine.webp';
+import {PlayerPortrait} from './PlayerPortrait';
+import './seiran-reveal.css';
 
 const portraits:Record<DialoguePersonId,string>={ren:mechanic,sou:mechanic,momo:guide,akatsukiOwner:owner,senior:rival,yuunagiOwner:owner,atelierOwner:owner,wakabaOwner:owner,venueStaff:owner,offroader:mechanic,owner,aozoraOwner:owner,hinataOwner:owner,villain:rival,rival,guide,mechanic,legendRei:rei,legendGaku:gaku,legendKoya:koya,doctor:owner};
 export function DialogueView(){
@@ -49,6 +52,12 @@ export function DialogueView(){
     };
     window.addEventListener('keydown',key);return()=>window.removeEventListener('keydown',key);
   });
+  if(dialogueStage==='doctor-reveal')return <div className="seiran-reveal-layer">
+    <section ref={panel} className="seiran-reveal" role="dialog" aria-modal="true" aria-labelledby="seiran-reveal-title" aria-describedby="seiran-reveal-message">
+      <div className="seiran-reveal-frame"><div className="seiran-reveal-screen"><div className="seiran-reveal-rays"/><svg className="seiran-reveal-hand" viewBox="0 0 500 220" aria-hidden="true"><path d="M42 139 Q29 117 47 109 Q65 104 100 124 L148 132 Q126 114 125 99 Q124 88 136 87 Q149 86 171 106 L210 128 L321 128 Q346 127 364 113 L431 61 Q452 48 461 61 Q468 71 454 84 L408 128 Q391 149 370 162 Q341 184 294 184 L196 193 Q157 196 122 182 L64 163 Q47 157 42 139Z" fill="#d89565" stroke="#854b37" strokeWidth="7"/><path d="M159 146 Q228 157 304 143 M188 162 Q242 172 300 159" fill="none" stroke="#b46f4e" strokeWidth="5" strokeLinecap="round"/></svg><img src={seiranMachine} alt="白と青のマシン、セイラン"/></div><div className="seiran-reveal-speakers" aria-hidden="true"><i/><i/></div></div>
+      <div className="seiran-reveal-dialogue"><div className="seiran-reveal-face"><PlayerPortrait/></div><div><h2 id="seiran-reveal-title">{playerName||story.player}</h2><p id="seiran-reveal-message">{dialogue}</p><button ref={node=>{buttons.current[0]=node;}} onClick={close}>よーし、走ろう！ ▸</button></div></div>
+    </section>
+  </div>;
   return <div className="dialogue-layer">
     <section ref={panel} className="conversation" role="dialog" aria-modal="true" aria-labelledby="conversation-speaker" aria-describedby="conversation-message" aria-busy={adviceThinking}>
       <div className="conversation-portrait" aria-hidden="true">
