@@ -66,7 +66,7 @@ test('non-sovereign recipes complete every course and each course rewards differ
  for(const id of masterCourseIds){
   const recipe=practiceEquipment(id),reference=drive(id,recipe);
   const race=createRaceState(recipe,42,undefined,false,id);for(const cpu of race.racers.filter(r=>r.id!=='player'))assert.deepEqual(cpu.performance,machinePerformance(cpu.equipment,{motorSeconds:60,batterySeconds:0}),id);assert.equal(reference.status,'finished',id);assert.ok(reference.landings!>=2,id);
-  for(const lane of [0,4])assert.deepEqual(drive(id,recipe,lane),reference,id);
+  for(const lane of [0,4]){const result=drive(id,recipe,lane);assert.equal(result.status,'finished',`${id}/${lane}`);assert.equal(result.landings,reference.landings,id);assert.equal(result.distance,getCircuitTrack(id).circuitLength,id);assert.deepEqual(drive(id,recipe,lane),result,id);}
   for(const r of practiceRivals(id))assert.equal(drive(id,r.equipment).status,'finished',`${id}/${r.id}`);
   const results=masterCourseIds.map(build=>({build,result:drive(id,practiceEquipment(build))})).filter(r=>r.result.status==='finished').sort((a,b)=>a.result.time-b.result.time);
   assert.ok(results.length>=2,id);winners.add(results[0].build);

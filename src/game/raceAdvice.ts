@@ -50,7 +50,7 @@ export function raceAdvice(state:RaceAdviceContext){
   if(state.shopId==='atelier')return '星霧模型工房は星皇シリーズ全11種類・13品の販売専門店。各250000円、全品3250000円です。モーターとシャーシの2品は500000円。基礎性能は最上位ですが、深い砂はデューンタイヤ、凹凸はフレックスシャーシ、急坂は高トルクギアなど、専門品を混ぜるとさらに速くできる余地があります。星皇モーター・電池は消耗なし。制振は合計90%が上限なので、十分ならダンパーを軽量品やスライドへ替える選択もあります。他の模型店で試走してみよう。';
   const shop=modelShops[state.shopId],adviceCircuitId=state.shopId==='akatsuki'?'zenith':shop.circuitId,lines=['レース相談は僕に任せて。'];
   if(state.review?.circuitId===adviceCircuitId)lines.push(state.review.text);
-  else lines.push(state.shopId==='akatsuki'?'天頂決戦向けに、最後のコース条件で装備を考えよう。':'この店のレース記録はまだないね。今の装備で改善できる点を見てみよう。');
+  else lines.push(state.shopId==='akatsuki'?'あかつき模型店から天頂決戦向けに、最後のコース条件で装備を考えよう。':'この店のレース記録はまだないね。今の装備で改善できる点を見てみよう。');
   if(state.shopId==='akatsuki'){
     lines.push('まず試す構成は、セイラン／テンペスト／4:1／エクリプス／アペックス／ゼニス電池・ホイール・前中ローラー／チタンシャフト／プラチナ端子／後ろクラウン／ジャイロ＋駆動PRO＋スライドダンパー。ゼニスの公式最終コースで完走・勝利を確認した構成だよ。テンペストは約60秒ブレークインし、電池は新品にしよう。');
     lines.push('ゼニスは縦ループ、砂地、坂、ジャンプ2か所、終盤の連続S字が続く。4:1でループと坂の駆動力を残し、アペックスとダンパーで着地、ローラーとジャイロでS字の安定を取る。3.5:1は最高速が伸びる代わりにループで失速しやすい。');

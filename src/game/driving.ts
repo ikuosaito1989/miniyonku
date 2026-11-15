@@ -117,7 +117,7 @@ export function stepDriving(state: DrivingState, performance: Performance, laneO
     const rollback=Math.min(state.distance,Math.max(.015,speed*FIXED_STEP));
     return {...state,time:state.time+FIXED_STEP,distance:state.distance-rollback,speed:0,status:'out',stopReason:'climb'};
   }
-  if(!airborne&&speed<.035&&force<resistance+wheelResistance+slope){
+  if(!airborne&&speed<.035&&force<resistance+wheelResistance+slope&&!(track.circuit.surface.roughness>0&&!track.obstacles&&!track.hasHills&&force>0&&road.traction>0)){
     return {...state,time:state.time+FIXED_STEP,distance:state.distance,speed:0,status:'out',stopReason:'blocked'};
   }
   if(path?.loopRadius&&Math.cos(path.loopAngle)<-.25&&speed**2/path.loopRadius<9.81*.92)stress+=FIXED_STEP*2;

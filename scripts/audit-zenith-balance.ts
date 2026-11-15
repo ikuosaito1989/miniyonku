@@ -1,0 +1,3 @@
+import {zenithEquipment} from '../src/data/zenithRace';
+import {createRaceState,startRace,stepRace,launchPlayer,rankRacers} from '../src/game/race';
+for(const equipment of [zenithEquipment,{...zenithEquipment,rollerRear:'roller-zenith'},{...zenithEquipment,motor:'motor-titan',gear:'gear-3.5'}]){let r=startRace(createRaceState(equipment,42,{motorSeconds:60,batterySeconds:0},false,'forge'));while(r.phase==='countdown')r=stepRace(r);r=launchPlayer(r);for(let i=0;i<48000&&r.phase!=='finished';i++)r=stepRace(r);console.log(equipment.motor,equipment.gear,equipment.rollerRear);for(const x of rankRacers(r))console.log(x.id,x.lane,x.driving.status,x.driving.stopReason,x.driving.time.toFixed(4),JSON.stringify(x.performance));}

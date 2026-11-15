@@ -272,7 +272,7 @@ export function buildMachineModel(racerColor:number,equipment:Equipment,appearan
     }else if(accessoryId==='accessory-stabilizer'){
       add(new THREE.BoxGeometry(.13,.006,.018),partMaterial(accessoryId,70),0,.027,-.07).name='low-stabilizer-bar';
       for(const side of [-1,1])add(new THREE.CylinderGeometry(.006,.006,.012,12),partAccent(accessoryId,80),side*.064,.034,-.07).name='low-stabilizer-end';
-    }else if(/support|drive|bearing/.test(accessoryId)){
+    }else if(/support|drive|bearing|brace/.test(accessoryId)){
       for(const side of [-1,1])add(new THREE.BoxGeometry(.008,.012,.11),partMaterial(accessoryId,75),side*.07,.031,0).name='underbody-support';
     }
     for(const item of car.children.slice(accessoryStart)){item.userData.partId=accessoryId;item.userData.equipmentSlot=['accessory','accessory2','accessory3'][accessoryIndex];}

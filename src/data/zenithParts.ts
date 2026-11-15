@@ -10,7 +10,7 @@ export const zenithParts=[
  part('tire-hybrid','tire','ハイブリッド・マイクロトレッド',2400,'薄いトレッドで砂をつかみ、舗装でも転がりを残す万能タイヤ。',{diameter:26,grip:1.6,weight:9,pavedDrag:.004,compliance:2,roughResistance:.35,damping:.1},'径26 mm / グリップ1.60 / 悪路抵抗×0.35'),
  part('tire-dunepro','tire','デューン・ソフトプロ',2500,'深い砂とジャンプ着地を重視する最上位悪路タイヤ。舗装では軽量型より抵抗が増す。',{diameter:27,grip:1.5,weight:11,pavedDrag:.012,compliance:2.8,roughResistance:.2,damping:.18},'径27 mm / 追従×2.80 / 制振18%'),
  part('tire-apex','tire','アペックス・ハイグリップ',2600,'連続旋回に強い軽量タイヤ。砂地はフレックスシャーシや制振パーツと組み合わせる。',{diameter:26,grip:1.85,weight:7,compliance:1.6,roughResistance:.55,damping:.08},'径26 mm / グリップ1.85 / 7 g'),
- part('wheel-zenith','wheel','ゼニス・フローティング8',2800,'内外輪の回転差を逃がす最軽量クラスの上位ホイール。舗装旋回と再加速向け。',{weight:3,diameter:17,cornerDrag:.3},'3 g / 旋回抵抗×0.30'),
+ part('wheel-zenith','wheel','ゼニス・フローティング8',2800,'内外輪の回転差を逃がす最軽量クラスの上位ホイール。舗装旋回と再加速向け。',{weight:2.5,diameter:17,cornerDrag:.25},'2.5 g / 旋回抵抗×0.25'),
  part('wheel-tough','wheel','タフリム・クロス10',2600,'着地を支える軽量強化リム。砂用タイヤとの組み合わせに適する。',{weight:4,diameter:17,cornerDrag:.42},'4 g / 旋回抵抗×0.42'),
  part('roller-zenith','roller','ゼニス・セラミックガイド',2900,'低摩擦と軽さを両立した最上位ローラー。前中後を1セットで装着可能。',{friction:.022,weight:5,stability:1.2,damping:.08},'摩擦0.022 / 安定1.20 / 5 g'),
  part('roller-crown','roller','クラウン・ツインガイド',3200,'上下のガイドで高速旋回と着地を支える。軽量ローラーより重いが安定性が高い。',{friction:.04,weight:7,stability:1.35,damping:.18},'摩擦0.040 / 安定1.35 / 制振18%'),

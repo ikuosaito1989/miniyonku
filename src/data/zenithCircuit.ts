@@ -37,7 +37,7 @@ export function buildZenithTrack(base:CircuitTrack,practice=false,profile?:Maste
  const sample=(distance:number):Point=>{
   const d=Math.max(0,Math.min(circuitLength,distance));let lo=0,hi=lengths.length-1;while(lo+1<hi){const m=(lo+hi)>>>1;if(lengths[m]<=d)lo=m;else hi=m;}
   const u=(d-lengths[lo])/(lengths[hi]-lengths[lo]),a=points[lo],b=points[hi];
-  const extension=distance-d,span=lengths[hi]-lengths[lo];return {x:mix(a.x,b.x,u)+(b.x-a.x)/span*extension,y:mix(a.y,b.y,u)+(b.y-a.y)/span*extension,z:mix(a.z,b.z,u)+(b.z-a.z)/span*extension,loopAngle:mix(a.loopAngle,b.loopAngle,u),loopRadius:Math.max(a.loopRadius,b.loopRadius),bank:mix(a.bank,b.bank,u)};
+  const extension=distance-d,span=lengths[hi]-lengths[lo];return {x:mix(a.x,b.x,u)+(b.x-a.x)/span*extension,y:mix(a.y,b.y,u)+(b.y-a.y)/span*extension,z:mix(a.z,b.z,u)+(b.z-a.z)/span*extension,loopAngle:mix(a.loopAngle,b.loopAngle,u),loopRadius:Math.max(a.loopRadius,b.loopRadius),bank:a.bank+Math.atan2(Math.sin(b.bank-a.bank),Math.cos(b.bank-a.bank))*u};
  };
  const center=(d:number)=>{const p=sample(d);return {...p,y:p.y+base.startRampHeight(d)+obstacleHeight(d)};};
  const pose=(distance:number)=>{

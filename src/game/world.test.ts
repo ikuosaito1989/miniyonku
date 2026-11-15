@@ -88,8 +88,8 @@ test('旧セーブで兄弟に挑戦済みでも完走済みとは推定せず�
 
 test('街の模型店・大会会場・屋外コースは通路からすべて調べられ、未開放店は準備中',()=>{
   assert.equal(townVenues.filter(v=>v.kind==='shop').length,12);
-  assert.equal(townVenues.filter(v=>v.kind==='shop'&&!isVenueOpen(v,{legendRaceCompleted:true,villainDefeated:false})).length,5);
-  assert.equal(townVenues.filter(v=>v.kind==='shop'&&!isVenueOpen(v,{legendRaceCompleted:true,villainDefeated:true})).length,4);
+  assert.equal(townVenues.filter(v=>v.kind==='shop'&&!isVenueOpen(v,{legendRaceCompleted:true,villainDefeated:false})).length,10);
+  assert.equal(townVenues.filter(v=>v.kind==='shop'&&!isVenueOpen(v,{legendRaceCompleted:true,villainDefeated:true})).length,9);
   assert.deepEqual(townVenues.filter(v=>v.kind==='stadium'&&!isPracticeCourse(v.id)).map(v=>v.stage),[5,7,9,10]);
   const obstacles=townVenues.map(v=>({x:v.x,y:v.y,width:v.w,height:v.h})),spawn=townSpawn('komorebi');
   for(const venue of townVenues){

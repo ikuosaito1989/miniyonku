@@ -4,10 +4,24 @@ import {machinePerformance,createDrivingState,startDriving,stepDriving,type Driv
 const fresh={motorSeconds:60,batterySeconds:0};
 function drive(id:CircuitId,e:Equipment,lane=2,condition=fresh){const t=getCircuitTrack(id),p=machinePerformance(e,condition);let d=startDriving(createDrivingState());for(let tick=0;tick<120*300&&d.status==='running';tick++)d=stepDriving(d,p,0,lane,t.circuit.surface,t);return d;}
 const running=(distance:number,speed=4):DrivingState=>({...startDriving(createDrivingState()),distance,speed});
-test('全10コースで同じ車体の全5開始レーンは完走可否・時間・失格位置まで一致する',()=>{
- for(const id of ['leaf','wind','sun','sprint','grove','comet','trail','grandprix','forge','zenith'] as const){const e=id==='forge'||id==='zenith'?zenithEquipment:id==='trail'||id==='grandprix'?{...seniorEquipment,body:'body-champion'}:{...wakabaRivals[0].equipment,body:'body-champion'};const reference=drive(id,e,0);for(let lane=1;lane<5;lane++)assert.deepEqual(drive(id,e,lane),reference,`${id}/${lane}`);}
- // Exact combinations that previously finished from lane 1 but crashed from lane 5.
- for(const patch of [{chassis:'chassis-light'},{tire:'tire-0'},{tire:'tire-2'}]){const e={...wakabaRivals[0].equipment,body:'body-champion',shaft:'shaft-1',terminal:'terminal-1',...patch},reference=drive('grove',e,0);for(let lane=1;lane<5;lane++)assert.deepEqual(drive('grove',e,lane),reference);}
+test('全10コースの各開始レーンは実経路で更新され同じ条件なら再現する',()=>{
+ for(const id of ['leaf','wind','sun','sprint','grove','comet','trail','grandprix','forge','zenith'] as const){
+  const track=getCircuitTrack(id),e=id==='forge'||id==='zenith'?zenithEquipment:id==='trail'||id==='grandprix'?{...seniorEquipment,body:'body-champion'}:{...wakabaRivals[0].equipment,body:'body-champion'};
+  const performance=machinePerformance(e,fresh);
+  if(!track.open){
+   const delta=track.circuitLength*track.circuit.laps/5000;
+   const lengths=Array.from({length:5},(_,lane)=>{let length=0;for(let i=0;i<5000;i++)length+=track.sampleLanePath((i+.5)*delta,lane).pathScale*delta;return length;});
+   assert.ok(Math.max(...lengths)-Math.min(...lengths)<.002,id);
+  }
+  for(let lane=0;lane<5;lane++){
+   const state=running(track.circuitLength*.25,2),path=track.sampleLanePath(state.distance,lane),next=stepDriving(state,performance,0,lane,track.circuit.surface,track);
+   assert.ok(Math.abs((next.distance-state.distance)*path.pathScale-next.speed/120)<1e-8,`${id}/${lane}`);
+   const result=drive(id,e,lane);assert.deepEqual(drive(id,e,lane),result,`${id}/${lane}`);
+   if(result.status==='finished')assert.equal(result.distance,track.circuitLength*track.circuit.laps);
+  }
+ }
+ // 装備差がある場合も、同一開始レーン・同一条件の再現性を確認する。
+ for(const patch of [{chassis:'chassis-light'},{tire:'tire-0'},{tire:'tire-2'}]){const e={...wakabaRivals[0].equipment,body:'body-champion',shaft:'shaft-1',terminal:'terminal-1',...patch};for(let lane=0;lane<5;lane++)assert.deepEqual(drive('grove',e,lane),drive('grove',e,lane));}
 });
 test('壁摩擦は直線には加算せず、旋回で効く。硬質タイヤは横擦れが小さい代わりに限界が低い',()=>{
  const t=getCircuitTrack('sprint'),base=machinePerformance(zenithEquipment,fresh),straight=Array.from({length:100},(_,i)=>i/100*t.circuitLength).find(d=>t.sampleLanePath(d,2).curvature<1e-5&&Math.abs(t.sampleLanePath(d,2).pitch)<1e-5)!;
