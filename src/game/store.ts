@@ -46,7 +46,7 @@ export interface GameState extends Wallet {
   playerName:string;playSeconds:number;setPlayerName:(name:string)=>void;
   raceChoiceCircuit:CircuitId|null;raceChoiceFromBoard:boolean;mobChallenge:CircuitId|null;openRaceChoice:(id:CircuitId)=>void;startMobTrial:(id:CircuitId)=>void;
   onlineChallenge:OnlineChallenge|null;startOnlineTrial:(circuitId:CircuitId,records:OnlineRecord[])=>void;
-  adviceThinking:boolean;bodyPaint:number|null;setBodyPaint:(color:number|null)=>void;tutorialStage:TutorialStage;tutorialReturn:SavedGame|null;retryCheckpoint:SavedGame|null;retryFromSave:()=>void;
+  adviceThinking:boolean;bodyPaint:number|null;setBodyPaint:(color:number|null)=>void;tutorialStage:TutorialStage;tutorialReturn:SavedGame|null;retryCheckpoint:SavedGame|null;retryFromSave:()=>void;retryOfficialFromCheat:()=>void;
   startTutorial:(practice?:boolean)=>void;resumeTutorial:()=>void;inspectTutorial:(slot:EquipmentSlot)=>void;openTutorialShop:()=>void;finishTutorial:()=>void;
   podiumPending:boolean;
   towaEscortStep:number;resumeTowaEscort:()=>void;advanceTowaEscort:(expected:number)=>void;
@@ -109,6 +109,11 @@ export const useGame = create<GameState>((set,get) => ({
     if(!s.gameOver)return {};
     const checkpoint=s.retryCheckpoint??legacyRetrySnapshot(snapshotGame(s));
     return {...useGame.getInitialState(),...structuredClone(checkpoint),playerName:s.playerName,playSeconds:s.playSeconds,retryCheckpoint:structuredClone(checkpoint),overlay:null,gameOver:false,legendEventPending:checkpoint.unlockedRaces.includes(nextShopRace.id)&&!checkpoint.legendRaceCompleted,villainArrivalPending:checkpoint.aozoraWon&&!checkpoint.villainDefeated};
+  }),
+  retryOfficialFromCheat:()=>set(s=>{
+    if(!s.cheatUsed||s.overlay!=='cheat'||s.eventReplay||!s.retryCheckpoint)return s;
+    const checkpoint=structuredClone(s.retryCheckpoint);
+    return {...useGame.getInitialState(),...checkpoint,playerName:s.playerName,playSeconds:s.playSeconds,cheatUsed:true,retryCheckpoint:structuredClone(checkpoint),overlay:null,gameOver:false,legendEventPending:checkpoint.unlockedRaces.includes(nextShopRace.id)&&!checkpoint.legendRaceCompleted,villainArrivalPending:checkpoint.aozoraWon&&!checkpoint.villainDefeated};
   }),
   startTutorial:(practice=false)=>set(s=>tutorialStart(s,practice)),
   resumeTutorial:()=>set(s=>{

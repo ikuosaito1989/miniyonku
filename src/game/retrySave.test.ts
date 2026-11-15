@@ -36,3 +36,18 @@ test('古いゲームオーバー保存でも初期化せず直前の公式戦�
  const cp=snapshotGame(qualified());assert.throws(()=>decodeSave({version:1,savedAt:123,game,checkpoint:{...cp,gameOver:true,wakabaCup:game.wakabaCup}}),/再開用/);
  }finally{useGame.setState(before,true);}
 });
+test('裏技から直前の公式戦へ戻り、裏技モードとチェックポイントを保持する',()=>{
+ const before=useGame.getState();try{
+  useGame.setState({...qualified(),cheatUsed:true},true);const baseline=snapshotGame(useGame.getState());
+  useGame.getState().startOfficialRace();useGame.setState({money:1,overlay:'cheat'});
+  useGame.getState().retryOfficialFromCheat();assert.deepEqual(snapshotGame(useGame.getState()),baseline);assert.equal(useGame.getState().cheatUsed,true);
+  useGame.getState().startOfficialRace();assert.equal(useGame.getState().wakabaCup.pending,'sun');
+  useGame.setState({overlay:'cheat',cheatUsed:false,money:2});useGame.getState().retryOfficialFromCheat();assert.equal(useGame.getState().money,2);
+ }finally{useGame.setState(before,true);}
+});
+test('チェックポイントなしでは裏技リトライは何も変更せず、当時の裏技状態が無効でも現在の裏技モードを維持する',()=>{
+ const before=useGame.getState();try{
+  useGame.setState({...qualified(),cheatUsed:true,overlay:'cheat',retryCheckpoint:null},true);const unchanged=useGame.getState();unchanged.retryOfficialFromCheat();assert.equal(useGame.getState(),unchanged);
+  const checkpoint={...snapshotGame(useGame.getState()),cheatUsed:false};useGame.setState({retryCheckpoint:checkpoint,money:1});useGame.getState().retryOfficialFromCheat();assert.equal(useGame.getState().cheatUsed,true);assert.equal(useGame.getState().money,checkpoint.money);
+ }finally{useGame.setState(before,true);}
+});
