@@ -5,6 +5,7 @@ import { useGame } from './game/store';
 import { MusicPlayer } from './game/MusicPlayer';
 import { useAudioSettings } from './game/audioSettings';
 import { PurchaseAudio } from './game/PurchaseAudio';
+import {useDismissDetails} from './useDismissDetails';
 
 export function GameAudio(){
   useEffect(()=>{
@@ -42,7 +43,8 @@ export function GameAudio(){
 
 export function AudioControls({floating=false}:{floating?:boolean}){
   const {enabled,volume,status,toggle,setVolume}=useAudioSettings();
-  return <details className={`audio-controls${floating?' audio-floating':''}`} data-audio-controls>
+  const details=useDismissDetails();
+  return <details ref={details} className={`audio-controls${floating?' audio-floating':''}`} data-audio-controls>
     <summary aria-label="BGM・効果音の設定">音 {enabled?'ON':'OFF'}</summary>
     <div className="audio-panel">
       <button onClick={toggle} aria-pressed={enabled}>{enabled?'BGM・効果音を消す':'BGM・効果音を鳴らす'}</button>
