@@ -14,7 +14,7 @@ export const musicTracks={
   'model-shop':{ready:true,url:modelShop,title:'カジノでエンジョイ！',author:'こばっと',source:'https://opentracks.com/bgm/detail/24020'},
   race:{ready:true,url:race,title:'Rush Recklessly',author:'FLASH☆BEAT',source:'https://opentracks.com/bgm/detail/23946/track/2'},
   event:{ready:!!event,url:event??shop,title:'解答Quizman',author:'shimtone',source:'https://opentracks.com/bgm/detail/23958'},
-  official:{ready:!!official,url:official??race,title:'Thrilling Race',author:'こばっと',source:'https://opentracks.com/bgm/detail/7817'},
+  official:{ready:!!official,url:official??race,title:'Carry On',author:'RockCapers',source:'https://opentracks.com/bgm/detail/23974'},
   podium:{ready:!!podium,url:podium??(event??shop),title:'祝福の鐘',author:'マニーラ',source:'https://opentracks.com/bgm/detail/14881'},
 } as const;
 export type {MusicScene} from '../game/musicScene';
