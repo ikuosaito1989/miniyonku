@@ -61,7 +61,6 @@ export function surfacePerformance(performance:Performance,surface:TrackSurface)
 export function stepDriving(state: DrivingState, performance: Performance, laneOffset=0, initialLane?:number, surface:TrackSurface=circuit.surface, track:CircuitTrack=getCircuitTrack()): DrivingState {
   if(state.status!=='running')return state;
   const {circuit,circuitLength,sampleCircuit,sampleLanePath,startDistance}=track;
-  if(track.fairLanes&&initialLane!==undefined)initialLane=2;
   const remaining=remainingCharge(performance.batterySeconds+state.time,performance.batteryEndurance*batteryCapacityMultiplier,performance.batteryConsumption);
   if(remaining<=0)return {...state,speed:0,status:'out',stopReason:'battery'};
   const charge=.55+.45*Math.sqrt(remaining);
@@ -75,7 +74,7 @@ export function stepDriving(state: DrivingState, performance: Performance, laneO
   const cornerResistance=performance.mass*state.speed**2*curvature*(performance.rollerFriction*.5+performance.tireScrub*.018);
   const brakeResistance=path&&!path.loopRadius?performance.mass*9.81*performance.brake*Math.max(0,Math.min(1,(path.pitch-.035)/.16)):0;
   const resistance=performance.mass*9.81*0.025+(performance.drag+road.rollingDrag)*state.speed**2+road.resistance+cornerResistance+brakeResistance;
-  const wheelResistance=state.speed**2*sampleCircuit(startDistance+state.distance).curvature*.002*performance.cornerDrag;
+  const wheelResistance=state.speed**2*curvature*.002*performance.cornerDrag;
   const slope=(track.obstacles||track.hasHills)&&!airborne&&path?performance.mass*9.81*Math.sin(path.pitch):0;
   let speed=Math.max(0,state.speed+(force-(airborne?performance.drag*state.speed**2*.25:resistance+wheelResistance)-slope)/performance.mass*FIXED_STEP);
   // 平坦なダートは、駆動力が残っていれば空転しながら超低速で前進する。

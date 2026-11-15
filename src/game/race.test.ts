@@ -65,6 +65,13 @@ test('同じ装備でも外側レーンは内側より長い距離を走る',()=
   for(let i=0;i<1000;i++){inner=stepDriving(inner,performance,laneOffset(0));outer=stepDriving(outer,performance,laneOffset(4));}
   assert.ok(inner.distance>outer.distance);assert.ok(inner.speed>0&&outer.speed>0);
 });
+test('周回中の走行計算は各車が実際に走るレーンの距離と曲率を使う',()=>{
+  const performance=machinePerformance(starterEquipment);
+  const state={...startDriving(createDrivingState()),distance:2,speed:3};
+  const a=stepDriving(state,performance,0,0),b=stepDriving(state,performance,0,4);
+  assert.notEqual(a.distance,b.distance);
+  assert.notEqual(a.speed,b.speed);
+});
 test('コースアウト車は走行中の車より下位になる',()=>{
   const race=createRaceState(starterEquipment);
   race.racers[0].driving={...race.racers[0].driving,status:'out',distance:100};
@@ -101,7 +108,7 @@ test('5周の実走行距離は、スタートレーンによらず等しくな�
   }
   assert.ok(Math.max(...totals)-Math.min(...totals)<0.002);
 });
-test('同じ性能なら全レーンのゴールタイム差は固定刻み1ステップ未満になる',()=>{
+test('同じ性能なら全レーンを巡る周回コースのゴールタイム差は小さい',()=>{
   let race=createRaceState(starterEquipment);
   race={...race,racers:race.racers.map(r=>({...r,performance:machinePerformance(starterEquipment)}))};
   race=startRace(race);
@@ -112,7 +119,7 @@ test('同じ性能なら全レーンのゴールタイム差は固定刻み1ス�
   assert.equal(race.phase,'finished');
   assert.ok(race.racers.every(r=>r.driving.status==='finished'));
   const times=race.racers.map(r=>r.driving.time);
-  assert.ok(Math.max(...times)-Math.min(...times)<1/120);
+  assert.ok(Math.max(...times)-Math.min(...times)<0.02);
 });
 test('GO後も自分は操作まで停止し、遅れた発進時間を記録に含める',()=>{
   let race=startRace(createRaceState(starterEquipment));

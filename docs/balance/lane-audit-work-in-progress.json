@@ -1,0 +1,4503 @@
+{
+  "status": "incomplete",
+  "method": "6000 sampled segments per lane; 120 Hz driving; 1200 second limit; open fairLanes still uses center-line physics",
+  "courses": [
+    {
+      "id": "master-azure",
+      "lanes": 5,
+      "laps": 1,
+      "open": true,
+      "centralPhysics": true,
+      "geometry": [
+        {
+          "length": 831.6782370304776,
+          "perLane": [
+            831.6782370304776,
+            0,
+            0,
+            0,
+            0
+          ],
+          "curvature": 20.17531711334364,
+          "uphill": 8.80966102333657,
+          "downhill": 9.13222102333655,
+          "changes": 0
+        },
+        {
+          "length": 830.0834994865012,
+          "perLane": [
+            0,
+            830.0834994865012,
+            0,
+            0,
+            0
+          ],
+          "curvature": 19.955939216053196,
+          "uphill": 8.460972294580003,
+          "downhill": 8.783532294579986,
+          "changes": 0
+        },
+        {
+          "length": 828.7335631647533,
+          "perLane": [
+            0,
+            0,
+            828.7335631647533,
+            0,
+            0
+          ],
+          "curvature": 19.73953343333866,
+          "uphill": 8.325275967428874,
+          "downhill": 8.64783596742887,
+          "changes": 0
+        },
+        {
+          "length": 828.637208478243,
+          "perLane": [
+            0,
+            0,
+            0,
+            828.637208478243,
+            0
+          ],
+          "curvature": 19.526366517885826,
+          "uphill": 8.349517244514534,
+          "downhill": 8.672077244514492,
+          "changes": 0
+        },
+        {
+          "length": 828.7778726690468,
+          "perLane": [
+            0,
+            0,
+            0,
+            0,
+            828.7778726690468
+          ],
+          "curvature": 19.31693705282502,
+          "uphill": 8.70316418037141,
+          "downhill": 9.025724180371421,
+          "changes": 0
+        }
+      ],
+      "distanceSpread": 3.041028552234593,
+      "results": [
+        {
+          "name": "初期",
+          "lanes": [
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 45.24166666666474,
+              "distance": 111.11448245339452
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 45.24166666666474,
+              "distance": 111.11448245339452
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 45.24166666666474,
+              "distance": 111.11448245339452
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 45.24166666666474,
+              "distance": 111.11448245339452
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 45.24166666666474,
+              "distance": 111.11448245339452
+            }
+          ],
+          "finishTimeSpread": null
+        },
+        {
+          "name": "中盤",
+          "lanes": [
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 24.391666666665923,
+              "distance": 112.46572733390325
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 24.391666666665923,
+              "distance": 112.46572733390325
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 24.391666666665923,
+              "distance": 112.46572733390325
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 24.391666666665923,
+              "distance": 112.46572733390325
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 24.391666666665923,
+              "distance": 112.46572733390325
+            }
+          ],
+          "finishTimeSpread": null
+        },
+        {
+          "name": "上位",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 139.86446267014102,
+              "distance": 828.2730102427806
+            },
+            {
+              "status": "finished",
+              "time": 139.86446267014102,
+              "distance": 828.2730102427806
+            },
+            {
+              "status": "finished",
+              "time": 139.86446267014102,
+              "distance": 828.2730102427806
+            },
+            {
+              "status": "finished",
+              "time": 139.86446267014102,
+              "distance": 828.2730102427806
+            },
+            {
+              "status": "finished",
+              "time": 139.86446267014102,
+              "distance": 828.2730102427806
+            }
+          ],
+          "finishTimeSpread": 0
+        }
+      ]
+    },
+    {
+      "id": "master-crimson",
+      "lanes": 5,
+      "laps": 1,
+      "open": true,
+      "centralPhysics": true,
+      "geometry": [
+        {
+          "length": 686.9166994661838,
+          "perLane": [
+            686.9166994661838,
+            0,
+            0,
+            0,
+            0
+          ],
+          "curvature": 26.99306579163591,
+          "uphill": 10.073378064686295,
+          "downhill": 10.395938064686394,
+          "changes": 0
+        },
+        {
+          "length": 685.193544815375,
+          "perLane": [
+            0,
+            685.193544815375,
+            0,
+            0,
+            0
+          ],
+          "curvature": 26.47693348324594,
+          "uphill": 9.488578375979785,
+          "downhill": 9.811138375979883,
+          "changes": 0
+        },
+        {
+          "length": 683.7432896548535,
+          "perLane": [
+            0,
+            0,
+            683.7432896548535,
+            0,
+            0
+          ],
+          "curvature": 26.030432314106772,
+          "uphill": 9.089508069870366,
+          "downhill": 9.412068069870429,
+          "changes": 0
+        },
+        {
+          "length": 684.0128645803271,
+          "perLane": [
+            0,
+            0,
+            0,
+            684.0128645803271,
+            0
+          ],
+          "curvature": 26.136931058248273,
+          "uphill": 9.492575815654956,
+          "downhill": 9.81513581565504,
+          "changes": 0
+        },
+        {
+          "length": 684.6077629293305,
+          "perLane": [
+            0,
+            0,
+            0,
+            0,
+            684.6077629293305
+          ],
+          "curvature": 26.364179927216725,
+          "uphill": 10.076340997357896,
+          "downhill": 10.398900997357991,
+          "changes": 0
+        }
+      ],
+      "distanceSpread": 3.173409811330316,
+      "results": [
+        {
+          "name": "初期",
+          "lanes": [
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 26.991666666665775,
+              "distance": 66.04728306892139
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 26.991666666665775,
+              "distance": 66.04728306892139
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 26.991666666665775,
+              "distance": 66.04728306892139
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 26.991666666665775,
+              "distance": 66.04728306892139
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 26.991666666665775,
+              "distance": 66.04728306892139
+            }
+          ],
+          "finishTimeSpread": null
+        },
+        {
+          "name": "中盤",
+          "lanes": [
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 14.958333333333124,
+              "distance": 67.34639034555768
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 14.958333333333124,
+              "distance": 67.34639034555768
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 14.958333333333124,
+              "distance": 67.34639034555768
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 14.958333333333124,
+              "distance": 67.34639034555768
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 14.958333333333124,
+              "distance": 67.34639034555768
+            }
+          ],
+          "finishTimeSpread": null
+        },
+        {
+          "name": "上位",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 127.74696109672989,
+              "distance": 683.2938677714807
+            },
+            {
+              "status": "finished",
+              "time": 127.74696109672989,
+              "distance": 683.2938677714807
+            },
+            {
+              "status": "finished",
+              "time": 127.74696109672989,
+              "distance": 683.2938677714807
+            },
+            {
+              "status": "finished",
+              "time": 127.74696109672989,
+              "distance": 683.2938677714807
+            },
+            {
+              "status": "finished",
+              "time": 127.74696109672989,
+              "distance": 683.2938677714807
+            }
+          ],
+          "finishTimeSpread": 0
+        }
+      ]
+    },
+    {
+      "id": "master-violet",
+      "lanes": 5,
+      "laps": 1,
+      "open": true,
+      "centralPhysics": true,
+      "geometry": [
+        {
+          "length": 686.3646586293305,
+          "perLane": [
+            686.3646586293305,
+            0,
+            0,
+            0,
+            0
+          ],
+          "curvature": 46.06191483594877,
+          "uphill": 11.394520983487574,
+          "downhill": 11.717080983487554,
+          "changes": 0
+        },
+        {
+          "length": 684.5087365938489,
+          "perLane": [
+            0,
+            684.5087365938489,
+            0,
+            0,
+            0
+          ],
+          "curvature": 45.4446327082446,
+          "uphill": 10.89417752552022,
+          "downhill": 11.216737525520214,
+          "changes": 0
+        },
+        {
+          "length": 682.9916215017049,
+          "perLane": [
+            0,
+            0,
+            682.9916215017049,
+            0,
+            0
+          ],
+          "curvature": 44.90390474233239,
+          "uphill": 10.491420913412504,
+          "downhill": 10.813980913412484,
+          "changes": 0
+        },
+        {
+          "length": 683.2078707964819,
+          "perLane": [
+            0,
+            0,
+            0,
+            683.2078707964819,
+            0
+          ],
+          "curvature": 44.873896280121194,
+          "uphill": 10.77219420558706,
+          "downhill": 11.09475420558705,
+          "changes": 0
+        },
+        {
+          "length": 683.8186904456294,
+          "perLane": [
+            0,
+            0,
+            0,
+            0,
+            683.8186904456294
+          ],
+          "curvature": 44.96282429937968,
+          "uphill": 11.208132288996595,
+          "downhill": 11.530692288996557,
+          "changes": 0
+        }
+      ],
+      "distanceSpread": 3.3730371276255937,
+      "results": [
+        {
+          "name": "初期",
+          "lanes": [
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 25.008333333332555,
+              "distance": 61.10352934248031
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 25.008333333332555,
+              "distance": 61.10352934248031
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 25.008333333332555,
+              "distance": 61.10352934248031
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 25.008333333332555,
+              "distance": 61.10352934248031
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 25.008333333332555,
+              "distance": 61.10352934248031
+            }
+          ],
+          "finishTimeSpread": null
+        },
+        {
+          "name": "中盤",
+          "lanes": [
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 13.941666666666515,
+              "distance": 62.43980196173756
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 13.941666666666515,
+              "distance": 62.43980196173756
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 13.941666666666515,
+              "distance": 62.43980196173756
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 13.941666666666515,
+              "distance": 62.43980196173756
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 13.941666666666515,
+              "distance": 62.43980196173756
+            }
+          ],
+          "finishTimeSpread": null
+        },
+        {
+          "name": "上位",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 117.01908379060434,
+              "distance": 682.558763145992
+            },
+            {
+              "status": "finished",
+              "time": 117.01908379060434,
+              "distance": 682.558763145992
+            },
+            {
+              "status": "finished",
+              "time": 117.01908379060434,
+              "distance": 682.558763145992
+            },
+            {
+              "status": "finished",
+              "time": 117.01908379060434,
+              "distance": 682.558763145992
+            },
+            {
+              "status": "finished",
+              "time": 117.01908379060434,
+              "distance": 682.558763145992
+            }
+          ],
+          "finishTimeSpread": 0
+        }
+      ]
+    },
+    {
+      "id": "master-gold",
+      "lanes": 5,
+      "laps": 1,
+      "open": true,
+      "centralPhysics": true,
+      "geometry": [
+        {
+          "length": 973.7969752364132,
+          "perLane": [
+            973.7969752364132,
+            0,
+            0,
+            0,
+            0
+          ],
+          "curvature": 30.56889905917235,
+          "uphill": 13.197338248414345,
+          "downhill": 13.519898248414314,
+          "changes": 0
+        },
+        {
+          "length": 972.1914994833824,
+          "perLane": [
+            0,
+            972.1914994833824,
+            0,
+            0,
+            0
+          ],
+          "curvature": 30.481858890140167,
+          "uphill": 12.880980517775983,
+          "downhill": 13.20354051777596,
+          "changes": 0
+        },
+        {
+          "length": 970.86660402349,
+          "perLane": [
+            0,
+            0,
+            970.86660402349,
+            0,
+            0
+          ],
+          "curvature": 30.3989403314286,
+          "uphill": 12.612318908309819,
+          "downhill": 12.934878908309702,
+          "changes": 0
+        },
+        {
+          "length": 970.8890966934619,
+          "perLane": [
+            0,
+            0,
+            0,
+            970.8890966934619,
+            0
+          ],
+          "curvature": 30.32790847623025,
+          "uphill": 12.793359284974526,
+          "downhill": 13.115919284974517,
+          "changes": 0
+        },
+        {
+          "length": 971.3066412089363,
+          "perLane": [
+            0,
+            0,
+            0,
+            0,
+            971.3066412089363
+          ],
+          "curvature": 30.26139859334907,
+          "uphill": 13.025520096480621,
+          "downhill": 13.348080096480594,
+          "changes": 0
+        }
+      ],
+      "distanceSpread": 2.9303712129232053,
+      "results": [
+        {
+          "name": "初期",
+          "lanes": [
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 51.30833333333106,
+              "distance": 126.07556019947458
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 51.30833333333106,
+              "distance": 126.07556019947458
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 51.30833333333106,
+              "distance": 126.07556019947458
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 51.30833333333106,
+              "distance": 126.07556019947458
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 51.30833333333106,
+              "distance": 126.07556019947458
+            }
+          ],
+          "finishTimeSpread": null
+        },
+        {
+          "name": "中盤",
+          "lanes": [
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 27.508333333332413,
+              "distance": 127.40171221638803
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 27.508333333332413,
+              "distance": 127.40171221638803
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 27.508333333332413,
+              "distance": 127.40171221638803
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 27.508333333332413,
+              "distance": 127.40171221638803
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 27.508333333332413,
+              "distance": 127.40171221638803
+            }
+          ],
+          "finishTimeSpread": null
+        },
+        {
+          "name": "上位",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 172.78807579066634,
+              "distance": 970.3024431921014
+            },
+            {
+              "status": "finished",
+              "time": 172.78807579066634,
+              "distance": 970.3024431921014
+            },
+            {
+              "status": "finished",
+              "time": 172.78807579066634,
+              "distance": 970.3024431921014
+            },
+            {
+              "status": "finished",
+              "time": 172.78807579066634,
+              "distance": 970.3024431921014
+            },
+            {
+              "status": "finished",
+              "time": 172.78807579066634,
+              "distance": 970.3024431921014
+            }
+          ],
+          "finishTimeSpread": 0
+        }
+      ]
+    },
+    {
+      "id": "park-switchback",
+      "lanes": 5,
+      "laps": 5,
+      "open": false,
+      "centralPhysics": false,
+      "geometry": [
+        {
+          "length": 500.3573768712345,
+          "perLane": [
+            97.62223631507538,
+            98.5532718302941,
+            99.93318082517463,
+            101.3991652561346,
+            102.84952264455698
+          ],
+          "curvature": 126.98187479226125,
+          "uphill": 2.019999999999999,
+          "downhill": 2.02000000000001,
+          "changes": 5
+        },
+        {
+          "length": 500.3573768712346,
+          "perLane": [
+            97.53876033833237,
+            98.55327183029378,
+            99.93318082517452,
+            101.31331811265817,
+            103.01884576477647
+          ],
+          "curvature": 126.9818747829698,
+          "uphill": 2.02,
+          "downhill": 2.0200000000000107,
+          "changes": 5
+        },
+        {
+          "length": 500.35737687123464,
+          "perLane": [
+            97.70305424066267,
+            98.47245390470665,
+            99.93318082517449,
+            101.31331811265824,
+            102.93536978803317
+          ],
+          "curvature": 126.98187478343945,
+          "uphill": 2.02,
+          "downhill": 2.0200000000000107,
+          "changes": 5
+        },
+        {
+          "length": 500.35737687123435,
+          "perLane": [
+            97.62223631507544,
+            98.63576615249632,
+            99.85068650297211,
+            101.31331811265834,
+            102.93536978803304
+          ],
+          "curvature": 126.9818747736683,
+          "uphill": 2.02,
+          "downhill": 2.02000000000001,
+          "changes": 5
+        },
+        {
+          "length": 500.35737687123486,
+          "perLane": [
+            97.62223631507517,
+            98.55327183029407,
+            100.01735155352587,
+            101.22914738430656,
+            102.9353697880334
+          ],
+          "curvature": 126.98187477910352,
+          "uphill": 2.02,
+          "downhill": 2.02000000000001,
+          "changes": 5
+        }
+      ],
+      "distanceSpread": 5.115907697472721e-13,
+      "results": [
+        {
+          "name": "初期",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 220.10217788176192,
+              "distance": 499.89619486300256
+            },
+            {
+              "status": "finished",
+              "time": 220.1022044177539,
+              "distance": 499.89619486300256
+            },
+            {
+              "status": "finished",
+              "time": 220.1018006809046,
+              "distance": 499.89619486300256
+            },
+            {
+              "status": "finished",
+              "time": 220.1075027507479,
+              "distance": 499.89619486300256
+            },
+            {
+              "status": "finished",
+              "time": 220.1086538174678,
+              "distance": 499.89619486300256
+            }
+          ],
+          "finishTimeSpread": 0.006853136563194084
+        },
+        {
+          "name": "中盤",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 110.60084159823084,
+              "distance": 499.89619486300256
+            },
+            {
+              "status": "finished",
+              "time": 110.60079449104646,
+              "distance": 499.89619486300256
+            },
+            {
+              "status": "finished",
+              "time": 110.60102589535816,
+              "distance": 499.89619486300256
+            },
+            {
+              "status": "finished",
+              "time": 110.60282237308559,
+              "distance": 499.89619486300256
+            },
+            {
+              "status": "finished",
+              "time": 110.60146110013781,
+              "distance": 499.89619486300256
+            }
+          ],
+          "finishTimeSpread": 0.002027882039129736
+        },
+        {
+          "name": "上位",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 83.73216993469062,
+              "distance": 499.89619486300256
+            },
+            {
+              "status": "finished",
+              "time": 83.73095448528181,
+              "distance": 499.89619486300256
+            },
+            {
+              "status": "finished",
+              "time": 83.73392869361727,
+              "distance": 499.89619486300256
+            },
+            {
+              "status": "finished",
+              "time": 83.73455104082423,
+              "distance": 499.89619486300256
+            },
+            {
+              "status": "finished",
+              "time": 83.73730307179679,
+              "distance": 499.89619486300256
+            }
+          ],
+          "finishTimeSpread": 0.006348586514974386
+        }
+      ]
+    },
+    {
+      "id": "park-hairpin",
+      "lanes": 5,
+      "laps": 5,
+      "open": false,
+      "centralPhysics": false,
+      "geometry": [
+        {
+          "length": 407.60252789718174,
+          "perLane": [
+            78.76948759464851,
+            80.19729071750918,
+            81.44373862132223,
+            82.89378977471053,
+            84.29822118899338
+          ],
+          "curvature": 31.753410180579966,
+          "uphill": 2.019999999999999,
+          "downhill": 2.020000000000004,
+          "changes": 5
+        },
+        {
+          "length": 407.6025278971821,
+          "perLane": [
+            78.76948759464828,
+            80.1294229738147,
+            81.5794741087122,
+            82.825922031015,
+            84.29822118899361
+          ],
+          "curvature": 31.75341018015657,
+          "uphill": 2.019999999999999,
+          "downhill": 2.020000000000004,
+          "changes": 5
+        },
+        {
+          "length": 407.60252789718163,
+          "perLane": [
+            78.76948759464851,
+            80.1294229738145,
+            81.51160636501784,
+            82.96165751840486,
+            84.23035344529809
+          ],
+          "curvature": 31.753410179993736,
+          "uphill": 2.0199999999999982,
+          "downhill": 2.020000000000003,
+          "changes": 5
+        },
+        {
+          "length": 407.60252789718163,
+          "perLane": [
+            78.7014112500316,
+            80.12942297381475,
+            81.51160636501761,
+            82.89378977471056,
+            84.36629753360933
+          ],
+          "curvature": 31.75341017953527,
+          "uphill": 2.0199999999999982,
+          "downhill": 2.020000000000003,
+          "changes": 5
+        },
+        {
+          "length": 407.6025278971813,
+          "perLane": [
+            78.83735533834299,
+            80.06155523011917,
+            81.51160636501784,
+            82.89378977471036,
+            84.29822118899376
+          ],
+          "curvature": 31.75341017965269,
+          "uphill": 2.0199999999999982,
+          "downhill": 2.020000000000003,
+          "changes": 5
+        }
+      ],
+      "distanceSpread": 7.958078640513122e-13,
+      "results": [
+        {
+          "name": "初期",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 171.43205826271105,
+              "distance": 407.1228849925006
+            },
+            {
+              "status": "finished",
+              "time": 171.42936579352602,
+              "distance": 407.1228849925006
+            },
+            {
+              "status": "finished",
+              "time": 171.42880555420587,
+              "distance": 407.1228849925006
+            },
+            {
+              "status": "finished",
+              "time": 171.4286028028769,
+              "distance": 407.1228849925006
+            },
+            {
+              "status": "finished",
+              "time": 171.43052507505772,
+              "distance": 407.1228849925006
+            }
+          ],
+          "finishTimeSpread": 0.003455459834157182
+        },
+        {
+          "name": "中盤",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 87.45397124200797,
+              "distance": 407.1228849925006
+            },
+            {
+              "status": "finished",
+              "time": 87.45963328496332,
+              "distance": 407.1228849925006
+            },
+            {
+              "status": "finished",
+              "time": 87.45942004697699,
+              "distance": 407.1228849925006
+            },
+            {
+              "status": "finished",
+              "time": 87.45807784543749,
+              "distance": 407.1228849925006
+            },
+            {
+              "status": "finished",
+              "time": 87.45976675919911,
+              "distance": 407.1228849925006
+            }
+          ],
+          "finishTimeSpread": 0.005795517191145905
+        },
+        {
+          "name": "上位",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 65.89666331035033,
+              "distance": 407.1228849925006
+            },
+            {
+              "status": "finished",
+              "time": 65.89575033651151,
+              "distance": 407.1228849925006
+            },
+            {
+              "status": "finished",
+              "time": 65.89889330314183,
+              "distance": 407.1228849925006
+            },
+            {
+              "status": "finished",
+              "time": 65.90127175941676,
+              "distance": 407.1228849925006
+            },
+            {
+              "status": "finished",
+              "time": 65.89666626528943,
+              "distance": 407.1228849925006
+            }
+          ],
+          "finishTimeSpread": 0.005521422905246709
+        }
+      ]
+    },
+    {
+      "id": "park-slalom",
+      "lanes": 5,
+      "laps": 5,
+      "open": false,
+      "centralPhysics": false,
+      "geometry": [
+        {
+          "length": 500.8832499143894,
+          "perLane": [
+            97.24350602154004,
+            98.86992358721545,
+            100.08422271667038,
+            101.63225333171864,
+            103.05334425724543
+          ],
+          "curvature": 80.88659131510647,
+          "uphill": 2.0200000000000005,
+          "downhill": 2.020000000000007,
+          "changes": 5
+        },
+        {
+          "length": 500.88324991439094,
+          "perLane": [
+            97.33184224243952,
+            98.69654059142015,
+            100.25102685377938,
+            101.47202798246202,
+            103.13181224428851
+          ],
+          "curvature": 80.8865913276518,
+          "uphill": 2.020000000000001,
+          "downhill": 2.020000000000007,
+          "changes": 5
+        },
+        {
+          "length": 500.8832499143881,
+          "perLane": [
+            97.41546540637339,
+            98.78158736631569,
+            100.0842227166704,
+            101.63225333171852,
+            102.96972109331121
+          ],
+          "curvature": 80.88659132578991,
+          "uphill": 2.020000000000001,
+          "downhill": 2.020000000000007,
+          "changes": 5
+        },
+        {
+          "length": 500.8832499143888,
+          "perLane": [
+            97.2435060215399,
+            98.86992358721548,
+            100.16598007888378,
+            101.47202798246215,
+            103.13181224428858
+          ],
+          "curvature": 80.88659132753237,
+          "uphill": 2.020000000000001,
+          "downhill": 2.020000000000007,
+          "changes": 5
+        },
+        {
+          "length": 500.8832499143917,
+          "perLane": [
+            97.41546540637357,
+            98.69654059142012,
+            100.25102685377954,
+            101.55049596950515,
+            102.96972109331125
+          ],
+          "curvature": 80.88659132486221,
+          "uphill": 2.020000000000001,
+          "downhill": 2.020000000000007,
+          "changes": 5
+        }
+      ],
+      "distanceSpread": 3.581135388230905e-12,
+      "results": [
+        {
+          "name": "初期",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 216.57959802943552,
+              "distance": 500.4148476033999
+            },
+            {
+              "status": "finished",
+              "time": 216.58010833123737,
+              "distance": 500.4148476033999
+            },
+            {
+              "status": "finished",
+              "time": 216.57800002979633,
+              "distance": 500.4148476033999
+            },
+            {
+              "status": "finished",
+              "time": 216.57990965980756,
+              "distance": 500.4148476033999
+            },
+            {
+              "status": "finished",
+              "time": 216.58078482582968,
+              "distance": 500.4148476033999
+            }
+          ],
+          "finishTimeSpread": 0.002784796033353132
+        },
+        {
+          "name": "中盤",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 109.02373686240536,
+              "distance": 500.4148476033999
+            },
+            {
+              "status": "finished",
+              "time": 109.02620913426166,
+              "distance": 500.4148476033999
+            },
+            {
+              "status": "finished",
+              "time": 109.02436478361065,
+              "distance": 500.4148476033999
+            },
+            {
+              "status": "finished",
+              "time": 109.02486434349169,
+              "distance": 500.4148476033999
+            },
+            {
+              "status": "finished",
+              "time": 109.02585310595855,
+              "distance": 500.4148476033999
+            }
+          ],
+          "finishTimeSpread": 0.002472271856305497
+        },
+        {
+          "name": "上位",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 82.27335131304608,
+              "distance": 500.4148476033999
+            },
+            {
+              "status": "finished",
+              "time": 82.27263670680033,
+              "distance": 500.4148476033999
+            },
+            {
+              "status": "finished",
+              "time": 82.27314790856855,
+              "distance": 500.4148476033999
+            },
+            {
+              "status": "finished",
+              "time": 82.2726839444652,
+              "distance": 500.4148476033999
+            },
+            {
+              "status": "finished",
+              "time": 82.2744392448194,
+              "distance": 500.4148476033999
+            }
+          ],
+          "finishTimeSpread": 0.001802538019077815
+        }
+      ]
+    },
+    {
+      "id": "park-sand",
+      "lanes": 5,
+      "laps": 5,
+      "open": false,
+      "centralPhysics": false,
+      "geometry": [
+        {
+          "length": 443.4783297069925,
+          "perLane": [
+            86.08958615673274,
+            87.24023687460998,
+            88.69443304973134,
+            90.07592395627977,
+            91.37814966963884
+          ],
+          "curvature": 31.443894474485003,
+          "uphill": 2.0200000000000005,
+          "downhill": 2.0200000000000005,
+          "changes": 5
+        },
+        {
+          "length": 443.47832970699244,
+          "perLane": [
+            86.01686577330189,
+            87.38642842878373,
+            88.62096187898847,
+            90.07592395627974,
+            91.37814966963896
+          ],
+          "curvature": 31.443894474114447,
+          "uphill": 2.0199999999999996,
+          "downhill": 2.0200000000000005,
+          "changes": 5
+        },
+        {
+          "length": 443.47832970699403,
+          "perLane": [
+            86.01686577330192,
+            87.31295725804065,
+            88.76865501047408,
+            90.00170199553706,
+            91.3781496696387
+          ],
+          "curvature": 31.44389447388939,
+          "uphill": 2.0199999999999996,
+          "downhill": 2.0200000000000005,
+          "changes": 5
+        },
+        {
+          "length": 443.47832970699267,
+          "perLane": [
+            86.01686577330177,
+            87.31295725804074,
+            88.69443304973132,
+            90.1508967096295,
+            91.3031769162891
+          ],
+          "curvature": 31.44389447776999,
+          "uphill": 2.0199999999999996,
+          "downhill": 2.02,
+          "changes": 5
+        },
+        {
+          "length": 443.47832970699204,
+          "perLane": [
+            85.94283913954003,
+            87.31295725804051,
+            88.69443304973134,
+            90.07592395627974,
+            91.45217630340055
+          ],
+          "curvature": 31.44389447672557,
+          "uphill": 2.0199999999999996,
+          "downhill": 2.0199999999999996,
+          "changes": 5
+        }
+      ],
+      "distanceSpread": 1.9895196601282805e-12,
+      "results": [
+        {
+          "name": "初期",
+          "lanes": [
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            },
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            },
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            },
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            },
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            }
+          ],
+          "finishTimeSpread": null
+        },
+        {
+          "name": "中盤",
+          "lanes": [
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            },
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            },
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            },
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            },
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            }
+          ],
+          "finishTimeSpread": null
+        },
+        {
+          "name": "上位",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 100.89305283696397,
+              "distance": 443.0008073188486
+            },
+            {
+              "status": "finished",
+              "time": 100.89343693097484,
+              "distance": 443.0008073188486
+            },
+            {
+              "status": "finished",
+              "time": 100.89379038935996,
+              "distance": 443.0008073188486
+            },
+            {
+              "status": "finished",
+              "time": 100.89377138645375,
+              "distance": 443.0008073188486
+            },
+            {
+              "status": "finished",
+              "time": 100.893918331439,
+              "distance": 443.0008073188486
+            }
+          ],
+          "finishTimeSpread": 0.0008654944750219329
+        }
+      ]
+    },
+    {
+      "id": "park-gravel",
+      "lanes": 5,
+      "laps": 5,
+      "open": false,
+      "centralPhysics": false,
+      "geometry": [
+        {
+          "length": 512.654999206082,
+          "perLane": [
+            99.92207446917833,
+            101.02368100514668,
+            102.57468058609008,
+            103.87109166448097,
+            105.26347148118623
+          ],
+          "curvature": 45.340045979295795,
+          "uphill": 2.0199999999999996,
+          "downhill": 2.01999999999999,
+          "changes": 5
+        },
+        {
+          "length": 512.6549992060817,
+          "perLane": [
+            99.92207446917858,
+            101.10855254669018,
+            102.40393100579246,
+            103.9569697032356,
+            105.26347148118587
+          ],
+          "curvature": 45.340045980511206,
+          "uphill": 2.0199999999999996,
+          "downhill": 2.01999999999999,
+          "changes": 5
+        },
+        {
+          "length": 512.654999206084,
+          "perLane": [
+            99.92207446917865,
+            101.1085525466902,
+            102.48980904454692,
+            103.78420712548673,
+            105.35035602018031
+          ],
+          "curvature": 45.34004598483283,
+          "uphill": 2.0199999999999996,
+          "downhill": 2.0199999999999894,
+          "changes": 5
+        },
+        {
+          "length": 512.654999206083,
+          "perLane": [
+            100.00759941675568,
+            101.10855254669009,
+            102.48980904454685,
+            103.87109166448083,
+            105.17794653360866
+          ],
+          "curvature": 45.340045985481815,
+          "uphill": 2.0199999999999996,
+          "downhill": 2.0199999999999902,
+          "changes": 5
+        },
+        {
+          "length": 512.6549992060818,
+          "perLane": [
+            99.8382094217086,
+            101.19241759415993,
+            102.48980904454677,
+            103.87109166448116,
+            105.26347148118582
+          ],
+          "curvature": 45.34004598016814,
+          "uphill": 2.0199999999999987,
+          "downhill": 2.0199999999999902,
+          "changes": 5
+        }
+      ],
+      "distanceSpread": 2.2737367544323206e-12,
+      "results": [
+        {
+          "name": "初期",
+          "lanes": [
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            },
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            },
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            },
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            },
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            }
+          ],
+          "finishTimeSpread": null
+        },
+        {
+          "name": "中盤",
+          "lanes": [
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            },
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            },
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            },
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            },
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            }
+          ],
+          "finishTimeSpread": null
+        },
+        {
+          "name": "上位",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 104.05890820254163,
+              "distance": 512.1841605680722
+            },
+            {
+              "status": "finished",
+              "time": 104.05855188786646,
+              "distance": 512.1841605680722
+            },
+            {
+              "status": "finished",
+              "time": 104.05876340668414,
+              "distance": 512.1841605680722
+            },
+            {
+              "status": "finished",
+              "time": 104.05944172033077,
+              "distance": 512.1841605680722
+            },
+            {
+              "status": "finished",
+              "time": 104.05861833555855,
+              "distance": 512.1841605680722
+            }
+          ],
+          "finishTimeSpread": 0.0008898324643098476
+        }
+      ]
+    },
+    {
+      "id": "park-climb",
+      "lanes": 5,
+      "laps": 5,
+      "open": false,
+      "centralPhysics": false,
+      "geometry": [
+        {
+          "length": 479.09727030225713,
+          "perLane": [
+            93.07111300473306,
+            94.43853626051566,
+            95.89189806563799,
+            97.18565105141657,
+            98.51007191995363
+          ],
+          "curvature": 31.62540969366121,
+          "uphill": 23.5378629829556,
+          "downhill": 23.537862982955648,
+          "changes": 5
+        },
+        {
+          "length": 479.0972703022569,
+          "perLane": [
+            93.15010948939997,
+            94.35953977584873,
+            95.81161908909934,
+            97.26593002795529,
+            98.51007191995338
+          ],
+          "curvature": 31.6254096946703,
+          "uphill": 23.537862982955577,
+          "downhill": 23.537862982955655,
+          "changes": 5
+        },
+        {
+          "length": 479.0972703022589,
+          "perLane": [
+            93.15010948939995,
+            94.43917746500168,
+            95.73198139994625,
+            97.18500968310254,
+            98.5909922648061
+          ],
+          "curvature": 31.62540969294568,
+          "uphill": 23.53786298295557,
+          "downhill": 23.537862982955662,
+          "changes": 5
+        },
+        {
+          "length": 479.097270302257,
+          "perLane": [
+            93.23023494794161,
+            94.43917746500183,
+            95.81226037648484,
+            97.1047307065638,
+            98.51086680626459
+          ],
+          "curvature": 31.625409698842493,
+          "uphill": 23.537862982955584,
+          "downhill": 23.537862982955655,
+          "changes": 5
+        },
+        {
+          "length": 479.09727030225645,
+          "perLane": [
+            93.1512384632747,
+            94.51817394966898,
+            95.81226037648484,
+            97.18565105141644,
+            98.42994646141184
+          ],
+          "curvature": 31.62540969389968,
+          "uphill": 23.53786298295559,
+          "downhill": 23.537862982955655,
+          "changes": 5
+        }
+      ],
+      "distanceSpread": 2.4442670110147446e-12,
+      "results": [
+        {
+          "name": "初期",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 260.8722138525755,
+              "distance": 475.96305175371873
+            },
+            {
+              "status": "finished",
+              "time": 261.8899752778287,
+              "distance": 475.96305175371873
+            },
+            {
+              "status": "finished",
+              "time": 261.57269013787663,
+              "distance": 475.96305175371873
+            },
+            {
+              "status": "finished",
+              "time": 260.83380800542,
+              "distance": 475.96305175371873
+            },
+            {
+              "status": "finished",
+              "time": 260.0032147279594,
+              "distance": 475.96305175371873
+            }
+          ],
+          "finishTimeSpread": 1.8867605498692797
+        },
+        {
+          "name": "中盤",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 104.73806445563454,
+              "distance": 475.96305175371873
+            },
+            {
+              "status": "finished",
+              "time": 104.73965149629551,
+              "distance": 475.96305175371873
+            },
+            {
+              "status": "finished",
+              "time": 104.74053080242457,
+              "distance": 475.96305175371873
+            },
+            {
+              "status": "finished",
+              "time": 104.74129981381591,
+              "distance": 475.96305175371873
+            },
+            {
+              "status": "finished",
+              "time": 104.74107790649698,
+              "distance": 475.96305175371873
+            }
+          ],
+          "finishTimeSpread": 0.0032353581813708843
+        },
+        {
+          "name": "上位",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 77.73753943399947,
+              "distance": 475.96305175371873
+            },
+            {
+              "status": "finished",
+              "time": 77.73819473775562,
+              "distance": 475.96305175371873
+            },
+            {
+              "status": "finished",
+              "time": 77.7388314315042,
+              "distance": 475.96305175371873
+            },
+            {
+              "status": "finished",
+              "time": 77.73958369411096,
+              "distance": 475.96305175371873
+            },
+            {
+              "status": "finished",
+              "time": 77.74033236411006,
+              "distance": 475.96305175371873
+            }
+          ],
+          "finishTimeSpread": 0.002792930110587122
+        }
+      ]
+    },
+    {
+      "id": "park-waves",
+      "lanes": 5,
+      "laps": 5,
+      "open": false,
+      "centralPhysics": false,
+      "geometry": [
+        {
+          "length": 525.3643027273146,
+          "perLane": [
+            102.36034594155417,
+            103.69269337738045,
+            105.06552519194823,
+            106.4386394172854,
+            107.8070987991463
+          ],
+          "curvature": 31.630923982417322,
+          "uphill": 26.203956069218684,
+          "downhill": 26.20395606921864,
+          "changes": 5
+        },
+        {
+          "length": 525.3643027273143,
+          "perLane": [
+            102.53489480544937,
+            103.60602666774427,
+            105.06552519194797,
+            106.43863941728546,
+            107.7192166448872
+          ],
+          "curvature": 31.63092397627747,
+          "uphill": 26.203956069218684,
+          "downhill": 26.20395606921864,
+          "changes": 5
+        },
+        {
+          "length": 525.3643027273151,
+          "perLane": [
+            102.44822809581302,
+            103.78007009516095,
+            104.97814847416788,
+            106.4386394172852,
+            107.71921664488717
+          ],
+          "curvature": 31.630923979587994,
+          "uphill": 26.203956069218684,
+          "downhill": 26.20395606921864,
+          "changes": 5
+        },
+        {
+          "length": 525.3643027273133,
+          "perLane": [
+            102.44822809581319,
+            103.69269337738051,
+            105.15361201951998,
+            106.35055258971379,
+            107.71921664488718
+          ],
+          "curvature": 31.630923979263002,
+          "uphill": 26.203956069218684,
+          "downhill": 26.203956069218634,
+          "changes": 5
+        },
+        {
+          "length": 525.3643027273143,
+          "perLane": [
+            102.44822809581285,
+            103.69269337738068,
+            105.06552519194834,
+            106.52743645385713,
+            107.63041960831518
+          ],
+          "curvature": 31.630923980143383,
+          "uphill": 26.203956069218684,
+          "downhill": 26.203956069218634,
+          "changes": 5
+        }
+      ],
+      "distanceSpread": 1.8189894035458565e-12,
+      "results": [
+        {
+          "name": "初期",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 261.29164203663305,
+              "distance": 521.838517273826
+            },
+            {
+              "status": "finished",
+              "time": 261.67932229315704,
+              "distance": 521.838517273826
+            },
+            {
+              "status": "finished",
+              "time": 261.670451813926,
+              "distance": 521.838517273826
+            },
+            {
+              "status": "finished",
+              "time": 261.4755093392298,
+              "distance": 521.838517273826
+            },
+            {
+              "status": "finished",
+              "time": 261.2189763966741,
+              "distance": 521.838517273826
+            }
+          ],
+          "finishTimeSpread": 0.4603458964829201
+        },
+        {
+          "name": "中盤",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 113.36984359401322,
+              "distance": 521.838517273826
+            },
+            {
+              "status": "finished",
+              "time": 113.37056867562359,
+              "distance": 521.838517273826
+            },
+            {
+              "status": "finished",
+              "time": 113.37231994889876,
+              "distance": 521.838517273826
+            },
+            {
+              "status": "finished",
+              "time": 113.37269272240243,
+              "distance": 521.838517273826
+            },
+            {
+              "status": "finished",
+              "time": 113.37349623974801,
+              "distance": 521.838517273826
+            }
+          ],
+          "finishTimeSpread": 0.003652645734788962
+        },
+        {
+          "name": "上位",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 84.58594936074765,
+              "distance": 521.838517273826
+            },
+            {
+              "status": "finished",
+              "time": 84.5867374379904,
+              "distance": 521.838517273826
+            },
+            {
+              "status": "finished",
+              "time": 84.58784321419795,
+              "distance": 521.838517273826
+            },
+            {
+              "status": "finished",
+              "time": 84.58842347835964,
+              "distance": 521.838517273826
+            },
+            {
+              "status": "finished",
+              "time": 84.5891613683734,
+              "distance": 521.838517273826
+            }
+          ],
+          "finishTimeSpread": 0.0032120076257484698
+        }
+      ]
+    },
+    {
+      "id": "park-ridge",
+      "lanes": 5,
+      "laps": 5,
+      "open": false,
+      "centralPhysics": false,
+      "geometry": [
+        {
+          "length": 524.427012480598,
+          "perLane": [
+            102.26232594071261,
+            103.51104407654854,
+            104.8875688455039,
+            106.26429423465153,
+            107.50177938317991
+          ],
+          "curvature": 31.591307806476458,
+          "uphill": 20.434508006860778,
+          "downhill": 20.43450800686076,
+          "changes": 5
+        },
+        {
+          "length": 524.4270124805968,
+          "perLane": [
+            102.26232594071247,
+            103.51104407654866,
+            104.88756884550389,
+            106.26429423465163,
+            107.50177938317991
+          ],
+          "curvature": 31.591307796687655,
+          "uphill": 20.43450800686077,
+          "downhill": 20.434508006860774,
+          "changes": 5
+        },
+        {
+          "length": 524.4270124805967,
+          "perLane": [
+            102.26232594071256,
+            103.51104407654852,
+            104.88756884550385,
+            106.26429423465147,
+            107.50177938318005
+          ],
+          "curvature": 31.591307797954315,
+          "uphill": 20.434508006860778,
+          "downhill": 20.434508006860774,
+          "changes": 5
+        },
+        {
+          "length": 524.4270124805965,
+          "perLane": [
+            102.26232594071254,
+            103.51104407654844,
+            104.88756884550389,
+            106.2642942346516,
+            107.50177938317992
+          ],
+          "curvature": 31.591307797799022,
+          "uphill": 20.434508006860778,
+          "downhill": 20.43450800686078,
+          "changes": 5
+        },
+        {
+          "length": 524.4270124805978,
+          "perLane": [
+            102.26232594071247,
+            103.51104407654839,
+            104.88756884550385,
+            106.26429423465166,
+            107.50177938317997
+          ],
+          "curvature": 31.59130780369551,
+          "uphill": 20.434508006860778,
+          "downhill": 20.434508006860774,
+          "changes": 5
+        }
+      ],
+      "distanceSpread": 1.4779288903810084e-12,
+      "results": [
+        {
+          "name": "初期",
+          "lanes": [
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            },
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            },
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            },
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            },
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            }
+          ],
+          "finishTimeSpread": null
+        },
+        {
+          "name": "中盤",
+          "lanes": [
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            },
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            },
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            },
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            },
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            }
+          ],
+          "finishTimeSpread": null
+        },
+        {
+          "name": "上位",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 114.22547583857302,
+              "distance": 522.3397472138479
+            },
+            {
+              "status": "finished",
+              "time": 114.22407841361206,
+              "distance": 522.3397472138479
+            },
+            {
+              "status": "finished",
+              "time": 114.22336637787306,
+              "distance": 522.3397472138479
+            },
+            {
+              "status": "finished",
+              "time": 114.22223947825576,
+              "distance": 522.3397472138479
+            },
+            {
+              "status": "finished",
+              "time": 114.22145208849514,
+              "distance": 522.3397472138479
+            }
+          ],
+          "finishTimeSpread": 0.004023750077877253
+        }
+      ]
+    },
+    {
+      "id": "park-velocity",
+      "lanes": 5,
+      "laps": 5,
+      "open": false,
+      "centralPhysics": false,
+      "geometry": [
+        {
+          "length": 501.00055109226497,
+          "perLane": [
+            97.3628481025383,
+            98.89403877898816,
+            100.19286745950674,
+            101.57512918151836,
+            102.97566756971567
+          ],
+          "curvature": 31.67225606696002,
+          "uphill": 2.0200000000000014,
+          "downhill": 2.0199999999999942,
+          "changes": 5
+        },
+        {
+          "length": 501.00055109226474,
+          "perLane": [
+            97.44628114185754,
+            98.72717270034926,
+            100.27630049882629,
+            101.57512918151852,
+            102.97566756971572
+          ],
+          "curvature": 31.672256070339333,
+          "uphill": 2.0200000000000005,
+          "downhill": 2.019999999999994,
+          "changes": 5
+        },
+        {
+          "length": 501.0005510922636,
+          "perLane": [
+            97.44628114185763,
+            98.81060573966853,
+            100.10943442018745,
+            101.65856222083794,
+            102.9756675697159
+          ],
+          "curvature": 31.672256065497844,
+          "uphill": 2.0199999999999996,
+          "downhill": 2.019999999999994,
+          "changes": 5
+        },
+        {
+          "length": 501.0005510922645,
+          "perLane": [
+            97.44628114185764,
+            98.81060573966853,
+            100.19286745950659,
+            101.49169614219917,
+            103.0591006090353
+          ],
+          "curvature": 31.6722560700001,
+          "uphill": 2.0199999999999996,
+          "downhill": 2.019999999999994,
+          "changes": 5
+        },
+        {
+          "length": 501.00055109226486,
+          "perLane": [
+            97.52988395348592,
+            98.81060573966869,
+            100.19286745950664,
+            101.57512918151836,
+            102.8920647580876
+          ],
+          "curvature": 31.67225607107265,
+          "uphill": 2.0199999999999996,
+          "downhill": 2.0199999999999947,
+          "changes": 5
+        }
+      ],
+      "distanceSpread": 1.3642420526593924e-12,
+      "results": [
+        {
+          "name": "初期",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 212.48104097635593,
+              "distance": 500.5302532851528
+            },
+            {
+              "status": "finished",
+              "time": 212.4801959299013,
+              "distance": 500.5302532851528
+            },
+            {
+              "status": "finished",
+              "time": 212.48050889426545,
+              "distance": 500.5302532851528
+            },
+            {
+              "status": "finished",
+              "time": 212.48151811608017,
+              "distance": 500.5302532851528
+            },
+            {
+              "status": "finished",
+              "time": 212.48066389196902,
+              "distance": 500.5302532851528
+            }
+          ],
+          "finishTimeSpread": 0.0013221861788679234
+        },
+        {
+          "name": "中盤",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 107.1842309047395,
+              "distance": 500.5302532851528
+            },
+            {
+              "status": "finished",
+              "time": 107.18593821192675,
+              "distance": 500.5302532851528
+            },
+            {
+              "status": "finished",
+              "time": 107.18642472464012,
+              "distance": 500.5302532851528
+            },
+            {
+              "status": "finished",
+              "time": 107.18679240182479,
+              "distance": 500.5302532851528
+            },
+            {
+              "status": "finished",
+              "time": 107.18575984994091,
+              "distance": 500.5302532851528
+            }
+          ],
+          "finishTimeSpread": 0.0025614970852956276
+        },
+        {
+          "name": "上位",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 80.58650399032543,
+              "distance": 500.5302532851528
+            },
+            {
+              "status": "finished",
+              "time": 80.58565676811219,
+              "distance": 500.5302532851528
+            },
+            {
+              "status": "finished",
+              "time": 80.58748767657794,
+              "distance": 500.5302532851528
+            },
+            {
+              "status": "finished",
+              "time": 80.58514335185845,
+              "distance": 500.5302532851528
+            },
+            {
+              "status": "finished",
+              "time": 80.58590988131307,
+              "distance": 500.5302532851528
+            }
+          ],
+          "finishTimeSpread": 0.002344324719487645
+        }
+      ]
+    },
+    {
+      "id": "park-jump",
+      "lanes": 5,
+      "laps": 5,
+      "open": false,
+      "centralPhysics": false,
+      "geometry": [
+        {
+          "length": 504.754735192108,
+          "perLane": [
+            98.35777944817549,
+            99.64417760070069,
+            100.85846422258271,
+            102.32259363510882,
+            103.57172028553926
+          ],
+          "curvature": 32.76101207246208,
+          "uphill": 7.3838732346679965,
+          "downhill": 7.383873234667999,
+          "changes": 5
+        },
+        {
+          "length": 504.7547351921061,
+          "perLane": [
+            98.35777944817559,
+            99.5609142717225,
+            101.0264302665727,
+            102.237890920097,
+            103.57172028553903
+          ],
+          "curvature": 32.76101208288273,
+          "uphill": 7.3838732346679965,
+          "downhill": 7.383873234667994,
+          "changes": 5
+        },
+        {
+          "length": 504.7547351921044,
+          "perLane": [
+            98.35777944817534,
+            99.56091427172262,
+            100.94172755156116,
+            102.40873574260308,
+            103.48557817804472
+          ],
+          "curvature": 32.76101207800988,
+          "uphill": 7.383873234668,
+          "downhill": 7.383873234667999,
+          "changes": 5
+        },
+        {
+          "length": 504.7547351921042,
+          "perLane": [
+            98.27365021078795,
+            99.56091427172232,
+            100.9417275515611,
+            102.32259363510877,
+            103.6558495229266
+          ],
+          "curvature": 32.7610120779082,
+          "uphill": 7.383873234668,
+          "downhill": 7.383873234667997,
+          "changes": 5
+        },
+        {
+          "length": 504.75473519210686,
+          "perLane": [
+            98.43960339790985,
+            99.47909032198817,
+            100.941727551561,
+            102.32259363510862,
+            103.57172028553913
+          ],
+          "curvature": 32.76101207374467,
+          "uphill": 7.383873234668002,
+          "downhill": 7.383873234668001,
+          "changes": 5
+        }
+      ],
+      "distanceSpread": 3.808509063674137e-12,
+      "results": [
+        {
+          "name": "初期",
+          "lanes": [
+            {
+              "status": "out",
+              "reason": "climb",
+              "time": 219.81666666663108,
+              "distance": 502.64722606566284
+            },
+            {
+              "status": "out",
+              "reason": "climb",
+              "time": 220.0166666666309,
+              "distance": 502.68278658081124
+            },
+            {
+              "status": "finished",
+              "time": 221.63475897979077,
+              "distance": 503.8034931210245
+            },
+            {
+              "status": "finished",
+              "time": 221.42809822064262,
+              "distance": 503.8034931210245
+            },
+            {
+              "status": "finished",
+              "time": 221.27155541206054,
+              "distance": 503.8034931210245
+            }
+          ],
+          "finishTimeSpread": null
+        },
+        {
+          "name": "中盤",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 108.41293423944865,
+              "distance": 503.8034931210245
+            },
+            {
+              "status": "finished",
+              "time": 108.41459923978964,
+              "distance": 503.8034931210245
+            },
+            {
+              "status": "finished",
+              "time": 108.41588269804393,
+              "distance": 503.8034931210245
+            },
+            {
+              "status": "finished",
+              "time": 108.42187782772177,
+              "distance": 503.8034931210245
+            },
+            {
+              "status": "finished",
+              "time": 108.42211582644059,
+              "distance": 503.8034931210245
+            }
+          ],
+          "finishTimeSpread": 0.009181586991942936
+        },
+        {
+          "name": "上位",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 81.39905668533164,
+              "distance": 503.8034931210245
+            },
+            {
+              "status": "finished",
+              "time": 81.40176941821184,
+              "distance": 503.8034931210245
+            },
+            {
+              "status": "finished",
+              "time": 81.40291421823375,
+              "distance": 503.8034931210245
+            },
+            {
+              "status": "finished",
+              "time": 81.40532080119252,
+              "distance": 503.8034931210245
+            },
+            {
+              "status": "finished",
+              "time": 81.40652097477808,
+              "distance": 503.8034931210245
+            }
+          ],
+          "finishTimeSpread": 0.007464289446431849
+        }
+      ]
+    },
+    {
+      "id": "park-endurance",
+      "lanes": 5,
+      "laps": 5,
+      "open": false,
+      "centralPhysics": false,
+      "geometry": [
+        {
+          "length": 1744.1349236270285,
+          "perLane": [
+            346.12515496486986,
+            347.4448034841957,
+            349.1178464349234,
+            350.2096328650807,
+            351.2374858779587
+          ],
+          "curvature": 31.41948623022035,
+          "uphill": 2.0199999999999996,
+          "downhill": 2.019999999999942,
+          "changes": 5
+        },
+        {
+          "length": 1744.1349236270269,
+          "perLane": [
+            345.83448614384,
+            347.4448034841955,
+            348.8269457868742,
+            350.50053351313045,
+            351.52815469898843
+          ],
+          "curvature": 31.419486214056498,
+          "uphill": 2.0199999999999996,
+          "downhill": 2.019999999999941,
+          "changes": 5
+        },
+        {
+          "length": 1744.1349236270275,
+          "perLane": [
+            346.1242983437846,
+            347.1549912842508,
+            348.82694578687386,
+            350.20908864099385,
+            351.81959957112286
+          ],
+          "curvature": 31.419486278788018,
+          "uphill": 2.0199999999999996,
+          "downhill": 2.019999999999941,
+          "changes": 5
+        },
+        {
+          "length": 1744.1349236270291,
+          "perLane": [
+            346.4149671648146,
+            347.44534770823697,
+            348.5365893628883,
+            350.2090886409935,
+            351.52893075009393
+          ],
+          "curvature": 31.41948622699423,
+          "uphill": 2.0199999999999996,
+          "downhill": 2.0199999999999405,
+          "changes": 5
+        },
+        {
+          "length": 1744.1349236270216,
+          "perLane": [
+            346.1251549648689,
+            347.73515990818146,
+            348.82749001093794,
+            349.91818799294566,
+            351.52893075009365
+          ],
+          "curvature": 31.419486226357478,
+          "uphill": 2.0199999999999996,
+          "downhill": 2.019999999999941,
+          "changes": 5
+        }
+      ],
+      "distanceSpread": 7.503331289626658e-12,
+      "results": [
+        {
+          "name": "初期",
+          "lanes": [
+            {
+              "status": "out",
+              "reason": "battery",
+              "time": 720.0083333328429,
+              "distance": 1372.8623958841724
+            },
+            {
+              "status": "out",
+              "reason": "battery",
+              "time": 720.0083333328429,
+              "distance": 1370.491771944409
+            },
+            {
+              "status": "out",
+              "reason": "battery",
+              "time": 720.0083333328429,
+              "distance": 1371.9174960941568
+            },
+            {
+              "status": "out",
+              "reason": "battery",
+              "time": 720.0083333328429,
+              "distance": 1373.3372376274908
+            },
+            {
+              "status": "out",
+              "reason": "battery",
+              "time": 720.0083333328429,
+              "distance": 1374.7515499469243
+            }
+          ],
+          "finishTimeSpread": null
+        },
+        {
+          "name": "中盤",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 390.33770898371944,
+              "distance": 1743.7026983932835
+            },
+            {
+              "status": "finished",
+              "time": 390.3374555747831,
+              "distance": 1743.7026983932835
+            },
+            {
+              "status": "finished",
+              "time": 390.3367973358121,
+              "distance": 1743.7026983932835
+            },
+            {
+              "status": "finished",
+              "time": 390.3373647099188,
+              "distance": 1743.7026983932835
+            },
+            {
+              "status": "finished",
+              "time": 390.33730326761065,
+              "distance": 1743.7026983932835
+            }
+          ],
+          "finishTimeSpread": 0.0009116479073441042
+        },
+        {
+          "name": "上位",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 281.47878947886807,
+              "distance": 1743.7026983932835
+            },
+            {
+              "status": "finished",
+              "time": 281.47809462978654,
+              "distance": 1743.7026983932835
+            },
+            {
+              "status": "finished",
+              "time": 281.4783773399523,
+              "distance": 1743.7026983932835
+            },
+            {
+              "status": "finished",
+              "time": 281.4785010686311,
+              "distance": 1743.7026983932835
+            },
+            {
+              "status": "finished",
+              "time": 281.47863190736985,
+              "distance": 1743.7026983932835
+            }
+          ],
+          "finishTimeSpread": 0.0006948490815261721
+        }
+      ]
+    },
+    {
+      "id": "leaf",
+      "lanes": 5,
+      "laps": 5,
+      "open": false,
+      "centralPhysics": false,
+      "geometry": [
+        {
+          "length": 114.75622416115881,
+          "perLane": [
+            20.27095802668243,
+            21.559684298158878,
+            22.901706210909854,
+            24.320173894667096,
+            25.703701730740733
+          ],
+          "curvature": 31.641811289871953,
+          "uphill": 2.0200000000000027,
+          "downhill": 2.0200000000000005,
+          "changes": 5
+        },
+        {
+          "length": 114.75622416115873,
+          "perLane": [
+            20.289393805826553,
+            21.52238549661605,
+            22.93985955068553,
+            24.28116591657375,
+            25.723419391457107
+          ],
+          "curvature": 31.64181129046466,
+          "uphill": 2.0200000000000027,
+          "downhill": 2.0200000000000005,
+          "changes": 5
+        },
+        {
+          "length": 114.75622416115878,
+          "perLane": [
+            20.309193363596023,
+            21.54124851901471,
+            22.90170621090986,
+            24.320173894667136,
+            25.68390217297135
+          ],
+          "curvature": 31.641811290284508,
+          "uphill": 2.020000000000002,
+          "downhill": 2.0200000000000005,
+          "changes": 5
+        },
+        {
+          "length": 114.75622416115887,
+          "perLane": [
+            20.270958026682436,
+            21.55968429815888,
+            22.920996528286818,
+            24.281165916573777,
+            25.723419391457107
+          ],
+          "curvature": 31.641811290357534,
+          "uphill": 2.020000000000002,
+          "downhill": 2.0200000000000005,
+          "changes": 5
+        },
+        {
+          "length": 114.75622416115935,
+          "perLane": [
+            20.30919336359599,
+            21.52238549661597,
+            22.93985955068555,
+            24.300883577290065,
+            25.68390217297137
+          ],
+          "curvature": 31.641811290242245,
+          "uphill": 2.020000000000002,
+          "downhill": 2.0200000000000005,
+          "changes": 5
+        }
+      ],
+      "distanceSpread": 6.252776074688882e-13,
+      "results": [
+        {
+          "name": "初期",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 49.64634715241465,
+              "distance": 114.13837741358651
+            },
+            {
+              "status": "finished",
+              "time": 49.64937232048917,
+              "distance": 114.13837741358651
+            },
+            {
+              "status": "finished",
+              "time": 49.651117789955805,
+              "distance": 114.13837741358651
+            },
+            {
+              "status": "finished",
+              "time": 49.65340970294174,
+              "distance": 114.13837741358651
+            },
+            {
+              "status": "finished",
+              "time": 49.653415606834045,
+              "distance": 114.13837741358651
+            }
+          ],
+          "finishTimeSpread": 0.00706845441939663
+        },
+        {
+          "name": "中盤",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 25.935092830158972,
+              "distance": 114.13837741358651
+            },
+            {
+              "status": "finished",
+              "time": 25.936871235875834,
+              "distance": 114.13837741358651
+            },
+            {
+              "status": "finished",
+              "time": 25.94024747869706,
+              "distance": 114.13837741358651
+            },
+            {
+              "status": "finished",
+              "time": 25.943998865276694,
+              "distance": 114.13837741358651
+            },
+            {
+              "status": "finished",
+              "time": 25.94441741234286,
+              "distance": 114.13837741358651
+            }
+          ],
+          "finishTimeSpread": 0.009324582183889873
+        },
+        {
+          "name": "上位",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 19.868818529016174,
+              "distance": 114.13837741358651
+            },
+            {
+              "status": "finished",
+              "time": 19.87098590344198,
+              "distance": 114.13837741358651
+            },
+            {
+              "status": "finished",
+              "time": 19.872744173260653,
+              "distance": 114.13837741358651
+            },
+            {
+              "status": "finished",
+              "time": 19.87557986207695,
+              "distance": 114.13837741358651
+            },
+            {
+              "status": "finished",
+              "time": 19.8794451901378,
+              "distance": 114.13837741358651
+            }
+          ],
+          "finishTimeSpread": 0.010626661121627023
+        }
+      ]
+    },
+    {
+      "id": "wind",
+      "lanes": 5,
+      "laps": 5,
+      "open": false,
+      "centralPhysics": false,
+      "geometry": [
+        {
+          "length": 149.82986656441767,
+          "perLane": [
+            27.190729716591886,
+            28.563440130132236,
+            29.89774319191778,
+            31.308056142849324,
+            32.86989738292652
+          ],
+          "curvature": 44.3993342896771,
+          "uphill": 2.0199999999999996,
+          "downhill": 2.0200000000000005,
+          "changes": 5
+        },
+        {
+          "length": 149.82986656441767,
+          "perLane": [
+            27.190729716591893,
+            28.538168440195104,
+            29.947563626360054,
+            31.283507398344195,
+            32.86989738292651
+          ],
+          "curvature": 44.39933428978718,
+          "uphill": 2.0200000000000005,
+          "downhill": 2.0199999999999996,
+          "changes": 5
+        },
+        {
+          "length": 149.82986656441793,
+          "perLane": [
+            27.190729716591875,
+            28.53816844019512,
+            29.923014881854957,
+            31.33188200898618,
+            32.846071516789586
+          ],
+          "curvature": 44.399334289259365,
+          "uphill": 2.0199999999999996,
+          "downhill": 2.02,
+          "changes": 5
+        },
+        {
+          "length": 149.82986656441742,
+          "perLane": [
+            27.165245649312553,
+            28.53816844019512,
+            29.923014881854975,
+            31.3080561428493,
+            32.895381450205726
+          ],
+          "curvature": 44.39933428960791,
+          "uphill": 2.0199999999999996,
+          "downhill": 2.0200000000000005,
+          "changes": 5
+        },
+        {
+          "length": 149.8298665644176,
+          "perLane": [
+            27.216724413429414,
+            28.512173743357554,
+            29.923014881854957,
+            31.308056142849328,
+            32.86989738292653
+          ],
+          "curvature": 44.399334289354606,
+          "uphill": 2.0199999999999996,
+          "downhill": 2.02,
+          "changes": 5
+        }
+      ],
+      "distanceSpread": 5.115907697472721e-13,
+      "results": [
+        {
+          "name": "初期",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 64.89592830204806,
+              "distance": 149.24900639683187
+            },
+            {
+              "status": "finished",
+              "time": 64.8982681634878,
+              "distance": 149.24900639683187
+            },
+            {
+              "status": "finished",
+              "time": 64.89828900239954,
+              "distance": 149.24900639683187
+            },
+            {
+              "status": "finished",
+              "time": 64.89925245043504,
+              "distance": 149.24900639683187
+            },
+            {
+              "status": "finished",
+              "time": 64.90056929337902,
+              "distance": 149.24900639683187
+            }
+          ],
+          "finishTimeSpread": 0.004640991330958855
+        },
+        {
+          "name": "中盤",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 33.74344767891846,
+              "distance": 149.24900639683187
+            },
+            {
+              "status": "finished",
+              "time": 33.74484178585008,
+              "distance": 149.24900639683187
+            },
+            {
+              "status": "finished",
+              "time": 33.74400118303542,
+              "distance": 149.24900639683187
+            },
+            {
+              "status": "finished",
+              "time": 33.746201637947316,
+              "distance": 149.24900639683187
+            },
+            {
+              "status": "finished",
+              "time": 33.74683290568412,
+              "distance": 149.24900639683187
+            }
+          ],
+          "finishTimeSpread": 0.00338522676566555
+        },
+        {
+          "name": "上位",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 25.804610610283234,
+              "distance": 149.24900639683187
+            },
+            {
+              "status": "finished",
+              "time": 25.805897266179535,
+              "distance": 149.24900639683187
+            },
+            {
+              "status": "finished",
+              "time": 25.806692271732025,
+              "distance": 149.24900639683187
+            },
+            {
+              "status": "finished",
+              "time": 25.807808368603027,
+              "distance": 149.24900639683187
+            },
+            {
+              "status": "finished",
+              "time": 25.80916665090452,
+              "distance": 149.24900639683187
+            }
+          ],
+          "finishTimeSpread": 0.004556040621285007
+        }
+      ]
+    },
+    {
+      "id": "sun",
+      "lanes": 5,
+      "laps": 5,
+      "open": false,
+      "centralPhysics": false,
+      "geometry": [
+        {
+          "length": 280.95467158261266,
+          "perLane": [
+            53.452800010627186,
+            54.77277963621232,
+            56.156263170342875,
+            57.53978300646368,
+            59.03304575896722
+          ],
+          "curvature": 39.52675643954288,
+          "uphill": 2.020000000000002,
+          "downhill": 2.0200000000000045,
+          "changes": 5
+        },
+        {
+          "length": 280.9546715826135,
+          "perLane": [
+            53.45280001062707,
+            54.77277963621243,
+            56.15626317034292,
+            57.53978300646363,
+            59.03304575896724
+          ],
+          "curvature": 39.526756442090345,
+          "uphill": 2.0200000000000014,
+          "downhill": 2.0200000000000036,
+          "changes": 5
+        },
+        {
+          "length": 280.954671582613,
+          "perLane": [
+            53.452800010627165,
+            54.7727796362124,
+            56.15626317034284,
+            57.53978300646365,
+            59.033045758967255
+          ],
+          "curvature": 39.52675644014378,
+          "uphill": 2.020000000000001,
+          "downhill": 2.0200000000000036,
+          "changes": 5
+        },
+        {
+          "length": 280.9546715826123,
+          "perLane": [
+            53.452800010627136,
+            54.77277963621233,
+            56.15626317034288,
+            57.53978300646371,
+            59.03304575896732
+          ],
+          "curvature": 39.52675644046099,
+          "uphill": 2.020000000000001,
+          "downhill": 2.0200000000000045,
+          "changes": 5
+        },
+        {
+          "length": 280.9546715826129,
+          "perLane": [
+            53.45280001062718,
+            54.77277963621234,
+            56.15626317034279,
+            57.53978300646368,
+            59.03304575896723
+          ],
+          "curvature": 39.526756439683666,
+          "uphill": 2.0200000000000014,
+          "downhill": 2.0200000000000045,
+          "changes": 5
+        }
+      ],
+      "distanceSpread": 1.1937117960769683e-12,
+      "results": [
+        {
+          "name": "初期",
+          "lanes": [
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            },
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            },
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            },
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            },
+            {
+              "status": "out",
+              "reason": "blocked",
+              "time": 0.008333333333333333,
+              "distance": 0
+            }
+          ],
+          "finishTimeSpread": null
+        },
+        {
+          "name": "中盤",
+          "lanes": [
+            {
+              "status": "out",
+              "reason": "climb",
+              "time": 347.9833333331812,
+              "distance": 53.835498081810115
+            },
+            {
+              "status": "out",
+              "reason": "climb",
+              "time": 357.94166666650545,
+              "distance": 53.83385584368675
+            },
+            {
+              "status": "out",
+              "reason": "climb",
+              "time": 367.958333333163,
+              "distance": 53.8314508638461
+            },
+            {
+              "status": "out",
+              "reason": "climb",
+              "time": 378.0583333331538,
+              "distance": 53.829478901692305
+            },
+            {
+              "status": "out",
+              "reason": "climb",
+              "time": 106.38333333336406,
+              "distance": 23.049764542415346
+            }
+          ],
+          "finishTimeSpread": null
+        },
+        {
+          "name": "上位",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 59.83411100557042,
+              "distance": 280.4467922486757
+            },
+            {
+              "status": "finished",
+              "time": 59.832315419464656,
+              "distance": 280.4467922486757
+            },
+            {
+              "status": "finished",
+              "time": 59.83579945221137,
+              "distance": 280.4467922486757
+            },
+            {
+              "status": "finished",
+              "time": 59.829456902327436,
+              "distance": 280.4467922486757
+            },
+            {
+              "status": "finished",
+              "time": 59.830972057480274,
+              "distance": 280.4467922486757
+            }
+          ],
+          "finishTimeSpread": 0.006342549883932236
+        }
+      ]
+    },
+    {
+      "id": "sprint",
+      "lanes": 5,
+      "laps": 5,
+      "open": false,
+      "centralPhysics": false,
+      "geometry": [
+        {
+          "length": 406.14506187494857,
+          "perLane": [
+            78.47790613233664,
+            79.90540494658133,
+            81.22006483130961,
+            82.60234914258643,
+            83.9393368221325
+          ],
+          "curvature": 31.65948502319723,
+          "uphill": 2.02,
+          "downhill": 2.0199999999999947,
+          "changes": 5
+        },
+        {
+          "length": 406.1450618749485,
+          "perLane": [
+            78.41007235892019,
+            79.8377805223411,
+            81.28768925554986,
+            82.60234914258642,
+            84.00717059554886
+          ],
+          "curvature": 31.659485019685274,
+          "uphill": 2.0199999999999996,
+          "downhill": 2.019999999999995,
+          "changes": 5
+        },
+        {
+          "length": 406.1450618749461,
+          "perLane": [
+            78.47769678316043,
+            79.77015609810083,
+            81.22006483130968,
+            82.66997356682667,
+            84.00717059554887
+          ],
+          "curvature": 31.659485022329612,
+          "uphill": 2.019999999999999,
+          "downhill": 2.019999999999995,
+          "changes": 5
+        },
+        {
+          "length": 406.1450618749471,
+          "perLane": [
+            78.47769678316043,
+            79.83778052234105,
+            81.15244040706935,
+            82.60234914258652,
+            84.07479501978911
+          ],
+          "curvature": 31.659485021535684,
+          "uphill": 2.0199999999999996,
+          "downhill": 2.019999999999995,
+          "changes": 5
+        },
+        {
+          "length": 406.14506187494914,
+          "perLane": [
+            78.54553055657684,
+            79.83778052234112,
+            81.22006483130959,
+            82.53472471834621,
+            84.0069612463728
+          ],
+          "curvature": 31.659485022685534,
+          "uphill": 2.0199999999999996,
+          "downhill": 2.019999999999995,
+          "changes": 5
+        }
+      ],
+      "distanceSpread": 3.0127011996228248e-12,
+      "results": [
+        {
+          "name": "初期",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 170.86896928162207,
+              "distance": 405.66266748239093
+            },
+            {
+              "status": "finished",
+              "time": 170.86863624797613,
+              "distance": 405.66266748239093
+            },
+            {
+              "status": "finished",
+              "time": 170.8699758558719,
+              "distance": 405.66266748239093
+            },
+            {
+              "status": "finished",
+              "time": 170.86964918336344,
+              "distance": 405.66266748239093
+            },
+            {
+              "status": "finished",
+              "time": 170.87147288999594,
+              "distance": 405.66266748239093
+            }
+          ],
+          "finishTimeSpread": 0.002836642019815372
+        },
+        {
+          "name": "中盤",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 87.1681676714477,
+              "distance": 405.66266748239093
+            },
+            {
+              "status": "finished",
+              "time": 87.16858314809782,
+              "distance": 405.66266748239093
+            },
+            {
+              "status": "finished",
+              "time": 87.1681778613902,
+              "distance": 405.66266748239093
+            },
+            {
+              "status": "finished",
+              "time": 87.16994621199491,
+              "distance": 405.66266748239093
+            },
+            {
+              "status": "finished",
+              "time": 87.16836882602708,
+              "distance": 405.66266748239093
+            }
+          ],
+          "finishTimeSpread": 0.0017785405472068305
+        },
+        {
+          "name": "上位",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 65.68113218616506,
+              "distance": 405.66266748239093
+            },
+            {
+              "status": "finished",
+              "time": 65.68231077096581,
+              "distance": 405.66266748239093
+            },
+            {
+              "status": "finished",
+              "time": 65.68143099453427,
+              "distance": 405.66266748239093
+            },
+            {
+              "status": "finished",
+              "time": 65.67999030682063,
+              "distance": 405.66266748239093
+            },
+            {
+              "status": "finished",
+              "time": 65.68277238670063,
+              "distance": 405.66266748239093
+            }
+          ],
+          "finishTimeSpread": 0.0027820798800064495
+        }
+      ]
+    },
+    {
+      "id": "grove",
+      "lanes": 5,
+      "laps": 5,
+      "open": false,
+      "centralPhysics": false,
+      "geometry": [
+        {
+          "length": 504.59718482317913,
+          "perLane": [
+            95.45861326911111,
+            98.14571466991757,
+            100.89298365489934,
+            103.64192639967284,
+            106.45794682957826
+          ],
+          "curvature": 87.8903608320783,
+          "uphill": 15.439574236336421,
+          "downhill": 15.43957423633632,
+          "changes": 5
+        },
+        {
+          "length": 504.59718482317805,
+          "perLane": [
+            95.62794410140552,
+            98.06208559313761,
+            100.89298365489933,
+            103.64192639967283,
+            106.37224507406317
+          ],
+          "curvature": 87.8903608312036,
+          "uphill": 15.439574236336414,
+          "downhill": 15.439574236336318,
+          "changes": 5
+        },
+        {
+          "length": 504.59718482317817,
+          "perLane": [
+            95.54431502462633,
+            98.23062842975851,
+            100.80806989505807,
+            103.64192639967304,
+            106.37224507406327
+          ],
+          "curvature": 87.89036083023178,
+          "uphill": 15.439574236336417,
+          "downhill": 15.439574236336314,
+          "changes": 5
+        },
+        {
+          "length": 504.597184823179,
+          "perLane": [
+            95.54431502462624,
+            98.14571466991735,
+            100.9791830588456,
+            103.55572699572639,
+            106.37224507406324
+          ],
+          "curvature": 87.89036083047834,
+          "uphill": 15.439574236336417,
+          "downhill": 15.439574236336314,
+          "changes": 5
+        },
+        {
+          "length": 504.5971848231793,
+          "perLane": [
+            95.54431502462637,
+            98.14571466991734,
+            100.89298365489915,
+            103.72941236639886,
+            106.28475910733695
+          ],
+          "curvature": 87.89036082975377,
+          "uphill": 15.439574236336417,
+          "downhill": 15.43957423633631,
+          "changes": 5
+        }
+      ],
+      "distanceSpread": 1.2505552149377763e-12,
+      "results": [
+        {
+          "name": "初期",
+          "lanes": [
+            {
+              "status": "out",
+              "reason": "climb",
+              "time": 5.408333333333392,
+              "distance": 11.437726842755199
+            },
+            {
+              "status": "out",
+              "reason": "climb",
+              "time": 5.483333333333396,
+              "distance": 11.467590683258729
+            },
+            {
+              "status": "out",
+              "reason": "climb",
+              "time": 5.575000000000067,
+              "distance": 11.500351212083405
+            },
+            {
+              "status": "out",
+              "reason": "climb",
+              "time": 5.658333333333404,
+              "distance": 11.532715596464259
+            },
+            {
+              "status": "out",
+              "reason": "climb",
+              "time": 5.758333333333409,
+              "distance": 11.568377436761569
+            }
+          ],
+          "finishTimeSpread": null
+        },
+        {
+          "name": "中盤",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 111.76120216264252,
+              "distance": 501.25366612409607
+            },
+            {
+              "status": "finished",
+              "time": 111.76842454173898,
+              "distance": 501.25366612409607
+            },
+            {
+              "status": "finished",
+              "time": 111.76198785412656,
+              "distance": 501.25366612409607
+            },
+            {
+              "status": "finished",
+              "time": 111.77042884404015,
+              "distance": 501.25366612409607
+            },
+            {
+              "status": "finished",
+              "time": 111.77608442666691,
+              "distance": 501.25366612409607
+            }
+          ],
+          "finishTimeSpread": 0.014882264024393521
+        },
+        {
+          "name": "上位",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 83.78147346299734,
+              "distance": 501.25366612409607
+            },
+            {
+              "status": "finished",
+              "time": 83.78118928992045,
+              "distance": 501.25366612409607
+            },
+            {
+              "status": "finished",
+              "time": 83.78187850283412,
+              "distance": 501.25366612409607
+            },
+            {
+              "status": "finished",
+              "time": 83.78003573781935,
+              "distance": 501.25366612409607
+            },
+            {
+              "status": "finished",
+              "time": 83.78068074503845,
+              "distance": 501.25366612409607
+            }
+          ],
+          "finishTimeSpread": 0.0018427650147714303
+        }
+      ]
+    },
+    {
+      "id": "comet",
+      "lanes": 5,
+      "laps": 5,
+      "open": false,
+      "centralPhysics": false,
+      "geometry": [
+        {
+          "length": 355.38065262114714,
+          "perLane": [
+            68.29046704800903,
+            69.62875827453522,
+            71.01414940343763,
+            72.39983227832815,
+            74.04744561683717
+          ],
+          "curvature": 74.61731834300294,
+          "uphill": 2.019999999999999,
+          "downhill": 2.0200000000000014,
+          "changes": 5
+        },
+        {
+          "length": 355.3806526211466,
+          "perLane": [
+            68.290467048009,
+            69.62875827453523,
+            71.01414940343756,
+            72.39983227832808,
+            74.04744561683714
+          ],
+          "curvature": 74.61731834196928,
+          "uphill": 2.0199999999999982,
+          "downhill": 2.0200000000000005,
+          "changes": 5
+        },
+        {
+          "length": 355.3806526211456,
+          "perLane": [
+            68.29046704800896,
+            69.62875827453502,
+            71.0141494034376,
+            72.39983227832803,
+            74.04744561683727
+          ],
+          "curvature": 74.61731834236878,
+          "uphill": 2.019999999999999,
+          "downhill": 2.0200000000000005,
+          "changes": 5
+        },
+        {
+          "length": 355.38065262114714,
+          "perLane": [
+            68.29046704800902,
+            69.62875827453523,
+            71.01414940343759,
+            72.39983227832822,
+            74.04744561683722
+          ],
+          "curvature": 74.61731834048447,
+          "uphill": 2.019999999999999,
+          "downhill": 2.0200000000000005,
+          "changes": 5
+        },
+        {
+          "length": 355.38065262114867,
+          "perLane": [
+            68.29046704800892,
+            69.62875827453507,
+            71.0141494034376,
+            72.39983227832816,
+            74.04744561683722
+          ],
+          "curvature": 74.61731834075644,
+          "uphill": 2.019999999999999,
+          "downhill": 2.0200000000000005,
+          "changes": 5
+        }
+      ],
+      "distanceSpread": 3.069544618483633e-12,
+      "results": [
+        {
+          "name": "初期",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 152.54696650253175,
+              "distance": 354.89173802497356
+            },
+            {
+              "status": "finished",
+              "time": 152.54602057020784,
+              "distance": 354.89173802497356
+            },
+            {
+              "status": "finished",
+              "time": 152.54481106052293,
+              "distance": 354.89173802497356
+            },
+            {
+              "status": "finished",
+              "time": 152.54355288213722,
+              "distance": 354.89173802497356
+            },
+            {
+              "status": "finished",
+              "time": 152.54324708334474,
+              "distance": 354.89173802497356
+            }
+          ],
+          "finishTimeSpread": 0.0037194191870071336
+        },
+        {
+          "name": "中盤",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 78.05840849583282,
+              "distance": 354.89173802497356
+            },
+            {
+              "status": "finished",
+              "time": 78.05926862152282,
+              "distance": 354.89173802497356
+            },
+            {
+              "status": "finished",
+              "time": 78.05817973639239,
+              "distance": 354.89173802497356
+            },
+            {
+              "status": "finished",
+              "time": 78.0584193782958,
+              "distance": 354.89173802497356
+            },
+            {
+              "status": "finished",
+              "time": 78.05587310096992,
+              "distance": 354.89173802497356
+            }
+          ],
+          "finishTimeSpread": 0.0033955205528997112
+        },
+        {
+          "name": "上位",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 59.15514428485289,
+              "distance": 354.89173802497356
+            },
+            {
+              "status": "finished",
+              "time": 59.153536555567264,
+              "distance": 354.89173802497356
+            },
+            {
+              "status": "finished",
+              "time": 59.15539137412279,
+              "distance": 354.89173802497356
+            },
+            {
+              "status": "finished",
+              "time": 59.15340168486966,
+              "distance": 354.89173802497356
+            },
+            {
+              "status": "finished",
+              "time": 59.15405070635755,
+              "distance": 354.89173802497356
+            }
+          ],
+          "finishTimeSpread": 0.001989689253136362
+        }
+      ]
+    },
+    {
+      "id": "trail",
+      "lanes": 5,
+      "laps": 1,
+      "open": true,
+      "centralPhysics": true,
+      "geometry": [
+        {
+          "length": 173.92320101428558,
+          "perLane": [
+            173.92320101428558,
+            0,
+            0,
+            0,
+            0
+          ],
+          "curvature": 16.56789315274118,
+          "uphill": 2.2482822762805696,
+          "downhill": 2.570842276280563,
+          "changes": 0
+        },
+        {
+          "length": 173.2299917854884,
+          "perLane": [
+            0,
+            173.2299917854884,
+            0,
+            0,
+            0
+          ],
+          "curvature": 16.567924859035593,
+          "uphill": 2.2482822762805696,
+          "downhill": 2.570842276280563,
+          "changes": 0
+        },
+        {
+          "length": 172.5375473811312,
+          "perLane": [
+            0,
+            0,
+            172.5375473811312,
+            0,
+            0
+          ],
+          "curvature": 16.57016468140688,
+          "uphill": 2.2482822762805696,
+          "downhill": 2.570842276280563,
+          "changes": 0
+        },
+        {
+          "length": 171.84624946202607,
+          "perLane": [
+            0,
+            0,
+            0,
+            171.84624946202607,
+            0
+          ],
+          "curvature": 16.577711443931236,
+          "uphill": 2.2482822762805696,
+          "downhill": 2.570842276280563,
+          "changes": 0
+        },
+        {
+          "length": 171.15805287925835,
+          "perLane": [
+            0,
+            0,
+            0,
+            0,
+            171.15805287925835
+          ],
+          "curvature": 16.621126485124616,
+          "uphill": 2.2482822762805696,
+          "downhill": 2.570842276280563,
+          "changes": 0
+        }
+      ],
+      "distanceSpread": 2.765148135027232,
+      "results": [
+        {
+          "name": "初期",
+          "lanes": [
+            {
+              "status": "out",
+              "reason": "jump",
+              "time": 59.27499999999728,
+              "distance": 138.15237386314973
+            },
+            {
+              "status": "out",
+              "reason": "jump",
+              "time": 59.27499999999728,
+              "distance": 138.15237386314973
+            },
+            {
+              "status": "out",
+              "reason": "jump",
+              "time": 59.27499999999728,
+              "distance": 138.15237386314973
+            },
+            {
+              "status": "out",
+              "reason": "jump",
+              "time": 59.27499999999728,
+              "distance": 138.15237386314973
+            },
+            {
+              "status": "out",
+              "reason": "jump",
+              "time": 59.27499999999728,
+              "distance": 138.15237386314973
+            }
+          ],
+          "finishTimeSpread": null
+        },
+        {
+          "name": "中盤",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 37.538854339317695,
+              "distance": 172.1324744728454
+            },
+            {
+              "status": "finished",
+              "time": 37.538854339317695,
+              "distance": 172.1324744728454
+            },
+            {
+              "status": "finished",
+              "time": 37.538854339317695,
+              "distance": 172.1324744728454
+            },
+            {
+              "status": "finished",
+              "time": 37.538854339317695,
+              "distance": 172.1324744728454
+            },
+            {
+              "status": "finished",
+              "time": 37.538854339317695,
+              "distance": 172.1324744728454
+            }
+          ],
+          "finishTimeSpread": 0
+        },
+        {
+          "name": "上位",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 28.438737186706767,
+              "distance": 172.1324744728454
+            },
+            {
+              "status": "finished",
+              "time": 28.438737186706767,
+              "distance": 172.1324744728454
+            },
+            {
+              "status": "finished",
+              "time": 28.438737186706767,
+              "distance": 172.1324744728454
+            },
+            {
+              "status": "finished",
+              "time": 28.438737186706767,
+              "distance": 172.1324744728454
+            },
+            {
+              "status": "finished",
+              "time": 28.438737186706767,
+              "distance": 172.1324744728454
+            }
+          ],
+          "finishTimeSpread": 0
+        }
+      ]
+    },
+    {
+      "id": "grandprix",
+      "lanes": 5,
+      "laps": 1,
+      "open": true,
+      "centralPhysics": true,
+      "geometry": [
+        {
+          "length": 184.1723059708593,
+          "perLane": [
+            184.1723059708593,
+            0,
+            0,
+            0,
+            0
+          ],
+          "curvature": 24.552045454965278,
+          "uphill": 2.2469108463107865,
+          "downhill": 2.5694708463107867,
+          "changes": 0
+        },
+        {
+          "length": 183.44050652439188,
+          "perLane": [
+            0,
+            183.44050652439188,
+            0,
+            0,
+            0
+          ],
+          "curvature": 24.547685171835163,
+          "uphill": 2.2469108463107865,
+          "downhill": 2.5694708463107867,
+          "changes": 0
+        },
+        {
+          "length": 182.7100997457326,
+          "perLane": [
+            0,
+            0,
+            182.7100997457326,
+            0,
+            0
+          ],
+          "curvature": 24.546477909876188,
+          "uphill": 2.2469108463107865,
+          "downhill": 2.5694708463107867,
+          "changes": 0
+        },
+        {
+          "length": 181.9814003131037,
+          "perLane": [
+            0,
+            0,
+            0,
+            181.9814003131037,
+            0
+          ],
+          "curvature": 24.551448239329854,
+          "uphill": 2.2469108463107865,
+          "downhill": 2.5694708463107867,
+          "changes": 0
+        },
+        {
+          "length": 181.25629850757343,
+          "perLane": [
+            0,
+            0,
+            0,
+            0,
+            181.25629850757343
+          ],
+          "curvature": 24.59353182448727,
+          "uphill": 2.2469108463107865,
+          "downhill": 2.5694708463107867,
+          "changes": 0
+        }
+      ],
+      "distanceSpread": 2.9160074632858652,
+      "results": [
+        {
+          "name": "初期",
+          "lanes": [
+            {
+              "status": "out",
+              "reason": "jump",
+              "time": 62.674999999997084,
+              "distance": 146.27608533757933
+            },
+            {
+              "status": "out",
+              "reason": "jump",
+              "time": 62.674999999997084,
+              "distance": 146.27608533757933
+            },
+            {
+              "status": "out",
+              "reason": "jump",
+              "time": 62.674999999997084,
+              "distance": 146.27608533757933
+            },
+            {
+              "status": "out",
+              "reason": "jump",
+              "time": 62.674999999997084,
+              "distance": 146.27608533757933
+            },
+            {
+              "status": "out",
+              "reason": "jump",
+              "time": 62.674999999997084,
+              "distance": 146.27608533757933
+            }
+          ],
+          "finishTimeSpread": null
+        },
+        {
+          "name": "中盤",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 39.93366147986078,
+              "distance": 182.3043218237431
+            },
+            {
+              "status": "finished",
+              "time": 39.93366147986078,
+              "distance": 182.3043218237431
+            },
+            {
+              "status": "finished",
+              "time": 39.93366147986078,
+              "distance": 182.3043218237431
+            },
+            {
+              "status": "finished",
+              "time": 39.93366147986078,
+              "distance": 182.3043218237431
+            },
+            {
+              "status": "finished",
+              "time": 39.93366147986078,
+              "distance": 182.3043218237431
+            }
+          ],
+          "finishTimeSpread": 0
+        },
+        {
+          "name": "上位",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 30.265456210015948,
+              "distance": 182.3043218237431
+            },
+            {
+              "status": "finished",
+              "time": 30.265456210015948,
+              "distance": 182.3043218237431
+            },
+            {
+              "status": "finished",
+              "time": 30.265456210015948,
+              "distance": 182.3043218237431
+            },
+            {
+              "status": "finished",
+              "time": 30.265456210015948,
+              "distance": 182.3043218237431
+            },
+            {
+              "status": "finished",
+              "time": 30.265456210015948,
+              "distance": 182.3043218237431
+            }
+          ],
+          "finishTimeSpread": 0
+        }
+      ]
+    },
+    {
+      "id": "forge",
+      "lanes": 5,
+      "laps": 1,
+      "open": true,
+      "centralPhysics": true,
+      "geometry": [
+        {
+          "length": 705.9629536453047,
+          "perLane": [
+            705.9629536453047,
+            0,
+            0,
+            0,
+            0
+          ],
+          "curvature": 23.150585386960508,
+          "uphill": 9.618182723102114,
+          "downhill": 9.940742723102108,
+          "changes": 0
+        },
+        {
+          "length": 704.4312249103251,
+          "perLane": [
+            0,
+            704.4312249103251,
+            0,
+            0,
+            0
+          ],
+          "curvature": 23.0299808630251,
+          "uphill": 9.168128601187183,
+          "downhill": 9.49068860118718,
+          "changes": 0
+        },
+        {
+          "length": 703.1133362129522,
+          "perLane": [
+            0,
+            0,
+            703.1133362129522,
+            0,
+            0
+          ],
+          "curvature": 22.925559011523085,
+          "uphill": 9.021836040970124,
+          "downhill": 9.344396040970125,
+          "changes": 0
+        },
+        {
+          "length": 703.049850623217,
+          "perLane": [
+            0,
+            0,
+            0,
+            703.049850623217,
+            0
+          ],
+          "curvature": 22.909679858340816,
+          "uphill": 9.168791353931313,
+          "downhill": 9.491351353931293,
+          "changes": 0
+        },
+        {
+          "length": 703.1986259737795,
+          "perLane": [
+            0,
+            0,
+            0,
+            0,
+            703.1986259737795
+          ],
+          "curvature": 22.90979025999883,
+          "uphill": 9.619755518420993,
+          "downhill": 9.942315518420994,
+          "changes": 0
+        }
+      ],
+      "distanceSpread": 2.9131030220876255,
+      "results": [
+        {
+          "name": "初期",
+          "lanes": [
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 21.016666666666115,
+              "distance": 51.17399670815704
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 21.016666666666115,
+              "distance": 51.17399670815704
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 21.016666666666115,
+              "distance": 51.17399670815704
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 21.016666666666115,
+              "distance": 51.17399670815704
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 21.016666666666115,
+              "distance": 51.17399670815704
+            }
+          ],
+          "finishTimeSpread": null
+        },
+        {
+          "name": "中盤",
+          "lanes": [
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 11.891666666666632,
+              "distance": 52.56576110245619
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 11.891666666666632,
+              "distance": 52.56576110245619
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 11.891666666666632,
+              "distance": 52.56576110245619
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 11.891666666666632,
+              "distance": 52.56576110245619
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 11.891666666666632,
+              "distance": 52.56576110245619
+            }
+          ],
+          "finishTimeSpread": null
+        },
+        {
+          "name": "上位",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 122.8588469599599,
+              "distance": 702.6637761150183
+            },
+            {
+              "status": "finished",
+              "time": 122.8588469599599,
+              "distance": 702.6637761150183
+            },
+            {
+              "status": "finished",
+              "time": 122.8588469599599,
+              "distance": 702.6637761150183
+            },
+            {
+              "status": "finished",
+              "time": 122.8588469599599,
+              "distance": 702.6637761150183
+            },
+            {
+              "status": "finished",
+              "time": 122.8588469599599,
+              "distance": 702.6637761150183
+            }
+          ],
+          "finishTimeSpread": 0
+        }
+      ]
+    },
+    {
+      "id": "zenith",
+      "lanes": 5,
+      "laps": 1,
+      "open": true,
+      "centralPhysics": true,
+      "geometry": [
+        {
+          "length": 747.56082224681,
+          "perLane": [
+            747.56082224681,
+            0,
+            0,
+            0,
+            0
+          ],
+          "curvature": 27.345075178647733,
+          "uphill": 10.32769061537969,
+          "downhill": 10.650250615379669,
+          "changes": 0
+        },
+        {
+          "length": 746.0068296979692,
+          "perLane": [
+            0,
+            746.0068296979692,
+            0,
+            0,
+            0
+          ],
+          "curvature": 27.214882077826832,
+          "uphill": 9.833542012459688,
+          "downhill": 10.156102012459666,
+          "changes": 0
+        },
+        {
+          "length": 744.6665785752814,
+          "perLane": [
+            0,
+            0,
+            744.6665785752814,
+            0,
+            0
+          ],
+          "curvature": 27.10354910735948,
+          "uphill": 9.638103381213757,
+          "downhill": 9.960663381213731,
+          "changes": 0
+        },
+        {
+          "length": 744.428326921517,
+          "perLane": [
+            0,
+            0,
+            0,
+            744.428326921517,
+            0
+          ],
+          "curvature": 27.084584714814326,
+          "uphill": 9.826059396671123,
+          "downhill": 10.148619396671094,
+          "changes": 0
+        },
+        {
+          "length": 744.5090449782244,
+          "perLane": [
+            0,
+            0,
+            0,
+            0,
+            744.5090449782244
+          ],
+          "curvature": 27.18411442500421,
+          "uphill": 10.318928231981026,
+          "downhill": 10.641488231981008,
+          "changes": 0
+        }
+      ],
+      "distanceSpread": 3.1324953252928935,
+      "results": [
+        {
+          "name": "初期",
+          "lanes": [
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 21.016666666666115,
+              "distance": 51.17399670815704
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 21.016666666666115,
+              "distance": 51.17399670815704
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 21.016666666666115,
+              "distance": 51.17399670815704
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 21.016666666666115,
+              "distance": 51.17399670815704
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 21.016666666666115,
+              "distance": 51.17399670815704
+            }
+          ],
+          "finishTimeSpread": null
+        },
+        {
+          "name": "中盤",
+          "lanes": [
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 11.891666666666632,
+              "distance": 52.56576110245619
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 11.891666666666632,
+              "distance": 52.56576110245619
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 11.891666666666632,
+              "distance": 52.56576110245619
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 11.891666666666632,
+              "distance": 52.56576110245619
+            },
+            {
+              "status": "out",
+              "reason": "loop",
+              "time": 11.891666666666632,
+              "distance": 52.56576110245619
+            }
+          ],
+          "finishTimeSpread": null
+        },
+        {
+          "name": "上位",
+          "lanes": [
+            {
+              "status": "finished",
+              "time": 130.11894706735242,
+              "distance": 744.2228239984865
+            },
+            {
+              "status": "finished",
+              "time": 130.11894706735242,
+              "distance": 744.2228239984865
+            },
+            {
+              "status": "finished",
+              "time": 130.11894706735242,
+              "distance": 744.2228239984865
+            },
+            {
+              "status": "finished",
+              "time": 130.11894706735242,
+              "distance": 744.2228239984865
+            },
+            {
+              "status": "finished",
+              "time": 130.11894706735242,
+              "distance": 744.2228239984865
+            }
+          ],
+          "finishTimeSpread": 0
+        }
+      ]
+    }
+  ]
+}

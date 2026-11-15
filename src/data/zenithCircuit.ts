@@ -51,7 +51,13 @@ export function buildZenithTrack(base:CircuitTrack,practice=false,profile?:Maste
   const ddx=(b.x-2*p.x+a.x)/epsilon**2,ddz=(b.z-2*p.z+a.z)/epsilon**2;
   return {...p,tangentX:dx/horizontal,tangentZ:dz/horizontal,tangentY:ty,forwardX:tx,forwardY:ty,forwardZ:tz,sideX:rx,sideY:ry,sideZ:rz,upX:ux,upY:uy,upZ:uz,pitch:Math.atan2(dy,horizontal),pathScale:1,curvature:p.loopRadius?0:Math.min(2,Math.abs(dx*ddz-dz*ddx)/horizontal**3)};
  };
- const sampleLanePath=(d:number,lane:number)=>{const p=pose(d),offset=(lane-2)*base.circuit.laneWidth;return {...p,x:p.x+p.sideX*offset,y:p.y+p.sideY*offset,z:p.z+p.sideZ*offset,from:lane,to:lane,lane,changing:false};};
+ const lanePoint=(d:number,lane:number)=>{const p=pose(d),offset=(lane-2)*base.circuit.laneWidth;return {...p,x:p.x+p.sideX*offset,y:p.y+p.sideY*offset,z:p.z+p.sideZ*offset};};
+ const sampleLanePath=(d:number,lane:number)=>{
+  const p=lanePoint(d,lane),e=.1,a=lanePoint(d-e,lane),b=lanePoint(d+e,lane);
+  const dx=(b.x-a.x)/(2*e),dy=(b.y-a.y)/(2*e),dz=(b.z-a.z)/(2*e),length=Math.hypot(dx,dy,dz)||1,horizontal=Math.hypot(dx,dz)||.0001;
+  const ddx=(b.x-2*p.x+a.x)/e**2,ddz=(b.z-2*p.z+a.z)/e**2;
+  return {...p,forwardX:dx/length,forwardY:dy/length,forwardZ:dz/length,tangentX:dx/horizontal,tangentZ:dz/horizontal,pitch:Math.atan2(dy,horizontal),pathScale:length,curvature:p.loopRadius?0:Math.min(2,Math.abs(dx*ddz-dz*ddx)/horizontal**3),from:lane,to:lane,lane,changing:false};
+ };
  const sampleCircuit=(d:number)=>{const p=pose(d);return {x:p.x,z:p.z,elevation:p.y,tangentX:p.tangentX,tangentZ:p.tangentZ,curvature:p.curvature};};
  const surfaceAt=(distance:number)=>{const f=distance/circuitLength;if(profile){if(profile.sand.some(([a,b])=>f>=a&&f<b))return {name:'深い砂地',roughness:.95,grip:.7};if(profile.gravel.some(([a,b])=>f>=a&&f<b))return {name:'砂利の切り返し',roughness:.7,grip:.82};return {name:'高速舗装',roughness:0,grip:1};}return f>=.30&&f<.43||f>=.64&&f<.72?{name:'深い砂地',roughness:.9,grip:.7}:f>=.55&&f<.64?{name:'砂利の切り返し',roughness:.65,grip:.82}:{name:'高速舗装',roughness:0,grip:1};};
  return {...base,fairLanes:true,open:true,jumps,obstacles,obstacleHeight,courseProgress:(d:number)=>d,isJumpGap:(d:number)=>jumps.some(j=>d>=j.takeoff&&d<j.takeoff+j.gap),cornerLoad:profile?.cornerLoad??2.0,circuit:{...base.circuit,name:profile?.name??(practice?'暁アルティメット・クロス':'天頂決戦・ゼニス・クラウン'),laps:1,radiusX:profile?Math.max(...points.map(p=>Math.abs(p.x)))+20:215,radiusZ:profile?Math.max(...points.map(p=>Math.abs(p.z)))+20:150,samples:4800,surface:{name:'舗装・砂地・砂利',roughness:.5,grip:.9}},circuitLength,startDistance:0,sampleCircuit,sampleLanePath,surfaceAt};
