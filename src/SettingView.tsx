@@ -4,7 +4,8 @@ import {bodyPaints} from './data/bodyPaint';
 import {isCraftPart} from './data/craftParts';
 import {TutorialGuide} from './TutorialGuide';
 import {TUTORIAL_PART} from './game/tutorial';
-import { lazy, Suspense, useState } from 'react';
+import { lazy, memo, Suspense, useMemo, useState } from 'react';
+import {useShallow} from 'zustand/react/shallow';
 import { parts } from './data/parts';
 import { equipPart } from './game/equipment';
 import { equipmentSlots, type EquipmentSlot } from './data/machine';
@@ -24,9 +25,8 @@ import {useSelectedTabScroll} from './useSelectedTabScroll';
 
 const MachinePreview=lazy(()=>import('./MachinePreview'));
 
-export function SettingView(){
-  const {equipment,inventory,equip,applyQuickSetup,close,units,selectedUnits,exchangeReusable,breakIn,notice,officialQualified,officialSpeedWon,officialDirtWon,location,startOfficialRace,wakabaCup,technicalCup,finalCup,zenithCup}=useGame();
-  const {bodyPaint,setBodyPaint}=useGame();
+function SettingViewContent(){
+  const {equipment,inventory,equip,applyQuickSetup,close,units,selectedUnits,exchangeReusable,breakIn,notice,officialQualified,officialSpeedWon,officialDirtWon,location,startOfficialRace,wakabaCup,technicalCup,finalCup,zenithCup,bodyPaint,setBodyPaint}=useGame(useShallow(s=>({equipment:s.equipment,inventory:s.inventory,equip:s.equip,applyQuickSetup:s.applyQuickSetup,close:s.close,units:s.units,selectedUnits:s.selectedUnits,exchangeReusable:s.exchangeReusable,breakIn:s.breakIn,notice:s.notice,officialQualified:s.officialQualified,officialSpeedWon:s.officialSpeedWon,officialDirtWon:s.officialDirtWon,location:s.location,startOfficialRace:s.startOfficialRace,wakabaCup:s.wakabaCup,technicalCup:s.technicalCup,finalCup:s.finalCup,zenithCup:s.zenithCup,bodyPaint:s.bodyPaint,setBodyPaint:s.setBodyPaint})));
   const tutorialStage=useGame(s=>s.tutorialStage);
   const [quickSetupMessage,setQuickSetupMessage]=useState('');
   const runQuickSetup=(profile:'speed'|'offroad'|'balanced')=>{applyQuickSetup(profile);setQuickSetupMessage(profile==='speed'?'最高速型に組み替えました。':profile==='offroad'?'悪路型に組み替えました。':'バランス型に組み替えました。')};
@@ -39,12 +39,12 @@ export function SettingView(){
   const craftKind=cursor&&isCraftPart(cursor,'body')?'body':cursor&&isCraftPart(cursor,'chassis')?'chassis':null;
   const resolvedCursor=craftKind&&cursor&&!inventory[cursor]?Object.keys(inventory).find(id=>inventory[id]>0&&isCraftPart(id,craftKind))??cursor:cursor;
   const selected=parts.find(p=>p.id===resolvedCursor&&p.category===category&&(inventory[p.id]>0||p.id===freePart))??current;
-  const condition=equippedCondition(equipment,units,selectedUnits);
-  const performance=machinePerformance(equipment,condition);
-  const previewEquipment=equipPart(equipment,selected.id===freePart?{...inventory,[selected.id]:1}:inventory,selected.id,slot);
-  const preview=machinePerformance(previewEquipment,equippedCondition(previewEquipment,units,selectedUnits));
-  const dirt=surfacePerformance(performance,dirtSurface),previewDirt=surfacePerformance(preview,dirtSurface);
-  const owned=parts.filter(p=>p.category===category&&(inventory[p.id]>0||p.id===freePart)).sort((a,b)=>b.price-a.price);
+  const condition=useMemo(()=>equippedCondition(equipment,units,selectedUnits),[equipment,units,selectedUnits]);
+  const performance=useMemo(()=>machinePerformance(equipment,condition),[equipment,condition]);
+  const previewEquipment=useMemo(()=>selected.id===equipment[slot]?equipment:equipPart(equipment,selected.id===freePart?{...inventory,[selected.id]:1}:inventory,selected.id,slot),[equipment,inventory,selected.id,freePart,slot]);
+  const preview=useMemo(()=>previewEquipment===equipment?performance:machinePerformance(previewEquipment,equippedCondition(previewEquipment,units,selectedUnits)),[previewEquipment,equipment,performance,units,selectedUnits]);
+  const dirt=useMemo(()=>surfacePerformance(performance,dirtSurface),[performance]),previewDirt=useMemo(()=>preview===performance?dirt:surfacePerformance(preview,dirtSurface),[preview,performance,dirt]);
+  const owned=useMemo(()=>parts.filter(p=>p.category===category&&(inventory[p.id]>0||p.id===freePart)).sort((a,b)=>b.price-a.price),[category,inventory,freePart]);
   return <section className="setting-screen" role="dialog" aria-modal="true" aria-labelledby="setting-title" onKeyDown={e=>{
     if(e.key!=='Tab')return;
     const controls=e.currentTarget.querySelectorAll<HTMLButtonElement>('button:not(:disabled)');
@@ -72,3 +72,4 @@ export function SettingView(){
     </div><footer>装備は交換時に即時反映されます。次のレースはこのセッティングで走行します。<SaveControls/></footer>
   </section>;
 }
+export const SettingView=memo(SettingViewContent);
