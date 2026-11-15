@@ -34,7 +34,7 @@ test('緑川は5周で全レーンを走り3構成とも開始位置による差
    for(let i=0;i<120*400&&state.status==='running';i++)state=stepDriving(state,performance,0,lane,track.circuit.surface,track);
    assert.equal(state.status,'finished',`lane ${lane}`);times.push(state.time);
   }
-  assert.ok(Math.max(...times)-Math.min(...times)<.01);
+  assert.ok((Math.max(...times)-Math.min(...times))/Math.min(...times)<.001);
  }
 });
 

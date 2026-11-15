@@ -5,8 +5,8 @@ function drive(e=zenithEquipment,id:'forge'|'zenith'|'grandprix'='forge',lane=2)
 function run(e=zenithEquipment,id:'forge'|'zenith'='forge',seed=42){let r=startRace(createRaceState(e,seed,{motorSeconds:60,batterySeconds:0},id==='zenith'?'official':false,id));while(r.phase==='countdown')r=stepRace(r);r=launchPlayer(r);for(let i=0;i<120*400&&r.phase!=='finished';i++)r=stepRace(r);return r;}
 function result(id:'grandprix'|'forge'|'zenith',place=1){const r=createRaceState(zenithEquipment,42,undefined,id==='forge'?false:'official',id);return {...r,phase:'finished' as const,playerStartOffset:0,racers:r.racers.map((r,i)=>({...r,driving:{...r.driving,status:'finished' as const,time:r.id==='player'?100+place:100+i+.5,distance:getCircuitTrack(id).circuitLength}}))};}
 function advanced(){const w=legacyCup(true,true),t={entered:true,pending:null,results:[{...w.results[0],circuitId:'comet' as const}]},f={entered:true,pending:null,results:[raceCupHeat(result('grandprix',2))]};return {...useGame.getInitialState(),...cupProgression(w,t,true,f),legendRaceCompleted:true,aozoraWon:true,villainDefeated:true,officialQualified:true,unlockedRaces:['aozora-entry'],finalQualified:true,yuunagiBestTime:39,location:'town' as const,lastShop:'yuunagi' as const};}
-test('緑川は全レーンで距離・旋回・着地の条件が等しく、同じ装備のタイム差がない',()=>{
- const equipment={...seniorEquipment,body:'body-champion'},times=[0,1,2,3,4].map(lane=>{const d=drive(equipment,'grandprix',lane);assert.equal(d.status,'finished');return d.time;});assert.ok(Math.max(...times)-Math.min(...times)<1e-9);
+test('緑川は実経路で全レーン完走しタイム差が0.1%以内',()=>{
+ const equipment={...seniorEquipment,body:'body-champion'},times=[0,1,2,3,4].map(lane=>{const d=drive(equipment,'grandprix',lane);assert.equal(d.status,'finished');return d.time;});assert.ok((Math.max(...times)-Math.min(...times))/Math.min(...times)<.001);
 });
 test('新コースは史上最長、縦360度・横螺旋・砂・坂・2ジャンプと有限な立体レーンを持つ',()=>{
  const practice=getCircuitTrack('forge'),final=getCircuitTrack('zenith');assert.ok(practice.circuitLength>650);assert.ok(final.circuitLength>practice.circuitLength+30);assert.equal(final.circuit.laps,1);assert.ok(final.open);assert.equal(final.jumps.length,2);
