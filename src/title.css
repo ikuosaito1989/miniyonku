@@ -21,3 +21,19 @@
 @media(max-height:480px){.title-logo{top:4%;width:58%;max-width:560px}.title-badge{font-size:15px;border-width:2px;margin-bottom:-12px}.title-tagline{font-size:9px;letter-spacing:2px;margin-top:-10px}.title-machine{top:29%;left:7%;width:86%;height:65%}.title-start{bottom:12%;gap:3px;min-height:44px;padding:4px 18px}.title-start-coins{gap:8px}.title-start-coins>span{width:26px;height:26px;font-size:18px}.title-start-caption{font-size:9px}.title-footer{bottom:3%;gap:3px;font-size:8px}.title-footer small{font-size:8px}}
 @media(prefers-reduced-motion:reduce){.title-start-coins>span{transition:none}.title-start-burst .title-start-coins>span,.title-start-burst .title-start-caption{animation:none}}
 .title-name-scrim{position:absolute;inset:0;z-index:20;display:grid;place-items:center;padding:20px;background:#061522c9}.title-name{width:min(100%,400px);box-sizing:border-box;padding:22px;background:#173448;border:3px ridge #d3e0df;color:#f5f0db}.title-name h2{margin:0 0 12px}.title-name label{display:grid;gap:8px}.title-name input{box-sizing:border-box;width:100%;min-height:44px;padding:8px;font:inherit;color:#142b3a;background:#fff}.title-name div{display:flex;gap:8px;margin-top:18px}.title-name button{min-height:44px;padding:8px 12px;font:inherit}
+
+.title-pv-button {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  right: 12px;
+  z-index: 6;
+  padding: 8px 14px;
+  background: #142338;
+  color: #ffe297;
+  border: 1px solid #c89d52;
+  border-radius: 5px;
+}
+.title-pv-dialog { padding: 0; border: 0; background: #101927; color: white; }
+.title-pv-dialog::backdrop { background: #060a11ec; }
+.title-pv-dialog button { display: block; margin: 5px 5px 5px auto; }
+.title-pv-dialog video { display: block; width: min(90vw, 47vh); }

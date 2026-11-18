@@ -5,6 +5,8 @@ import './title.css';
 
 export function TitleScreen({ onStart,needsName,onName }: { onStart: () => void;needsName:boolean;onName:(name:string)=>void }) {
   const [naming,setNaming]=useState(false),[name,setName]=useState('朝倉 湊'),[burst,setBurst]=useState(false);
+  const pvDialog = useRef<HTMLDialogElement>(null);
+  const pvVideo = useRef<HTMLVideoElement>(null);
   const timer=useRef<ReturnType<typeof setTimeout>|null>(null),starting=useRef(false);
   const start=()=>{
     if(starting.current||naming)return;
@@ -48,6 +50,17 @@ export function TitleScreen({ onStart,needsName,onName }: { onStart: () => void;
         <span className="title-start-caption">ゲーム開始</span>
       </button>
       {naming&&<div className="title-name-scrim"><form className="title-name" onSubmit={event=>{event.preventDefault();const value=name.trim();if(!value)return;onName(value);setNaming(false);onStart();}}><h2>名前を決めよう</h2><p>レースやオンライン記録に表示されます。</p><label>プレイヤー名<input autoFocus value={name} maxLength={24} onChange={event=>setName(event.target.value)} /></label><div><button type="submit" disabled={!name.trim()}>この名前で始める</button><button type="button" onClick={()=>setNaming(false)}>戻る</button></div></form></div>}
+      <button className="title-pv-button" onClick={() => {
+        pvDialog.current?.showModal();
+        void pvVideo.current?.play().catch(() => {});
+      }}>▶ PVを見る</button>
+      <dialog className="title-pv-dialog" ref={pvDialog} aria-label="セイラン プロモーション動画" onClose={() => {
+        pvVideo.current?.pause();
+        if (pvVideo.current) pvVideo.current.currentTime = 0;
+      }}>
+        <button autoFocus onClick={() => pvDialog.current?.close()}>閉じる</button>
+        <video ref={pvVideo} controls playsInline preload="none" src="/media/seiran-pv.mp4" />
+      </dialog>
       <footer className="title-footer"><span>CHIBI 4WD · SEIRAN</span><small>進行はこのブラウザに自動保存されます</small></footer>
     </div>
   </section>;
